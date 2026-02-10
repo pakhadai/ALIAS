@@ -1,12 +1,22 @@
 
-import React, { useState } from 'react';
-import { ArrowRight, X, BookOpen, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowRight, X, BookOpen, Volume2, VolumeX, Sun, Moon, AlertCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
 import { GameState, Language, AppTheme } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, ROOM_CODE_LENGTH } from '../constants';
+
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 // Internal Rules Modal Component
 const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
@@ -68,19 +78,19 @@ export const RulesScreen = () => {
 };
 
 export const MenuScreen = () => {
-  const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame } = useGame();
+  const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame, peerError } = useGame();
   const [showRules, setShowRules] = useState(false);
   const t = TRANSLATIONS[settings.language];
   
   const toggleTheme = () => {
-    setSettings(prev => ({
+    setSettings((prev: any) => ({
       ...prev,
       theme: prev.theme === AppTheme.PREMIUM_DARK ? AppTheme.PREMIUM_LIGHT : AppTheme.PREMIUM_DARK
     }));
   };
 
   const toggleLanguage = () => {
-    setSettings(prev => {
+    setSettings((prev: any) => {
         let nextLang;
         if (prev.language === Language.UA) nextLang = Language.DE;
         else if (prev.language === Language.DE) nextLang = Language.EN;
@@ -121,7 +131,14 @@ export const MenuScreen = () => {
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs mx-auto px-6 pb-20">
         <Logo theme={currentTheme} />
 
-        <div className="w-full space-y-6 flex flex-col items-center mt-24 animate-slide-up">
+        {peerError && (
+          <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-shake">
+            <AlertCircle className="text-red-500" size={20} />
+            <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">Server Error: {peerError}</p>
+          </div>
+        )}
+
+        <div className="w-full space-y-6 flex flex-col items-center mt-12 animate-slide-up">
           <button 
             onClick={createNewRoom}
             className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl`}
@@ -160,10 +177,14 @@ export const EnterNameScreen = () => {
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState(AVATARS[0]);
     const t = TRANSLATIONS[settings.language];
+    
+    // Improved Player ID persistence for edge cases
+    const stableId = useRef(isHost ? 'host' : `player-${generateUUID()}`);
 
     const handleSubmit = () => {
-        if (name.trim()) {
-            handleJoin(isHost ? 'host' : `player-${Math.random()}`, name.trim(), avatar);
+        const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);
+        if (sanitized.trim()) {
+            handleJoin(stableId.current, sanitized.trim(), avatar);
             setGameState(GameState.LOBBY);
         }
     };
@@ -176,7 +197,7 @@ export const EnterNameScreen = () => {
                 <input 
                     autoFocus
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
                     placeholder={t.namePlaceholder}
                     className={`w-full ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
                 />
@@ -208,7 +229,7 @@ export const JoinInputScreen = () => {
     const t = TRANSLATIONS[settings.language];
 
     const handleJoinRoom = () => {
-        if (code.length === 5) {
+        if (code.length === ROOM_CODE_LENGTH) {
             setRoomCode(code);
             setGameState(GameState.ENTER_NAME);
         }
@@ -216,7 +237,7 @@ export const JoinInputScreen = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value.replace(/[^0-9]/g, '');
-        if (val.length <= 5) setCode(val);
+        if (val.length <= ROOM_CODE_LENGTH) setCode(val);
     };
 
     return (
@@ -233,7 +254,7 @@ export const JoinInputScreen = () => {
                         autoFocus
                         type="text"
                         inputMode="numeric"
-                        maxLength={5}
+                        maxLength={ROOM_CODE_LENGTH}
                         value={code}
                         onChange={handleInputChange}
                         placeholder="00000"
@@ -247,7 +268,7 @@ export const JoinInputScreen = () => {
                         fullWidth 
                         size="xl" 
                         onClick={handleJoinRoom} 
-                        disabled={code.length !== 5}
+                        disabled={code.length !== ROOM_CODE_LENGTH}
                     >
                         {t.enter}
                     </Button>

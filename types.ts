@@ -1,5 +1,4 @@
 
-// Fix: Import DataConnection correctly from peerjs
 import type { DataConnection } from 'peerjs';
 
 export enum GameState {
@@ -18,30 +17,10 @@ export enum GameState {
   GAME_OVER = 'GAME_OVER'
 }
 
-export enum Language {
-  UA = 'UA',
-  DE = 'DE',
-  EN = 'EN'
-}
-
-export enum Category {
-  GENERAL = 'General',
-  FOOD = 'Food',
-  TRAVEL = 'Travel',
-  SCIENCE = 'Science',
-  MOVIES = 'Movies',
-  CUSTOM = 'Custom'
-}
-
-export enum AppTheme {
-  PREMIUM_DARK = 'PREMIUM_DARK',
-  PREMIUM_LIGHT = 'PREMIUM_LIGHT',
-  CYBERPUNK = 'CYBERPUNK',
-  NATURE = 'NATURE',
-  OCEAN = 'OCEAN',
-  CANDY = 'CANDY',
-  MATRIX = 'MATRIX'
-}
+export enum Language { UA = 'UA', DE = 'DE', EN = 'EN' }
+export enum Category { GENERAL = 'General', FOOD = 'Food', TRAVEL = 'Travel', SCIENCE = 'Science', MOVIES = 'Movies', CUSTOM = 'Custom' }
+export enum AppTheme { PREMIUM_DARK = 'PREMIUM_DARK', PREMIUM_LIGHT = 'PREMIUM_LIGHT', CYBERPUNK = 'CYBERPUNK' }
+export enum SoundPreset { FUN = 'FUN', MINIMAL = 'MINIMAL', EIGHT_BIT = 'EIGHT_BIT' }
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -58,20 +37,12 @@ export interface ThemeConfig {
   isPremium?: boolean;
 }
 
-export enum SoundPreset {
-  FUN = 'FUN',
-  MINIMAL = 'MINIMAL',
-  EIGHT_BIT = 'EIGHT_BIT'
-}
-
 export interface Player {
   id: string;
   name: string;
-  avatar?: string;
+  avatar: string;
   isHost: boolean;
-  stats?: {
-    explained: number;
-  };
+  stats: { explained: number };
 }
 
 export interface Team {
@@ -94,6 +65,7 @@ export interface GameSettings {
   soundPreset: SoundPreset;
   teamCount: number;
   theme: AppTheme;
+  customWords?: string;
 }
 
 export interface RoundStats {
@@ -105,27 +77,40 @@ export interface RoundStats {
   explainerId?: string;
 }
 
-export type NetworkActionType = 
-  | 'JOIN_REQUEST' 
-  | 'SYNC_STATE'
-  | 'GAME_ACTION'
-  | 'KICK_PLAYER';
-
-export interface NetworkMessage {
-  type: NetworkActionType;
-  payload: any;
+export interface AppState {
+  gameState: GameState;
+  gameMode: 'ONLINE' | 'OFFLINE';
+  settings: GameSettings;
+  roomCode: string;
+  isHost: boolean;
+  myPlayerId: string;
+  players: Player[];
+  teams: Team[];
+  currentTeamIndex: number;
+  wordDeck: string[];
+  currentWord: string;
+  currentRoundStats: RoundStats;
+  timeLeft: number;
+  isPaused: boolean;
+  isConnected: boolean;
+  isHostReconnecting: boolean;
+  reconnectTimeLeft: number;
+  notification: { message: string, type: 'info' | 'error' | 'success' } | null;
+  peerError: string | null;
 }
+
+export type NetworkActionType = 'JOIN_REQUEST' | 'SYNC_STATE' | 'GAME_ACTION' | 'KICK_PLAYER';
 
 export interface GameActionPayload {
   action: 'CORRECT' | 'SKIP' | 'START_GAME' | 'START_ROUND' | 'START_PLAYING' | 'NEXT_ROUND' | 'RESET_GAME' | 'REMATCH' | 'UPDATE_SETTINGS' | 'GENERATE_TEAMS' | 'PAUSE_GAME' | 'KICK_PLAYER';
   data?: any;
 }
 
-// Fix: Explicitly define key members of DataConnection to prevent property-not-found errors
+export interface NetworkMessage {
+  type: NetworkActionType;
+  payload: any;
+}
+
 export interface PeerConnection extends DataConnection {
   playerId?: string;
-  open: boolean;
-  send: (data: any) => void;
-  close: () => void;
-  on: (event: string, cb: (...args: any[]) => void) => any;
 }
