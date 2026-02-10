@@ -3,7 +3,11 @@
     "allow": [
       "Bash(if exist \"c:\\\\Users\\\\Dmytro\\\\Desktop\\\\тест\\\\ALIAS\\\\ALIAS\\\\src\\\\screens\\\\LobbyFlow.tsx\" del \"c:\\\\Users\\\\Dmytro\\\\Desktop\\\\тест\\\\ALIAS\\\\ALIAS\\\\src\\\\screens\\\\LobbyFlow.tsx\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }
