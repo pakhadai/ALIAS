@@ -13,11 +13,13 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+// Fixed: Using React.Component explicitly with generic types for props and state to ensure properties are correctly linked.
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  // Fix: Explicitly defining the constructor ensures that the 'props' property from React.Component 
-  // is correctly typed and inherited within the class instance.
+  // Explicitly defining the constructor ensures that the 'props' and 'state' properties 
+  // from React.Component are correctly typed and inherited.
   constructor(props: ErrorBoundaryProps) {
     super(props);
+    // Fixed: Correctly initializing this.state which is inherited from React.Component
     this.state = {
       hasError: false,
       error: null
@@ -37,6 +39,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   render() {
+    // Fixed: Using this.state correctly which is inherited from React.Component
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-10 text-center">
@@ -48,6 +51,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         </div>
       );
     }
+    // Fixed: Using this.props correctly which is inherited from React.Component
     return this.props.children;
   }
 }

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Clock, X, Check, Trophy, Star, Pause, Play, AlertCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -79,9 +79,12 @@ export const PlayingScreen = () => {
   const isExplainer = gameMode === 'OFFLINE' || explainer.id === myPlayerId;
   const isCriticalTime = timeLeft <= 10;
   
-  /**
-   * 2.2 ВИПРАВЛЕНО: Таймер працює ТІЛЬКИ на хості. Клієнти отримують дані через мережу.
-   */
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused || !isHost) return;
     const interval = window.setInterval(() => setTimeLeft((prev: number) => Math.max(0, prev - 1)), 1000);
@@ -112,61 +115,82 @@ export const PlayingScreen = () => {
   };
 
   return (
-      <div className={`flex flex-col min-h-screen ${currentTheme.bg} relative overflow-hidden transition-colors`}>
+      <div className={`flex flex-col min-h-screen bg-premium-dark-bg text-text-main-dark font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}>
         {particles.map(p => <FloatingParticle key={p.id} {...p} onComplete={() => setParticles(prev => prev.filter(x => x.id !== p.id))} />)}
         
-        <div className="h-3 bg-black/30 w-full">
+        {/* Progress Bar Header */}
+        <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-6 z-20">
+          <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
             <div 
-                className={`h-full transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500' : currentTheme.progressBar}`} 
-                style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }} 
+              className={`h-full rounded-full shadow-[0_0_10px_rgba(243,229,171,0.5)] transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-champagne-gold'}`} 
+              style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }} 
             />
-        </div>
+          </div>
 
-        <div className="flex justify-between items-center p-6">
-           <div className={`flex items-center space-x-3 bg-black/20 px-4 py-2 rounded-full border border-white/10 ${isCriticalTime ? 'animate-shake border-red-500/50' : ''}`}>
-               <Clock size={20} />
-               <span className="font-mono font-black text-2xl">{timeLeft}</span>
-           </div>
-           {isHost && (
-            <button onClick={togglePause} className="p-3 bg-white/5 rounded-full border border-white/10 active:scale-90 transition-all">
-                {isPaused ? <Play size={20} /> : <Pause size={20} />}
-            </button>
-           )}
-        </div>
+          <div className="flex justify-between items-center w-full">
+            <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums ${isCriticalTime ? 'text-red-500' : ''}`}>
+              {formatTime(timeLeft)}
+            </div>
+            
+            {isHost && (
+              <button 
+                onClick={togglePause} 
+                className="w-10 h-10 flex items-center justify-center rounded-full active:bg-white/5 transition-colors"
+              >
+                <span className="material-symbols-outlined text-champagne-gold text-2xl">
+                  {isPaused ? 'play_arrow' : 'pause'}
+                </span>
+              </button>
+            )}
 
-        <main className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div className="text-text-sub-dark font-sans text-sm tracking-wide w-20 text-right">
+                Score: <span className="text-white font-medium">{currentRoundStats.correct}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Word Card */}
+        <main className="flex-1 flex flex-col items-center justify-center w-full px-8 relative z-10 pb-24">
             {isExplainer ? (
-                <div className="space-y-12 w-full animate-pop-in">
-                    <h2 className={`text-6xl font-serif tracking-tight ${currentTheme.textMain}`}>
-                        {currentWord}
-                    </h2>
-                    <div className="flex gap-6 pt-12">
-                        <Button 
-                            variant="danger" 
-                            fullWidth 
-                            size="xl" 
-                            onClick={(e) => onAction('skip', e.clientX, e.clientY)}
-                        >
-                            {t.skip}
-                        </Button>
-                        <Button 
-                            themeClass={currentTheme.button} 
-                            fullWidth 
-                            size="xl" 
-                            onClick={(e) => onAction('correct', e.clientX, e.clientY)}
-                        >
-                            {t.correct}
-                        </Button>
-                    </div>
+                <div className="w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform transition-all duration-300 border border-white/5 animate-pop-in">
+                  <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
+                  <h2 className="text-premium-white font-serif font-bold text-4xl sm:text-5xl text-center leading-tight tracking-wider uppercase break-words w-full drop-shadow-md">
+                      {currentWord}
+                  </h2>
                 </div>
             ) : (
-                <div className="space-y-8 opacity-40">
+                <div className="space-y-8 opacity-40 text-center animate-fade-in">
                     <AlertCircle size={64} className="mx-auto" />
-                    <p className={`text-xl font-serif ${currentTheme.textMain}`}>{t.youGuess}</p>
-                    <p className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}>{t.sayAloud}</p>
+                    <p className={`text-xl font-serif text-white`}>{t.youGuess}</p>
+                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{t.sayAloud}</p>
                 </div>
             )}
         </main>
+
+        {/* Action Buttons Footer */}
+        {isExplainer && (
+          <footer className="w-full fixed bottom-0 left-0 z-20 h-24 sm:h-28 flex">
+            <button 
+                onClick={(e) => onAction('skip', e.clientX, e.clientY)}
+                className="flex-1 h-full bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5"
+            >
+              <span className="material-symbols-outlined text-burgundy-text text-3xl group-active:scale-90 transition-transform">close</span>
+              <span className="text-burgundy-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-burgundy-text transition-colors">
+                {t.skip}
+              </span>
+            </button>
+            <button 
+                onClick={(e) => onAction('correct', e.clientX, e.clientY)}
+                className="flex-1 h-full bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5 border-l border-l-white/5"
+            >
+              <span className="material-symbols-outlined text-forest-green-text text-3xl group-active:scale-90 transition-transform font-bold">check</span>
+              <span className="text-forest-green-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-forest-green-text transition-colors">
+                {t.correct}
+              </span>
+            </button>
+          </footer>
+        )}
       </div>
   );
 };
@@ -182,9 +206,6 @@ export const RoundSummaryScreen = () => {
     const activeTeam = teams[currentTeamIndex]; 
     const scoringTeam = teams.find(t => t.id === currentRoundStats.teamId) || activeTeam;
 
-    /**
-     * 2.5 ВИПРАВЛЕНО: processingRef запобігає повторним викликам
-     */
     const confirmRoundResults = () => {
         if (!isHost || isSubmitting || processingRef.current) return;
         processingRef.current = true;
@@ -215,7 +236,7 @@ export const RoundSummaryScreen = () => {
             } else {
               setGameState(GameState.SCOREBOARD);
             }
-            processingRef.current = false; // Reset!
+            processingRef.current = false;
         }, delay);
     };
 
@@ -266,44 +287,143 @@ export const RoundSummaryScreen = () => {
     );
 };
 
-// Scoreboard Screen: Rankings
+// Scoreboard Screen: Rankings with Path visualization
 export const ScoreboardScreen = () => {
-  const { teams, currentTheme, settings, handleNextRound, isHost } = useGame();
+  const { teams, settings, handleNextRound, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
-  const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+  
+  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const bgColor = isDark ? 'bg-premium-dark-bg' : 'bg-silver-bg';
+  const textColor = isDark ? 'text-white' : 'text-premium-black';
+  const subTextColor = isDark ? 'text-gray-400' : 'text-text-sub';
+  
+  const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
+  const goal = settings.scoreToWin;
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
-      <header className="py-12 text-center">
-        <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>{t.scoreboard}</h2>
+    <div className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}>
+      {/* Header */}
+      <header className="relative z-20 w-full px-6 pt-12 pb-2 flex justify-between items-center bg-transparent backdrop-blur-sm">
+        <button aria-label="Settings" className={`w-10 h-10 flex items-center justify-center rounded-full shadow-sm ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white'}`}>
+          <span className={`material-symbols-outlined !text-[24px] ${isDark ? 'text-white' : 'text-premium-black'}`}>settings</span>
+        </button>
+        <div className="text-center">
+          <h2 className="font-serif text-lg tracking-widest uppercase">Score</h2>
+        </div>
+        <button aria-label="Menu" className={`w-10 h-10 flex items-center justify-center rounded-full shadow-sm ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white'}`}>
+          <span className={`material-symbols-outlined !text-[24px] ${isDark ? 'text-white' : 'text-premium-black'}`}>menu</span>
+        </button>
       </header>
 
-      <div className="flex-1 space-y-4 overflow-y-auto no-scrollbar">
-        {sortedTeams.map((team, idx) => (
-          <div key={team.id} className={`p-6 rounded-3xl border ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'} flex items-center justify-between`}>
-            <div className="flex items-center gap-6">
-                <span className={`text-2xl font-serif opacity-20 ${currentTheme.textMain}`}>{idx + 1}</span>
-                <div className="space-y-1">
-                    <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{team.name}</h3>
-                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
-                        {team.players.length} {t.playersCount}
-                    </p>
-                </div>
-            </div>
-            <div className="text-right">
-                <span className={`text-3xl font-serif font-bold ${currentTheme.textAccent}`}>{team.score}</span>
-            </div>
+      <main className="flex-1 flex flex-col w-full relative overflow-y-auto no-scrollbar pb-32">
+        {/* Visual Ladder/Path */}
+        <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
+          <div className="absolute top-4 flex flex-col items-center z-0 opacity-40">
+            <span className="material-symbols-outlined mb-1 text-champagne-dark">emoji_events</span>
+            <span className={`text-[10px] tracking-[0.2em] uppercase font-bold text-champagne-dark`}>Goal: {goal}</span>
           </div>
-        ))}
-      </div>
 
-      <footer className="py-8">
+          <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10">
+            {/* The Vertical Path Line */}
+            <div className={`absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+            
+            {/* Markers */}
+            <div className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/20 border-premium-dark-bg' : 'bg-gray-200 border-silver-bg'}`}></div>
+            <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+            <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+            <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+            <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+            <div className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/30 border-premium-dark-bg' : 'bg-gray-300 border-silver-bg'}`}></div>
+
+            {/* Team Tokens on Path */}
+            {teams.map((team, idx) => {
+              const progress = Math.min(1, team.score / goal);
+              // Invert for vertical display: top is 0 (goal), bottom is 1 (start). 
+              // But let's follow the provided snippet where higher points are higher up.
+              const topPos = 100 - (progress * 100);
+              const isEven = idx % 2 === 0;
+
+              return (
+                <div 
+                  key={team.id} 
+                  className="absolute w-full h-0 z-20 flex justify-center transition-all duration-1000 ease-out"
+                  style={{ top: `${topPos}%` }}
+                >
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white transition-transform hover:scale-110`}
+                    style={{ backgroundColor: team.colorHex, color: isDark ? 'white' : 'black' }}
+                  >
+                    {idx + 1}
+                  </div>
+                  <div 
+                    className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} ${isDark ? 'bg-white/5 border border-white/5 text-white' : 'bg-white text-premium-black'}`}
+                  >
+                    <span className="text-[10px] font-bold tracking-wider">{team.score} pts</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detailed Team Cards */}
+        <div className="w-full px-6 space-y-3 z-10">
+          {sortedTeams.map((team, idx) => {
+            const teamIndex = teams.findIndex(t => t.id === team.id) + 1;
+            const progress = Math.min(100, (team.score / goal) * 100);
+            
+            return (
+              <div 
+                key={team.id} 
+                className={`rounded-2xl p-4 shadow-card flex items-center justify-between border animate-slide-up transition-all`}
+                style={{ 
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+                  borderColor: team.score >= goal ? '#F3E5AB' : (isDark ? 'rgba(255,255,255,0.05)' : 'transparent'),
+                  animationDelay: `${idx * 100}ms`
+                }}
+              >
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm"
+                    style={{ backgroundColor: team.colorHex, color: isDark ? 'white' : 'black' }}
+                  >
+                    {teamIndex}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className={`font-serif text-lg tracking-wide ${textColor}`}>{team.name}</span>
+                    <div className={`bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden w-24 ${isDark ? 'bg-white/10' : 'bg-gray-100'}`}>
+                      <div 
+                        className="h-full rounded-full transition-all duration-1000 ease-out" 
+                        style={{ backgroundColor: team.colorHex, width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`block text-2xl font-serif ${textColor}`}>{team.score}</span>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Points</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* Footer Button */}
+      <footer className={`fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-gradient-to-t ${isDark ? 'from-premium-dark-bg via-premium-dark-bg' : 'from-silver-bg via-silver-bg'} to-transparent`}>
         {isHost ? (
-            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={handleNextRound}>
-                {t.nextRound}
-            </Button>
+          <button 
+            onClick={handleNextRound}
+            className={`w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group ${isDark ? 'bg-champagne-gold text-premium-black' : 'bg-premium-black text-white'}`}
+          >
+            <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
+              {t.nextRound}
+            </span>
+          </button>
         ) : (
-            <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitAdmin}</p>
+          <p className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${textColor}`}>
+            {t.waitAdmin}
+          </p>
         )}
       </footer>
     </div>
