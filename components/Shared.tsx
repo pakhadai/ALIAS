@@ -2,7 +2,7 @@
 import React, { useEffect, useState, ErrorInfo } from 'react';
 import { X, Star } from 'lucide-react';
 import { Button } from './Button';
-import { ThemeConfig } from '../types';
+import { ThemeConfig, AppTheme } from '../types';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -165,7 +165,7 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ theme }) => {
-  const isLight = theme.id === 'PREMIUM_LIGHT';
+  const isLight = theme.id === AppTheme.PREMIUM_LIGHT;
   return (
     <div className="flex flex-col items-center w-full">
       <h1 className="font-serif font-normal text-7xl tracking-[0.25em] text-white text-center mb-4 animate-pop-in" style={{ color: isLight ? 'rgb(15, 23, 42)' : 'white' }}>

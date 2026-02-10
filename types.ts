@@ -99,6 +99,29 @@ export interface AppState {
   peerError: string | null;
 }
 
+export interface GameContextType extends AppState {
+  currentTheme: ThemeConfig;
+  setGameState: (state: GameState) => void;
+  createNewRoom: () => void;
+  handleJoin: (id: string, name: string, avatar: string) => void;
+  sendAction: (action: GameActionPayload) => void;
+  playSound: (soundId: string) => void;
+  showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
+  setSettings: (settings: GameSettings | ((prev: GameSettings) => GameSettings)) => void;
+  startOfflineGame: () => void;
+  handleCorrect: () => void;
+  handleSkip: () => void;
+  handleStartRound: () => void;
+  startGameplay: () => void;
+  handleNextRound: () => void;
+  togglePause: () => void;
+  setTimeLeft: (value: number | ((prev: number) => number)) => void;
+  setTeams: (teams: Team[]) => void;
+  resetGame: () => void;
+  rematch: () => void;
+  setRoomCode: (code: string) => void;
+}
+
 export type NetworkActionType = 'JOIN_REQUEST' | 'SYNC_STATE' | 'GAME_ACTION' | 'KICK_PLAYER';
 
 export interface GameActionPayload {

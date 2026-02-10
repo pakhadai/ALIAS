@@ -10,10 +10,23 @@ import { TRANSLATIONS } from '../constants';
 
 // Pre-Round Screen: Shows who's next
 export const PreRoundScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound } = useGame();
+  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState } = useGame();
   const t = TRANSLATIONS[settings.language];
   const activeTeam = teams[currentTeamIndex];
-  const explainer = activeTeam.players[activeTeam.nextPlayerIndex];
+
+  // Safety check: if team has no players, return to lobby
+  if (!activeTeam || activeTeam.players.length === 0) {
+    return (
+      <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
+        <div className="space-y-8">
+          <p className={`text-2xl ${currentTheme.textMain}`}>Team has no players!</p>
+          <Button themeClass={currentTheme.button} onClick={() => setGameState(GameState.LOBBY)}>Back to Lobby</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const explainer = activeTeam.players[activeTeam.nextPlayerIndex] || activeTeam.players[0];
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
@@ -75,8 +88,15 @@ export const PlayingScreen = () => {
   const [particles, setParticles] = useState<{ id: number, x: number, y: number, text: string, color: string }[]>([]);
   const actionProcessingRef = useRef(false);
   const activeTeam = teams[currentTeamIndex];
-  const explainer = teams.every(t => t.players.length === 1) ? activeTeam.players[0] : activeTeam.players[activeTeam.nextPlayerIndex];
-  const isExplainer = gameMode === 'OFFLINE' || explainer.id === myPlayerId;
+
+  // Safety check: ensure team has players
+  if (!activeTeam || activeTeam.players.length === 0) {
+    setGameState(GameState.LOBBY);
+    return null;
+  }
+
+  const explainer = activeTeam.players[Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1)] || activeTeam.players[0];
+  const isExplainer = gameMode === 'OFFLINE' || explainer?.id === myPlayerId;
   const isCriticalTime = timeLeft <= 10;
   
   const formatTime = (seconds: number) => {
@@ -104,6 +124,7 @@ export const PlayingScreen = () => {
   const onAction = (type: 'correct' | 'skip', x: number, y: number) => {
       if (isPaused || actionProcessingRef.current) return;
       actionProcessingRef.current = true;
+
       if (type === 'correct') {
           handleCorrect();
           setParticles(prev => [...prev, { id: Date.now(), x, y, text: '+1', color: '#10b981' }]);
@@ -111,11 +132,16 @@ export const PlayingScreen = () => {
           handleSkip();
           setParticles(prev => [...prev, { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: '#ef4444' }]);
       }
-      setTimeout(() => { actionProcessingRef.current = false; }, 250);
+
+      // Use consistent 300ms debounce to prevent double actions
+      const ACTION_DEBOUNCE_MS = 300;
+      setTimeout(() => {
+          actionProcessingRef.current = false;
+      }, ACTION_DEBOUNCE_MS);
   };
 
   return (
-      <div className={`flex flex-col min-h-screen bg-premium-dark-bg text-text-main-dark font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}>
+      <div className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}>
         {particles.map(p => <FloatingParticle key={p.id} {...p} onComplete={() => setParticles(prev => prev.filter(x => x.id !== p.id))} />)}
         
         {/* Progress Bar Header */}
@@ -202,8 +228,10 @@ export const RoundSummaryScreen = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const processingRef = useRef(false);
     
-    const points = currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
-    const activeTeam = teams[currentTeamIndex]; 
+    // Calculate points with minimum of 0 to prevent negative scores from breaking game flow
+    const rawPoints = currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+    const points = Math.max(0, rawPoints); // Prevent negative points
+    const activeTeam = teams[currentTeamIndex];
     const scoringTeam = teams.find(t => t.id === currentRoundStats.teamId) || activeTeam;
 
     const confirmRoundResults = () => {
@@ -221,14 +249,14 @@ export const RoundSummaryScreen = () => {
 
         const oldScore = scoringTeam.score, newScore = Math.max(0, oldScore + points);
         const oldTens = Math.floor(oldScore / 10), newTens = Math.floor(newScore / 10);
-        
+
         let delay = 0;
         if (newTens > oldTens && newScore < settings.scoreToWin) {
             setMilestone({ points: newTens * 10, team: scoringTeam.name });
-            if (settings.soundEnabled) playSound('win'); 
+            if (settings.soundEnabled) playSound('win');
             delay = 3000;
         }
-        
+
         setTeams(updatedTeams);
         setTimeout(() => {
             if (currentTeamIndex === teams.length - 1 && updatedTeams.some(t => t.score >= settings.scoreToWin)) {
@@ -236,7 +264,9 @@ export const RoundSummaryScreen = () => {
             } else {
               setGameState(GameState.SCOREBOARD);
             }
+            // Reset both flags at the same time
             processingRef.current = false;
+            setIsSubmitting(false);
         }, delay);
     };
 

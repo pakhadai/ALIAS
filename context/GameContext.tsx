@@ -1,8 +1,8 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, useMemo } from 'react';
-import { 
-  GameState, Language, Team, GameSettings, Category, RoundStats, 
-  Player, AppTheme, GameActionPayload, SoundPreset, AppState
+import {
+  GameState, Language, Team, GameSettings, Category, RoundStats,
+  Player, AppTheme, GameActionPayload, SoundPreset, AppState, GameContextType
 } from '../types';
 import { 
   MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS, 
@@ -60,7 +60,7 @@ function gameReducer(state: AppState, action: Action): AppState {
   }
 }
 
-const GameContext = createContext<any>(undefined);
+const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
@@ -88,20 +88,31 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state.isHost, state.gameState, state.roomCode, state.players, state.teams, state.settings, state.currentTeamIndex]);
 
+  // Fisher-Yates shuffle algorithm (more reliable than Math.random() - 0.5)
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const nextWordLogic = useCallback(() => {
     const { settings, wordDeck } = stateRef.current;
     let deck = [...wordDeck];
     if (deck.length === 0) {
       const pool = settings.categories.flatMap(cat => {
         if (cat === Category.CUSTOM && settings.customWords) {
-          return settings.customWords.split(',').map(w => w.trim()).filter(Boolean);
+          // Sanitize custom words to prevent HTML injection
+          return settings.customWords.split(',').map(w => w.trim().replace(/<[^>]*>/g, '')).filter(Boolean);
         }
         return MOCK_WORDS[settings.language][cat] || [];
       });
-      
+
       // Fallback if deck is still empty (Edge Case: empty custom words)
       const finalPool = pool.length > 0 ? pool : MOCK_WORDS[settings.language][Category.GENERAL] || [];
-      deck = finalPool.sort(() => Math.random() - 0.5);
+      deck = shuffleArray(finalPool);
     }
     const word = deck.pop() || 'Error';
     dispatch({ type: 'SET_STATE', payload: { wordDeck: deck, currentWord: word } });
@@ -211,14 +222,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { roomCode: Math.floor(10000 + Math.random() * 90000).toString(), isHost: true, gameState: GameState.ENTER_NAME } }),
     handleJoin: (id: string, name: string, avatar: string) => {
       const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
-      localStorage.setItem('alias_player', JSON.stringify({ name: sanitizedName, avatar }));
+      // Generate or retrieve persistent player ID for reconnection handling
+      let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
+      if (!playerData.persistentId) {
+        playerData.persistentId = crypto.randomUUID();
+      }
+      playerData.name = sanitizedName;
+      playerData.avatar = avatar;
+      localStorage.setItem('alias_player', JSON.stringify(playerData));
       dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
       if (stateRef.current.isHost) dispatch({ type: 'UPDATE_PLAYERS', payload: [{ id, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }] });
     },
     sendAction,
     playSound,
     showNotification,
-    setSettings: (s: any) => dispatch({ type: 'SET_STATE', payload: { settings: typeof s === 'function' ? s(state.settings) : s } }),
+    setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => dispatch({ type: 'SET_STATE', payload: { settings: typeof s === 'function' ? s(state.settings) : s } }),
     startOfflineGame: () => {
       const p = JSON.parse(localStorage.getItem('alias_player') || '{"name":"Player 1","avatar":"🐶"}');
       dispatch({ type: 'SET_STATE', payload: { gameMode: 'OFFLINE', isHost: true, isConnected: true, players: [{...p, id: 'local', isHost: true, stats: {explained:0}}], gameState: GameState.LOBBY } });

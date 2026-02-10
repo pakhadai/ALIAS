@@ -129,11 +129,13 @@ export const TeamSetupScreen = () => {
 };
 
 export const SettingsScreen = () => {
-  const { settings, currentTheme, setGameState, isHost, sendAction } = useGame();
+  const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
   const t = TRANSLATIONS[settings.language];
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
+    // Prevent settings changes during active game
+    if (gameState !== GameState.LOBBY && gameState !== GameState.MENU) return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
   };

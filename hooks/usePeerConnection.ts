@@ -35,7 +35,21 @@ const validateSyncState = (state: any, initialState: any): Partial<AppState> | n
     })).slice(0, MAX_PLAYERS);
   }
 
-  if (Array.isArray(state.teams)) safe.teams = state.teams;
+  if (Array.isArray(state.teams)) {
+    safe.teams = state.teams.map((team: any) => ({
+      id: String(team.id || '').slice(0, 50),
+      name: String(team.name || '').replace(/<[^>]*>/g, '').slice(0, 30),
+      players: Array.isArray(team.players) ? team.players.map((p: any) => ({
+        id: String(p.id).slice(0, 50),
+        name: String(p.name).replace(/<[^>]*>/g, '').slice(0, 20),
+        avatar: typeof p.avatar === 'string' ? p.avatar.slice(0, 4) : '🐶',
+        isHost: Boolean(p.isHost),
+        stats: { explained: Math.max(0, Number(p.stats?.explained) || 0) }
+      })) : [],
+      score: Math.max(0, Number(team.score) || 0),
+      nextPlayerIndex: Math.max(0, Number(team.nextPlayerIndex) || 0)
+    })).slice(0, 10);
+  }
   if (state.settings) safe.settings = { ...initialState.settings, ...state.settings };
   if (state.currentRoundStats) safe.currentRoundStats = state.currentRoundStats;
 
@@ -101,7 +115,8 @@ export const usePeerConnection = (
         reconnectIntervalRef.current = null;
       }
       const p = JSON.parse(localStorage.getItem('alias_player') || '{}');
-      conn.send({ type: 'JOIN_REQUEST', payload: { id: peerRef.current!.id, ...p } });
+      // Include persistentId for reconnection handling
+      conn.send({ type: 'JOIN_REQUEST', payload: { id: peerRef.current!.id, persistentId: p.persistentId, ...p } });
     });
 
     conn.on('data', (data: any) => {
@@ -114,17 +129,23 @@ export const usePeerConnection = (
     conn.on('close', () => {
       dispatch({ type: 'SET_STATE', payload: { isConnected: false } });
       hostConnRef.current = null;
-      
+
+      // Prevent multiple reconnect intervals
       if (stateRef.current.gameState !== GameState.MENU && !reconnectIntervalRef.current) {
         dispatch({ type: 'SET_STATE', payload: { isHostReconnecting: true, reconnectTimeLeft: RECONNECT_MAX_TIME_S } });
         let attempts = 0;
         reconnectIntervalRef.current = window.setInterval(() => {
+          // Double-check interval wasn't cleared elsewhere
+          if (!reconnectIntervalRef.current) return;
+
           attempts++;
           dispatch({ type: 'SET_STATE', payload: { reconnectTimeLeft: Math.max(0, RECONNECT_MAX_TIME_S - (attempts * 3)) } });
-          
+
           if (attempts >= 20) {
-            clearInterval(reconnectIntervalRef.current!);
-            reconnectIntervalRef.current = null;
+            if (reconnectIntervalRef.current) {
+              clearInterval(reconnectIntervalRef.current);
+              reconnectIntervalRef.current = null;
+            }
             dispatch({ type: 'SET_STATE', payload: { isHostReconnecting: false, gameState: GameState.MENU } });
             return;
           }
@@ -163,13 +184,19 @@ export const usePeerConnection = (
         conn.on('data', (data: any) => {
           if (data.type === 'JOIN_REQUEST') {
             const currentPlayers = stateRef.current.players;
-            // Check for existing player to avoid double entries on reconnect
-            const existingIdx = currentPlayers.findIndex(p => p.id === data.payload.id);
-            const newPlayer = { 
-              ...data.payload, 
-              name: String(data.payload.name).replace(/<[^>]*>/g, '').slice(0, 20),
-              isHost: false, 
-              stats: { explained: 0 } 
+            // Check for existing player by persistentId first (for reconnects), then by peer id
+            const persistentId = data.payload.persistentId;
+            const existingIdx = persistentId
+              ? currentPlayers.findIndex((p: any) => p.persistentId === persistentId)
+              : currentPlayers.findIndex((p: any) => p.id === data.payload.id);
+
+            const newPlayer = {
+              id: String(data.payload.id || '').slice(0, 50),
+              persistentId: persistentId || crypto.randomUUID(),
+              name: String(data.payload.name || 'Player').replace(/<[^>]*>/g, '').slice(0, 20),
+              avatar: typeof data.payload.avatar === 'string' ? data.payload.avatar.replace(/<[^>]*>/g, '').slice(0, 4) : '🐶',
+              isHost: false,
+              stats: existingIdx !== -1 ? currentPlayers[existingIdx].stats : { explained: 0 }
             };
 
             if (existingIdx !== -1) {
@@ -187,10 +214,43 @@ export const usePeerConnection = (
       }
     });
 
-    return () => { 
-      peer.destroy();
-      if (reconnectIntervalRef.current) clearInterval(reconnectIntervalRef.current);
-      if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+    return () => {
+      // Close all connections before destroying peer
+      connectionsRef.current.forEach(conn => {
+        try {
+          if (conn && !conn.destroyed) conn.close();
+        } catch (e) {
+          console.warn('Error closing connection:', e);
+        }
+      });
+      connectionsRef.current = [];
+
+      if (hostConnRef.current && !hostConnRef.current.destroyed) {
+        try {
+          hostConnRef.current.close();
+        } catch (e) {
+          console.warn('Error closing host connection:', e);
+        }
+        hostConnRef.current = null;
+      }
+
+      if (peerRef.current) {
+        try {
+          peer.destroy();
+        } catch (e) {
+          console.warn('Error destroying peer:', e);
+        }
+        peerRef.current = null;
+      }
+
+      if (reconnectIntervalRef.current) {
+        clearInterval(reconnectIntervalRef.current);
+        reconnectIntervalRef.current = null;
+      }
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
+      }
     };
   }, [state.roomCode, state.isHost, state.gameMode, connectToHost, handleGameAction, broadcastState, dispatch]);
 

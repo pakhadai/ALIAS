@@ -1,12 +1,13 @@
 
 import React, { useState, useRef } from 'react';
-import { ArrowRight, X, BookOpen, Volume2, VolumeX, Sun, Moon, AlertCircle } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
 import { GameState, Language, AppTheme } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { TRANSLATIONS, ROOM_CODE_LENGTH } from '../constants';
+import versionData from '../version.json';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -164,6 +165,13 @@ export const MenuScreen = () => {
               </span>
             </button>
           </div>
+        </div>
+
+        {/* App Version */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+          <span className={`font-sans text-[8px] uppercase tracking-widest opacity-20 ${currentTheme.textMain}`}>
+            v{versionData.version}
+          </span>
         </div>
       </main>
 
