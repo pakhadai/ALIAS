@@ -115,7 +115,14 @@ export const TRANSLATIONS = {
     cat_travel: 'Подорожі',
     cat_science: 'Наука',
     cat_movies: 'Кіно',
-    cat_custom: 'Свої'
+    cat_custom: 'Свої',
+    customWords: 'Власні слова',
+    customWordsPlaceholder: 'Введіть слова через кому...',
+    teamCount: 'Кількість команд',
+    sound: 'Звук',
+    soundPreset: 'Звукова схема',
+    enabled: 'Увімкнено',
+    disabled: 'Вимкнено'
   },
   [Language.DE]: {
     slogan: 'Sprich schnell, spiel hell.',
@@ -184,7 +191,14 @@ export const TRANSLATIONS = {
     cat_travel: 'Reisen',
     cat_science: 'Wissenschaft',
     cat_movies: 'Filme',
-    cat_custom: 'Eigene'
+    cat_custom: 'Eigene',
+    customWords: 'Eigene Wörter',
+    customWordsPlaceholder: 'Wörter durch Kommas getrennt eingeben...',
+    teamCount: 'Teamanzahl',
+    sound: 'Ton',
+    soundPreset: 'Tonschema',
+    enabled: 'Aktiviert',
+    disabled: 'Deaktiviert'
   },
   [Language.EN]: {
     slogan: 'Speak fast, play bright.',
@@ -253,7 +267,14 @@ export const TRANSLATIONS = {
     cat_travel: 'Travel',
     cat_science: 'Science',
     cat_movies: 'Movies',
-    cat_custom: 'Custom'
+    cat_custom: 'Custom',
+    customWords: 'Custom Words',
+    customWordsPlaceholder: 'Enter words separated by commas...',
+    teamCount: 'Team Count',
+    sound: 'Sound',
+    soundPreset: 'Sound Preset',
+    enabled: 'Enabled',
+    disabled: 'Disabled'
   }
 };
 

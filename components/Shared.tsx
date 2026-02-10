@@ -106,14 +106,19 @@ export const ToastNotification: React.FC<{ message: string, type?: 'info' | 'err
   );
 };
 
-export const ConfirmationModal: React.FC<{ isOpen: boolean, title: string, message: string, onConfirm: () => void, onCancel: () => void, isDanger?: boolean }> = ({ isOpen, title, message, onConfirm, onCancel, isDanger }) => {
+export const ConfirmationModal: React.FC<{ isOpen: boolean, title: string, message: string, onConfirm: () => void, onCancel: () => void, isDanger?: boolean, theme?: ThemeConfig }> = ({ isOpen, title, message, onConfirm, onCancel, isDanger, theme }) => {
   if (!isOpen) return null;
+
+  // Default to dark theme if not provided
+  const cardClass = theme?.card || 'bg-slate-900';
+  const textMain = theme?.textMain || 'text-white';
+  const textSecondary = theme?.textSecondary || 'text-white/30';
 
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg animate-fade-in">
-      <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center animate-pop-in">
-        <h3 className="text-4xl font-serif text-white mb-6 tracking-wide leading-tight">{title}</h3>
-        <p className="text-white/30 mb-12 text-sm font-sans leading-relaxed tracking-wider font-light">{message}</p>
+      <div className={`${cardClass} border border-white/5 rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center animate-pop-in`}>
+        <h3 className={`text-4xl font-serif ${textMain} mb-6 tracking-wide leading-tight`}>{title}</h3>
+        <p className={`${textSecondary} mb-12 text-sm font-sans leading-relaxed tracking-wider font-light`}>{message}</p>
         <div className="flex flex-col gap-5">
           <Button variant={isDanger ? 'danger' : 'primary'} fullWidth size="xl" onClick={onConfirm}>
             {isDanger ? 'Yes, Exit' : 'Confirm'}

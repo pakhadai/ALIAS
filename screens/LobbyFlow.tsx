@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { X, Settings as SettingsIcon, Check } from 'lucide-react';
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
-import { GameState, AppTheme, Language, Category, GameSettings } from '../types';
+import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
 import QRCode from 'qrcode';
 
 export const LobbyScreen = () => {
-  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId } = useGame();
+  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, peerError, isConnected } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -24,17 +24,37 @@ export const LobbyScreen = () => {
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
-      <ConfirmationModal isOpen={showExitConfirm} title={t.leaveLobbyConfirm} message={t.leaveLobbyMsg} isDanger onCancel={() => setShowExitConfirm(false)} onConfirm={() => setGameState(GameState.MENU)} />
+      <ConfirmationModal isOpen={showExitConfirm} title={t.leaveLobbyConfirm} message={t.leaveLobbyMsg} isDanger theme={currentTheme} onCancel={() => setShowExitConfirm(false)} onConfirm={() => setGameState(GameState.MENU)} />
       
       <header className="flex justify-between items-center py-6 mb-4">
         <button onClick={() => setShowExitConfirm(true)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
           <X size={20} className={currentTheme.iconColor} />
         </button>
         <h2 className={`text-[10px] font-sans uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}>{t.lobby}</h2>
-        <button onClick={() => setGameState(GameState.SETTINGS)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
-          <SettingsIcon size={20} className={currentTheme.iconColor} />
-        </button>
+        {isHost ? (
+          <button onClick={() => setGameState(GameState.SETTINGS)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
+            <SettingsIcon size={20} className={currentTheme.iconColor} />
+          </button>
+        ) : (
+          <div className="w-10"></div>
+        )}
       </header>
+
+      {/* Connection Error Display */}
+      {!isHost && peerError && !isConnected && (
+        <div className="w-full max-w-sm mx-auto mb-6">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center animate-shake">
+            <p className="text-red-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">Connection Failed</p>
+            <p className="text-red-300/60 text-xs">Room {roomCode} not found. Please check the code and try again.</p>
+            <button
+              onClick={() => setGameState(GameState.JOIN_INPUT)}
+              className="mt-4 px-6 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-xl text-red-300 text-xs uppercase tracking-wider transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col items-center space-y-10">
         {gameMode === 'ONLINE' && qrCodeData && (
@@ -201,11 +221,11 @@ export const SettingsScreen = () => {
                 <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.categories}</p>
                 <div className="grid grid-cols-2 gap-3">
                     {categoriesList.map(cat => (
-                        <button 
+                        <button
                             key={cat}
                             onClick={() => {
-                                const newCats = settings.categories.includes(cat) 
-                                    ? settings.categories.filter(c => c !== cat) 
+                                const newCats = settings.categories.includes(cat)
+                                    ? settings.categories.filter(c => c !== cat)
                                     : [...settings.categories, cat];
                                 if (newCats.length > 0) updateSetting('categories', newCats);
                             }}
@@ -216,6 +236,87 @@ export const SettingsScreen = () => {
                     ))}
                 </div>
             </div>
+
+            {settings.categories.includes(Category.CUSTOM) && (
+                <div className="space-y-4">
+                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.customWords}</p>
+                    <textarea
+                        value={settings.customWords || ''}
+                        onChange={(e) => updateSetting('customWords', e.target.value)}
+                        placeholder={t.customWordsPlaceholder || "Enter words separated by commas..."}
+                        className={`w-full h-24 p-4 rounded-xl border resize-none ${currentTheme.bg} ${currentTheme.textMain} border-white/10 focus:border-yellow-500 outline-none`}
+                    />
+                </div>
+            )}
+
+            <div className="space-y-4">
+                <div className="flex justify-between">
+                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.scoreToWin}</p>
+                    <span className={`text-xs font-bold ${currentTheme.textAccent}`}>{settings.scoreToWin}</span>
+                </div>
+                <input
+                    type="range" min="10" max="100" step="5"
+                    value={settings.scoreToWin}
+                    onChange={(e) => updateSetting('scoreToWin', parseInt(e.target.value))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                />
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex justify-between">
+                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.teamCount}</p>
+                    <span className={`text-xs font-bold ${currentTheme.textAccent}`}>{settings.teamCount}</span>
+                </div>
+                <input
+                    type="range" min="2" max="10" step="1"
+                    value={settings.teamCount}
+                    onChange={(e) => updateSetting('teamCount', parseInt(e.target.value))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                />
+            </div>
+
+            <div className="space-y-4">
+                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.skipPenalty}</p>
+                <button
+                    onClick={() => updateSetting('skipPenalty', !settings.skipPenalty)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.skipPenalty ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
+                >
+                    <span className={currentTheme.textMain}>{settings.skipPenalty ? t.enabled : t.disabled}</span>
+                    <div className={`w-12 h-6 rounded-full transition-all relative ${settings.skipPenalty ? 'bg-yellow-500' : 'bg-white/20'}`}>
+                        <div className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.skipPenalty ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                </button>
+            </div>
+
+            <div className="space-y-4">
+                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.sound}</p>
+                <button
+                    onClick={() => updateSetting('soundEnabled', !settings.soundEnabled)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.soundEnabled ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
+                >
+                    <span className={currentTheme.textMain}>{settings.soundEnabled ? t.enabled : t.disabled}</span>
+                    <div className={`w-12 h-6 rounded-full transition-all relative ${settings.soundEnabled ? 'bg-yellow-500' : 'bg-white/20'}`}>
+                        <div className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.soundEnabled ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                </button>
+            </div>
+
+            {settings.soundEnabled && (
+                <div className="space-y-4">
+                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.soundPreset}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[SoundPreset.FUN, SoundPreset.MINIMAL, SoundPreset.EIGHT_BIT].map(preset => (
+                            <button
+                                key={preset}
+                                onClick={() => updateSetting('soundPreset', preset)}
+                                className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${settings.soundPreset === preset ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
+                            >
+                                {preset.replace('_', ' ')}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">

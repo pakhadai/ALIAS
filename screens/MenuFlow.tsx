@@ -185,9 +185,9 @@ export const EnterNameScreen = () => {
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState(AVATARS[0]);
     const t = TRANSLATIONS[settings.language];
-    
-    // Improved Player ID persistence for edge cases
-    const stableId = useRef(isHost ? 'host' : `player-${generateUUID()}`);
+
+    // Use consistent UUID for all players (host and guests)
+    const stableId = useRef(`player-${generateUUID()}`);
 
     const handleSubmit = () => {
         const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);

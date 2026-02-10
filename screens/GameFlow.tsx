@@ -143,7 +143,20 @@ export const PlayingScreen = () => {
   return (
       <div className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}>
         {particles.map(p => <FloatingParticle key={p.id} {...p} onComplete={() => setParticles(prev => prev.filter(x => x.id !== p.id))} />)}
-        
+
+        {/* Pause Overlay */}
+        {isPaused && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[50] animate-fade-in">
+            <div className={`${currentTheme.card} border border-white/10 rounded-[3rem] p-16 shadow-2xl text-center`}>
+              <span className="material-symbols-outlined text-champagne-gold text-6xl mb-4 block">pause_circle</span>
+              <p className={`text-2xl font-serif ${currentTheme.textMain} uppercase tracking-widest`}>PAUSED</p>
+              {isHost && (
+                <p className={`text-[10px] ${currentTheme.textSecondary} uppercase tracking-wider mt-4`}>Tap pause again to resume</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Progress Bar Header */}
         <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-6 z-20">
           <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
