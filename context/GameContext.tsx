@@ -198,6 +198,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const remTeams = stateRef.current.teams.map(t => ({ ...t, score: 0, nextPlayerIndex: 0 }));
         dispatch({ type: 'SET_STATE', payload: { teams: remTeams, gameState: GameState.PRE_ROUND, currentTeamIndex: 0 } });
         break;
+      case 'KICK_PLAYER':
+        const kickedPlayerId = payload.data;
+        const updatedPlayers = stateRef.current.players.filter(p => p.id !== kickedPlayerId);
+        const updatedTeams = stateRef.current.teams.map(team => ({
+          ...team,
+          players: team.players.filter(p => p.id !== kickedPlayerId)
+        }));
+        dispatch({ type: 'SET_STATE', payload: { players: updatedPlayers, teams: updatedTeams } });
+        break;
     }
     setTimeout(() => broadcastStateRef.current(), BROADCAST_DEBOUNCE_MS);
   }, [playSound, nextWordLogic]);

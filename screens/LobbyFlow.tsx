@@ -74,7 +74,18 @@ export const LobbyScreen = () => {
               <div key={p.id} className={`flex items-center p-4 rounded-2xl border ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'}`}>
                 <span className="text-2xl">{p.avatar}</span>
                 <span className={`ml-4 font-bold ${currentTheme.textMain}`}>{p.name}</span>
-                {p.id === myPlayerId && <div className="ml-auto w-2 h-2 rounded-full bg-emerald-500 shadow-lg" />}
+                <div className="ml-auto flex items-center gap-3">
+                  {p.id === myPlayerId && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" />}
+                  {isHost && !p.isHost && p.id !== myPlayerId && (
+                    <button
+                      onClick={() => sendAction({ action: 'KICK_PLAYER', data: p.id })}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
+                      title="Kick player"
+                    >
+                      <X size={14} className="text-red-400 group-hover:text-red-300" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -154,8 +165,8 @@ export const SettingsScreen = () => {
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
-    // Prevent settings changes during active game
-    if (gameState !== GameState.LOBBY && gameState !== GameState.MENU) return;
+    // Prevent settings changes during active game (but allow in SETTINGS screen)
+    if (gameState !== GameState.LOBBY && gameState !== GameState.MENU && gameState !== GameState.SETTINGS) return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
   };
