@@ -1,0 +1,7 @@
+{
+  "name": "Alias Master",
+  "description": "A modern, mobile-first implementation of the classic board game Alias. Features team management, bilingual support (UA/DE), and interactive gameplay.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

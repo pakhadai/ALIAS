@@ -1,0 +1,264 @@
+
+import React, { useState } from 'react';
+import { ArrowRight, X, BookOpen, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import { Button } from '../components/Button';
+import { Card } from '../components/Card';
+import { Logo } from '../components/Shared';
+import { GameState, Language, AppTheme } from '../types';
+import { useGame, AVATARS } from '../context/GameContext';
+import { TRANSLATIONS } from '../constants';
+
+// Internal Rules Modal Component
+const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
+  const [isClosing, setIsClosing] = useState(false);
+  if (!isOpen && !isClosing) return null;
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 300);
+  };
+
+  return (
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}>
+        <button onClick={handleClose} className="absolute top-8 right-8 opacity-40 hover:opacity-100 transition-opacity">
+          <X size={24} className={currentTheme.iconColor} />
+        </button>
+        <h2 className={`text-3xl font-serif mb-8 text-center ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
+        <div className="space-y-5 mb-10">
+          {[t.rule1, t.rule2, t.rule3, t.rule4, t.rule5].map((rule: string, i: number) => (
+            <div key={i} className="flex gap-5 items-start">
+              <span className={`font-serif text-xl opacity-20 ${currentTheme.textMain}`}>{i + 1}</span>
+              <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule.replace(`${i+1}. `, '')}</p>
+            </div>
+          ))}
+        </div>
+        <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
+          {t.close}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export const RulesScreen = () => {
+  const { setGameState, settings, currentTheme } = useGame();
+  const t = TRANSLATIONS[settings.language];
+  return (
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
+      <div className={`w-full max-w-sm space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
+        <h2 className={`text-4xl font-serif mb-8 text-center ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
+        <div className="space-y-6 mb-10">
+          {[t.rule1, t.rule2, t.rule3, t.rule4, t.rule5].map((rule: string, i: number) => (
+            <div key={i} className="flex gap-5 items-start">
+              <span className={`font-serif text-2xl opacity-20 ${currentTheme.textMain}`}>{i + 1}</span>
+              <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule.replace(`${i+1}. `, '')}</p>
+            </div>
+          ))}
+        </div>
+        <Button themeClass={currentTheme.button} fullWidth onClick={() => setGameState(GameState.MENU)} size="xl">
+          {t.close}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export const MenuScreen = () => {
+  const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame } = useGame();
+  const [showRules, setShowRules] = useState(false);
+  const t = TRANSLATIONS[settings.language];
+  
+  const toggleTheme = () => {
+    setSettings(prev => ({
+      ...prev,
+      theme: prev.theme === AppTheme.PREMIUM_DARK ? AppTheme.PREMIUM_LIGHT : AppTheme.PREMIUM_DARK
+    }));
+  };
+
+  const toggleLanguage = () => {
+    setSettings(prev => {
+        let nextLang;
+        if (prev.language === Language.UA) nextLang = Language.DE;
+        else if (prev.language === Language.DE) nextLang = Language.EN;
+        else nextLang = Language.UA;
+        return { ...prev, language: nextLang };
+    });
+  };
+
+  const toggleFullScreen = () => {
+    const doc = document.documentElement as any;
+    const docEl = document as any;
+    if (!docEl.fullscreenElement) {
+      if (doc.requestFullscreen) doc.requestFullscreen();
+    } else {
+      if (docEl.exitFullscreen) docEl.exitFullscreen();
+    }
+  };
+
+  return (
+    <div className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}>
+      <header className="relative z-10 w-full px-8 pt-12 pb-4 flex justify-end items-center gap-6">
+        <button onClick={toggleTheme} className="transition-all active:scale-90 p-2">
+          <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+            {settings.theme === AppTheme.PREMIUM_DARK ? 'light_mode' : 'dark_mode'}
+          </span>
+        </button>
+        <button onClick={() => setShowRules(true)} className="transition-all active:scale-90 p-2">
+          <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>menu_book</span>
+        </button>
+        <button onClick={toggleFullScreen} className="transition-all active:scale-90 p-2">
+          <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>fullscreen</span>
+        </button>
+        <button onClick={toggleLanguage} className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${settings.theme === AppTheme.PREMIUM_DARK ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}>
+          {settings.language}
+        </button>
+      </header>
+
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs mx-auto px-6 pb-20">
+        <Logo theme={currentTheme} />
+
+        <div className="w-full space-y-6 flex flex-col items-center mt-24 animate-slide-up">
+          <button 
+            onClick={createNewRoom}
+            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl`}
+          >
+            <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.createGame}</span>
+          </button>
+
+          <button 
+            onClick={() => setGameState(GameState.JOIN_INPUT)}
+            className={`w-full h-14 ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-dark-btn-grey text-white/80' : 'bg-slate-200 text-slate-700'} rounded-full flex items-center justify-center transition-all active:scale-[0.98]`}
+          >
+            <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.joinGame}</span>
+          </button>
+
+          <div className="w-full pt-10 flex flex-col items-center gap-8">
+            <div className={`h-[1px] w-12 ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5' : 'bg-slate-900/5'}`}></div>
+            <button 
+              onClick={startOfflineGame}
+              className="group"
+            >
+              <span className={`font-sans font-medium text-[9px] uppercase tracking-[0.5em] border-b border-transparent hover:border-current pb-2 transition-all opacity-30 hover:opacity-100 ${currentTheme.textMain}`}>
+                {t.playOffline}
+              </span>
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} t={t} currentTheme={currentTheme} />
+    </div>
+  );
+};
+
+export const EnterNameScreen = () => {
+    const { setGameState, settings, currentTheme, handleJoin, isHost } = useGame();
+    const [name, setName] = useState('');
+    const [avatar, setAvatar] = useState(AVATARS[0]);
+    const t = TRANSLATIONS[settings.language];
+
+    const handleSubmit = () => {
+        if (name.trim()) {
+            handleJoin(isHost ? 'host' : `player-${Math.random()}`, name.trim(), avatar);
+            setGameState(GameState.LOBBY);
+        }
+    };
+
+    return (
+        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
+            <Logo theme={currentTheme} />
+            <div className={`w-full max-w-sm mt-12 space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
+                <h2 className={`text-2xl font-serif text-center tracking-wide ${currentTheme.textMain}`}>{t.whoAreYou}</h2>
+                <input 
+                    autoFocus
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t.namePlaceholder}
+                    className={`w-full ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+                />
+                <div className="grid grid-cols-4 gap-4">
+                    {AVATARS.slice(0, 12).map(a => (
+                        <button 
+                            key={a} 
+                            onClick={() => setAvatar(a)}
+                            className={`text-3xl p-3 rounded-2xl transition-all ${avatar === a ? 'bg-champagne-gold/20 scale-110 shadow-lg' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
+                        >
+                            {a}
+                        </button>
+                    ))}
+                </div>
+                <div className="pt-4 space-y-6">
+                    <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={handleSubmit} disabled={!name.trim()}>
+                        {t.next}
+                    </Button>
+                    <button onClick={() => setGameState(GameState.MENU)} className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>{t.cancel}</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const JoinInputScreen = () => {
+    const { setGameState, settings, currentTheme, setRoomCode } = useGame();
+    const [code, setCode] = useState('');
+    const t = TRANSLATIONS[settings.language];
+
+    const handleJoinRoom = () => {
+        if (code.length === 5) {
+            setRoomCode(code);
+            setGameState(GameState.ENTER_NAME);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/[^0-9]/g, '');
+        if (val.length <= 5) setCode(val);
+    };
+
+    return (
+        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
+            <Logo theme={currentTheme} />
+            <div className={`w-full max-w-sm mt-12 space-y-12 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
+                <div className="text-center space-y-4">
+                    <h2 className={`text-3xl font-serif tracking-wide ${currentTheme.textMain}`}>{t.joinTitle}</h2>
+                    <p className={`text-[9px] opacity-30 tracking-[0.4em] font-bold uppercase ${currentTheme.textMain}`}>{t.enterCode}</p>
+                </div>
+                
+                <div className="relative">
+                    <input 
+                        autoFocus
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={5}
+                        value={code}
+                        onChange={handleInputChange}
+                        placeholder="00000"
+                        className={`w-full bg-transparent border-b ${settings.theme === AppTheme.PREMIUM_DARK ? 'border-white/10 text-white' : 'border-slate-300 text-slate-900'} text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-champagne-gold transition-all pb-8`}
+                    />
+                </div>
+
+                <div className="space-y-8 pt-4">
+                    <Button 
+                        themeClass={currentTheme.button} 
+                        fullWidth 
+                        size="xl" 
+                        onClick={handleJoinRoom} 
+                        disabled={code.length !== 5}
+                    >
+                        {t.enter}
+                    </Button>
+                    <button 
+                        onClick={() => setGameState(GameState.MENU)} 
+                        className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+                    >
+                        {t.cancel}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
