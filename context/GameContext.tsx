@@ -4,9 +4,9 @@ import {
   GameState, Language, Team, GameSettings, Category, RoundStats,
   Player, AppTheme, GameActionPayload, SoundPreset, AppState, GameContextType
 } from '../types';
-import { 
-  MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS, 
-  BROADCAST_DEBOUNCE_MS, RECONNECT_MAX_TIME_S
+import {
+  MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS,
+  BROADCAST_DEBOUNCE_MS, RECONNECT_MAX_TIME_S, ROOM_CODE_LENGTH
 } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { usePeerConnection } from '../hooks/usePeerConnection';
@@ -14,7 +14,7 @@ import { ToastNotification } from '../components/Shared';
 
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
 
-type Action = 
+type Action =
   | { type: 'SET_STATE', payload: Partial<AppState> }
   | { type: 'UPDATE_PLAYERS', payload: Player[] }
   | { type: 'SHOW_NOTIF', payload: { message: string, type: 'info' | 'error' | 'success' } | null };
@@ -74,21 +74,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeout(() => dispatch({ type: 'SHOW_NOTIF', payload: null }), 3000);
   }, []);
 
-  // Persist host state for recovery (Edge Case: Host closes tab)
+  // Handle URL room parameter on mount
   useEffect(() => {
-    if (state.isHost && state.gameState !== GameState.MENU) {
-      localStorage.setItem('alias_active_session', JSON.stringify({
-        roomCode: state.roomCode,
-        gameState: state.gameState,
-        players: state.players,
-        teams: state.teams,
-        settings: state.settings,
-        currentTeamIndex: state.currentTeamIndex
-      }));
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
+      dispatch({ type: 'SET_STATE', payload: { roomCode: room, gameState: GameState.ENTER_NAME } });
+      window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [state.isHost, state.gameState, state.roomCode, state.players, state.teams, state.settings, state.currentTeamIndex]);
+  }, []);
 
-  // Fisher-Yates shuffle algorithm (more reliable than Math.random() - 0.5)
+  // Fisher-Yates shuffle algorithm
   const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -104,13 +100,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (deck.length === 0) {
       const pool = settings.categories.flatMap(cat => {
         if (cat === Category.CUSTOM && settings.customWords) {
-          // Sanitize custom words to prevent HTML injection
           return settings.customWords.split(',').map(w => w.trim().replace(/<[^>]*>/g, '')).filter(Boolean);
         }
         return MOCK_WORDS[settings.language][cat] || [];
       });
 
-      // Fallback if deck is still empty (Edge Case: empty custom words)
       const finalPool = pool.length > 0 ? pool : MOCK_WORDS[settings.language][Category.GENERAL] || [];
       deck = shuffleArray(finalPool);
     }
@@ -119,6 +113,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const broadcastStateRef = useRef<() => void>(() => {});
+  const kickConnectionRef = useRef<(playerId: string) => void>(() => {});
 
   const handleGameAction = useCallback((payload: GameActionPayload) => {
     if (!stateRef.current.isHost) return;
@@ -126,7 +121,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     switch (payload.action) {
       case 'CORRECT':
         playSound('correct');
-        dispatch({ type: 'SET_STATE', payload: { 
+        dispatch({ type: 'SET_STATE', payload: {
           currentRoundStats: {
             ...stateRef.current.currentRoundStats,
             correct: stateRef.current.currentRoundStats.correct + 1,
@@ -137,7 +132,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         break;
       case 'SKIP':
         playSound('skip');
-        dispatch({ type: 'SET_STATE', payload: { 
+        dispatch({ type: 'SET_STATE', payload: {
           currentRoundStats: {
             ...stateRef.current.currentRoundStats,
             skipped: stateRef.current.currentRoundStats.skipped + 1,
@@ -146,22 +141,31 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }});
         nextWordLogic();
         break;
-      case 'START_ROUND':
-        const team = stateRef.current.teams[stateRef.current.currentTeamIndex];
-        const explainer = team.players[team.nextPlayerIndex];
+      case 'START_ROUND': {
+        const teams = stateRef.current.teams;
+        const teamIdx = stateRef.current.currentTeamIndex;
+        const team = teams[teamIdx];
+        if (!team || team.players.length === 0) {
+          dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+          break;
+        }
+        const playerIdx = Math.min(team.nextPlayerIndex, team.players.length - 1);
+        const explainer = team.players[playerIdx];
         dispatch({ type: 'SET_STATE', payload: {
           gameState: GameState.COUNTDOWN,
           currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: team.id, explainerName: explainer.name, explainerId: explainer.id }
         }});
         break;
+      }
       case 'START_PLAYING':
         playSound('start');
         dispatch({ type: 'SET_STATE', payload: { gameState: GameState.PLAYING, timeLeft: stateRef.current.settings.roundTime, isPaused: false } });
         nextWordLogic();
         break;
-      case 'GENERATE_TEAMS':
+      case 'GENERATE_TEAMS': {
         const teamNames = TRANSLATIONS[stateRef.current.settings.language].teamNames;
-        const newTeams = Array.from({ length: stateRef.current.settings.teamCount }, (_, i) => ({
+        const teamCount = Math.min(stateRef.current.settings.teamCount, stateRef.current.players.length);
+        const newTeams: Team[] = Array.from({ length: teamCount }, (_, i) => ({
           id: `team-${i}`,
           name: teamNames[i % teamNames.length],
           score: 0,
@@ -170,13 +174,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           players: [],
           nextPlayerIndex: 0
         }));
-        stateRef.current.players.forEach((p, i) => newTeams[i % newTeams.length].players.push(p));
-        dispatch({ type: 'SET_STATE', payload: { teams: newTeams } });
+        const shuffledPlayers = shuffleArray([...stateRef.current.players]);
+        shuffledPlayers.forEach((p, i) => newTeams[i % newTeams.length].players.push(p));
+        dispatch({ type: 'SET_STATE', payload: { teams: newTeams, gameState: GameState.TEAMS } });
+        break;
+      }
+      case 'START_GAME':
+        dispatch({ type: 'SET_STATE', payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0 } });
         break;
       case 'NEXT_ROUND':
-        dispatch({ type: 'SET_STATE', payload: { 
-          gameState: GameState.PRE_ROUND, 
-          currentTeamIndex: (stateRef.current.currentTeamIndex + 1) % stateRef.current.teams.length 
+        dispatch({ type: 'SET_STATE', payload: {
+          gameState: GameState.PRE_ROUND,
+          currentTeamIndex: (stateRef.current.currentTeamIndex + 1) % stateRef.current.teams.length
         }});
         break;
       case 'PAUSE_GAME':
@@ -186,36 +195,101 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...payload.data } } });
         break;
       case 'RESET_GAME':
-        dispatch({ type: 'SET_STATE', payload: { 
+        dispatch({ type: 'SET_STATE', payload: {
           gameState: GameState.LOBBY,
           teams: [],
           currentTeamIndex: 0,
           currentWord: '',
+          wordDeck: [],
+          timeLeft: 0,
+          isPaused: false,
           currentRoundStats: initialState.currentRoundStats
         }});
+        localStorage.removeItem('alias_active_session');
         break;
-      case 'REMATCH':
+      case 'REMATCH': {
         const remTeams = stateRef.current.teams.map(t => ({ ...t, score: 0, nextPlayerIndex: 0 }));
-        dispatch({ type: 'SET_STATE', payload: { teams: remTeams, gameState: GameState.PRE_ROUND, currentTeamIndex: 0 } });
+        dispatch({ type: 'SET_STATE', payload: { teams: remTeams, gameState: GameState.PRE_ROUND, currentTeamIndex: 0, wordDeck: [], currentWord: '' } });
         break;
-      case 'KICK_PLAYER':
+      }
+      case 'KICK_PLAYER': {
         const kickedPlayerId = payload.data;
+        kickConnectionRef.current(kickedPlayerId);
         const updatedPlayers = stateRef.current.players.filter(p => p.id !== kickedPlayerId);
-        const updatedTeams = stateRef.current.teams.map(team => ({
-          ...team,
-          players: team.players.filter(p => p.id !== kickedPlayerId)
-        }));
+        const updatedTeams = stateRef.current.teams.map(team => {
+          const newPlayers = team.players.filter(p => p.id !== kickedPlayerId);
+          return {
+            ...team,
+            players: newPlayers,
+            nextPlayerIndex: team.nextPlayerIndex >= newPlayers.length
+              ? Math.max(0, newPlayers.length - 1)
+              : team.nextPlayerIndex
+          };
+        });
         dispatch({ type: 'SET_STATE', payload: { players: updatedPlayers, teams: updatedTeams } });
         break;
+      }
+      case 'TIME_UP': {
+        playSound('end');
+        dispatch({ type: 'SET_STATE', payload: { gameState: GameState.ROUND_SUMMARY, timeLeft: 0 } });
+        break;
+      }
+      case 'CONFIRM_ROUND': {
+        const { currentRoundStats, teams, currentTeamIndex, settings } = stateRef.current;
+        const rawPoints = currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+        const points = Math.max(0, rawPoints);
+
+        const activeTeam = teams[currentTeamIndex];
+        const updatedTeams = teams.map(t => {
+          let updated = { ...t };
+          if (t.id === currentRoundStats.teamId) {
+            updated.score = Math.max(0, t.score + points);
+          }
+          if (activeTeam && t.id === activeTeam.id) {
+            updated.nextPlayerIndex = (t.nextPlayerIndex + 1) % (t.players.length || 1);
+          }
+          return updated;
+        });
+
+        const isLastTeam = currentTeamIndex === teams.length - 1;
+        const hasWinner = updatedTeams.some(t => t.score >= settings.scoreToWin);
+        const nextState = (isLastTeam && hasWinner) ? GameState.GAME_OVER : GameState.SCOREBOARD;
+
+        dispatch({ type: 'SET_STATE', payload: { teams: updatedTeams, gameState: nextState } });
+        break;
+      }
+      case 'ADD_OFFLINE_PLAYER': {
+        const { players } = stateRef.current;
+        const playerNum = players.length + 1;
+        const newPlayer: Player = {
+          id: `local-${playerNum}-${Date.now()}`,
+          name: payload.data?.name || `${TRANSLATIONS[stateRef.current.settings.language].playerN} ${playerNum}`,
+          avatar: payload.data?.avatar || AVATARS[playerNum % AVATARS.length],
+          isHost: false,
+          stats: { explained: 0 }
+        };
+        dispatch({ type: 'UPDATE_PLAYERS', payload: [...players, newPlayer] });
+        break;
+      }
+      case 'REMOVE_OFFLINE_PLAYER': {
+        const removeId = payload.data;
+        const filteredPlayers = stateRef.current.players.filter(p => p.id !== removeId);
+        dispatch({ type: 'UPDATE_PLAYERS', payload: filteredPlayers });
+        break;
+      }
     }
     setTimeout(() => broadcastStateRef.current(), BROADCAST_DEBOUNCE_MS);
   }, [playSound, nextWordLogic]);
 
-  const { broadcastState, hostConn } = usePeerConnection(state, dispatch, handleGameAction, initialState);
+  const { broadcastState, hostConn, peerIdRef, sendJoinRequest, kickConnection } = usePeerConnection(state, dispatch, handleGameAction, initialState);
 
   useEffect(() => {
     broadcastStateRef.current = broadcastState;
   }, [broadcastState]);
+
+  useEffect(() => {
+    kickConnectionRef.current = kickConnection;
+  }, [kickConnection]);
 
   const sendAction = useCallback((action: GameActionPayload) => {
     if (stateRef.current.isHost) handleGameAction(action);
@@ -227,11 +301,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const contextValue = useMemo(() => ({
     ...state,
     currentTheme,
-    setGameState: (s: GameState) => dispatch({ type: 'SET_STATE', payload: { gameState: s } }),
-    createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { roomCode: Math.floor(10000 + Math.random() * 90000).toString(), isHost: true, gameState: GameState.ENTER_NAME } }),
+    setGameState: (s: GameState) => {
+      dispatch({ type: 'SET_STATE', payload: { gameState: s } });
+    },
+    createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { roomCode: Math.floor(10000 + Math.random() * 90000).toString(), isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } }),
     handleJoin: (id: string, name: string, avatar: string) => {
       const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
-      // Generate or retrieve persistent player ID for reconnection handling
       let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
       if (!playerData.persistentId) {
         playerData.persistentId = crypto.randomUUID();
@@ -239,16 +314,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       playerData.name = sanitizedName;
       playerData.avatar = avatar;
       localStorage.setItem('alias_player', JSON.stringify(playerData));
-      dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
-      if (stateRef.current.isHost) dispatch({ type: 'UPDATE_PLAYERS', payload: [{ id, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }] });
+
+      if (stateRef.current.isHost) {
+        dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
+        dispatch({ type: 'UPDATE_PLAYERS', payload: [
+          ...stateRef.current.players.filter(p => p.id !== id),
+          { id, persistentId: playerData.persistentId, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }
+        ] });
+      } else {
+        // Use peer ID so it matches what the host stores from JOIN_REQUEST
+        const myId = peerIdRef.current || id;
+        dispatch({ type: 'SET_STATE', payload: { myPlayerId: myId } });
+        // Send JOIN_REQUEST with correct player data to host
+        sendJoinRequest({
+          id: myId,
+          name: sanitizedName,
+          avatar,
+          persistentId: playerData.persistentId
+        });
+      }
     },
     sendAction,
     playSound,
     showNotification,
     setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => dispatch({ type: 'SET_STATE', payload: { settings: typeof s === 'function' ? s(state.settings) : s } }),
     startOfflineGame: () => {
-      const p = JSON.parse(localStorage.getItem('alias_player') || '{"name":"Player 1","avatar":"🐶"}');
-      dispatch({ type: 'SET_STATE', payload: { gameMode: 'OFFLINE', isHost: true, isConnected: true, players: [{...p, id: 'local', isHost: true, stats: {explained:0}}], gameState: GameState.LOBBY } });
+      dispatch({ type: 'SET_STATE', payload: {
+        gameMode: 'OFFLINE',
+        isHost: true,
+        isConnected: true,
+        gameState: GameState.ENTER_NAME
+      } });
     },
     handleCorrect: () => sendAction({ action: 'CORRECT' }),
     handleSkip: () => sendAction({ action: 'SKIP' }),
@@ -261,12 +357,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     setTeams: (teams: Team[]) => dispatch({ type: 'SET_STATE', payload: { teams } }),
     resetGame: () => {
-      localStorage.removeItem('alias_active_session');
       sendAction({ action: 'RESET_GAME' });
     },
     rematch: () => sendAction({ action: 'REMATCH' }),
-    setRoomCode: (c: string) => dispatch({ type: 'SET_STATE', payload: { roomCode: c } })
-  }), [state, currentTheme, sendAction, playSound, showNotification]);
+    setRoomCode: (c: string) => dispatch({ type: 'SET_STATE', payload: { roomCode: c, gameMode: 'ONLINE', isHost: false } }),
+    addOfflinePlayer: () => sendAction({ action: 'ADD_OFFLINE_PLAYER' }),
+    removeOfflinePlayer: (id: string) => sendAction({ action: 'REMOVE_OFFLINE_PLAYER', data: id }),
+  }), [state, currentTheme, sendAction, playSound, showNotification, sendJoinRequest]);
 
   return (
     <GameContext.Provider value={contextValue}>

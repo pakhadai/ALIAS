@@ -7,9 +7,11 @@ import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen } from './scr
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
 import { PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
 import { WifiOff, Loader2 } from 'lucide-react';
+import { TRANSLATIONS } from './constants';
 
 const ReconnectingOverlay = () => {
-  const { isHostReconnecting, reconnectTimeLeft } = useGame();
+  const { isHostReconnecting, reconnectTimeLeft, settings } = useGame();
+  const t = TRANSLATIONS[settings.language];
   if (!isHostReconnecting) return null;
 
   return (
@@ -18,9 +20,9 @@ const ReconnectingOverlay = () => {
         <WifiOff size={64} className="text-red-500 animate-pulse" />
         <Loader2 size={84} className="text-white/20 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
       </div>
-      <h2 className="text-3xl font-serif text-white mb-4 tracking-wide">Connection Lost</h2>
+      <h2 className="text-3xl font-serif text-white mb-4 tracking-wide">{t.connectionLost}</h2>
       <p className="text-gray-400 font-light tracking-widest text-sm max-w-xs mb-8">
-        Waiting for the host to reconnect. Trying to restore your session...
+        {t.waitingReconnect}
       </p>
       <div className="bg-white/5 border border-white/10 px-6 py-2 rounded-full">
         <span className="text-white font-serif text-xl">{reconnectTimeLeft}s</span>
@@ -57,7 +59,7 @@ const GameRouter = () => {
 const AppContent = () => {
   const { currentTheme } = useGame();
   const baseTextColor = currentTheme.id === 'PREMIUM_LIGHT' ? 'text-slate-900' : 'text-white';
-  
+
   return (
     <div className={`min-h-screen ${currentTheme.bg} ${baseTextColor} font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-500`}>
       <ReconnectingOverlay />

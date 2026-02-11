@@ -39,6 +39,7 @@ export interface ThemeConfig {
 
 export interface Player {
   id: string;
+  persistentId?: string;
   name: string;
   avatar: string;
   isHost: boolean;
@@ -120,12 +121,14 @@ export interface GameContextType extends AppState {
   resetGame: () => void;
   rematch: () => void;
   setRoomCode: (code: string) => void;
+  addOfflinePlayer: () => void;
+  removeOfflinePlayer: (id: string) => void;
 }
 
-export type NetworkActionType = 'JOIN_REQUEST' | 'SYNC_STATE' | 'GAME_ACTION' | 'KICK_PLAYER';
+export type NetworkActionType = 'JOIN_REQUEST' | 'SYNC_STATE' | 'GAME_ACTION' | 'KICK_PLAYER' | 'KICKED';
 
 export interface GameActionPayload {
-  action: 'CORRECT' | 'SKIP' | 'START_GAME' | 'START_ROUND' | 'START_PLAYING' | 'NEXT_ROUND' | 'RESET_GAME' | 'REMATCH' | 'UPDATE_SETTINGS' | 'GENERATE_TEAMS' | 'PAUSE_GAME' | 'KICK_PLAYER';
+  action: 'CORRECT' | 'SKIP' | 'START_GAME' | 'START_ROUND' | 'START_PLAYING' | 'NEXT_ROUND' | 'RESET_GAME' | 'REMATCH' | 'UPDATE_SETTINGS' | 'GENERATE_TEAMS' | 'PAUSE_GAME' | 'KICK_PLAYER' | 'TIME_UP' | 'CONFIRM_ROUND' | 'ADD_OFFLINE_PLAYER' | 'REMOVE_OFFLINE_PLAYER';
   data?: any;
 }
 

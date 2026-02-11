@@ -1,11 +1,13 @@
 
-const CACHE_NAME = 'alias-master-v1';
-// Fix: Do not cache external CDNs to avoid CORS/install issues
+const CACHE_NAME = 'alias-master-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json'
 ];
+
+// CDN domains that should be cached for offline support
+const CACHEABLE_CDNS = ['cdn.tailwindcss.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 // Install Event
 self.addEventListener('install', (event) => {
@@ -15,6 +17,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  // Activate immediately
+  self.skipWaiting();
 });
 
 // Activate Event - Cleanup old caches
@@ -34,12 +38,32 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch Event - Network First, falling back to Cache for API/Dynamic, Cache First for static
+// Fetch Event - Stale-While-Revalidate for assets, Network-first for navigation
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Skip PeerJS/WebSocket connections
+  if (event.request.url.includes('peerjs') || event.request.url.includes('wss://')) return;
+
+  // Allow caching of critical CDN resources (Tailwind, Google Fonts) for offline support
+  const isCacheableCDN = CACHEABLE_CDNS.some(cdn => event.request.url.includes(cdn));
+
+  // Skip other external requests
+  if (!event.request.url.startsWith(self.location.origin) && !isCacheableCDN) return;
+
   // Navigation requests (HTML) - Network first, then cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
+        .then((response) => {
+          // Cache the navigation response
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
         .catch(() => {
           return caches.match('/index.html');
         })
@@ -47,18 +71,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-While-Revalidate for other requests
+  // Stale-While-Revalidate for same-origin assets (JS, CSS, images)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // Cache the new response if valid
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+        if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
                 cache.put(event.request, responseClone);
             });
         }
         return networkResponse;
+      }).catch(() => {
+        // Network failed, return cached if available
+        return cachedResponse;
       });
       return cachedResponse || fetchPromise;
     })

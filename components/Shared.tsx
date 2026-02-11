@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, ErrorInfo } from 'react';
+import React, { useEffect, useState, useMemo, ErrorInfo } from 'react';
 import { X, Star } from 'lucide-react';
 import { Button } from './Button';
 import { ThemeConfig, AppTheme } from '../types';
@@ -13,13 +13,12 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-// Fixed: Using React.Component explicitly with generic types for props and state to ensure properties are correctly linked.
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  // Explicitly defining the constructor ensures that the 'props' and 'state' properties 
-  // from React.Component are correctly typed and inherited.
+  declare state: ErrorBoundaryState;
+  declare props: ErrorBoundaryProps;
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    // Fixed: Correctly initializing this.state which is inherited from React.Component
     this.state = {
       hasError: false,
       error: null
@@ -39,7 +38,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   render() {
-    // Fixed: Using this.state correctly which is inherited from React.Component
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-10 text-center">
@@ -51,7 +49,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         </div>
       );
     }
-    // Fixed: Using this.props correctly which is inherited from React.Component
     return this.props.children;
   }
 }
@@ -63,18 +60,29 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
 );
 
 export const Confetti: React.FC = () => {
+  const particles = useMemo(() =>
+    [...Array(20)].map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      color: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#f3e5ab'][Math.floor(Math.random() * 5)],
+      delay: `${Math.random() * 2}s`,
+      duration: `${3 + Math.random() * 2}s`
+    }))
+  , []);
+
   return (
     <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
-      {[...Array(20)].map((_, i) => (
-        <div 
-          key={i}
+      {particles.map((p) => (
+        <div
+          key={p.id}
           className="absolute w-2 h-2 rounded-full animate-ping opacity-50"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#f3e5ab'][Math.floor(Math.random() * 5)],
-            animationDelay: `${Math.random() * 2}s`,
-            animationDuration: `${3 + Math.random() * 2}s`
+            left: p.left,
+            top: p.top,
+            backgroundColor: p.color,
+            animationDelay: p.delay,
+            animationDuration: p.duration
           }}
         />
       ))}
@@ -106,10 +114,21 @@ export const ToastNotification: React.FC<{ message: string, type?: 'info' | 'err
   );
 };
 
-export const ConfirmationModal: React.FC<{ isOpen: boolean, title: string, message: string, onConfirm: () => void, onCancel: () => void, isDanger?: boolean, theme?: ThemeConfig }> = ({ isOpen, title, message, onConfirm, onCancel, isDanger, theme }) => {
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDanger?: boolean;
+  theme?: ThemeConfig;
+  confirmText?: string;
+  cancelText?: string;
+}
+
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, title, message, onConfirm, onCancel, isDanger, theme, confirmText, cancelText }) => {
   if (!isOpen) return null;
 
-  // Default to dark theme if not provided
   const cardClass = theme?.card || 'bg-slate-900';
   const textMain = theme?.textMain || 'text-white';
   const textSecondary = theme?.textSecondary || 'text-white/30';
@@ -121,10 +140,10 @@ export const ConfirmationModal: React.FC<{ isOpen: boolean, title: string, messa
         <p className={`${textSecondary} mb-12 text-sm font-sans leading-relaxed tracking-wider font-light`}>{message}</p>
         <div className="flex flex-col gap-5">
           <Button variant={isDanger ? 'danger' : 'primary'} fullWidth size="xl" onClick={onConfirm}>
-            {isDanger ? 'Yes, Exit' : 'Confirm'}
+            {confirmText || (isDanger ? 'Yes, Exit' : 'Confirm')}
           </Button>
           <Button variant="ghost" fullWidth onClick={onCancel} size="lg">
-            <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">Go Back</span>
+            <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">{cancelText || 'Go Back'}</span>
           </Button>
         </div>
       </div>
@@ -139,7 +158,7 @@ export const FloatingParticle: React.FC<{ x: number, y: number, text: string, co
   }, [onComplete]);
 
   return (
-    <div 
+    <div
       className="fixed pointer-events-none z-[100] font-serif text-4xl animate-float-up"
       style={{ left: x, top: y, color }}
     >
@@ -148,18 +167,30 @@ export const FloatingParticle: React.FC<{ x: number, y: number, text: string, co
   );
 };
 
-export const MilestoneNotification: React.FC<{ points: number, teamName: string, onComplete: () => void }> = ({ points, teamName, onComplete }) => {
+interface MilestoneNotificationProps {
+  points: number;
+  teamName: string;
+  onComplete: () => void;
+  milestoneText?: string;
+  reachedText?: string;
+}
+
+export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({ points, teamName, onComplete, milestoneText, reachedText }) => {
   useEffect(() => {
     const timer = setTimeout(onComplete, 3000);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
+  const displayText = reachedText
+    ? reachedText.replace('{0}', teamName).replace('{1}', String(points))
+    : `${teamName} reached ${points}!`;
+
   return (
     <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[150] w-full px-10 text-center animate-pop-in">
       <div className="bg-slate-900/95 border border-white/10 p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
         <Star className="w-16 h-16 text-yellow-500 mx-auto mb-8 animate-pulse" fill="currentColor" />
-        <h2 className="text-white text-4xl font-serif mb-4 tracking-widest uppercase">Milestone</h2>
-        <p className="text-yellow-500 text-xl tracking-[0.3em] font-sans font-light uppercase">{teamName} reached {points}!</p>
+        <h2 className="text-white text-4xl font-serif mb-4 tracking-widest uppercase">{milestoneText || 'Milestone'}</h2>
+        <p className="text-yellow-500 text-xl tracking-[0.3em] font-sans font-light uppercase">{displayText}</p>
       </div>
     </div>
   );

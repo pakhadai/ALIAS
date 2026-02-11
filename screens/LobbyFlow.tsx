@@ -1,19 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Settings as SettingsIcon, Check } from 'lucide-react';
+import { X, Settings as SettingsIcon, Check, Plus, Minus } from 'lucide-react';
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
 import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
 import QRCode from 'qrcode';
+import { AVATARS } from '../context/GameContext';
 
 export const LobbyScreen = () => {
-  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, peerError, isConnected } = useGame();
+  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, peerError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  
+
   const joinUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?room=${roomCode}`;
 
   useEffect(() => {
@@ -22,10 +23,22 @@ export const LobbyScreen = () => {
     }
   }, [joinUrl, gameMode, roomCode]);
 
+  const canCreateTeams = gameMode === 'OFFLINE' ? players.length >= 2 : players.length >= 2;
+
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
-      <ConfirmationModal isOpen={showExitConfirm} title={t.leaveLobbyConfirm} message={t.leaveLobbyMsg} isDanger theme={currentTheme} onCancel={() => setShowExitConfirm(false)} onConfirm={() => setGameState(GameState.MENU)} />
-      
+      <ConfirmationModal
+        isOpen={showExitConfirm}
+        title={t.leaveLobbyConfirm}
+        message={t.leaveLobbyMsg}
+        isDanger
+        theme={currentTheme}
+        onCancel={() => setShowExitConfirm(false)}
+        onConfirm={() => setGameState(GameState.MENU)}
+        confirmText={t.confirmExit}
+        cancelText={t.goBack}
+      />
+
       <header className="flex justify-between items-center py-6 mb-4">
         <button onClick={() => setShowExitConfirm(true)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
           <X size={20} className={currentTheme.iconColor} />
@@ -44,13 +57,13 @@ export const LobbyScreen = () => {
       {!isHost && peerError && !isConnected && (
         <div className="w-full max-w-sm mx-auto mb-6">
           <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center animate-shake">
-            <p className="text-red-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">Connection Failed</p>
-            <p className="text-red-300/60 text-xs">Room {roomCode} not found. Please check the code and try again.</p>
+            <p className="text-red-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">{t.connectionFailed}</p>
+            <p className="text-red-300/60 text-xs">{t.roomNotFound.replace('{0}', roomCode)}</p>
             <button
               onClick={() => setGameState(GameState.JOIN_INPUT)}
               className="mt-4 px-6 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-xl text-red-300 text-xs uppercase tracking-wider transition-colors"
             >
-              Try Again
+              {t.tryAgain}
             </button>
           </div>
         </div>
@@ -76,7 +89,7 @@ export const LobbyScreen = () => {
                 <span className={`ml-4 font-bold ${currentTheme.textMain}`}>{p.name}</span>
                 <div className="ml-auto flex items-center gap-3">
                   {p.id === myPlayerId && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" />}
-                  {isHost && !p.isHost && p.id !== myPlayerId && (
+                  {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
                     <button
                       onClick={() => sendAction({ action: 'KICK_PLAYER', data: p.id })}
                       className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
@@ -85,16 +98,35 @@ export const LobbyScreen = () => {
                       <X size={14} className="text-red-400 group-hover:text-red-300" />
                     </button>
                   )}
+                  {isHost && gameMode === 'OFFLINE' && !p.isHost && (
+                    <button
+                      onClick={() => removeOfflinePlayer(p.id)}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
+                    >
+                      <Minus size={14} className="text-red-400 group-hover:text-red-300" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Add Player button for offline mode */}
+          {isHost && gameMode === 'OFFLINE' && (
+            <button
+              onClick={addOfflinePlayer}
+              className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${settings.theme === AppTheme.PREMIUM_DARK ? 'border-white/10 hover:border-white/30 text-white/30 hover:text-white/60' : 'border-slate-300 hover:border-slate-400 text-slate-400 hover:text-slate-600'}`}
+            >
+              <Plus size={18} />
+              <span className="text-[10px] uppercase tracking-widest font-bold">{t.addPlayer}</span>
+            </button>
+          )}
         </div>
       </main>
 
       <footer className="w-full max-w-sm mx-auto py-8">
         {isHost ? (
-          <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => { sendAction({ action: 'GENERATE_TEAMS' }); setGameState(GameState.TEAMS); }} disabled={players.length < 2}>
+          <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'GENERATE_TEAMS' })} disabled={!canCreateTeams}>
             {t.createTeams}
           </Button>
         ) : (
@@ -108,6 +140,9 @@ export const LobbyScreen = () => {
 export const TeamSetupScreen = () => {
   const { teams, settings, currentTheme, sendAction, setGameState, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
+
+  // Check that all teams have at least one player
+  const allTeamsHavePlayers = teams.every(team => team.players.length > 0);
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
@@ -125,6 +160,7 @@ export const TeamSetupScreen = () => {
                     <div className="flex items-center gap-3 mb-4">
                         <div className={`w-3 h-3 rounded-full ${team.color}`} />
                         <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{team.name}</h3>
+                        <span className={`ml-auto text-[10px] ${currentTheme.textSecondary}`}>({team.players.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {team.players.map((p: any) => (
@@ -133,6 +169,9 @@ export const TeamSetupScreen = () => {
                                 <span className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}>{p.name}</span>
                             </div>
                         ))}
+                        {team.players.length === 0 && (
+                          <span className={`text-[10px] italic ${currentTheme.textSecondary} opacity-50`}>{t.noPlayersInTeam}</span>
+                        )}
                     </div>
                 </div>
             ))}
@@ -140,7 +179,7 @@ export const TeamSetupScreen = () => {
 
         <footer className="py-8 space-y-4">
             {isHost && (
-                <button 
+                <button
                     onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
                     className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity mb-4 ${currentTheme.textMain}`}
                 >
@@ -148,7 +187,7 @@ export const TeamSetupScreen = () => {
                 </button>
             )}
             {isHost ? (
-                <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'START_ROUND' })}>
+                <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'START_GAME' })} disabled={!allTeamsHavePlayers}>
                     {t.startGame}
                 </Button>
             ) : (
@@ -165,13 +204,12 @@ export const SettingsScreen = () => {
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
-    // Prevent settings changes during active game (but allow in SETTINGS screen)
     if (gameState !== GameState.LOBBY && gameState !== GameState.MENU && gameState !== GameState.SETTINGS) return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
   };
 
-  const categoriesList = [Category.GENERAL, Category.FOOD, Category.TRAVEL, Category.SCIENCE, Category.MOVIES];
+  const categoriesList = [Category.GENERAL, Category.FOOD, Category.TRAVEL, Category.SCIENCE, Category.MOVIES, Category.CUSTOM];
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 overflow-y-auto no-scrollbar`}>
@@ -188,7 +226,7 @@ export const SettingsScreen = () => {
                 <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.language}</p>
                 <div className="flex gap-2">
                     {[Language.UA, Language.DE, Language.EN].map(l => (
-                        <button 
+                        <button
                             key={l}
                             onClick={() => updateSetting('language', l)}
                             className={`flex-1 py-3 rounded-xl border transition-all ${settings.language === l ? 'bg-champagne-gold text-black border-champagne-gold' : 'bg-white/5 border-white/5 text-white/40'}`}
@@ -203,7 +241,7 @@ export const SettingsScreen = () => {
                 <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.theme}</p>
                 <div className="grid grid-cols-1 gap-3">
                     {[AppTheme.PREMIUM_DARK, AppTheme.PREMIUM_LIGHT, AppTheme.CYBERPUNK].map(themeId => (
-                        <button 
+                        <button
                             key={themeId}
                             onClick={() => updateSetting('theme', themeId)}
                             className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.theme === themeId ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
@@ -220,7 +258,7 @@ export const SettingsScreen = () => {
                     <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.roundTime}</p>
                     <span className={`text-xs font-bold ${currentTheme.textAccent}`}>{settings.roundTime}s</span>
                 </div>
-                <input 
+                <input
                     type="range" min="30" max="180" step="10"
                     value={settings.roundTime}
                     onChange={(e) => updateSetting('roundTime', parseInt(e.target.value))}
@@ -231,20 +269,23 @@ export const SettingsScreen = () => {
             <div className="space-y-4">
                 <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.categories}</p>
                 <div className="grid grid-cols-2 gap-3">
-                    {categoriesList.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => {
-                                const newCats = settings.categories.includes(cat)
-                                    ? settings.categories.filter(c => c !== cat)
-                                    : [...settings.categories, cat];
-                                if (newCats.length > 0) updateSetting('categories', newCats);
-                            }}
-                            className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
-                        >
-                            {t[`cat_${cat.toLowerCase() as 'general' | 'food' | 'travel' | 'science' | 'movies'}`]}
-                        </button>
-                    ))}
+                    {categoriesList.map(cat => {
+                        const catKey = `cat_${cat.toLowerCase()}` as keyof typeof t;
+                        return (
+                          <button
+                              key={cat}
+                              onClick={() => {
+                                  const newCats = settings.categories.includes(cat)
+                                      ? settings.categories.filter(c => c !== cat)
+                                      : [...settings.categories, cat];
+                                  if (newCats.length > 0) updateSetting('categories', newCats);
+                              }}
+                              className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
+                          >
+                              {t[catKey] || cat}
+                          </button>
+                        );
+                    })}
                 </div>
             </div>
 

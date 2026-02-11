@@ -10,7 +10,7 @@ import { TRANSLATIONS } from '../constants';
 
 // Pre-Round Screen: Shows who's next
 export const PreRoundScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState } = useGame();
+  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
   const activeTeam = teams[currentTeamIndex];
 
@@ -19,14 +19,17 @@ export const PreRoundScreen = () => {
     return (
       <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
         <div className="space-y-8">
-          <p className={`text-2xl ${currentTheme.textMain}`}>Team has no players!</p>
-          <Button themeClass={currentTheme.button} onClick={() => setGameState(GameState.LOBBY)}>Back to Lobby</Button>
+          <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
+          {isHost && (
+            <Button themeClass={currentTheme.button} onClick={() => setGameState(GameState.LOBBY)}>{t.backToLobby}</Button>
+          )}
         </div>
       </div>
     );
   }
 
-  const explainer = activeTeam.players[activeTeam.nextPlayerIndex] || activeTeam.players[0];
+  const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
+  const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
@@ -49,9 +52,15 @@ export const PreRoundScreen = () => {
         </div>
 
         <div className="pt-12">
-            <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
-                {t.takePhone}
-            </Button>
+            {isHost ? (
+              <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
+                  {t.takePhone}
+              </Button>
+            ) : (
+              <p className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}>
+                {t.waitAdmin}
+              </p>
+            )}
         </div>
       </div>
     </div>
@@ -60,7 +69,7 @@ export const PreRoundScreen = () => {
 
 // Countdown Screen before playing
 export const CountdownScreen = () => {
-  const { currentTheme, startGameplay, playSound } = useGame();
+  const { currentTheme, startGameplay, playSound, isHost } = useGame();
   const [count, setCount] = useState(3);
 
   useEffect(() => {
@@ -68,10 +77,10 @@ export const CountdownScreen = () => {
       playSound('tick');
       const timer = setTimeout(() => setCount(count - 1), 1000);
       return () => clearTimeout(timer);
-    } else {
+    } else if (isHost) {
       startGameplay();
     }
-  }, [count, startGameplay, playSound]);
+  }, [count, startGameplay, playSound, isHost]);
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>
@@ -83,43 +92,57 @@ export const CountdownScreen = () => {
 };
 
 export const PlayingScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, setGameState, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, togglePause, gameMode } = useGame();
+  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, togglePause, gameMode, sendAction } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [particles, setParticles] = useState<{ id: number, x: number, y: number, text: string, color: string }[]>([]);
   const actionProcessingRef = useRef(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const activeTeam = teams[currentTeamIndex];
 
-  // Safety check: ensure team has players
+  // Safety check: use useEffect instead of dispatching during render
+  useEffect(() => {
+    if (!activeTeam || activeTeam.players.length === 0) {
+      setShouldRedirect(true);
+    }
+  }, [activeTeam]);
+
+  useEffect(() => {
+    if (shouldRedirect && isHost) {
+      sendAction({ action: 'RESET_GAME' });
+    }
+  }, [shouldRedirect, isHost, sendAction]);
+
   if (!activeTeam || activeTeam.players.length === 0) {
-    setGameState(GameState.LOBBY);
     return null;
   }
 
-  const explainer = activeTeam.players[Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1)] || activeTeam.players[0];
+  const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
+  const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   const isExplainer = gameMode === 'OFFLINE' || explainer?.id === myPlayerId;
   const isCriticalTime = timeLeft <= 10;
-  
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Both host and client run local timer for smooth display
   useEffect(() => {
-    if (gameState !== GameState.PLAYING || isPaused || !isHost) return;
+    if (gameState !== GameState.PLAYING || isPaused) return;
     const interval = window.setInterval(() => setTimeLeft((prev: number) => Math.max(0, prev - 1)), 1000);
     return () => clearInterval(interval);
-  }, [gameState, isPaused, setTimeLeft, isHost]); 
+  }, [gameState, isPaused, setTimeLeft]);
 
+  // Host sends TIME_UP action when timer reaches 0 (this broadcasts to clients)
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
     if (timeLeft <= 6 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
     if (isHost && timeLeft === 0) {
-        playSound('end');
-        setGameState(GameState.ROUND_SUMMARY);
+        sendAction({ action: 'TIME_UP' });
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
-  }, [timeLeft, isHost, gameState, isPaused, settings.soundEnabled, playSound, setGameState]);
+  }, [timeLeft, isHost, gameState, isPaused, settings.soundEnabled, playSound, sendAction]);
 
   const onAction = (type: 'correct' | 'skip', x: number, y: number) => {
       if (isPaused || actionProcessingRef.current) return;
@@ -133,7 +156,6 @@ export const PlayingScreen = () => {
           setParticles(prev => [...prev, { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: '#ef4444' }]);
       }
 
-      // Use consistent 300ms debounce to prevent double actions
       const ACTION_DEBOUNCE_MS = 300;
       setTimeout(() => {
           actionProcessingRef.current = false;
@@ -149,9 +171,9 @@ export const PlayingScreen = () => {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[50] animate-fade-in">
             <div className={`${currentTheme.card} border border-white/10 rounded-[3rem] p-16 shadow-2xl text-center`}>
               <span className="material-symbols-outlined text-champagne-gold text-6xl mb-4 block">pause_circle</span>
-              <p className={`text-2xl font-serif ${currentTheme.textMain} uppercase tracking-widest`}>PAUSED</p>
+              <p className={`text-2xl font-serif ${currentTheme.textMain} uppercase tracking-widest`}>{t.paused}</p>
               {isHost && (
-                <p className={`text-[10px] ${currentTheme.textSecondary} uppercase tracking-wider mt-4`}>Tap pause again to resume</p>
+                <p className={`text-[10px] ${currentTheme.textSecondary} uppercase tracking-wider mt-4`}>{t.tapResume}</p>
               )}
             </div>
           </div>
@@ -160,9 +182,9 @@ export const PlayingScreen = () => {
         {/* Progress Bar Header */}
         <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-6 z-20">
           <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className={`h-full rounded-full shadow-[0_0_10px_rgba(243,229,171,0.5)] transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-champagne-gold'}`} 
-              style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }} 
+            <div
+              className={`h-full rounded-full shadow-[0_0_10px_rgba(243,229,171,0.5)] transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-champagne-gold'}`}
+              style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }}
             />
           </div>
 
@@ -170,10 +192,10 @@ export const PlayingScreen = () => {
             <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums ${isCriticalTime ? 'text-red-500' : ''}`}>
               {formatTime(timeLeft)}
             </div>
-            
+
             {isHost && (
-              <button 
-                onClick={togglePause} 
+              <button
+                onClick={togglePause}
                 className="w-10 h-10 flex items-center justify-center rounded-full active:bg-white/5 transition-colors"
               >
                 <span className="material-symbols-outlined text-champagne-gold text-2xl">
@@ -183,7 +205,7 @@ export const PlayingScreen = () => {
             )}
 
             <div className="text-text-sub-dark font-sans text-sm tracking-wide w-20 text-right">
-                Score: <span className="text-white font-medium">{currentRoundStats.correct}</span>
+                {t.score}: <span className="text-white font-medium">{currentRoundStats.correct}</span>
             </div>
           </div>
         </header>
@@ -210,7 +232,7 @@ export const PlayingScreen = () => {
         {/* Action Buttons Footer */}
         {isExplainer && (
           <footer className="w-full fixed bottom-0 left-0 z-20 h-24 sm:h-28 flex">
-            <button 
+            <button
                 onClick={(e) => onAction('skip', e.clientX, e.clientY)}
                 className="flex-1 h-full bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5"
             >
@@ -219,7 +241,7 @@ export const PlayingScreen = () => {
                 {t.skip}
               </span>
             </button>
-            <button 
+            <button
                 onClick={(e) => onAction('correct', e.clientX, e.clientY)}
                 className="flex-1 h-full bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5 border-l border-l-white/5"
             >
@@ -235,49 +257,38 @@ export const PlayingScreen = () => {
 };
 
 export const RoundSummaryScreen = () => {
-    const { setGameState, currentTheme, teams, currentTeamIndex, setTeams, currentRoundStats, settings, playSound, isHost } = useGame();
+    const { currentTheme, teams, currentTeamIndex, currentRoundStats, settings, playSound, isHost, sendAction } = useGame();
     const t = TRANSLATIONS[settings.language];
     const [milestone, setMilestone] = useState<{points: number, team: string} | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const processingRef = useRef(false);
-    
-    // Calculate points with minimum of 0 to prevent negative scores from breaking game flow
+
     const rawPoints = currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
-    const points = Math.max(0, rawPoints); // Prevent negative points
+    const points = Math.max(0, rawPoints);
     const activeTeam = teams[currentTeamIndex];
-    const scoringTeam = teams.find(t => t.id === currentRoundStats.teamId) || activeTeam;
+    const scoringTeam = teams.find(team => team.id === currentRoundStats.teamId) || activeTeam;
 
     const confirmRoundResults = () => {
         if (!isHost || isSubmitting || processingRef.current) return;
         processingRef.current = true;
         setIsSubmitting(true);
 
-        const updatedTeams = teams.map(t => {
-            if (t.id === currentRoundStats.teamId) return { ...t, score: Math.max(0, t.score + points) };
-            return t;
-        }).map(t => {
-            if (t.id === activeTeam.id) return { ...t, nextPlayerIndex: (t.nextPlayerIndex + 1) % (t.players.length || 1) };
-            return t;
-        });
-
-        const oldScore = scoringTeam.score, newScore = Math.max(0, oldScore + points);
-        const oldTens = Math.floor(oldScore / 10), newTens = Math.floor(newScore / 10);
+        // Check for milestone before confirming
+        const oldScore = scoringTeam?.score || 0;
+        const newScore = Math.max(0, oldScore + points);
+        const oldTens = Math.floor(oldScore / 10);
+        const newTens = Math.floor(newScore / 10);
 
         let delay = 0;
         if (newTens > oldTens && newScore < settings.scoreToWin) {
-            setMilestone({ points: newTens * 10, team: scoringTeam.name });
+            setMilestone({ points: newTens * 10, team: scoringTeam?.name || '' });
             if (settings.soundEnabled) playSound('win');
             delay = 3000;
         }
 
-        setTeams(updatedTeams);
         setTimeout(() => {
-            if (currentTeamIndex === teams.length - 1 && updatedTeams.some(t => t.score >= settings.scoreToWin)) {
-              setGameState(GameState.GAME_OVER);
-            } else {
-              setGameState(GameState.SCOREBOARD);
-            }
-            // Reset both flags at the same time
+            // Use sendAction so it goes through handleGameAction and broadcasts
+            sendAction({ action: 'CONFIRM_ROUND' });
             processingRef.current = false;
             setIsSubmitting(false);
         }, delay);
@@ -285,14 +296,14 @@ export const RoundSummaryScreen = () => {
 
     return (
       <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 relative`}>
-        {milestone && <MilestoneNotification points={milestone.points} teamName={milestone.team} onComplete={() => setMilestone(null)} />}
+        {milestone && <MilestoneNotification points={milestone.points} teamName={milestone.team} onComplete={() => setMilestone(null)} milestoneText={t.milestone} reachedText={t.teamReached} />}
         {points > 0 && <Confetti />}
-        
+
         <header className="py-12 text-center space-y-4">
             <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>{t.timeIsUp}</h2>
             <div className={`inline-block px-6 py-2 rounded-full border border-white/10 bg-white/5`}>
                 <span className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}>
-                    {t.playedTeam.replace('{0}', scoringTeam.name)}
+                    {t.playedTeam.replace('{0}', scoringTeam?.name || '')}
                 </span>
             </div>
         </header>
@@ -302,7 +313,7 @@ export const RoundSummaryScreen = () => {
                 <span className={`text-8xl font-serif font-black ${currentTheme.textAccent}`}>{points}</span>
                 <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] opacity-40 ${currentTheme.textMain}`}>{t.roundPoints}</p>
             </div>
-            
+
             <div className="w-full max-w-xs space-y-3">
                 <div className="flex justify-between items-center px-4 opacity-60">
                     <span className="text-[10px] font-bold uppercase tracking-widest">{t.guessed}</span>
@@ -334,28 +345,22 @@ export const RoundSummaryScreen = () => {
 export const ScoreboardScreen = () => {
   const { teams, settings, handleNextRound, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
-  
+
   const isDark = settings.theme === AppTheme.PREMIUM_DARK;
   const bgColor = isDark ? 'bg-premium-dark-bg' : 'bg-silver-bg';
   const textColor = isDark ? 'text-white' : 'text-premium-black';
   const subTextColor = isDark ? 'text-gray-400' : 'text-text-sub';
-  
+
   const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
   const goal = settings.scoreToWin;
 
   return (
     <div className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}>
       {/* Header */}
-      <header className="relative z-20 w-full px-6 pt-12 pb-2 flex justify-between items-center bg-transparent backdrop-blur-sm">
-        <button aria-label="Settings" className={`w-10 h-10 flex items-center justify-center rounded-full shadow-sm ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white'}`}>
-          <span className={`material-symbols-outlined !text-[24px] ${isDark ? 'text-white' : 'text-premium-black'}`}>settings</span>
-        </button>
+      <header className="relative z-20 w-full px-6 pt-12 pb-2 flex justify-center items-center bg-transparent backdrop-blur-sm">
         <div className="text-center">
-          <h2 className="font-serif text-lg tracking-widest uppercase">Score</h2>
+          <h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>
         </div>
-        <button aria-label="Menu" className={`w-10 h-10 flex items-center justify-center rounded-full shadow-sm ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white'}`}>
-          <span className={`material-symbols-outlined !text-[24px] ${isDark ? 'text-white' : 'text-premium-black'}`}>menu</span>
-        </button>
       </header>
 
       <main className="flex-1 flex flex-col w-full relative overflow-y-auto no-scrollbar pb-32">
@@ -363,14 +368,12 @@ export const ScoreboardScreen = () => {
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
           <div className="absolute top-4 flex flex-col items-center z-0 opacity-40">
             <span className="material-symbols-outlined mb-1 text-champagne-dark">emoji_events</span>
-            <span className={`text-[10px] tracking-[0.2em] uppercase font-bold text-champagne-dark`}>Goal: {goal}</span>
+            <span className={`text-[10px] tracking-[0.2em] uppercase font-bold text-champagne-dark`}>{t.goal}: {goal}</span>
           </div>
 
           <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10">
-            {/* The Vertical Path Line */}
             <div className={`absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-            
-            {/* Markers */}
+
             <div className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/20 border-premium-dark-bg' : 'bg-gray-200 border-silver-bg'}`}></div>
             <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
             <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
@@ -378,30 +381,27 @@ export const ScoreboardScreen = () => {
             <div className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}></div>
             <div className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/30 border-premium-dark-bg' : 'bg-gray-300 border-silver-bg'}`}></div>
 
-            {/* Team Tokens on Path */}
             {teams.map((team, idx) => {
               const progress = Math.min(1, team.score / goal);
-              // Invert for vertical display: top is 0 (goal), bottom is 1 (start). 
-              // But let's follow the provided snippet where higher points are higher up.
               const topPos = 100 - (progress * 100);
               const isEven = idx % 2 === 0;
 
               return (
-                <div 
-                  key={team.id} 
+                <div
+                  key={team.id}
                   className="absolute w-full h-0 z-20 flex justify-center transition-all duration-1000 ease-out"
                   style={{ top: `${topPos}%` }}
                 >
-                  <div 
+                  <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white transition-transform hover:scale-110`}
-                    style={{ backgroundColor: team.colorHex, color: isDark ? 'white' : 'black' }}
+                    style={{ backgroundColor: team.colorHex || '#888', color: isDark ? 'white' : 'black' }}
                   >
                     {idx + 1}
                   </div>
-                  <div 
+                  <div
                     className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} ${isDark ? 'bg-white/5 border border-white/5 text-white' : 'bg-white text-premium-black'}`}
                   >
-                    <span className="text-[10px] font-bold tracking-wider">{team.score} pts</span>
+                    <span className="text-[10px] font-bold tracking-wider">{team.score} {t.pts}</span>
                   </div>
                 </div>
               );
@@ -414,37 +414,37 @@ export const ScoreboardScreen = () => {
           {sortedTeams.map((team, idx) => {
             const teamIndex = teams.findIndex(t => t.id === team.id) + 1;
             const progress = Math.min(100, (team.score / goal) * 100);
-            
+
             return (
-              <div 
-                key={team.id} 
+              <div
+                key={team.id}
                 className={`rounded-2xl p-4 shadow-card flex items-center justify-between border animate-slide-up transition-all`}
-                style={{ 
+                style={{
                   backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
                   borderColor: team.score >= goal ? '#F3E5AB' : (isDark ? 'rgba(255,255,255,0.05)' : 'transparent'),
                   animationDelay: `${idx * 100}ms`
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm"
-                    style={{ backgroundColor: team.colorHex, color: isDark ? 'white' : 'black' }}
+                    style={{ backgroundColor: team.colorHex || '#888', color: isDark ? 'white' : 'black' }}
                   >
                     {teamIndex}
                   </div>
                   <div className="flex flex-col">
                     <span className={`font-serif text-lg tracking-wide ${textColor}`}>{team.name}</span>
                     <div className={`bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden w-24 ${isDark ? 'bg-white/10' : 'bg-gray-100'}`}>
-                      <div 
-                        className="h-full rounded-full transition-all duration-1000 ease-out" 
-                        style={{ backgroundColor: team.colorHex, width: `${progress}%` }}
+                      <div
+                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                        style={{ backgroundColor: team.colorHex || '#888', width: `${progress}%` }}
                       ></div>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className={`block text-2xl font-serif ${textColor}`}>{team.score}</span>
-                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Points</span>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t.points}</span>
                 </div>
               </div>
             );
@@ -455,7 +455,7 @@ export const ScoreboardScreen = () => {
       {/* Footer Button */}
       <footer className={`fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-gradient-to-t ${isDark ? 'from-premium-dark-bg via-premium-dark-bg' : 'from-silver-bg via-silver-bg'} to-transparent`}>
         {isHost ? (
-          <button 
+          <button
             onClick={handleNextRound}
             className={`w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group ${isDark ? 'bg-champagne-gold text-premium-black' : 'bg-premium-black text-white'}`}
           >
@@ -485,9 +485,9 @@ export const GameOverScreen = () => {
       <Confetti />
       <div className="space-y-12 animate-slide-up">
         <Trophy size={80} className="text-yellow-500 mx-auto animate-bounce" />
-        
+
         <div className="space-y-4">
-            <h2 className={`text-5xl font-serif ${currentTheme.textMain}`}>{winner.name}</h2>
+            <h2 className={`text-5xl font-serif ${currentTheme.textMain}`}>{winner?.name}</h2>
             <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] text-yellow-500`}>{t.winners}</p>
         </div>
 
