@@ -162,6 +162,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_STATE', payload: { gameState: GameState.PLAYING, timeLeft: stateRef.current.settings.roundTime, isPaused: false } });
         nextWordLogic();
         break;
+      case 'START_DUEL': {
+        const duelPlayers = stateRef.current.players;
+        const duelTeams: Team[] = duelPlayers.map((p, i) => ({
+          id: `team-${i}`,
+          name: p.name,
+          score: 0,
+          color: TEAM_COLORS[i % TEAM_COLORS.length].class,
+          colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+          players: [p],
+          nextPlayerIndex: 0
+        }));
+        dispatch({ type: 'SET_STATE', payload: { teams: duelTeams, gameState: GameState.VS_SCREEN } });
+        break;
+      }
       case 'GENERATE_TEAMS': {
         const teamNames = TRANSLATIONS[stateRef.current.settings.language].teamNames;
         const teamCount = Math.min(stateRef.current.settings.teamCount, stateRef.current.players.length);

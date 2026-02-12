@@ -180,9 +180,15 @@ export const LobbyScreen = () => {
 
       <footer className="w-full max-w-sm mx-auto py-8">
         {isHost ? (
-          <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'GENERATE_TEAMS' })} disabled={!canCreateTeams}>
-            {t.createTeams}
-          </Button>
+          players.length <= 3 ? (
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'START_DUEL' })} disabled={!canCreateTeams}>
+              {t.startGame}
+            </Button>
+          ) : (
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'GENERATE_TEAMS' })} disabled={!canCreateTeams}>
+              {t.createTeams}
+            </Button>
+          )
         ) : (
           <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitHost}</p>
         )}

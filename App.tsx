@@ -5,7 +5,7 @@ import { GameState } from './types';
 import { PageTransition, ErrorBoundary } from './components/Shared';
 import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen } from './screens/MenuFlow';
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
-import { PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
+import { VSScreen, PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
 import { WifiOff, Loader2 } from 'lucide-react';
 import { TRANSLATIONS } from './constants';
 
@@ -43,6 +43,7 @@ const GameRouter = () => {
       case GameState.LOBBY: return <PageTransition key="lobby"><LobbyScreen /></PageTransition>;
       case GameState.SETTINGS: return <PageTransition key="settings"><SettingsScreen /></PageTransition>;
       case GameState.TEAMS: return <PageTransition key="teams"><TeamSetupScreen /></PageTransition>;
+      case GameState.VS_SCREEN: return <PageTransition key="vs"><VSScreen /></PageTransition>;
       case GameState.PRE_ROUND: return <PageTransition key="pre_round"><PreRoundScreen /></PageTransition>;
       case GameState.COUNTDOWN: return <div key="countdown" className="animate-fade-in"><CountdownScreen /></div>;
       case GameState.PLAYING: return <div key="playing" className="animate-fade-in"><PlayingScreen /></div>;
