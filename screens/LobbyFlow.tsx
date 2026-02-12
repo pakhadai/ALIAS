@@ -14,6 +14,9 @@ export const LobbyScreen = () => {
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerAvatar, setNewPlayerAvatar] = useState(AVATARS[0]);
 
   const joinUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?room=${roomCode}`;
 
@@ -114,12 +117,63 @@ export const LobbyScreen = () => {
           {/* Add Player button for offline mode */}
           {isHost && gameMode === 'OFFLINE' && (
             <button
-              onClick={addOfflinePlayer}
+              onClick={() => {
+                setNewPlayerName('');
+                setNewPlayerAvatar(AVATARS[(players.length + 1) % AVATARS.length]);
+                setShowAddPlayer(true);
+              }}
               className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${settings.theme === AppTheme.PREMIUM_DARK ? 'border-white/10 hover:border-white/30 text-white/30 hover:text-white/60' : 'border-slate-300 hover:border-slate-400 text-slate-400 hover:text-slate-600'}`}
             >
               <Plus size={18} />
               <span className="text-[10px] uppercase tracking-widest font-bold">{t.addPlayer}</span>
             </button>
+          )}
+
+          {/* Add Player Modal */}
+          {showAddPlayer && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} animate-pop-in`}>
+                <button onClick={() => setShowAddPlayer(false)} className="absolute top-8 right-8 opacity-40 hover:opacity-100 transition-opacity">
+                  <X size={24} className={currentTheme.iconColor} />
+                </button>
+                <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>{t.addPlayerTitle}</h2>
+                <div className="space-y-6">
+                  <input
+                    autoFocus
+                    value={newPlayerName}
+                    onChange={(e) => setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
+                    placeholder={t.namePlaceholder}
+                    className={`w-full ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+                  />
+                  <div className="grid grid-cols-6 gap-2">
+                    {AVATARS.slice(0, 12).map(a => (
+                      <button
+                        key={a}
+                        onClick={() => setNewPlayerAvatar(a)}
+                        className={`text-2xl p-2 rounded-xl transition-all ${newPlayerAvatar === a ? 'bg-champagne-gold/20 scale-110 shadow-lg' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    themeClass={currentTheme.button}
+                    fullWidth
+                    size="lg"
+                    onClick={() => {
+                      const name = newPlayerName.trim();
+                      if (name) {
+                        addOfflinePlayer(name, newPlayerAvatar);
+                        setShowAddPlayer(false);
+                      }
+                    }}
+                    disabled={!newPlayerName.trim()}
+                  >
+                    {t.add}
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </main>

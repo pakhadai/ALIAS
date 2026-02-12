@@ -10,7 +10,7 @@ import { TRANSLATIONS } from '../constants';
 
 // Pre-Round Screen: Shows who's next
 export const PreRoundScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost } = useGame();
+  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost, gameMode } = useGame();
   const t = TRANSLATIONS[settings.language];
   const activeTeam = teams[currentTeamIndex];
 
@@ -51,7 +51,13 @@ export const PreRoundScreen = () => {
             </p>
         </div>
 
-        <div className="pt-12">
+        {gameMode === 'OFFLINE' && (
+          <div className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] opacity-50 ${currentTheme.textSecondary}`}>
+            {t.passPhoneTo.replace('{0}', explainer.name)}
+          </div>
+        )}
+
+        <div className={gameMode === 'OFFLINE' ? 'pt-6' : 'pt-12'}>
             {isHost ? (
               <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
                   {t.takePhone}
@@ -118,7 +124,12 @@ export const PlayingScreen = () => {
 
   const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
-  const isExplainer = gameMode === 'OFFLINE' || explainer?.id === myPlayerId;
+  const isActualExplainer = explainer?.id === myPlayerId;
+  const isOnActiveTeam = activeTeam.players.some(p => p.id === myPlayerId);
+  // 1 player per team (1v1): only explainer sees word, everyone else guesses
+  // 2+ players per team (2v2): explainer + other teams see word; teammates guess (no word)
+  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer || (activeTeam.players.length > 1 && !isOnActiveTeam);
+  const canUseButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const isCriticalTime = timeLeft <= 10;
 
   const formatTime = (seconds: number) => {
@@ -212,7 +223,7 @@ export const PlayingScreen = () => {
 
         {/* Word Card */}
         <main className="flex-1 flex flex-col items-center justify-center w-full px-8 relative z-10 pb-24">
-            {isExplainer ? (
+            {canSeeWord ? (
                 <div className="w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform transition-all duration-300 border border-white/5 animate-pop-in">
                   <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
                   <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
@@ -230,7 +241,7 @@ export const PlayingScreen = () => {
         </main>
 
         {/* Action Buttons Footer */}
-        {isExplainer && (
+        {canUseButtons && (
           <footer className="w-full fixed bottom-0 left-0 z-20 h-24 sm:h-28 flex">
             <button
                 onClick={(e) => onAction('skip', e.clientX, e.clientY)}

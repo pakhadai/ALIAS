@@ -361,7 +361,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     rematch: () => sendAction({ action: 'REMATCH' }),
     setRoomCode: (c: string) => dispatch({ type: 'SET_STATE', payload: { roomCode: c, gameMode: 'ONLINE', isHost: false } }),
-    addOfflinePlayer: () => sendAction({ action: 'ADD_OFFLINE_PLAYER' }),
+    addOfflinePlayer: (name?: string, avatar?: string) => sendAction({ action: 'ADD_OFFLINE_PLAYER', data: { name, avatar } }),
     removeOfflinePlayer: (id: string) => sendAction({ action: 'REMOVE_OFFLINE_PLAYER', data: id }),
   }), [state, currentTheme, sendAction, playSound, showNotification, sendJoinRequest]);
 

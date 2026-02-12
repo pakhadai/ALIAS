@@ -20,8 +20,12 @@ const generateUUID = () => {
 };
 
 // Internal Rules Modal Component
+const TABS = ['rules', 'logic', 'modes', 'settings'] as const;
+type TabId = typeof TABS[number];
+
 const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
   const [isClosing, setIsClosing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('rules');
   if (!isOpen && !isClosing) return null;
 
   const handleClose = () => {
@@ -29,27 +33,121 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
     setTimeout(() => {
       onClose();
       setIsClosing(false);
+      setActiveTab('rules');
     }, 300);
   };
 
+  const tabLabels: Record<TabId, string> = {
+    rules: t.infoRules,
+    logic: t.infoLogic,
+    modes: t.infoModes,
+    settings: t.infoSettings,
+  };
+
+  const renderRules = () => (
+    <div className="space-y-5">
+      {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map((rule: string, i: number) => (
+        <div key={i} className="flex gap-4 items-start">
+          <span className={`font-serif text-lg opacity-20 shrink-0 w-5 text-right ${currentTheme.textMain}`}>{i + 1}</span>
+          <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule}</p>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderLogic = () => (
+    <div className="space-y-6">
+      <div>
+        <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{t.infoTurns}</p>
+      </div>
+      <div>
+        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoExplainer}</h4>
+        <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{t.infoExplainerDesc}</p>
+      </div>
+      <div>
+        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.info1v1}</h4>
+        <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{t.info1v1Desc}</p>
+      </div>
+    </div>
+  );
+
+  const renderModes = () => (
+    <div className="space-y-6">
+      <div>
+        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoOnline}</h4>
+        <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{t.infoOnlineDesc}</p>
+      </div>
+      <div>
+        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoOffline}</h4>
+        <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{t.infoOfflineDesc}</p>
+      </div>
+    </div>
+  );
+
+  const renderSettings = () => (
+    <div className="space-y-4">
+      {[t.infoSettingTime, t.infoSettingScore, t.infoSettingCategories, t.infoSettingPenalty, t.infoSettingTeams, t.infoSettingSound].map((desc: string, i: number) => {
+        const [label, ...rest] = desc.split(' — ');
+        return (
+          <div key={i} className="flex gap-3 items-start">
+            <span className={`text-xs opacity-30 mt-0.5 ${currentTheme.textMain}`}>•</span>
+            <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>
+              <span className={`font-bold ${currentTheme.textMain}`}>{label}</span>
+              {rest.length > 0 && <span> — {rest.join(' — ')}</span>}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const tabContent: Record<TabId, () => React.ReactNode> = {
+    rules: renderRules,
+    logic: renderLogic,
+    modes: renderModes,
+    settings: renderSettings,
+  };
+
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
-      <div className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}>
-        <button onClick={handleClose} className="absolute top-8 right-8 opacity-40 hover:opacity-100 transition-opacity">
-          <X size={24} className={currentTheme.iconColor} />
-        </button>
-        <h2 className={`text-3xl font-serif mb-8 text-center ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
-        <div className="space-y-5 mb-10">
-          {[t.rule1, t.rule2, t.rule3, t.rule4, t.rule5].map((rule: string, i: number) => (
-            <div key={i} className="flex gap-5 items-start">
-              <span className={`font-serif text-xl opacity-20 ${currentTheme.textMain}`}>{i + 1}</span>
-              <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule.replace(`${i+1}. `, '')}</p>
-            </div>
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`relative w-full h-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
+        style={{ maxHeight: '100dvh' }}>
+        {/* Header */}
+        <div className="shrink-0 px-8 pt-10 pb-4 flex items-center justify-between">
+          <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
+          <button onClick={handleClose} className="opacity-40 hover:opacity-100 transition-opacity p-2">
+            <X size={22} className={currentTheme.iconColor} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="shrink-0 px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all ${
+                activeTab === tab
+                  ? `${currentTheme.button} shadow-lg`
+                  : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`
+              }`}
+            >
+              {tabLabels[tab]}
+            </button>
           ))}
         </div>
-        <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
-          {t.close}
-        </Button>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          {tabContent[activeTab]()}
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 px-8 pb-8 pt-4">
+          <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
+            {t.close}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -60,13 +158,13 @@ export const RulesScreen = () => {
   const t = TRANSLATIONS[settings.language];
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
-      <div className={`w-full max-w-sm space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
-        <h2 className={`text-4xl font-serif mb-8 text-center ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
-        <div className="space-y-6 mb-10">
-          {[t.rule1, t.rule2, t.rule3, t.rule4, t.rule5].map((rule: string, i: number) => (
-            <div key={i} className="flex gap-5 items-start">
-              <span className={`font-serif text-2xl opacity-20 ${currentTheme.textMain}`}>{i + 1}</span>
-              <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule.replace(`${i+1}. `, '')}</p>
+      <div className={`w-full max-w-sm space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`} style={{ maxHeight: '85vh' }}>
+        <h2 className={`text-3xl font-serif mb-6 text-center ${currentTheme.textMain}`}>{t.infoRules}</h2>
+        <div className="space-y-5 mb-8">
+          {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map((rule: string, i: number) => (
+            <div key={i} className="flex gap-4 items-start">
+              <span className={`font-serif text-xl opacity-20 shrink-0 w-5 text-right ${currentTheme.textMain}`}>{i + 1}</span>
+              <p className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}>{rule}</p>
             </div>
           ))}
         </div>

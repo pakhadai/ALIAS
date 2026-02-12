@@ -167,7 +167,7 @@ export const usePeerConnection = (
         const p = JSON.parse(localStorage.getItem('alias_player') || '{}');
         if (p.name) {
           conn.send({ type: 'JOIN_REQUEST', payload: {
-            id: peerRef.current!.id,
+            id: stateRef.current.myPlayerId || peerRef.current!.id,
             persistentId: p.persistentId,
             name: p.name,
             avatar: p.avatar

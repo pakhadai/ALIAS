@@ -121,7 +121,7 @@ export interface GameContextType extends AppState {
   resetGame: () => void;
   rematch: () => void;
   setRoomCode: (code: string) => void;
-  addOfflinePlayer: () => void;
+  addOfflinePlayer: (name?: string, avatar?: string) => void;
   removeOfflinePlayer: (id: string) => void;
 }
 
