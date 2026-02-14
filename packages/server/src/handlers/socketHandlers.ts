@@ -71,7 +71,7 @@ export function registerSocketHandlers(
     }
   });
 
-  socket.on('game:action', (payload) => {
+  socket.on('game:action', async (payload) => {
     const { roomCode } = socket.data;
     if (!roomCode) return;
 
@@ -79,7 +79,7 @@ export function registerSocketHandlers(
     if (!room) return;
 
     // Only host can execute game actions (or we relay non-host to server which acts as host)
-    gameEngine.handleAction(room, payload);
+    await gameEngine.handleAction(room, payload);
 
     // Handle kick: disconnect the kicked player's socket
     if (payload.action === 'KICK_PLAYER' && payload.data) {

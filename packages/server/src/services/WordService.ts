@@ -1,7 +1,14 @@
 import { Category, Language, MOCK_WORDS } from '@alias/shared';
 import type { GameSettings } from '@alias/shared';
+import type { PrismaClient } from '@prisma/client';
 
 export class WordService {
+  private prisma: PrismaClient | null = null;
+
+  setPrisma(prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
+
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -11,17 +18,43 @@ export class WordService {
     return shuffled;
   }
 
-  buildDeck(settings: GameSettings): string[] {
-    const pool = settings.categories.flatMap((cat) => {
-      if (cat === Category.CUSTOM && settings.customWords) {
-        return settings.customWords
+  async buildDeck(settings: GameSettings): Promise<string[]> {
+    // Handle custom words (always from settings, not DB)
+    const customWords = settings.categories
+      .filter((cat) => cat === Category.CUSTOM && settings.customWords)
+      .flatMap(() =>
+        settings.customWords!
           .split(',')
           .map((w) => w.trim().replace(/<[^>]*>/g, ''))
-          .filter(Boolean);
-      }
-      return MOCK_WORDS[settings.language][cat] || [];
-    });
+          .filter(Boolean),
+      );
 
+    const dbCategories = settings.categories.filter((cat) => cat !== Category.CUSTOM);
+
+    let dbWords: string[] = [];
+
+    if (dbCategories.length > 0 && this.prisma) {
+      // Query words from database
+      const rows = await this.prisma.word.findMany({
+        where: {
+          language: settings.language,
+          category: { in: dbCategories },
+        },
+        select: { text: true },
+      });
+      dbWords = rows.map((r) => r.text);
+    }
+
+    // Fallback to static MOCK_WORDS if DB is empty or unavailable
+    if (dbWords.length === 0 && dbCategories.length > 0) {
+      dbWords = dbCategories.flatMap(
+        (cat) => MOCK_WORDS[settings.language][cat] || [],
+      );
+    }
+
+    const pool = [...dbWords, ...customWords];
+
+    // Final fallback
     const finalPool =
       pool.length > 0
         ? pool
@@ -30,10 +63,13 @@ export class WordService {
     return this.shuffleArray(finalPool);
   }
 
-  nextWord(deck: string[], settings: GameSettings): { word: string; deck: string[] } {
+  async nextWord(
+    deck: string[],
+    settings: GameSettings,
+  ): Promise<{ word: string; deck: string[] }> {
     let currentDeck = [...deck];
     if (currentDeck.length === 0) {
-      currentDeck = this.buildDeck(settings);
+      currentDeck = await this.buildDeck(settings);
     }
     const word = currentDeck.pop() || 'Error';
     return { word, deck: currentDeck };

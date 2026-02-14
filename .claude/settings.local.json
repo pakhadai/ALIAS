@@ -8,7 +8,15 @@
       "Bash(pnpm approve-builds:*)",
       "Bash(pnpm --filter @alias/client build:*)",
       "Bash(pnpm --filter @alias/client add:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx prisma init:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm --filter @alias/server remove:*)",
+      "Bash(pnpm --filter @alias/server add:*)",
+      "Bash(git add:*)"
     ]
   }
 }

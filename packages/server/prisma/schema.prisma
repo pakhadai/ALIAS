@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Word {
+  id        Int      @id @default(autoincrement())
+  text      String
+  language  String   // UA, DE, EN
+  category  String   // General, Food, Travel, Science, Movies
+  createdAt DateTime @default(now())
+
+  @@unique([text, language, category])
+  @@index([language, category])
+}
+
+model GameSession {
+  id            String   @id @default(uuid())
+  roomCode      String   @unique
+  hostPlayerId  String
+  status        String   @default("active") // active, finished
+  settings      Json
+  createdAt     DateTime @default(now())
+  finishedAt    DateTime?
+
+  @@index([roomCode])
+  @@index([status])
+}

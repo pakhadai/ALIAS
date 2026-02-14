@@ -9,7 +9,7 @@ export class GameEngine {
     private wordService: WordService,
   ) {}
 
-  handleAction(room: Room, payload: GameActionPayload): void {
+  async handleAction(room: Room, payload: GameActionPayload): Promise<void> {
     switch (payload.action) {
       case 'CORRECT': {
         room.currentRoundStats = {
@@ -20,7 +20,7 @@ export class GameEngine {
             { word: room.currentWord, result: 'correct' },
           ],
         };
-        this.nextWord(room);
+        await this.nextWord(room);
         break;
       }
 
@@ -33,7 +33,7 @@ export class GameEngine {
             { word: room.currentWord, result: 'skipped' },
           ],
         };
-        this.nextWord(room);
+        await this.nextWord(room);
         break;
       }
 
@@ -61,7 +61,7 @@ export class GameEngine {
         room.gameState = GameState.PLAYING;
         room.timeLeft = room.settings.roundTime;
         room.isPaused = false;
-        this.nextWord(room);
+        await this.nextWord(room);
         this.startTimer(room);
         break;
       }
@@ -202,8 +202,8 @@ export class GameEngine {
     }
   }
 
-  private nextWord(room: Room): void {
-    const { word, deck } = this.wordService.nextWord(room.wordDeck, room.settings);
+  private async nextWord(room: Room): Promise<void> {
+    const { word, deck } = await this.wordService.nextWord(room.wordDeck, room.settings);
     room.currentWord = word;
     room.wordDeck = deck;
   }
