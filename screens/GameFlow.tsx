@@ -206,10 +206,11 @@ export const PlayingScreen = () => {
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   const isActualExplainer = explainer?.id === myPlayerId;
   const isOnActiveTeam = activeTeam.players.some(p => p.id === myPlayerId);
-  // 1 player per team (1v1): only explainer sees word, everyone else guesses
-  // 2+ players per team (2v2): explainer + other teams see word; teammates guess (no word)
-  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer || (activeTeam.players.length > 1 && !isOnActiveTeam);
-  const canUseButtons = gameMode === 'OFFLINE' || isActualExplainer;
+  const is1v1 = teams.every(t => t.players.length <= 1);
+  // 1v1 mode: opponent sees word + buttons; explainer sees nothing (explains verbally)
+  // 2+ players per team: explainer + other teams see word; teammates guess (no word)
+  const canSeeWord = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer || !isOnActiveTeam);
+  const canUseButtons = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer);
   const isCriticalTime = timeLeft <= 10;
 
   const formatTime = (seconds: number) => {
@@ -314,8 +315,8 @@ export const PlayingScreen = () => {
             ) : (
                 <div className="space-y-8 opacity-40 text-center animate-fade-in">
                     <AlertCircle size={64} className="mx-auto" />
-                    <p className={`text-xl font-serif text-white`}>{t.youGuess}</p>
-                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{t.sayAloud}</p>
+                    <p className={`text-xl font-serif text-white`}>{is1v1 && isActualExplainer ? t.youExplain : t.youGuess}</p>
+                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{is1v1 && isActualExplainer ? t.explainHint : t.sayAloud}</p>
                 </div>
             )}
         </main>

@@ -14,6 +14,15 @@ import { ToastNotification } from '../components/Shared';
 
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
 
+const SESSION_KEY = 'alias_active_session';
+
+// States that are safe to restore (no active timers/countdowns)
+const SAVABLE_STATES = new Set([
+  GameState.LOBBY, GameState.SETTINGS, GameState.TEAMS, GameState.VS_SCREEN,
+  GameState.PRE_ROUND, GameState.COUNTDOWN, GameState.PLAYING,
+  GameState.ROUND_SUMMARY, GameState.SCOREBOARD, GameState.GAME_OVER
+]);
+
 type Action =
   | { type: 'SET_STATE', payload: Partial<AppState> }
   | { type: 'UPDATE_PLAYERS', payload: Player[] }
@@ -62,8 +71,45 @@ function gameReducer(state: AppState, action: Action): AppState {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+function restoreSession(init: AppState): AppState {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return init;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.isHost || !saved.roomCode) return init;
+
+    // Map timer-dependent states to safe restore points
+    let gameState = saved.gameState;
+    if (gameState === GameState.PLAYING || gameState === GameState.COUNTDOWN) {
+      gameState = GameState.PRE_ROUND;
+    }
+    if (!SAVABLE_STATES.has(gameState)) return init;
+
+    return {
+      ...init,
+      gameState,
+      gameMode: saved.gameMode || 'ONLINE',
+      settings: { ...init.settings, ...saved.settings },
+      roomCode: saved.roomCode,
+      isHost: true,
+      myPlayerId: saved.myPlayerId || '',
+      players: Array.isArray(saved.players) ? saved.players : [],
+      teams: Array.isArray(saved.teams) ? saved.teams : [],
+      currentTeamIndex: typeof saved.currentTeamIndex === 'number' ? saved.currentTeamIndex : 0,
+      wordDeck: Array.isArray(saved.wordDeck) ? saved.wordDeck : [],
+      currentWord: gameState === GameState.ROUND_SUMMARY ? (saved.currentWord || '') : '',
+      currentRoundStats: gameState === GameState.ROUND_SUMMARY ? (saved.currentRoundStats || init.currentRoundStats) : init.currentRoundStats,
+      timeLeft: 0,
+      isPaused: false,
+      isConnected: false,
+    };
+  } catch {
+    return init;
+  }
+}
+
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [state, dispatch] = useReducer(gameReducer, initialState, restoreSession);
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -74,8 +120,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeout(() => dispatch({ type: 'SHOW_NOTIF', payload: null }), 3000);
   }, []);
 
-  // Handle URL room parameter on mount
+  // Handle URL room parameter on mount (skip if session was restored)
   useEffect(() => {
+    if (stateRef.current.gameState !== GameState.MENU) return;
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
     if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
@@ -83,6 +130,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
+
+  // Save host session to localStorage on state changes
+  useEffect(() => {
+    if (!state.isHost || state.gameMode === 'OFFLINE') return;
+    if (!SAVABLE_STATES.has(state.gameState)) {
+      localStorage.removeItem(SESSION_KEY);
+      return;
+    }
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        gameState: state.gameState, gameMode: state.gameMode,
+        settings: state.settings, roomCode: state.roomCode,
+        isHost: true, myPlayerId: state.myPlayerId,
+        players: state.players, teams: state.teams,
+        currentTeamIndex: state.currentTeamIndex, wordDeck: state.wordDeck,
+        currentWord: state.currentWord, currentRoundStats: state.currentRoundStats,
+        timeLeft: state.timeLeft, isPaused: state.isPaused
+      }));
+    } catch {}
+  }, [state]);
+
+  // Warn host before closing/refreshing during active game
+  useEffect(() => {
+    const activeStates = new Set([
+      GameState.PRE_ROUND, GameState.COUNTDOWN, GameState.PLAYING,
+      GameState.ROUND_SUMMARY, GameState.SCOREBOARD
+    ]);
+    if (!state.isHost || !activeStates.has(state.gameState)) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [state.isHost, state.gameState]);
 
   // Fisher-Yates shuffle algorithm
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -197,6 +276,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_STATE', payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0 } });
         break;
       case 'NEXT_ROUND':
+        if (stateRef.current.teams.length === 0) break;
         dispatch({ type: 'SET_STATE', payload: {
           gameState: GameState.PRE_ROUND,
           currentTeamIndex: (stateRef.current.currentTeamIndex + 1) % stateRef.current.teams.length
