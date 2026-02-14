@@ -1,13 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(if exist \"c:\\\\Users\\\\Dmytro\\\\Desktop\\\\тест\\\\ALIAS\\\\ALIAS\\\\src\\\\screens\\\\LobbyFlow.tsx\" del \"c:\\\\Users\\\\Dmytro\\\\Desktop\\\\тест\\\\ALIAS\\\\ALIAS\\\\src\\\\screens\\\\LobbyFlow.tsx\")",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(powershell:*)",
+      "Bash(pnpm --version:*)",
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(pnpm install:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm --filter @alias/client build:*)",
+      "Bash(pnpm --filter @alias/client add:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

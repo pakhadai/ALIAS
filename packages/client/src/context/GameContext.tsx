@@ -10,7 +10,9 @@ import {
 } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { usePeerConnection } from '../hooks/usePeerConnection';
+import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
+import type { GameSyncState } from '@alias/shared';
 
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
 
@@ -377,6 +379,46 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const { broadcastState, hostConn, peerIdRef, sendJoinRequest, kickConnection } = usePeerConnection(state, dispatch, handleGameAction, initialState);
 
+  // Socket.io connection for server-based online mode
+  const socketConn = useSocketConnection({
+    onStateSync: useCallback((syncState: GameSyncState) => {
+      dispatch({ type: 'SET_STATE', payload: {
+        gameState: syncState.gameState,
+        settings: syncState.settings,
+        roomCode: syncState.roomCode,
+        players: syncState.players,
+        teams: syncState.teams,
+        currentTeamIndex: syncState.currentTeamIndex,
+        currentWord: syncState.currentWord,
+        currentRoundStats: syncState.currentRoundStats,
+        timeLeft: syncState.timeLeft,
+        isPaused: syncState.isPaused,
+        wordDeck: syncState.wordDeck,
+        isConnected: true,
+      }});
+    }, []),
+    onPlayerJoined: useCallback((player: Player) => {
+      showNotification(`${player.name} приєднався`, 'info');
+    }, [showNotification]),
+    onPlayerLeft: useCallback((playerId: string) => {
+      showNotification('Гравець вийшов', 'info');
+    }, [showNotification]),
+    onKicked: useCallback(() => {
+      dispatch({ type: 'SET_STATE', payload: { gameState: GameState.MENU, isConnected: false } });
+      showNotification('Вас видалили з гри', 'error');
+    }, [showNotification]),
+    onError: useCallback((message: string) => {
+      dispatch({ type: 'SET_STATE', payload: { peerError: message } });
+      showNotification(message, 'error');
+    }, [showNotification]),
+    onNotification: useCallback((message: string, type: 'info' | 'error' | 'success') => {
+      showNotification(message, type);
+    }, [showNotification]),
+  });
+
+  // Determine if we're using socket.io (server) vs P2P
+  const useServer = state.gameMode === 'ONLINE';
+
   useEffect(() => {
     broadcastStateRef.current = broadcastState;
   }, [broadcastState]);
@@ -386,9 +428,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [kickConnection]);
 
   const sendAction = useCallback((action: GameActionPayload) => {
-    if (stateRef.current.isHost) handleGameAction(action);
-    else if (hostConn?.open) hostConn.send({ type: 'GAME_ACTION', payload: action });
-  }, [handleGameAction, hostConn]);
+    if (useServer) {
+      // Online mode: send action to server via socket
+      socketConn.sendGameAction(action);
+    } else if (stateRef.current.isHost) {
+      // Offline mode: handle locally
+      handleGameAction(action);
+    } else if (hostConn?.open) {
+      hostConn.send({ type: 'GAME_ACTION', payload: action });
+    }
+  }, [useServer, handleGameAction, hostConn, socketConn]);
+
+  // Sync socket connection state back to app state
+  useEffect(() => {
+    if (state.gameMode !== 'ONLINE') return;
+    if (socketConn.myPlayerId && socketConn.myPlayerId !== state.myPlayerId) {
+      dispatch({ type: 'SET_STATE', payload: { myPlayerId: socketConn.myPlayerId } });
+    }
+    if (socketConn.roomCode && socketConn.roomCode !== state.roomCode) {
+      dispatch({ type: 'SET_STATE', payload: { roomCode: socketConn.roomCode } });
+    }
+  }, [socketConn.myPlayerId, socketConn.roomCode, state.gameMode]);
 
   const currentTheme = useMemo(() => THEME_CONFIG[state.settings.theme], [state.settings.theme]);
 
@@ -398,7 +458,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGameState: (s: GameState) => {
       dispatch({ type: 'SET_STATE', payload: { gameState: s } });
     },
-    createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { roomCode: Math.floor(10000 + Math.random() * 90000).toString(), isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } }),
+    createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } }),
     handleJoin: (id: string, name: string, avatar: string) => {
       const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
       let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
@@ -409,17 +469,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       playerData.avatar = avatar;
       localStorage.setItem('alias_player', JSON.stringify(playerData));
 
-      if (stateRef.current.isHost) {
+      if (stateRef.current.gameMode === 'ONLINE') {
+        // Server-based online mode
+        if (stateRef.current.isHost) {
+          socketConn.createRoom(sanitizedName, avatar);
+          dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+        } else {
+          socketConn.joinRoom(stateRef.current.roomCode, sanitizedName, avatar);
+          dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+        }
+      } else if (stateRef.current.isHost) {
+        // Offline mode: local player management
         dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
         dispatch({ type: 'UPDATE_PLAYERS', payload: [
           ...stateRef.current.players.filter(p => p.id !== id),
           { id, persistentId: playerData.persistentId, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }
         ] });
       } else {
-        // Use peer ID so it matches what the host stores from JOIN_REQUEST
+        // Legacy P2P path
         const myId = peerIdRef.current || id;
         dispatch({ type: 'SET_STATE', payload: { myPlayerId: myId } });
-        // Send JOIN_REQUEST with correct player data to host
         sendJoinRequest({
           id: myId,
           name: sanitizedName,
@@ -457,7 +526,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRoomCode: (c: string) => dispatch({ type: 'SET_STATE', payload: { roomCode: c, gameMode: 'ONLINE', isHost: false } }),
     addOfflinePlayer: (name?: string, avatar?: string) => sendAction({ action: 'ADD_OFFLINE_PLAYER', data: { name, avatar } }),
     removeOfflinePlayer: (id: string) => sendAction({ action: 'REMOVE_OFFLINE_PLAYER', data: id }),
-  }), [state, currentTheme, sendAction, playSound, showNotification, sendJoinRequest]);
+  }), [state, currentTheme, sendAction, playSound, showNotification, sendJoinRequest, socketConn]);
 
   return (
     <GameContext.Provider value={contextValue}>

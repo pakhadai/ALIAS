@@ -12,6 +12,16 @@ dist
 dist-ssr
 *.local
 
+# Environment
+.env
+!.env.example
+
+# Prisma
+packages/server/prisma/*.db
+
+# OS
+nul
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
