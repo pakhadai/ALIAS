@@ -10,7 +10,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "test:e2e": "tsx test/e2e-game-flow.ts"
   },
   "dependencies": {
     "@alias/shared": "workspace:*",
@@ -30,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.14.0",
     "@types/uuid": "^10.0.0",
+    "socket.io-client": "^4.8.3",
     "tsx": "^4.19.0",
     "typescript": "~5.8.2"
   }

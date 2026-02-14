@@ -8,6 +8,9 @@ import { registerSocketHandlers } from './handlers/socketHandlers';
 import { RoomManager } from './services/RoomManager';
 import { GameEngine } from './services/GameEngine';
 import { WordService } from './services/WordService';
+import { RedisRoomStore } from './services/RedisRoomStore';
+import { socketAuthMiddleware } from './middleware/socketAuth';
+import authRoutes from './routes/auth';
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -19,10 +22,11 @@ const app = express();
 app.use(cors({ origin: config.cors.origin }));
 app.use(express.json());
 
-// Health check
+// Routes
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+app.use('/api/auth', authRoutes);
 
 const httpServer = createServer(app);
 
@@ -42,7 +46,17 @@ const io = new Server<
 const prisma = new PrismaClient();
 const wordService = new WordService();
 const roomManager = new RoomManager();
+const redisStore = new RedisRoomStore();
 const gameEngine = new GameEngine(roomManager, wordService);
+
+// Initialize Redis connection
+redisStore.connect(config.redis.url)
+  .then(() => {
+    roomManager.setRedisStore(redisStore);
+  })
+  .catch(() => {
+    console.warn('[Redis] Running without persistence');
+  });
 
 // Initialize Prisma connection
 prisma.$connect()
@@ -53,6 +67,9 @@ prisma.$connect()
   .catch((err: Error) => {
     console.warn('[DB] PostgreSQL not available, using fallback word list:', err.message);
   });
+
+// Socket.io auth middleware
+io.use(socketAuthMiddleware);
 
 // Socket.io connection
 io.on('connection', (socket) => {
@@ -72,6 +89,7 @@ httpServer.listen(config.port, () => {
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
+  await redisStore.disconnect();
   await prisma.$disconnect();
   process.exit(0);
 });

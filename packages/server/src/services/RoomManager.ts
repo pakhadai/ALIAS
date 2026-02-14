@@ -6,6 +6,7 @@ import {
 import type {
   Player, Team, GameSettings, RoundStats, GameSyncState,
 } from '@alias/shared';
+import { RedisRoomStore } from './RedisRoomStore';
 
 export interface Room {
   code: string;
@@ -48,6 +49,23 @@ const defaultRoundStats: RoundStats = {
 
 export class RoomManager {
   private rooms = new Map<string, Room>();
+  private redisStore: RedisRoomStore | null = null;
+
+  setRedisStore(store: RedisRoomStore): void {
+    this.redisStore = store;
+  }
+
+  /** Persist current room state to Redis (fire-and-forget) */
+  persistRoom(room: Room): void {
+    if (!this.redisStore?.isConnected) return;
+    this.redisStore.saveRoomState(room.code, this.getSyncState(room)).catch(() => {});
+  }
+
+  /** Track socket-to-room mapping in Redis */
+  private persistSocket(socketId: string, roomCode: string, playerId: string): void {
+    if (!this.redisStore?.isConnected) return;
+    this.redisStore.setSocketRoom(socketId, roomCode, playerId).catch(() => {});
+  }
 
   generateRoomCode(): string {
     let code: string;
@@ -78,6 +96,7 @@ export class RoomManager {
       socketToPlayer: new Map(),
     };
     this.rooms.set(code, room);
+    this.persistRoom(room);
     return room;
   }
 
@@ -101,6 +120,8 @@ export class RoomManager {
 
     room.players.push(player);
     room.socketToPlayer.set(socketId, playerId);
+    this.persistRoom(room);
+    this.persistSocket(socketId, roomCode, playerId);
     return player;
   }
 
@@ -124,6 +145,10 @@ export class RoomManager {
       };
     });
     room.socketToPlayer.delete(socketId);
+    this.persistRoom(room);
+    if (this.redisStore?.isConnected) {
+      this.redisStore.removeSocket(socketId).catch(() => {});
+    }
 
     return playerId;
   }
@@ -137,6 +162,9 @@ export class RoomManager {
         if (socketId === room.hostSocketId || room.players.length === 0) {
           if (room.timerInterval) clearInterval(room.timerInterval);
           this.rooms.delete(code);
+          if (this.redisStore?.isConnected) {
+            this.redisStore.deleteRoom(code).catch(() => {});
+          }
         }
         break;
       }
@@ -170,5 +198,8 @@ export class RoomManager {
     const room = this.rooms.get(code);
     if (room?.timerInterval) clearInterval(room.timerInterval);
     this.rooms.delete(code);
+    if (this.redisStore?.isConnected) {
+      this.redisStore.deleteRoom(code).catch(() => {});
+    }
   }
 }

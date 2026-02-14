@@ -101,5 +101,8 @@ export function registerSocketHandlers(
 function broadcastState(io: IO, roomCode: string, roomManager: RoomManager): void {
   const room = roomManager.getRoom(roomCode);
   if (!room) return;
-  io.to(roomCode).emit('game:state-sync', roomManager.getSyncState(room));
+  const state = roomManager.getSyncState(room);
+  io.to(roomCode).emit('game:state-sync', state);
+  // Persist to Redis after every state change
+  roomManager.persistRoom(room);
 }
