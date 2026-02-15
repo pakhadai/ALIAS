@@ -30,7 +30,7 @@ services:
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://alias:alias_dev@postgres:5432/alias
       JWT_SECRET: dev-secret-change-me
-      CORS_ORIGIN: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173,http://localhost:5174
     depends_on:
       - redis
       - postgres
