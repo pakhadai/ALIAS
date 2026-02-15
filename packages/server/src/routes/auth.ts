@@ -23,15 +23,18 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    let user = await prisma.user.findUnique({ where: { anonymousId: deviceId } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: { anonymousId: deviceId, authProvider: 'anonymous' },
+    try {
+      const user = await prisma.user.upsert({
+        where: { anonymousId: deviceId },
+        update: {},
+        create: { anonymousId: deviceId, authProvider: 'anonymous' },
       });
+      const token = authService.createToken({ sub: user.id, type: 'anonymous' });
+      res.json({ token, userId: user.id });
+    } catch (err) {
+      console.error('[Auth] anonymous error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    const token = authService.createToken({ sub: user.id, type: 'anonymous' });
-    res.json({ token, userId: user.id });
   });
 
   // ─── Google OAuth ─────────────────────────────────────────────────────
