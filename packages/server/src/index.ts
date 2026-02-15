@@ -1,6 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { config } from './config';
@@ -67,10 +69,20 @@ const gameEngine = new GameEngine(roomManager, wordService);
 const pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
 const RECONNECT_GRACE_MS = 60_000;
 
-// Initialize Redis connection
+// Initialize Redis connection (room store + pub/sub adapter)
 redisStore.connect(config.redis.url)
   .then(() => {
     roomManager.setRedisStore(redisStore);
+
+    // Socket.io Redis Adapter — enables horizontal scaling across multiple Node instances
+    try {
+      const pubClient = new Redis(config.redis.url, { maxRetriesPerRequest: 3 });
+      const subClient = pubClient.duplicate();
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log('[Redis] Socket.io adapter configured');
+    } catch (err) {
+      console.warn('[Redis] Adapter setup failed, running single-instance:', (err as Error).message);
+    }
   })
   .catch(() => {
     console.warn('[Redis] Running without persistence');
@@ -171,6 +183,7 @@ io.on('connection', (socket) => {
 httpServer.listen(config.port, () => {
   console.log(`[Server] Alias server running on port ${config.port}`);
   console.log(`[Server] Environment: ${config.nodeEnv}`);
+  console.log(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);
 });
 
 // Graceful shutdown

@@ -404,6 +404,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     onNotification: useCallback((message: string, type: 'info' | 'error' | 'success') => {
       showNotification(message, type);
     }, [showNotification]),
+    onRejoined: useCallback((_roomCode: string, playerId: string) => {
+      dispatch({ type: 'SET_STATE', payload: { gameMode: 'ONLINE', myPlayerId: playerId } });
+    }, []),
   });
 
   const sendAction = useCallback((action: GameActionPayload) => {

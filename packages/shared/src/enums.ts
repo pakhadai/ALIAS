@@ -1,5 +1,8 @@
 export enum GameState {
   MENU = 'MENU',
+  PROFILE = 'PROFILE',
+  STORE = 'STORE',
+  MY_DECKS = 'MY_DECKS',
   RULES = 'RULES',
   ENTER_NAME = 'ENTER_NAME',
   JOIN_INPUT = 'JOIN_INPUT',

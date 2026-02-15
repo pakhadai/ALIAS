@@ -161,6 +161,17 @@ export async function createCheckout(
   });
 }
 
+/** Claim a free item — instantly marks it as owned (idempotent) */
+export async function claimFreeItem(
+  itemType: 'wordPack' | 'theme' | 'soundPack',
+  itemId: string,
+): Promise<void> {
+  return apiFetch<void>('/api/purchases/claim', {
+    method: 'POST',
+    body: JSON.stringify({ itemType, itemId }),
+  });
+}
+
 // ─── Custom Decks API ───────────────────────────────────────────────────
 
 export interface CustomDeckSummary {

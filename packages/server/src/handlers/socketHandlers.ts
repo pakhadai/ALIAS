@@ -33,6 +33,7 @@ export function registerSocketHandlers(
     }
 
     player.isHost = true;
+    room.hostUserId = socket.data.userId as string | undefined;
     socket.join(room.code);
     socket.data.playerId = player.id;
     socket.data.playerName = data.playerName;

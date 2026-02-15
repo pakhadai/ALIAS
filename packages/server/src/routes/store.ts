@@ -57,9 +57,9 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
     ]);
 
     res.json({
-      wordPacks: wordPacks.map(p => ({ ...p, owned: p.isFree || purchasedWordPackIds.has(p.id) })),
-      themes: themes.map(t => ({ ...t, owned: t.isFree || purchasedThemeIds.has(t.id) })),
-      soundPacks: soundPacks.map(s => ({ ...s, owned: s.isFree || purchasedSoundPackIds.has(s.id) })),
+      wordPacks: wordPacks.map(p => ({ ...p, owned: purchasedWordPackIds.has(p.id) })),
+      themes: themes.map(t => ({ ...t, owned: purchasedThemeIds.has(t.id) })),
+      soundPacks: soundPacks.map(s => ({ ...s, owned: purchasedSoundPackIds.has(s.id) })),
     });
   });
 

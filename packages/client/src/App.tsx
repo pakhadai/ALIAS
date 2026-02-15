@@ -5,7 +5,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
 import { PageTransition, ErrorBoundary } from './components/Shared';
-import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen } from './screens/MenuFlow';
+import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen, ProfileScreen, StoreScreen, MyDecksScreen } from './screens/MenuFlow';
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
 import { VSScreen, PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
 
@@ -16,6 +16,9 @@ const GameRouter = () => {
   const renderContent = () => {
     switch (gameState) {
       case GameState.MENU: return <PageTransition key="menu"><MenuScreen /></PageTransition>;
+      case GameState.PROFILE: return <PageTransition key="profile"><ProfileScreen /></PageTransition>;
+      case GameState.STORE: return <PageTransition key="store"><StoreScreen /></PageTransition>;
+      case GameState.MY_DECKS: return <PageTransition key="my_decks"><MyDecksScreen /></PageTransition>;
       case GameState.RULES: return <PageTransition key="rules"><RulesScreen /></PageTransition>;
       case GameState.ENTER_NAME: return <PageTransition key="enter_name"><EnterNameScreen /></PageTransition>;
       case GameState.JOIN_INPUT: return <PageTransition key="join"><JoinInputScreen /></PageTransition>;

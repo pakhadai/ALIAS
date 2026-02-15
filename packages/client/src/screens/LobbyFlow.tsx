@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText } from 'lucide-react';
+import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText, PackageOpen } from 'lucide-react';
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
 import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
 import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset } from '../types';
 import { useGame } from '../context/GameContext';
+import { useAuthContext } from '../context/AuthContext';
+import { fetchStore, type WordPackItem } from '../services/api';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
 import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
@@ -261,14 +263,34 @@ export const TeamSetupScreen = () => {
 
 export const SettingsScreen = () => {
   const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
+  const { isAuthenticated } = useAuthContext();
   const t = TRANSLATIONS[settings.language];
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
+  const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
+  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStore()
+        .then(data => setOwnedPacks(data.wordPacks.filter(p => p.owned)))
+        .catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
     if (gameState !== GameState.LOBBY && gameState !== GameState.MENU && gameState !== GameState.SETTINGS) return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
+  };
+
+  const togglePack = (packId: string) => {
+    if (!isHost) return;
+    const current = settings.selectedPackIds ?? [];
+    const next = current.includes(packId)
+      ? current.filter(id => id !== packId)
+      : [...current, packId];
+    updateSetting('selectedPackIds', next);
   };
 
   const categoriesList = [Category.GENERAL, Category.FOOD, Category.TRAVEL, Category.SCIENCE, Category.MOVIES, Category.CUSTOM];
@@ -361,6 +383,55 @@ export const SettingsScreen = () => {
                         className={`w-full h-24 p-4 rounded-xl border resize-none ${currentTheme.bg} ${currentTheme.textMain} border-white/10 focus:border-yellow-500 outline-none`}
                     />
                 </div>
+            )}
+
+            {/* Pack selection — visible only when user has owned packs */}
+            {ownedPacks.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                    Мої набори слів
+                  </p>
+                  {(settings.selectedPackIds?.length ?? 0) > 0 && (
+                    <button
+                      onClick={() => isHost && updateSetting('selectedPackIds', [])}
+                      className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'} ${!isHost ? 'pointer-events-none' : ''}`}
+                    >
+                      Скинути
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ownedPacks.map(pack => {
+                    const isSelected = (settings.selectedPackIds ?? []).includes(pack.id);
+                    return (
+                      <button
+                        key={pack.id}
+                        onClick={() => togglePack(pack.id)}
+                        disabled={!isHost}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all disabled:pointer-events-none ${
+                          isSelected
+                            ? 'border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#D4AF6A]'
+                            : isDark
+                              ? 'border-white/10 bg-white/5 text-white/40 hover:text-white/70 hover:border-white/20'
+                              : 'border-slate-200 bg-white text-slate-400 hover:text-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        {isSelected && <Check size={10} />}
+                        <span>{pack.name}</span>
+                        <span className={`font-normal ${isSelected ? 'text-[#D4AF6A]/60' : 'opacity-40'}`}>
+                          {pack.wordCount}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {(settings.selectedPackIds?.length ?? 0) === 0 && (
+                  <p className={`text-[10px] ${isDark ? 'text-white/25' : 'text-slate-400'}`}>
+                    Не вибрано — використовуються стандартні слова
+                  </p>
+                )}
+              </div>
             )}
 
             <div className="space-y-4">

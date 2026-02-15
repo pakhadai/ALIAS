@@ -28,6 +28,8 @@ export interface Room {
   // analytics
   sessionId?: string;
   roundsPlayed: number;
+  // host identity (stored for future use, e.g. host migration)
+  hostUserId?: string;
 }
 
 const defaultSettings: GameSettings = {

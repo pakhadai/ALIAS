@@ -186,14 +186,14 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                 Sign in with Apple
               </button>
             ) : (
-              <div className="flex justify-center [&>div]:w-full [&_iframe]:w-full">
+              <div className="flex justify-center">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={() => {}}
                   shape="pill"
                   size="large"
                   text="signin_with"
-                  width="100%"
+                  width={320}
                 />
               </div>
             )}

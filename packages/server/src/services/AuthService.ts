@@ -36,7 +36,10 @@ export class AuthService {
 
   /** Verify a Google ID token, return { googleId, email, name } or null */
   async verifyGoogleToken(idToken: string): Promise<{ googleId: string; email: string; name: string } | null> {
-    if (!config.google.clientId) return null;
+    if (!config.google.clientId) {
+      console.error('[Auth] GOOGLE_CLIENT_ID is not set — set it in .env and restart the server');
+      return null;
+    }
     try {
       const ticket = await googleClient.verifyIdToken({
         idToken,
@@ -45,7 +48,8 @@ export class AuthService {
       const p = ticket.getPayload();
       if (!p?.sub || !p.email) return null;
       return { googleId: p.sub, email: p.email, name: p.name || p.email };
-    } catch {
+    } catch (err) {
+      console.error('[Auth] Google token verification failed:', (err as Error).message);
       return null;
     }
   }

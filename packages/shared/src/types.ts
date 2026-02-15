@@ -31,6 +31,7 @@ export interface GameSettings {
   theme: AppTheme;
   customWords?: string;
   customDeckCode?: string;
+  selectedPackIds?: string[];
 }
 
 export interface RoundStats {

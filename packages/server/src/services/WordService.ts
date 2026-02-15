@@ -18,6 +18,11 @@ export class WordService {
     return shuffled;
   }
 
+  /**
+   * Build a shuffled word deck.
+   * Uses settings.selectedPackIds when set (host-selected packs from their account).
+   * Falls back to language+category query when no packs are selected.
+   */
   async buildDeck(settings: GameSettings): Promise<string[]> {
     // Handle custom deck from DB (by access code)
     if (settings.customDeckCode && this.prisma) {
@@ -44,18 +49,30 @@ export class WordService {
 
     let dbWords: string[] = [];
 
-    if (dbCategories.length > 0 && this.prisma) {
-      // Query words from WordPacks (new schema)
-      const rows = await this.prisma.word.findMany({
-        where: {
-          pack: {
-            language: settings.language,
-            category: { in: dbCategories },
+    if (this.prisma) {
+      const selectedPackIds = settings.selectedPackIds;
+      const hasPackFilter = selectedPackIds && selectedPackIds.length > 0;
+
+      if (hasPackFilter) {
+        // Use only the host's selected packs (ignores language filter — packs already belong to correct language)
+        const rows = await this.prisma.word.findMany({
+          where: { pack: { id: { in: selectedPackIds } } },
+          select: { text: true },
+        });
+        dbWords = rows.map((r) => r.text);
+      } else if (dbCategories.length > 0) {
+        // Default: query by language + category
+        const rows = await this.prisma.word.findMany({
+          where: {
+            pack: {
+              language: settings.language,
+              category: { in: dbCategories },
+            },
           },
-        },
-        select: { text: true },
-      });
-      dbWords = rows.map((r) => r.text);
+          select: { text: true },
+        });
+        dbWords = rows.map((r) => r.text);
+      }
     }
 
     // Fallback to static MOCK_WORDS if DB is empty or unavailable

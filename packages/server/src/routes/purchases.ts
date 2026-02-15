@@ -158,6 +158,64 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
     res.json({ received: true });
   });
 
+  // ─── Free claim ────────────────────────────────────────────────────────
+
+  /**
+   * POST /api/purchases/claim
+   * Body: { itemType: 'wordPack'|'theme', itemId: string }
+   * Instantly claims a free item for the current user (idempotent).
+   */
+  router.post('/claim', async (req, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    const { itemType, itemId } = req.body as { itemType?: string; itemId?: string };
+    if (!itemType || !itemId || !['wordPack', 'theme', 'soundPack'].includes(itemType)) {
+      res.status(400).json({ error: 'itemType and itemId are required' });
+      return;
+    }
+
+    let isFree = false;
+    if (itemType === 'wordPack') {
+      const pack = await prisma.wordPack.findUnique({ where: { id: itemId }, select: { isFree: true } });
+      if (!pack) { res.status(404).json({ error: 'Not found' }); return; }
+      isFree = pack.isFree;
+    } else if (itemType === 'theme') {
+      const theme = await prisma.theme.findUnique({ where: { id: itemId }, select: { isFree: true } });
+      if (!theme) { res.status(404).json({ error: 'Not found' }); return; }
+      isFree = theme.isFree;
+    }
+
+    if (!isFree) { res.status(400).json({ error: 'Item is not free' }); return; }
+
+    // Idempotent — skip if already claimed
+    const existing = await prisma.purchase.findFirst({
+      where: {
+        userId,
+        status: 'completed',
+        ...(itemType === 'wordPack' ? { wordPackId: itemId }
+          : itemType === 'theme' ? { themeId: itemId }
+          : { soundPackId: itemId }),
+      },
+    });
+
+    if (!existing) {
+      await prisma.purchase.create({
+        data: {
+          userId,
+          amount: 0,
+          paymentProvider: 'free',
+          status: 'completed',
+          wordPackId: itemType === 'wordPack' ? itemId : null,
+          themeId: itemType === 'theme' ? itemId : null,
+          soundPackId: itemType === 'soundPack' ? itemId : null,
+        },
+      });
+    }
+
+    res.json({ success: true });
+  });
+
   // ─── My purchases ───────────────────────────────────────────────────────
 
   /**
