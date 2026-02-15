@@ -1,11 +1,9 @@
 
 import React, { useState, useRef } from 'react';
-import { X, AlertCircle, ShoppingBag, FileText, User } from 'lucide-react';
+import { X, AlertCircle, User } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
-import { StoreModal } from '../components/Store/StoreModal';
-import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
 import { ProfileModal } from '../components/Auth/ProfileModal';
 import { GameState, Language, AppTheme } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
@@ -182,8 +180,6 @@ export const RulesScreen = () => {
 export const MenuScreen = () => {
   const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame, connectionError } = useGame();
   const [showRules, setShowRules] = useState(false);
-  const [showStore, setShowStore] = useState(false);
-  const [showDecks, setShowDecks] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const t = TRANSLATIONS[settings.language];
   
@@ -219,12 +215,6 @@ export const MenuScreen = () => {
       <header className="relative z-10 w-full px-8 pt-12 pb-4 flex justify-end items-center gap-6">
         <button onClick={() => setShowProfile(true)} className="transition-all active:scale-90 p-2">
           <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
-        </button>
-        <button onClick={() => setShowDecks(true)} className="transition-all active:scale-90 p-2">
-          <FileText size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
-        </button>
-        <button onClick={() => setShowStore(true)} className="transition-all active:scale-90 p-2">
-          <ShoppingBag size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
         </button>
         <button onClick={toggleTheme} className="transition-all active:scale-90 p-2">
           <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
@@ -289,8 +279,6 @@ export const MenuScreen = () => {
       </main>
 
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} t={t} currentTheme={currentTheme} />
-      {showStore && <StoreModal onClose={() => setShowStore(false)} />}
-      {showDecks && <CustomDeckModal onClose={() => setShowDecks(false)} />}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </div>
   );
