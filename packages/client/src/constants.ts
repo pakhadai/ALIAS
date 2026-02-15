@@ -4,6 +4,7 @@ export {
   TEAM_COLORS, MOCK_WORDS,
 } from '@alias/shared';
 
+import { Language } from '@alias/shared';
 import { AppTheme } from './types';
 
 // Client constants

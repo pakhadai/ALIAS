@@ -12,7 +12,9 @@ export const config = {
     expiresIn: '7d',
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174')
+      .split(',')
+      .map((o) => o.trim()),
   },
   adminApiKey: process.env.ADMIN_API_KEY || 'dev-admin-key',
   google: {
