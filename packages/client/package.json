@@ -1,7 +1,7 @@
 {
   "name": "@alias/client",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@alias/shared": "workspace:*",
+    "@react-oauth/google": "^0.13.4",
     "lucide-react": "^0.563.0",
-    "peerjs": "^1.5.5",
     "qrcode": "^1.5.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

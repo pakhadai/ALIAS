@@ -1,0 +1,219 @@
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
+/** Storage keys */
+export const AUTH_TOKEN_KEY = 'alias_auth_token';
+export const DEVICE_ID_KEY = 'alias_device_id';
+export const PLAYER_ID_KEY = 'alias_player_id';
+export const ROOM_CODE_KEY = 'alias_room_code';
+
+/** Generate or retrieve a persistent device ID */
+export function getDeviceId(): string {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = `dev_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+}
+
+/** Get stored JWT */
+export function getAuthToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+/** Store JWT */
+export function setAuthToken(token: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+/** Remove JWT (logout) */
+export function clearAuthToken(): void {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+/** Authenticated fetch wrapper */
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const res = await fetch(`${SERVER_URL}${path}`, { ...options, headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+// ─── Auth API ──────────────────────────────────────────────────────────
+
+export interface AuthResponse {
+  token: string;
+  userId: string;
+  email?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string | null;
+  authProvider: string;
+  createdAt: string;
+  purchases: {
+    id: string;
+    wordPackId: string | null;
+    themeId: string | null;
+    soundPackId: string | null;
+    createdAt: string;
+  }[];
+}
+
+/** Get anonymous JWT (creates User record on server if needed) */
+export async function fetchAnonymousToken(): Promise<AuthResponse> {
+  const deviceId = getDeviceId();
+  const data = await apiFetch<AuthResponse>('/api/auth/anonymous', {
+    method: 'POST',
+    body: JSON.stringify({ deviceId }),
+  });
+  setAuthToken(data.token);
+  return data;
+}
+
+/** Sign in with Google ID token */
+export async function signInWithGoogle(idToken: string): Promise<AuthResponse> {
+  const deviceId = getDeviceId();
+  const data = await apiFetch<AuthResponse>('/api/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ idToken, deviceId }),
+  });
+  setAuthToken(data.token);
+  return data;
+}
+
+/** Sign in with Apple identity token */
+export async function signInWithApple(idToken: string, email?: string): Promise<AuthResponse> {
+  const deviceId = getDeviceId();
+  const data = await apiFetch<AuthResponse>('/api/auth/apple', {
+    method: 'POST',
+    body: JSON.stringify({ idToken, email, deviceId }),
+  });
+  setAuthToken(data.token);
+  return data;
+}
+
+/** Get current user profile */
+export async function fetchProfile(): Promise<UserProfile> {
+  return apiFetch<UserProfile>('/api/auth/me');
+}
+
+// ─── Store API ─────────────────────────────────────────────────────────
+
+export interface StoreItem {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;   // cents
+  isFree: boolean;
+  owned: boolean;
+}
+
+export interface WordPackItem extends StoreItem {
+  language: string;
+  category: string;
+  difficulty: string;
+  wordCount: number;
+  description: string | null;
+}
+
+export interface ThemeItem extends StoreItem {
+  config: Record<string, unknown>;
+}
+
+export interface SoundPackItem extends StoreItem {
+  config: Record<string, unknown>;
+}
+
+export interface StoreData {
+  wordPacks: WordPackItem[];
+  themes: ThemeItem[];
+  soundPacks: SoundPackItem[];
+}
+
+export async function fetchStore(): Promise<StoreData> {
+  return apiFetch<StoreData>('/api/store');
+}
+
+// ─── Purchases API ─────────────────────────────────────────────────────
+
+export interface CheckoutResponse {
+  checkoutUrl: string;
+  purchaseId: string;
+}
+
+export async function createCheckout(
+  itemType: 'wordPack' | 'theme' | 'soundPack',
+  itemId: string,
+): Promise<CheckoutResponse> {
+  return apiFetch<CheckoutResponse>('/api/purchases/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ itemType, itemId }),
+  });
+}
+
+// ─── Custom Decks API ───────────────────────────────────────────────────
+
+export interface CustomDeckSummary {
+  id: string;
+  name: string;
+  accessCode: string;
+  status: string;
+  wordCount: number;
+  branding: { logoUrl?: string; primaryColor?: string; companyName?: string } | null;
+  createdAt: string;
+}
+
+export interface CustomDeckDetail extends CustomDeckSummary {
+  words: string[];
+}
+
+export async function fetchMyDecks(): Promise<CustomDeckSummary[]> {
+  return apiFetch<CustomDeckSummary[]>('/api/custom-decks/my');
+}
+
+export async function createCustomDeck(payload: {
+  name: string;
+  words: string[];
+  branding?: { logoUrl?: string; primaryColor?: string; companyName?: string };
+  accessCode?: string;
+}): Promise<CustomDeckSummary> {
+  return apiFetch<CustomDeckSummary>('/api/custom-decks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function uploadCustomDeckFile(file: File, name: string): Promise<CustomDeckSummary> {
+  const token = getAuthToken();
+  const form = new FormData();
+  form.append('file', file);
+  form.append('name', name);
+  const res = await fetch(`${SERVER_URL}/api/custom-decks/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchDeckByCode(code: string): Promise<CustomDeckDetail> {
+  return apiFetch<CustomDeckDetail>(`/api/custom-decks/access/${code}`);
+}
+
+export async function deleteCustomDeck(id: string): Promise<void> {
+  return apiFetch<void>(`/api/custom-decks/${id}`, { method: 'DELETE' });
+}

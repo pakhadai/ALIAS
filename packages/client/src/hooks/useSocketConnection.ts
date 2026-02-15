@@ -6,6 +6,7 @@ import type {
   GameSyncState,
   Player,
 } from '@alias/shared';
+import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -18,6 +19,7 @@ interface UseSocketConnectionOptions {
   onKicked: () => void;
   onError: (message: string) => void;
   onNotification: (message: string, type: 'info' | 'error' | 'success') => void;
+  onRejoined?: (roomCode: string, playerId: string) => void;
 }
 
 export function useSocketConnection(options: UseSocketConnectionOptions) {
@@ -29,19 +31,33 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   optionsRef.current = options;
 
   useEffect(() => {
+    const token = getAuthToken();
     const socket: AppSocket = io(SERVER_URL, {
       autoConnect: false,
       transports: ['websocket', 'polling'],
+      auth: token ? { token } : {},
     });
 
     socketRef.current = socket;
 
     socket.on('connect', () => {
       setIsConnected(true);
+      // Auto-rejoin if we have stored session data
+      const storedRoom = localStorage.getItem(ROOM_CODE_KEY);
+      const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
+      if (storedRoom && storedPlayer) {
+        socket.emit('room:rejoin', { roomCode: storedRoom, playerId: storedPlayer });
+      }
     });
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+    });
+
+    socket.on('room:rejoined', ({ roomCode: code, playerId }) => {
+      setMyPlayerId(playerId);
+      setRoomCode(code);
+      optionsRef.current.onRejoined?.(code, playerId);
     });
 
     socket.on('game:state-sync', (state) => {
@@ -90,6 +106,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socket?.once('room:created', ({ roomCode: code, playerId }) => {
       setMyPlayerId(playerId);
       setRoomCode(code);
+      localStorage.setItem(ROOM_CODE_KEY, code);
+      localStorage.setItem(PLAYER_ID_KEY, playerId);
     });
 
     socket?.emit('room:create', { playerName, avatar });
@@ -102,6 +120,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socket?.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
       setMyPlayerId(playerId);
       setRoomCode(joinedCode);
+      localStorage.setItem(ROOM_CODE_KEY, joinedCode);
+      localStorage.setItem(PLAYER_ID_KEY, playerId);
     });
 
     socket?.emit('room:join', { roomCode: code, playerName, avatar });
@@ -111,6 +131,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socketRef.current?.emit('room:leave');
     setRoomCode('');
     setMyPlayerId('');
+    localStorage.removeItem(ROOM_CODE_KEY);
+    localStorage.removeItem(PLAYER_ID_KEY);
   }, []);
 
   const sendGameAction = useCallback((payload: Parameters<ClientToServerEvents['game:action']>[0]) => {

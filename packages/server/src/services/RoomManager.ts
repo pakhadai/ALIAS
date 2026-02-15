@@ -25,6 +25,9 @@ export interface Room {
   timerInterval: ReturnType<typeof setInterval> | null;
   // socketId -> playerId mapping
   socketToPlayer: Map<string, string>;
+  // analytics
+  sessionId?: string;
+  roundsPlayed: number;
 }
 
 const defaultSettings: GameSettings = {
@@ -94,6 +97,7 @@ export class RoomManager {
       isPaused: false,
       timerInterval: null,
       socketToPlayer: new Map(),
+      roundsPlayed: 0,
     };
     this.rooms.set(code, room);
     this.persistRoom(room);
@@ -153,22 +157,55 @@ export class RoomManager {
     return playerId;
   }
 
-  handleDisconnect(socketId: string): void {
+  /**
+   * Handle socket disconnect with host migration.
+   * Returns { roomCode, newHostSocketId } if host was migrated, null otherwise.
+   */
+  handleDisconnect(socketId: string): { roomCode: string; newHostSocketId: string } | null {
     for (const [code, room] of this.rooms) {
-      if (room.socketToPlayer.has(socketId)) {
-        this.removePlayer(code, socketId);
+      if (!room.socketToPlayer.has(socketId)) continue;
 
-        // If host disconnected or room is empty, clean up
-        if (socketId === room.hostSocketId || room.players.length === 0) {
-          if (room.timerInterval) clearInterval(room.timerInterval);
-          this.rooms.delete(code);
-          if (this.redisStore?.isConnected) {
-            this.redisStore.deleteRoom(code).catch(() => {});
-          }
+      const wasHost = socketId === room.hostSocketId;
+      this.removePlayer(code, socketId);
+
+      // Room empty — clean up
+      if (room.players.length === 0) {
+        if (room.timerInterval) clearInterval(room.timerInterval);
+        this.rooms.delete(code);
+        if (this.redisStore?.isConnected) {
+          this.redisStore.deleteRoom(code).catch(() => {});
         }
-        break;
+        return null;
       }
+
+      // Host migration: assign the first remaining player as new host
+      if (wasHost) {
+        const [newHostSocketId, newHostPlayerId] = room.socketToPlayer.entries().next().value!;
+        room.hostSocketId = newHostSocketId;
+        room.hostPlayerId = newHostPlayerId;
+
+        // Update isHost flag on players
+        room.players = room.players.map(p => ({
+          ...p,
+          isHost: p.id === newHostPlayerId,
+        }));
+
+        // Update in teams too
+        room.teams = room.teams.map(team => ({
+          ...team,
+          players: team.players.map(p => ({
+            ...p,
+            isHost: p.id === newHostPlayerId,
+          })),
+        }));
+
+        this.persistRoom(room);
+        return { roomCode: code, newHostSocketId };
+      }
+
+      return null;
     }
+    return null;
   }
 
   getPlayerSocketId(room: Room, playerId: string): string | undefined {

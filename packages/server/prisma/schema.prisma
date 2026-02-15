@@ -7,25 +7,106 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Word {
-  id        Int      @id @default(autoincrement())
-  text      String
-  language  String   // UA, DE, EN
-  category  String   // General, Food, Travel, Science, Movies
-  createdAt DateTime @default(now())
+model User {
+  id           String   @id @default(uuid())
+  anonymousId  String?  @unique
+  email        String?  @unique
+  authProvider String   @default("anonymous")
+  createdAt    DateTime @default(now())
+  purchases    Purchase[]
+  customDecks  CustomDeck[]
+}
 
-  @@unique([text, language, category])
-  @@index([language, category])
+model WordPack {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  language    String                    // "UA" | "DE" | "EN"
+  category    String                    // "General" | "Food" | etc.
+  difficulty  String   @default("mixed") // "easy" | "medium" | "hard" | "18+" | "mixed"
+  version     Int      @default(1)
+  price       Int      @default(0)      // cents, 0 = free
+  isFree      Boolean  @default(true)
+  wordCount   Int      @default(0)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  words       Word[]
+  purchases   Purchase[]
+}
+
+model Word {
+  id     String   @id @default(uuid())
+  text   String
+  packId String
+  pack   WordPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+
+  @@unique([text, packId])
+  @@index([packId])
+}
+
+model Theme {
+  id        String    @id @default(uuid())
+  slug      String    @unique
+  name      String
+  config    Json
+  price     Int       @default(0)
+  isFree    Boolean   @default(true)
+  purchases Purchase[]
+}
+
+model SoundPack {
+  id        String    @id @default(uuid())
+  slug      String    @unique
+  name      String
+  config    Json
+  price     Int       @default(0)
+  isFree    Boolean   @default(true)
+  purchases Purchase[]
+}
+
+model Purchase {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  wordPackId      String?
+  wordPack        WordPack?  @relation(fields: [wordPackId], references: [id])
+  themeId         String?
+  theme           Theme?     @relation(fields: [themeId], references: [id])
+  soundPackId     String?
+  soundPack       SoundPack? @relation(fields: [soundPackId], references: [id])
+  amount          Int
+  paymentProvider String     // "stripe" | "liqpay"
+  status          String     @default("pending") // "pending" | "completed" | "refunded"
+  createdAt       DateTime   @default(now())
+
+  @@index([userId])
+}
+
+model CustomDeck {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  name       String
+  words      Json                        // string[]
+  branding   Json?                       // { logoUrl, primaryColor, companyName }
+  accessCode String?  @unique
+  status     String   @default("pending") // "pending" | "approved" | "rejected"
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
 }
 
 model GameSession {
-  id            String   @id @default(uuid())
-  roomCode      String   @unique
-  hostPlayerId  String
-  status        String   @default("active") // active, finished
-  settings      Json
-  createdAt     DateTime @default(now())
-  finishedAt    DateTime?
+  id           String    @id @default(uuid())
+  roomCode     String
+  hostPlayerId String
+  playerCount  Int       @default(0)
+  roundsPlayed Int       @default(0)
+  completedAt  DateTime?
+  settings     Json
+  status       String    @default("active") // "active" | "completed" | "abandoned"
+  createdAt    DateTime  @default(now())
 
   @@index([roomCode])
   @@index([status])

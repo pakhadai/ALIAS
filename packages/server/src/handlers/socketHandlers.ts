@@ -7,6 +7,7 @@ import type {
 } from '@alias/shared';
 import type { RoomManager } from '../services/RoomManager';
 import type { GameEngine } from '../services/GameEngine';
+import { roomCreateSchema, roomJoinSchema, validatePayload, validateGameAction } from '../validation/schemas';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
@@ -17,46 +18,57 @@ export function registerSocketHandlers(
   roomManager: RoomManager,
   gameEngine: GameEngine,
 ): void {
-  socket.on('room:create', ({ playerName, avatar }) => {
+  socket.on('room:create', (rawData) => {
+    const data = validatePayload(roomCreateSchema, rawData);
+    if (!data) {
+      socket.emit('room:error', { message: 'Invalid data' });
+      return;
+    }
+
     const room = roomManager.createRoom(socket.id);
-    const player = roomManager.addPlayer(room.code, socket.id, playerName, avatar);
+    const player = roomManager.addPlayer(room.code, socket.id, data.playerName, data.avatar);
     if (!player) {
       socket.emit('room:error', { message: 'Failed to create room' });
       return;
     }
 
-    // Mark host
     player.isHost = true;
     socket.join(room.code);
     socket.data.playerId = player.id;
-    socket.data.playerName = playerName;
+    socket.data.playerName = data.playerName;
     socket.data.roomCode = room.code;
 
     socket.emit('room:created', { roomCode: room.code, playerId: player.id });
     broadcastState(io, room.code, roomManager);
   });
 
-  socket.on('room:join', ({ roomCode, playerName, avatar }) => {
-    const room = roomManager.getRoom(roomCode);
-    if (!room) {
-      socket.emit('room:error', { message: `Room ${roomCode} not found` });
+  socket.on('room:join', (rawData) => {
+    const data = validatePayload(roomJoinSchema, rawData);
+    if (!data) {
+      socket.emit('room:error', { message: 'Invalid data' });
       return;
     }
 
-    const player = roomManager.addPlayer(roomCode, socket.id, playerName, avatar);
+    const room = roomManager.getRoom(data.roomCode);
+    if (!room) {
+      socket.emit('room:error', { message: `Room ${data.roomCode} not found` });
+      return;
+    }
+
+    const player = roomManager.addPlayer(data.roomCode, socket.id, data.playerName, data.avatar);
     if (!player) {
       socket.emit('room:error', { message: 'Room is full' });
       return;
     }
 
-    socket.join(roomCode);
+    socket.join(data.roomCode);
     socket.data.playerId = player.id;
-    socket.data.playerName = playerName;
-    socket.data.roomCode = roomCode;
+    socket.data.playerName = data.playerName;
+    socket.data.roomCode = data.roomCode;
 
-    socket.emit('room:joined', { roomCode, playerId: player.id });
-    io.to(roomCode).emit('room:player-joined', { player });
-    broadcastState(io, roomCode, roomManager);
+    socket.emit('room:joined', { roomCode: data.roomCode, playerId: player.id });
+    io.to(data.roomCode).emit('room:player-joined', { player });
+    broadcastState(io, data.roomCode, roomManager);
   });
 
   socket.on('room:leave', () => {
@@ -71,14 +83,24 @@ export function registerSocketHandlers(
     }
   });
 
-  socket.on('game:action', async (payload) => {
+  socket.on('game:action', async (rawPayload) => {
     const { roomCode } = socket.data;
     if (!roomCode) return;
+
+    const payload = validateGameAction(rawPayload);
+    if (!payload) {
+      socket.emit('room:error', { message: 'Invalid action' });
+      return;
+    }
+
+    // Reject offline-only actions
+    if (payload.action === 'ADD_OFFLINE_PLAYER' || payload.action === 'REMOVE_OFFLINE_PLAYER') {
+      return;
+    }
 
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    // Only host can execute game actions (or we relay non-host to server which acts as host)
     await gameEngine.handleAction(room, payload);
 
     // Handle kick: disconnect the kicked player's socket
@@ -103,6 +125,5 @@ function broadcastState(io: IO, roomCode: string, roomManager: RoomManager): voi
   if (!room) return;
   const state = roomManager.getSyncState(room);
   io.to(roomCode).emit('game:state-sync', state);
-  // Persist to Redis after every state change
   roomManager.persistRoom(room);
 }

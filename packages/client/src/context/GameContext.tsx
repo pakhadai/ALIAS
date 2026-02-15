@@ -5,11 +5,9 @@ import {
   Player, AppTheme, GameActionPayload, SoundPreset, AppState, GameContextType
 } from '../types';
 import {
-  MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS,
-  BROADCAST_DEBOUNCE_MS, RECONNECT_MAX_TIME_S, ROOM_CODE_LENGTH
+  MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS, ROOM_CODE_LENGTH
 } from '../constants';
 import { useAudio } from '../hooks/useAudio';
-import { usePeerConnection } from '../hooks/usePeerConnection';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
 import type { GameSyncState } from '@alias/shared';
@@ -56,10 +54,8 @@ const initialState: AppState = {
   timeLeft: 0,
   isPaused: false,
   isConnected: false,
-  isHostReconnecting: false,
-  reconnectTimeLeft: RECONNECT_MAX_TIME_S,
   notification: null,
-  peerError: null
+  connectionError: null
 };
 
 function gameReducer(state: AppState, action: Action): AppState {
@@ -193,8 +189,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'SET_STATE', payload: { wordDeck: deck, currentWord: word } });
   }, []);
 
-  const broadcastStateRef = useRef<() => void>(() => {});
-  const kickConnectionRef = useRef<(playerId: string) => void>(() => {});
 
   const handleGameAction = useCallback((payload: GameActionPayload) => {
     if (!stateRef.current.isHost) return;
@@ -310,7 +304,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       case 'KICK_PLAYER': {
         const kickedPlayerId = payload.data;
-        kickConnectionRef.current(kickedPlayerId);
         const updatedPlayers = stateRef.current.players.filter(p => p.id !== kickedPlayerId);
         const updatedTeams = stateRef.current.teams.map(team => {
           const newPlayers = team.players.filter(p => p.id !== kickedPlayerId);
@@ -374,10 +367,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         break;
       }
     }
-    setTimeout(() => broadcastStateRef.current(), BROADCAST_DEBOUNCE_MS);
   }, [playSound, nextWordLogic]);
-
-  const { broadcastState, hostConn, peerIdRef, sendJoinRequest, kickConnection } = usePeerConnection(state, dispatch, handleGameAction, initialState);
 
   // Socket.io connection for server-based online mode
   const socketConn = useSocketConnection({
@@ -408,7 +398,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       showNotification('Вас видалили з гри', 'error');
     }, [showNotification]),
     onError: useCallback((message: string) => {
-      dispatch({ type: 'SET_STATE', payload: { peerError: message } });
+      dispatch({ type: 'SET_STATE', payload: { connectionError: message } });
       showNotification(message, 'error');
     }, [showNotification]),
     onNotification: useCallback((message: string, type: 'info' | 'error' | 'success') => {
@@ -416,28 +406,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [showNotification]),
   });
 
-  // Determine if we're using socket.io (server) vs P2P
-  const useServer = state.gameMode === 'ONLINE';
-
-  useEffect(() => {
-    broadcastStateRef.current = broadcastState;
-  }, [broadcastState]);
-
-  useEffect(() => {
-    kickConnectionRef.current = kickConnection;
-  }, [kickConnection]);
-
   const sendAction = useCallback((action: GameActionPayload) => {
-    if (useServer) {
+    if (state.gameMode === 'ONLINE') {
       // Online mode: send action to server via socket
       socketConn.sendGameAction(action);
-    } else if (stateRef.current.isHost) {
+    } else {
       // Offline mode: handle locally
       handleGameAction(action);
-    } else if (hostConn?.open) {
-      hostConn.send({ type: 'GAME_ACTION', payload: action });
     }
-  }, [useServer, handleGameAction, hostConn, socketConn]);
+  }, [state.gameMode, handleGameAction, socketConn]);
 
   // Sync socket connection state back to app state
   useEffect(() => {
@@ -478,23 +455,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           socketConn.joinRoom(stateRef.current.roomCode, sanitizedName, avatar);
           dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
         }
-      } else if (stateRef.current.isHost) {
+      } else {
         // Offline mode: local player management
         dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
         dispatch({ type: 'UPDATE_PLAYERS', payload: [
           ...stateRef.current.players.filter(p => p.id !== id),
           { id, persistentId: playerData.persistentId, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }
         ] });
-      } else {
-        // Legacy P2P path
-        const myId = peerIdRef.current || id;
-        dispatch({ type: 'SET_STATE', payload: { myPlayerId: myId } });
-        sendJoinRequest({
-          id: myId,
-          name: sanitizedName,
-          avatar,
-          persistentId: playerData.persistentId
-        });
       }
     },
     sendAction,
@@ -526,7 +493,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRoomCode: (c: string) => dispatch({ type: 'SET_STATE', payload: { roomCode: c, gameMode: 'ONLINE', isHost: false } }),
     addOfflinePlayer: (name?: string, avatar?: string) => sendAction({ action: 'ADD_OFFLINE_PLAYER', data: { name, avatar } }),
     removeOfflinePlayer: (id: string) => sendAction({ action: 'REMOVE_OFFLINE_PLAYER', data: id }),
-  }), [state, currentTheme, sendAction, playSound, showNotification, sendJoinRequest, socketConn]);
+  }), [state, currentTheme, sendAction, playSound, showNotification, socketConn]);
 
   return (
     <GameContext.Provider value={contextValue}>

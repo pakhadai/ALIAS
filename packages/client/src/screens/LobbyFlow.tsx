@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Settings as SettingsIcon, Check, Plus, Minus } from 'lucide-react';
+import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText } from 'lucide-react';
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
+import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
 import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
@@ -10,7 +11,7 @@ import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
 
 export const LobbyScreen = () => {
-  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, peerError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
+  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -57,7 +58,7 @@ export const LobbyScreen = () => {
       </header>
 
       {/* Connection Error Display */}
-      {!isHost && peerError && !isConnected && (
+      {!isHost && connectionError && !isConnected && (
         <div className="w-full max-w-sm mx-auto mb-6">
           <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center animate-shake">
             <p className="text-red-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">{t.connectionFailed}</p>
@@ -261,6 +262,7 @@ export const TeamSetupScreen = () => {
 export const SettingsScreen = () => {
   const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
   const t = TRANSLATIONS[settings.language];
+  const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
@@ -431,11 +433,51 @@ export const SettingsScreen = () => {
             )}
         </div>
 
+        {/* Custom Deck picker */}
+        <div className="space-y-4 pb-4">
+            <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>Власний словник</p>
+            {settings.customDeckCode ? (
+                <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/10">
+                    <div className="flex items-center gap-2">
+                        <FileText size={14} className="text-indigo-400" />
+                        <span className="text-sm text-white font-mono">{settings.customDeckCode}</span>
+                    </div>
+                    {isHost && (
+                        <button
+                            onClick={() => updateSetting('customDeckCode', undefined)}
+                            className="text-slate-400 hover:text-white transition-colors p-1"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <button
+                    onClick={() => isHost && setShowCustomDeckPicker(true)}
+                    disabled={!isHost}
+                    className="w-full p-3 rounded-xl border border-dashed border-white/10 text-slate-500 hover:text-white hover:border-indigo-500/40 transition-colors flex items-center gap-2 disabled:opacity-30"
+                >
+                    <FileText size={14} />
+                    <span className="text-xs">Вибрати зі своїх словників…</span>
+                </button>
+            )}
+        </div>
+
         <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
             <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => setGameState(GameState.LOBBY)}>
                 {t.save}
             </Button>
         </div>
+
+        {showCustomDeckPicker && (
+            <CustomDeckModal
+                onClose={() => setShowCustomDeckPicker(false)}
+                onSelectDeck={(code) => {
+                    updateSetting('customDeckCode', code);
+                    setShowCustomDeckPicker(false);
+                }}
+            />
+        )}
     </div>
   );
 };

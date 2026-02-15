@@ -1,36 +1,15 @@
 
 import React from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GameProvider, useGame } from './context/GameContext';
+import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
 import { PageTransition, ErrorBoundary } from './components/Shared';
 import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen } from './screens/MenuFlow';
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
 import { VSScreen, PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
-import { WifiOff, Loader2 } from 'lucide-react';
-import { TRANSLATIONS } from './constants';
 
-const ReconnectingOverlay = () => {
-  const { isHostReconnecting, reconnectTimeLeft, settings } = useGame();
-  const t = TRANSLATIONS[settings.language];
-  if (!isHostReconnecting) return null;
-
-  return (
-    <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-      <div className="relative mb-8">
-        <WifiOff size={64} className="text-red-500 animate-pulse" />
-        <Loader2 size={84} className="text-white/20 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-      </div>
-      <h2 className="text-3xl font-serif text-white mb-4 tracking-wide">{t.connectionLost}</h2>
-      <p className="text-gray-400 font-light tracking-widest text-sm max-w-xs mb-8">
-        {t.waitingReconnect}
-      </p>
-      <div className="bg-white/5 border border-white/10 px-6 py-2 rounded-full">
-        <span className="text-white font-serif text-xl">{reconnectTimeLeft}s</span>
-      </div>
-    </div>
-  );
-};
-
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const GameRouter = () => {
   const { gameState } = useGame();
 
@@ -63,7 +42,6 @@ const AppContent = () => {
 
   return (
     <div className={`min-h-screen ${currentTheme.bg} ${baseTextColor} font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-500`}>
-      <ReconnectingOverlay />
       <GameRouter />
     </div>
   );
@@ -72,9 +50,13 @@ const AppContent = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-        <GameProvider>
-          <AppContent />
-        </GameProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthProvider>
+          <GameProvider>
+            <AppContent />
+          </GameProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
     </ErrorBoundary>
   );
 };

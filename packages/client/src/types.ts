@@ -8,7 +8,6 @@ export type {
   GameActionPayload, NetworkMessage, GameActionType, NetworkActionType,
 } from '@alias/shared';
 
-import type { DataConnection } from 'peerjs';
 import type { GameState, AppTheme } from '@alias/shared';
 import type { Player, Team, GameSettings, RoundStats, GameActionPayload } from '@alias/shared';
 
@@ -43,10 +42,8 @@ export interface AppState {
   timeLeft: number;
   isPaused: boolean;
   isConnected: boolean;
-  isHostReconnecting: boolean;
-  reconnectTimeLeft: number;
   notification: { message: string, type: 'info' | 'error' | 'success' } | null;
-  peerError: string | null;
+  connectionError: string | null;
 }
 
 export interface GameContextType extends AppState {
@@ -74,6 +71,3 @@ export interface GameContextType extends AppState {
   removeOfflinePlayer: (id: string) => void;
 }
 
-export interface PeerConnection extends DataConnection {
-  playerId?: string;
-}

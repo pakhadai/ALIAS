@@ -6,12 +6,7 @@ export {
 
 import { AppTheme } from './types';
 
-// Client-specific P2P constants
-export const JOIN_RETRY_DELAY_MS = 500;
-export const BROADCAST_DEBOUNCE_MS = 100;
-export const CONNECTION_TIMEOUT_MS = 8000;
-export const RECONNECT_INTERVAL_MS = 3000;
-export const RECONNECT_MAX_TIME_S = 60;
+// Client constants
 export const ACTION_DEBOUNCE_MS = 250;
 
 export const TRANSLATIONS: Record<Language, Record<string, any>> = {

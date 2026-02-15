@@ -6,6 +6,7 @@ export interface ClientToServerEvents {
   'room:create': (data: { playerName: string; avatar: string }) => void;
   'room:join': (data: { roomCode: string; playerName: string; avatar: string }) => void;
   'room:leave': () => void;
+  'room:rejoin': (data: { roomCode: string; playerId: string }) => void;
   'game:action': (payload: GameActionPayload) => void;
 }
 
@@ -13,6 +14,7 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   'room:created': (data: { roomCode: string; playerId: string }) => void;
   'room:joined': (data: { roomCode: string; playerId: string }) => void;
+  'room:rejoined': (data: { roomCode: string; playerId: string }) => void;
   'room:error': (data: { message: string }) => void;
   'room:player-joined': (data: { player: Player }) => void;
   'room:player-left': (data: { playerId: string }) => void;

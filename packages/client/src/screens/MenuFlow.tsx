@@ -1,9 +1,12 @@
 
 import React, { useState, useRef } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, ShoppingBag, FileText, User } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
+import { StoreModal } from '../components/Store/StoreModal';
+import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
+import { ProfileModal } from '../components/Auth/ProfileModal';
 import { GameState, Language, AppTheme } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { TRANSLATIONS, ROOM_CODE_LENGTH } from '../constants';
@@ -177,8 +180,11 @@ export const RulesScreen = () => {
 };
 
 export const MenuScreen = () => {
-  const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame, peerError } = useGame();
+  const { setGameState, settings, setSettings, currentTheme, createNewRoom, startOfflineGame, connectionError } = useGame();
   const [showRules, setShowRules] = useState(false);
+  const [showStore, setShowStore] = useState(false);
+  const [showDecks, setShowDecks] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const t = TRANSLATIONS[settings.language];
   
   const toggleTheme = () => {
@@ -211,6 +217,15 @@ export const MenuScreen = () => {
   return (
     <div className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}>
       <header className="relative z-10 w-full px-8 pt-12 pb-4 flex justify-end items-center gap-6">
+        <button onClick={() => setShowProfile(true)} className="transition-all active:scale-90 p-2">
+          <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
+        </button>
+        <button onClick={() => setShowDecks(true)} className="transition-all active:scale-90 p-2">
+          <FileText size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
+        </button>
+        <button onClick={() => setShowStore(true)} className="transition-all active:scale-90 p-2">
+          <ShoppingBag size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
+        </button>
         <button onClick={toggleTheme} className="transition-all active:scale-90 p-2">
           <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
             {settings.theme === AppTheme.PREMIUM_DARK ? 'light_mode' : 'dark_mode'}
@@ -230,10 +245,10 @@ export const MenuScreen = () => {
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs mx-auto px-6 pb-20">
         <Logo theme={currentTheme} />
 
-        {peerError && (
+        {connectionError && (
           <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-shake">
             <AlertCircle className="text-red-500" size={20} />
-            <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">Server Error: {peerError}</p>
+            <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">Server Error: {connectionError}</p>
           </div>
         )}
 
@@ -274,6 +289,9 @@ export const MenuScreen = () => {
       </main>
 
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} t={t} currentTheme={currentTheme} />
+      {showStore && <StoreModal onClose={() => setShowStore(false)} />}
+      {showDecks && <CustomDeckModal onClose={() => setShowDecks(false)} />}
+      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </div>
   );
 };

@@ -19,6 +19,17 @@ export class WordService {
   }
 
   async buildDeck(settings: GameSettings): Promise<string[]> {
+    // Handle custom deck from DB (by access code)
+    if (settings.customDeckCode && this.prisma) {
+      const deck = await this.prisma.customDeck.findUnique({
+        where: { accessCode: settings.customDeckCode },
+        select: { words: true, status: true },
+      });
+      if (deck && deck.status === 'approved' && Array.isArray(deck.words)) {
+        return this.shuffleArray(deck.words as string[]);
+      }
+    }
+
     // Handle custom words (always from settings, not DB)
     const customWords = settings.categories
       .filter((cat) => cat === Category.CUSTOM && settings.customWords)
@@ -34,11 +45,13 @@ export class WordService {
     let dbWords: string[] = [];
 
     if (dbCategories.length > 0 && this.prisma) {
-      // Query words from database
+      // Query words from WordPacks (new schema)
       const rows = await this.prisma.word.findMany({
         where: {
-          language: settings.language,
-          category: { in: dbCategories },
+          pack: {
+            language: settings.language,
+            category: { in: dbCategories },
+          },
         },
         select: { text: true },
       });

@@ -1,13 +1,20 @@
 import { GameState, TEAM_COLORS } from '@alias/shared';
 import type { GameActionPayload, Team } from '@alias/shared';
+import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
 import type { WordService } from './WordService';
 
 export class GameEngine {
+  private prisma: PrismaClient | null = null;
+
   constructor(
     private roomManager: RoomManager,
     private wordService: WordService,
   ) {}
+
+  setPrisma(prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
 
   async handleAction(room: Room, payload: GameActionPayload): Promise<void> {
     switch (payload.action) {
@@ -105,6 +112,21 @@ export class GameEngine {
       case 'START_GAME': {
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
+        room.roundsPlayed = 0;
+        // Create GameSession record
+        if (this.prisma) {
+          this.prisma.gameSession.create({
+            data: {
+              roomCode: room.code,
+              hostPlayerId: room.hostPlayerId,
+              playerCount: room.players.length,
+              settings: room.settings as object,
+              status: 'active',
+            },
+          }).then((session) => {
+            room.sessionId = session.id;
+          }).catch(() => { /* non-critical */ });
+        }
         break;
       }
 
@@ -194,9 +216,22 @@ export class GameEngine {
           return updated;
         });
 
+        room.roundsPlayed += 1;
         const isLastTeam = currentTeamIndex === teams.length - 1;
         const hasWinner = room.teams.some((t) => t.score >= settings.scoreToWin);
-        room.gameState = isLastTeam && hasWinner ? GameState.GAME_OVER : GameState.SCOREBOARD;
+        const isGameOver = isLastTeam && hasWinner;
+        room.gameState = isGameOver ? GameState.GAME_OVER : GameState.SCOREBOARD;
+
+        // Update GameSession analytics
+        if (this.prisma && room.sessionId) {
+          this.prisma.gameSession.update({
+            where: { id: room.sessionId },
+            data: {
+              roundsPlayed: room.roundsPlayed,
+              ...(isGameOver ? { status: 'completed', completedAt: new Date() } : {}),
+            },
+          }).catch(() => { /* non-critical */ });
+        }
         break;
       }
     }

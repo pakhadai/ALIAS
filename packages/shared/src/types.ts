@@ -30,6 +30,7 @@ export interface GameSettings {
   teamCount: number;
   theme: AppTheme;
   customWords?: string;
+  customDeckCode?: string;
 }
 
 export interface RoundStats {
