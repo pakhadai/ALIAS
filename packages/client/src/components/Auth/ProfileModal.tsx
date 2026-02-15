@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, Upload, Check, Loader2 } from 'lucide-react';
+import { X, Check, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuthContext } from '../../context/AuthContext';
 import { fetchProfile, fetchStore, type UserProfile, type StoreData } from '../../services/api';
@@ -96,19 +96,36 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     : (authState.status === 'authenticated' ? authState.email : '');
   const badgeLabel = isAnonymous ? 'FREE ACCOUNT' : authState.status === 'authenticated' ? authState.provider?.toUpperCase() : '';
 
-  /* ── Catalog items (shown when no purchases yet) ── */
-  const catalogItems: { label: string; sub: string; icon: 'lock' | 'upload' }[] = [
-    ...(storeData?.wordPacks ?? []).map(p => ({
-      label: p.name,
-      sub: `${p.wordCount} Words`,
-      icon: 'lock' as const,
-    })),
-    ...(storeData?.themes.filter(t => !t.isFree) ?? []).map(t => ({
-      label: t.name,
-      sub: 'Visual Skin',
-      icon: 'lock' as const,
-    })),
-    { label: 'Custom Word Lists', sub: 'Upload your own', icon: 'upload' as const },
+  /* ── Benefits (shown to anonymous / no purchases) ── */
+  const packCount = storeData?.wordPacks.length ?? 0;
+  const themeCount = (storeData?.themes.filter(t => !t.isFree) ?? []).length;
+
+  const benefits: { emoji: string; label: string; sub: string }[] = [
+    {
+      emoji: '📝',
+      label: 'Custom Word Lists',
+      sub: 'Upload your own words — CSV or plain text',
+    },
+    {
+      emoji: '📦',
+      label: `${packCount > 0 ? packCount + ' Word Packs' : 'Word Packs'}`,
+      sub: 'New topics & languages — constantly growing',
+    },
+    {
+      emoji: '🎨',
+      label: `${themeCount > 0 ? themeCount + ' Visual Themes' : 'Visual Themes'}`,
+      sub: 'Unique app skins for your style',
+    },
+    {
+      emoji: '📊',
+      label: 'Game Statistics',
+      sub: 'Track wins, rounds played & top words',
+    },
+    {
+      emoji: '☁️',
+      label: 'Sync Across Devices',
+      sub: 'Your purchases & decks everywhere',
+    },
   ];
 
   return (
@@ -186,17 +203,17 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         {/* Divider */}
         <div className="h-px bg-white/[0.07] mx-0" />
 
-        {/* Purchases / catalog */}
-        <div className="overflow-y-auto" style={{ maxHeight: '38vh' }}>
+        {/* Purchases / benefits */}
+        <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
-            <p className="text-white/30 text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-4">
-              {purchases.length > 0 ? 'My Purchases' : 'Available'}
+            <p className="text-white/30 text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1">
+              {purchases.length > 0 ? 'My Purchases' : 'What you get'}
             </p>
           </div>
 
           {purchases.length > 0 ? (
             /* Real purchases */
-            <div className="px-6 pb-2 space-y-0">
+            <div className="px-6 pb-2">
               {purchases.map((p) => (
                 <div key={p.id} className="flex items-center justify-between py-3 border-b border-white/[0.05]">
                   <div>
@@ -211,25 +228,18 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                 </div>
               ))}
             </div>
-          ) : storeData ? (
-            /* Store catalog with lock icons */
-            <div className="px-6 pb-2 space-y-0">
-              {catalogItems.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-3 border-b border-white/[0.05]">
-                  <div>
-                    <p className="text-white/70 text-[14px] font-sans">{item.label}</p>
-                    <p className="text-white/30 text-[11px] font-sans mt-0.5">{item.sub}</p>
+          ) : (
+            /* Benefits list — shows even while storeData loads */
+            <div className="px-6 pb-2">
+              {benefits.map((item, i) => (
+                <div key={i} className="flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0">
+                  <span className="text-[20px] leading-none w-7 text-center shrink-0">{item.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-white/80 text-[13px] font-sans font-medium">{item.label}</p>
+                    <p className="text-white/30 text-[11px] font-sans mt-0.5 leading-snug">{item.sub}</p>
                   </div>
-                  {item.icon === 'lock'
-                    ? <Lock size={13} className="text-white/20" />
-                    : <Upload size={13} className="text-white/20" />
-                  }
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="flex justify-center py-8">
-              <Loader2 size={20} className="animate-spin text-white/20" />
             </div>
           )}
         </div>
