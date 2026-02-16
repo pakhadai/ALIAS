@@ -119,14 +119,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeout(() => dispatch({ type: 'SHOW_NOTIF', payload: null }), 3000);
   }, []);
 
-  // Handle URL room parameter on mount (skip if session was restored)
+  // Handle URL parameters on mount (room join, Stripe redirects)
   useEffect(() => {
     if (stateRef.current.gameState !== GameState.MENU) return;
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
+    const purchase = params.get('purchase');
     if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
       dispatch({ type: 'SET_STATE', payload: { roomCode: room, gameState: GameState.ENTER_NAME } });
       window.history.replaceState({}, '', window.location.pathname);
+    } else if (purchase === 'success' || purchase === 'cancelled') {
+      dispatch({ type: 'SET_STATE', payload: { gameState: GameState.STORE } });
+      // Keep URL as-is — StoreScreen will read it and clear
     }
   }, []);
 

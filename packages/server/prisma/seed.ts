@@ -486,6 +486,23 @@ async function main() {
     console.log(`  [WordPack] ${pack.slug}: ${uniqueWords.length} words`);
   }
 
+  // Seed feature packs (purchasable features, no actual words)
+  await prisma.wordPack.upsert({
+    where: { slug: 'feature-custom-packs' },
+    update: { name: 'Мої паки слів', price: 299, isFree: false, description: 'Розблокуй можливість створювати власні колоди слів (до 5 пакунків).' },
+    create: {
+      slug: 'feature-custom-packs',
+      name: 'Мої паки слів',
+      language: 'UA',
+      category: 'Feature',
+      isFree: false,
+      price: 299,
+      wordCount: 0,
+      description: 'Розблокуй можливість створювати власні колоди слів (до 5 пакунків).',
+    },
+  });
+  console.log('  [Feature] feature-custom-packs');
+
   // Seed Themes
   for (const theme of themes) {
     await prisma.theme.upsert({

@@ -347,6 +347,13 @@ export const EnterNameScreen = () => {
     // Use consistent UUID for all players (host and guests)
     const stableId = useRef(`player-${generateUUID()}`);
 
+    // Auto-fill saved display name from profile
+    useEffect(() => {
+        fetchProfile().then(p => {
+            if (p.displayName) setName(p.displayName);
+        }).catch(() => {});
+    }, []);
+
     const handleSubmit = () => {
         const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);
         if (sanitized.trim()) {
@@ -484,10 +491,7 @@ export const ProfileScreen = () => {
 
   // derived: prefer saved displayName, fall back to email prefix
   const displayName = profile?.displayName || (email ? email.split('@')[0] : 'Profile');
-  const hasCustomPacks = profile?.purchases?.some(p => {
-    // custom-packs feature is a word pack with special flag — check when integrated with store
-    return false; // placeholder; will be true when feature pack is purchased
-  }) ?? false;
+  const hasCustomPacks = profile?.purchases?.some(p => p.wordPack?.slug === 'feature-custom-packs') ?? false;
 
   const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all active:scale-[0.98] ${
     isDark ? 'bg-white/5 border border-white/5 hover:bg-white/8' : 'bg-white border border-slate-100 hover:bg-slate-50 shadow-sm'
@@ -899,9 +903,7 @@ export const MyWordPacksScreen = () => {
   useEffect(() => {
     // Check purchase access
     fetchProfile().then(p => {
-      // Feature unlocked if user has purchased 'feature-custom-packs' word pack
-      // For now: allow all authenticated users (update when feature pack is in store)
-      const unlocked = (p.purchases?.length ?? 0) > 0;
+      const unlocked = p.purchases?.some(pu => pu.wordPack?.slug === 'feature-custom-packs') ?? false;
       setIsUnlocked(unlocked);
       if (unlocked) {
         fetchMyDecks().then(setDecks).catch(() => {}).finally(() => setLoading(false));
@@ -1386,14 +1388,26 @@ export const StoreScreen = () => {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
 
+  // Detect Stripe redirect result
+  const purchaseResult = (() => {
+    const p = new URLSearchParams(window.location.search).get('purchase');
+    return p === 'success' ? 'success' : p === 'cancelled' ? 'cancelled' : null;
+  })();
+  const [banner, setBanner] = useState<'success' | 'cancelled' | null>(purchaseResult);
+
+  const loadStore = () => fetchStore()
+    .then(data => { setWordPacks(data.wordPacks); setThemes(data.themes); })
+    .catch(() => {})
+    .finally(() => setLoading(false));
+
   useEffect(() => {
-    fetchStore()
-      .then(data => {
-        setWordPacks(data.wordPacks);
-        setThemes(data.themes);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadStore();
+    if (purchaseResult) {
+      window.history.replaceState({}, '', window.location.pathname);
+      // Auto-hide banner after 4s
+      const t = setTimeout(() => setBanner(null), 4000);
+      return () => clearTimeout(t);
+    }
   }, []);
 
   const handleAddFree = async (itemType: 'wordPack' | 'theme', itemId: string) => {
@@ -1420,9 +1434,12 @@ export const StoreScreen = () => {
     } catch { setActing(null); }
   };
 
-  // Filter + sort: free first, then by language name
+  // Feature packs (special purchasable features, not actual word sets)
+  const featurePacks = wordPacks.filter(p => p.category === 'Feature');
+
+  // Filter + sort: free first, then by language name (exclude feature packs)
   const visiblePacks = wordPacks
-    .filter(p => langFilter === 'ALL' || p.language === langFilter)
+    .filter(p => p.category !== 'Feature' && (langFilter === 'ALL' || p.language === langFilter))
     .sort((a, b) => {
       if (a.isFree && !b.isFree) return -1;
       if (!a.isFree && b.isFree) return 1;
@@ -1438,6 +1455,28 @@ export const StoreScreen = () => {
 
   return (
     <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
+
+      {/* Purchase result banner */}
+      {banner && (
+        <div className={`mx-4 mt-3 mb-0 px-4 py-3 rounded-2xl flex items-center gap-3 transition-all ${
+          banner === 'success'
+            ? 'bg-emerald-500/15 border border-emerald-500/30'
+            : 'bg-red-500/10 border border-red-500/20'
+        }`}>
+          <span className="text-xl">{banner === 'success' ? '🎉' : '↩️'}</span>
+          <div className="flex-1">
+            <p className={`text-[12px] font-bold ${banner === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+              {banner === 'success' ? 'Оплату прийнято!' : 'Оплату скасовано'}
+            </p>
+            <p className={`text-[10px] ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+              {banner === 'success' ? 'Ваша покупка активована' : 'Спробуй ще раз'}
+            </p>
+          </div>
+          <button onClick={() => setBanner(null)} className="opacity-40 hover:opacity-100">
+            <X size={14} className={currentTheme.iconColor} />
+          </button>
+        </div>
+      )}
 
       {/* Drag handle + Header */}
       <div className="flex justify-center pt-4 pb-2">
@@ -1497,7 +1536,43 @@ export const StoreScreen = () => {
             <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
           </div>
         ) : tab === 'packs' ? (
-          visiblePacks.length === 0 ? (
+          <>
+            {/* Feature pack card */}
+            {featurePacks.map(pack => (
+              <div key={pack.id} className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 ${
+                pack.owned
+                  ? isDark ? 'bg-[#1A2A1A] border-[#A1E3C8]/30' : 'bg-emerald-50 border-emerald-200'
+                  : 'border-[#D4AF6A]/40 bg-gradient-to-br from-[#D4AF6A]/8 to-transparent'
+              }`}>
+                <div className="flex justify-between items-start z-10">
+                  <div className="max-w-[60%]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[#D4AF6A]/50 text-[#D4AF6A]">ФУНКЦІЯ</span>
+                    </div>
+                    <h3 className={`font-serif text-[18px] leading-tight mb-1 ${currentTheme.textMain}`}>{pack.name}</h3>
+                    <p className={`text-[11px] font-sans ${currentTheme.textSecondary}`}>{pack.description}</p>
+                  </div>
+                  {pack.owned ? (
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-full shrink-0 bg-[#A1E3C8]/10 border border-[#A1E3C8]/20">
+                      <Check size={11} className="text-[#85C9AE]" />
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#85C9AE]">Куплено</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleBuy('wordPack', pack.id)}
+                      disabled={acting === pack.id}
+                      className="shrink-0 bg-[#D4AF6A] hover:bg-[#C9A55A] active:scale-95 text-black px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                    >
+                      {acting === pack.id
+                        ? <Loader2 size={12} className="animate-spin inline" />
+                        : `$${(pack.price / 100).toFixed(2)}`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {visiblePacks.length === 0 ? (
             <p className={`text-center text-sm pt-12 ${currentTheme.textSecondary} opacity-40`}>Немає доступних наборів</p>
           ) : visiblePacks.map(pack => (
             <div key={pack.id} className={`${cardBg} rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden`}>
@@ -1557,7 +1632,8 @@ export const StoreScreen = () => {
                 )}
               </div>
             </div>
-          ))
+          ))}
+          </>
         ) : (
           // Themes tab
           themes.filter(t => !t.isFree).length === 0 ? (
@@ -1592,7 +1668,7 @@ export const StoreScreen = () => {
       <div className={`px-6 py-4 border-t ${divider} ${isDark ? 'bg-[#121212]/95' : 'bg-slate-50/95'} backdrop-blur`}
            style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
         <p className={`text-center text-[10px] uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
-          Усі додаткові набори — безкоштовно
+          Оплата через Stripe · Безпечно
         </p>
       </div>
     </div>

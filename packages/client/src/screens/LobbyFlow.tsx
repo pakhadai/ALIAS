@@ -11,6 +11,7 @@ import { fetchStore, type WordPackItem } from '../services/api';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
 import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
+import { AvatarDisplay } from './MenuFlow';
 
 export const LobbyScreen = () => {
   const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
@@ -91,7 +92,9 @@ export const LobbyScreen = () => {
           <div className="space-y-3">
             {players.map((p: any) => (
               <div key={p.id} className={`flex items-center p-4 rounded-2xl border ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'}`}>
-                <span className="text-2xl">{p.avatar}</span>
+                {p.avatarId != null
+                  ? <AvatarDisplay avatarId={p.avatarId} size={36} />
+                  : <span className="text-2xl">{p.avatar}</span>}
                 <span className={`ml-4 font-bold ${currentTheme.textMain}`}>{p.name}</span>
                 <div className="ml-auto flex items-center gap-3">
                   {p.id === myPlayerId && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" />}

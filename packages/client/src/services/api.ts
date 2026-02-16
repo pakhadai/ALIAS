@@ -65,6 +65,7 @@ export interface UserProfile {
   purchases: {
     id: string;
     wordPackId: string | null;
+    wordPack?: { slug: string } | null;
     themeId: string | null;
     soundPackId: string | null;
     createdAt: string;

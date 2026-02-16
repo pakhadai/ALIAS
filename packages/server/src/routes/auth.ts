@@ -232,6 +232,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
           select: {
             id: true,
             wordPackId: true,
+            wordPack: { select: { slug: true } },
             themeId: true,
             soundPackId: true,
             createdAt: true,
