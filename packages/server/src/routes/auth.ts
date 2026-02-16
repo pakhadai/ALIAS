@@ -151,12 +151,64 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     res.json({ token, userId: user.id, email });
   });
 
+  // ─── Update profile ───────────────────────────────────────────────────
+
+  router.patch('/profile', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+
+    const { displayName, avatarId } = req.body as { displayName?: string; avatarId?: string };
+    const data: Record<string, unknown> = {};
+
+    if (displayName !== undefined) {
+      const name = String(displayName).replace(/<[^>]*>/g, '').trim().slice(0, 20);
+      if (name) data.displayName = name;
+    }
+    if (avatarId !== undefined) {
+      const idx = parseInt(String(avatarId));
+      if (!isNaN(idx) && idx >= 0 && idx <= 19) data.avatarId = String(idx);
+    }
+
+    const user = await prisma.user.update({ where: { id: payload.sub }, data });
+    res.json({ displayName: user.displayName, avatarId: user.avatarId });
+  });
+
+  // ─── Lobby settings ───────────────────────────────────────────────────
+
+  router.get('/lobby-settings', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { defaultSettings: true },
+    });
+    res.json({ settings: user?.defaultSettings ?? null });
+  });
+
+  router.put('/lobby-settings', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+
+    const settings = req.body;
+    if (!settings || typeof settings !== 'object') { res.status(400).json({ error: 'Invalid settings' }); return; }
+
+    await prisma.user.update({ where: { id: payload.sub }, data: { defaultSettings: settings } });
+    res.json({ success: true });
+  });
+
   // ─── Me ───────────────────────────────────────────────────────────────
 
   /**
    * GET /api/auth/me
    * Header: Authorization: Bearer <token>
-   * Returns current user info + owned purchases.
+   * Returns current user info + owned purchases + profile data.
    */
   router.get('/me', async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -197,6 +249,8 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       id: user.id,
       email: user.email,
       authProvider: user.authProvider,
+      displayName: user.displayName,
+      avatarId: user.avatarId,
       createdAt: user.createdAt,
       purchases: user.purchases,
     });

@@ -59,6 +59,8 @@ export interface UserProfile {
   id: string;
   email: string | null;
   authProvider: string;
+  displayName: string | null;
+  avatarId: string | null;
   createdAt: string;
   purchases: {
     id: string;
@@ -67,6 +69,31 @@ export interface UserProfile {
     soundPackId: string | null;
     createdAt: string;
   }[];
+}
+
+/** Update display name and/or avatar preset */
+export async function updateProfile(payload: {
+  displayName?: string;
+  avatarId?: string;
+}): Promise<{ displayName: string | null; avatarId: string | null }> {
+  return apiFetch('/api/auth/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Get saved default lobby settings */
+export async function fetchLobbySettings(): Promise<Record<string, unknown> | null> {
+  const data = await apiFetch<{ settings: Record<string, unknown> | null }>('/api/auth/lobby-settings');
+  return data.settings;
+}
+
+/** Save default lobby settings */
+export async function saveLobbySettings(settings: Record<string, unknown>): Promise<void> {
+  return apiFetch('/api/auth/lobby-settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
 }
 
 /** Get anonymous JWT (creates User record on server if needed) */

@@ -1,16 +1,51 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy } from 'lucide-react';
+import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy, Settings, SlidersHorizontal, Lock, Upload, ChevronRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
 import { ProfileModal } from '../components/Auth/ProfileModal';
-import { GameState, Language, AppTheme } from '../types';
+import { GameState, Language, AppTheme, Category } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
-import { fetchProfile, fetchStore, createCheckout, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
-import { TRANSLATIONS, ROOM_CODE_LENGTH } from '../constants';
+import { fetchProfile, updateProfile, fetchLobbySettings, saveLobbySettings, fetchStore, createCheckout, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
+import { TRANSLATIONS, ROOM_CODE_LENGTH, THEME_CONFIG } from '../constants';
 import versionData from '../version.json';
+
+// ─── Preset avatar system ──────────────────────────────────────────────
+export const PRESET_AVATARS = [
+  { emoji: '🦊', bg: '#FF6B6B' }, { emoji: '🐺', bg: '#4ECDC4' },
+  { emoji: '🦁', bg: '#FFD166' }, { emoji: '🐯', bg: '#F4A261' },
+  { emoji: '🐻', bg: '#8ECAE6' }, { emoji: '🐼', bg: '#95D5B2' },
+  { emoji: '🦋', bg: '#C77DFF' }, { emoji: '🦅', bg: '#E76F51' },
+  { emoji: '🐬', bg: '#48CAE4' }, { emoji: '🦄', bg: '#F8A5C2' },
+  { emoji: '🐉', bg: '#52B788' }, { emoji: '🦉', bg: '#B5C4B1' },
+  { emoji: '🐸', bg: '#80B918' }, { emoji: '🦈', bg: '#56CFE1' },
+  { emoji: '🦚', bg: '#2EC4B6' }, { emoji: '🦝', bg: '#FFBF69' },
+  { emoji: '🐊', bg: '#40916C' }, { emoji: '🦭', bg: '#74B3CE' },
+  { emoji: '🦩', bg: '#FF8FAB' }, { emoji: '🐙', bg: '#9B5DE5' },
+];
+
+export function AvatarDisplay({ avatarId, size = 44 }: { avatarId?: string | null; size?: number }) {
+  const idx = avatarId != null ? parseInt(avatarId) : -1;
+  const preset = idx >= 0 && idx < PRESET_AVATARS.length ? PRESET_AVATARS[idx] : null;
+  if (preset) {
+    return (
+      <div style={{ width: size, height: size, background: preset.bg, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.5 }}>
+        {preset.emoji}
+      </div>
+    );
+  }
+  // Fallback: generic silhouette
+  return (
+    <div style={{ width: size, height: size, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.25)" />
+        <path d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18" stroke="rgba(255,255,255,0.25)" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      </svg>
+    </div>
+  );
+}
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -427,17 +462,6 @@ function ProviderBadge({ provider }: { provider: string }) {
   );
 }
 
-function AvatarCircle() {
-  return (
-    <div className="w-[88px] h-[88px] rounded-full bg-white/10 flex items-center justify-center">
-      <svg width="48" height="48" viewBox="0 0 44 44" fill="none">
-        <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.25)" />
-        <path d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18" stroke="rgba(255,255,255,0.25)" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      </svg>
-    </div>
-  );
-}
-
 export const ProfileScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
   const { authState, logout } = useAuthContext();
@@ -447,7 +471,6 @@ export const ProfileScreen = () => {
 
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
-  const displayName = email ? email.split('@')[0] : 'Profile';
 
   useEffect(() => {
     fetchProfile().then(setProfile).catch(() => {});
@@ -459,94 +482,647 @@ export const ProfileScreen = () => {
     setGameState(GameState.MENU);
   };
 
-  const purchases = profile?.purchases ?? [];
+  // derived: prefer saved displayName, fall back to email prefix
+  const displayName = profile?.displayName || (email ? email.split('@')[0] : 'Profile');
+  const hasCustomPacks = profile?.purchases?.some(p => {
+    // custom-packs feature is a word pack with special flag — check when integrated with store
+    return false; // placeholder; will be true when feature pack is purchased
+  }) ?? false;
+
+  const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all active:scale-[0.98] ${
+    isDark ? 'bg-white/5 border border-white/5 hover:bg-white/8' : 'bg-white border border-slate-100 hover:bg-slate-50 shadow-sm'
+  }`;
+  const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} transition-colors duration-500`}>
+    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
       {/* Header */}
       <header className="flex items-center px-6 pt-12 pb-4">
-        <button
-          onClick={() => setGameState(GameState.MENU)}
-          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-        >
+        <button onClick={() => setGameState(GameState.MENU)}
+          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
         </button>
       </header>
 
       {/* Avatar + identity */}
-      <div className="flex flex-col items-center pt-6 pb-10 px-6">
-        <AvatarCircle />
-        <h1 className={`mt-5 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>
-          {displayName}
-        </h1>
-        <p className={`text-[13px] mt-1 mb-3 ${currentTheme.textSecondary}`}>{email}</p>
+      <div className="flex flex-col items-center pt-4 pb-8 px-6">
+        <AvatarDisplay avatarId={profile?.avatarId} size={88} />
+        <h1 className={`mt-4 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>{displayName}</h1>
+        {email && <p className={`text-[13px] mt-1 mb-3 ${currentTheme.textSecondary}`}>{email}</p>}
         {provider && <ProviderBadge provider={provider} />}
       </div>
 
-      {/* Purchases */}
-      <div className="flex-1 px-6">
-        <p className={`text-[9px] font-bold tracking-[0.28em] uppercase mb-4 ${currentTheme.textSecondary}`}>
-          My Purchases
-        </p>
-
-        {purchases.length === 0 ? (
-          <div className={`rounded-2xl ${isDark ? 'bg-white/5' : 'bg-slate-100'} px-6 py-8 flex flex-col items-center gap-3`}>
-            <ShoppingBag size={28} className={`${currentTheme.iconColor} opacity-20`} />
-            <p className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-50`}>
-              No purchases yet
-            </p>
+      {/* Navigation menu */}
+      <div className="flex-1 px-6 space-y-3">
+        {/* Магазин */}
+        <button onClick={() => setGameState(GameState.STORE)} className={`${navBtn} ${currentTheme.button}`}>
+          <div className="flex items-center gap-3">
+            <ShoppingBag size={16} />
+            <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em]">Магазин</span>
           </div>
-        ) : (
-          <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-            {purchases.map((p, idx) => (
-              <div
-                key={p.id}
-                className={`flex items-center justify-between px-5 py-4
-                  ${idx < purchases.length - 1 ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-200') : ''}`}
-              >
-                <div>
-                  <p className={`text-[14px] font-sans ${currentTheme.textMain}`}>
-                    {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
-                  </p>
-                  <p className={`text-[11px] font-sans mt-0.5 ${currentTheme.textSecondary}`}>
-                    {new Date(p.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <Check size={14} className="text-[#D4AF6A]" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="px-6 pb-4 space-y-3">
-        <button
-          onClick={() => setGameState(GameState.MY_DECKS)}
-          className={`w-full h-12 rounded-full flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isDark ? 'bg-white/8 border border-white/10 text-white/80 hover:bg-white/12' : 'bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200'}`}
-        >
-          <BookOpen size={15} />
-          <span className="font-sans font-bold text-[10px] uppercase tracking-[0.3em]">My Decks</span>
+          <ChevronRight size={16} className="opacity-60" />
         </button>
+
+        {/* Налаштування профілю */}
+        <button onClick={() => setGameState(GameState.PROFILE_SETTINGS)} className={navBtn}>
+          <div className="flex items-center gap-3">
+            <Settings size={16} className={currentTheme.iconColor} />
+            <span className={navLabel}>Налаштування профілю</span>
+          </div>
+          <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
+        </button>
+
+        {/* Налаштування лоббі */}
+        <button onClick={() => setGameState(GameState.LOBBY_SETTINGS)} className={navBtn}>
+          <div className="flex items-center gap-3">
+            <SlidersHorizontal size={16} className={currentTheme.iconColor} />
+            <span className={navLabel}>Налаштування лоббі</span>
+          </div>
+          <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
+        </button>
+
+        {/* Мої паки слів — lock якщо не куплено */}
         <button
-          onClick={() => setGameState(GameState.STORE)}
-          className={`w-full h-12 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 transition-all active:scale-[0.98]`}
+          onClick={() => setGameState(GameState.MY_WORD_PACKS)}
+          className={navBtn}
         >
-          <ShoppingBag size={15} />
-          <span className="font-sans font-bold text-[10px] uppercase tracking-[0.3em]">Browse Store</span>
+          <div className="flex items-center gap-3">
+            <BookOpen size={16} className={hasCustomPacks ? currentTheme.iconColor : `${currentTheme.iconColor} opacity-40`} />
+            <div className="text-left">
+              <span className={`${navLabel} ${hasCustomPacks ? '' : 'opacity-40'}`}>Мої паки слів</span>
+              {!hasCustomPacks && (
+                <p className={`text-[9px] mt-0.5 uppercase tracking-widest ${isDark ? 'text-white/25' : 'text-slate-400'}`}>Потрібна покупка</p>
+              )}
+            </div>
+          </div>
+          {hasCustomPacks
+            ? <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
+            : <Lock size={14} className={`${currentTheme.iconColor} opacity-25`} />
+          }
         </button>
       </div>
 
       {/* Logout */}
-      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="w-full text-center text-red-500 font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
-        >
-          {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'SIGN OUT'}
+      <div className="px-6 py-6" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+        <button onClick={handleLogout} disabled={loggingOut}
+          className="w-full text-center text-red-500 font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30">
+          {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'ВИЙТИ З АКАУНТУ'}
         </button>
       </div>
+    </div>
+  );
+};
+
+/* ──────────────────────────────────────────────────
+   ProfileSettingsScreen
+────────────────────────────────────────────────── */
+export const ProfileSettingsScreen = () => {
+  const { setGameState, currentTheme, settings } = useGame();
+  const { authState } = useAuthContext();
+  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [name, setName] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState<number>(-1);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const email = authState.status === 'authenticated' ? authState.email : '';
+  const provider = authState.status === 'authenticated' ? authState.provider : '';
+
+  useEffect(() => {
+    fetchProfile().then(p => {
+      setProfile(p);
+      setName(p.displayName || (p.email ? p.email.split('@')[0] : ''));
+      const idx = p.avatarId != null ? parseInt(p.avatarId) : -1;
+      setSelectedAvatar(idx >= 0 ? idx : -1);
+    }).catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateProfile({
+        displayName: name.trim() || undefined,
+        avatarId: selectedAvatar >= 0 ? String(selectedAvatar) : undefined,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+    setSaving(false);
+  };
+
+  const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
+    isDark ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:border-[#D4AF6A]'
+           : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'}`;
+
+  return (
+    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+        <button onClick={() => setGameState(GameState.PROFILE)}
+          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+          <ArrowLeft size={22} />
+        </button>
+        <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Налаштування профілю</h2>
+      </header>
+
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8" style={{ scrollbarWidth: 'none' }}>
+        {/* Current avatar preview */}
+        <div className="flex justify-center pt-2">
+          <AvatarDisplay avatarId={selectedAvatar >= 0 ? String(selectedAvatar) : null} size={88} />
+        </div>
+
+        {/* Avatar picker */}
+        <div className="space-y-3">
+          <p className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Виберіть аватарку</p>
+          <div className="grid grid-cols-5 gap-3">
+            {PRESET_AVATARS.map((av, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedAvatar(idx)}
+                className={`relative flex items-center justify-center rounded-2xl aspect-square transition-all active:scale-95 ${
+                  selectedAvatar === idx
+                    ? 'ring-2 ring-[#D4AF6A] scale-105'
+                    : 'opacity-70 hover:opacity-100'
+                }`}
+                style={{ background: av.bg }}
+              >
+                <span style={{ fontSize: 28 }}>{av.emoji}</span>
+                {selectedAvatar === idx && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF6A] rounded-full flex items-center justify-center">
+                    <Check size={9} className="text-black" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Display name */}
+        <div className="space-y-2">
+          <label className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+            Ім'я в грі
+          </label>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
+            placeholder="Твоє ім'я..."
+            className={inputCls}
+          />
+          <p className={`text-[10px] ${isDark ? 'text-white/20' : 'text-slate-400'}`}>{name.length}/20</p>
+        </div>
+
+        {/* Account info */}
+        <div className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5 space-y-3`}>
+          <p className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Акаунт</p>
+          {email && (
+            <div className="flex justify-between items-center">
+              <span className={`text-[12px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Email</span>
+              <span className={`text-[12px] font-medium ${currentTheme.textMain}`}>{email}</span>
+            </div>
+          )}
+          {provider && (
+            <div className="flex justify-between items-center">
+              <span className={`text-[12px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Провайдер</span>
+              <ProviderBadge provider={provider} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" />
+            : saved ? <><Check size={14} /> Збережено</>
+            : 'Зберегти'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ──────────────────────────────────────────────────
+   LobbySettingsScreen — save default lobby settings
+────────────────────────────────────────────────── */
+export const LobbySettingsScreen = () => {
+  const { setGameState, currentTheme, settings: gameSettings, sendAction } = useGame();
+  const isDark = gameSettings.theme === AppTheme.PREMIUM_DARK;
+
+  // Local copy of settings for editing (don't affect live game)
+  const [local, setLocal] = useState({ ...gameSettings });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLobbySettings().then(s => {
+      if (s) setLocal(prev => ({ ...prev, ...(s as any) }));
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  const set = (key: string, value: any) => setLocal(prev => ({ ...prev, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveLobbySettings(local as any);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+    setSaving(false);
+  };
+
+  const handleReset = async () => {
+    await saveLobbySettings({} as any).catch(() => {});
+    setLocal({ ...gameSettings });
+  };
+
+  const cats = [Category.GENERAL, Category.FOOD, Category.TRAVEL, Category.SCIENCE, Category.MOVIES];
+
+  const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
+  const chip = (active: boolean) =>
+    `flex-1 py-3 rounded-xl border font-sans font-bold text-[11px] transition-all ${
+      active
+        ? 'bg-[#D4AF6A] text-black border-[#D4AF6A]'
+        : isDark ? 'bg-white/5 border-white/5 text-white/40 hover:text-white/70' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700'
+    }`;
+
+  return (
+    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <header className="flex items-center justify-between px-6 pt-12 pb-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setGameState(GameState.PROFILE)}
+            className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+            <ArrowLeft size={22} />
+          </button>
+          <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Налаштування лоббі</h2>
+        </div>
+        <button onClick={handleReset}
+          className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${isDark ? 'text-white/25 hover:text-white/50' : 'text-slate-400 hover:text-slate-600'}`}>
+          Скинути
+        </button>
+      </header>
+
+      {loading ? (
+        <div className="flex-1 flex justify-center pt-16">
+          <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8 pb-28" style={{ scrollbarWidth: 'none' }}>
+          {/* Language */}
+          <div className="space-y-3">
+            <p className={sectionLabel}>Мова слів</p>
+            <div className="flex gap-2">
+              {[Language.UA, Language.DE, Language.EN].map(l => (
+                <button key={l} onClick={() => set('language', l)} className={chip(local.language === l)}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Round time */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <p className={sectionLabel}>Час раунду</p>
+              <span className="text-[#D4AF6A] font-bold text-sm">{local.roundTime}с</span>
+            </div>
+            <input type="range" min="30" max="180" step="10"
+              value={local.roundTime}
+              onChange={e => set('roundTime', parseInt(e.target.value))}
+              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
+              style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }} />
+            <div className={`flex justify-between text-[9px] opacity-30 ${currentTheme.textMain}`}>
+              <span>30с</span><span>180с</span>
+            </div>
+          </div>
+
+          {/* Score to win */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <p className={sectionLabel}>Рахунок для перемоги</p>
+              <span className="text-[#D4AF6A] font-bold text-sm">{local.scoreToWin}</span>
+            </div>
+            <input type="range" min="10" max="100" step="5"
+              value={local.scoreToWin}
+              onChange={e => set('scoreToWin', parseInt(e.target.value))}
+              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
+              style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }} />
+          </div>
+
+          {/* Skip penalty */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={sectionLabel}>Штраф за пропуск</p>
+              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>−1 очко за пропущене слово</p>
+            </div>
+            <button
+              onClick={() => set('skipPenalty', !local.skipPenalty)}
+              className={`w-12 h-7 rounded-full transition-all relative ${local.skipPenalty ? 'bg-[#D4AF6A]' : isDark ? 'bg-white/10' : 'bg-slate-200'}`}
+            >
+              <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${local.skipPenalty ? 'right-0.5' : 'left-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Categories */}
+          <div className="space-y-3">
+            <p className={sectionLabel}>Категорії слів</p>
+            <div className="grid grid-cols-2 gap-2">
+              {cats.map(cat => {
+                const active = (local.categories as string[] || []).includes(cat);
+                return (
+                  <button key={cat}
+                    onClick={() => {
+                      const curr = (local.categories as string[] || []);
+                      const next = active ? curr.filter(c => c !== cat) : [...curr, cat];
+                      if (next.length > 0) set('categories', next);
+                    }}
+                    className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
+                      active
+                        ? 'border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#D4AF6A]'
+                        : isDark ? 'border-white/5 bg-white/5 text-white/30' : 'border-slate-200 bg-white text-slate-400'
+                    }`}>
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+        <button onClick={handleSave} disabled={saving}
+          className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}>
+          {saving ? <Loader2 size={16} className="animate-spin" />
+            : saved ? <><Check size={14} /> Збережено</>
+            : 'Зберегти як стандартні'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ──────────────────────────────────────────────────
+   MyWordPacksScreen — custom word packs (locked behind purchase)
+────────────────────────────────────────────────── */
+const MAX_USER_PACKS = 5;
+
+export const MyWordPacksScreen = () => {
+  const { setGameState, currentTheme, settings } = useGame();
+  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [view, setView] = useState<'list' | 'create'>('list');
+  const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  // Create form
+  const [deckName, setDeckName] = useState('');
+  const [wordsText, setWordsText] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const cardBg = isDark ? 'bg-[#1E1E1E] border border-white/5' : 'bg-white border border-slate-200';
+  const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
+    isDark ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:border-[#D4AF6A]'
+           : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'}`;
+
+  useEffect(() => {
+    // Check purchase access
+    fetchProfile().then(p => {
+      // Feature unlocked if user has purchased 'feature-custom-packs' word pack
+      // For now: allow all authenticated users (update when feature pack is in store)
+      const unlocked = (p.purchases?.length ?? 0) > 0;
+      setIsUnlocked(unlocked);
+      if (unlocked) {
+        fetchMyDecks().then(setDecks).catch(() => {}).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    }).catch(() => { setLoading(false); }).finally(() => setCheckingAccess(false));
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    try {
+      await deleteCustomDeck(id);
+      setDecks(prev => prev.filter(d => d.id !== id));
+    } catch {}
+    setDeleting(null);
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code).catch(() => {});
+    setCopied(code);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const text = ev.target?.result as string;
+      setWordsText(text);
+    };
+    reader.readAsText(file, 'UTF-8');
+    e.target.value = '';
+  };
+
+  const handleCreate = async () => {
+    const name = deckName.trim();
+    const words = wordsText.split(/[\n,;]+/).map(w => w.trim()).filter(Boolean);
+    if (!name) { setCreateError('Введіть назву паку'); return; }
+    if (words.length < 5) { setCreateError('Додайте щонайменше 5 слів'); return; }
+    if (decks.length >= MAX_USER_PACKS) { setCreateError(`Максимум ${MAX_USER_PACKS} паків`); return; }
+
+    setCreating(true);
+    setCreateError('');
+    try {
+      const deck = await createCustomDeck({ name, words });
+      setDecks(prev => [deck, ...prev]);
+      setDeckName(''); setWordsText('');
+      setView('list');
+    } catch (err: any) {
+      setCreateError(err.message || 'Помилка створення');
+    }
+    setCreating(false);
+  };
+
+  const STATUS_COLORS: Record<string, string> = {
+    approved: 'text-[#85C9AE]', pending: 'text-[#D4AF6A]', rejected: 'text-red-400',
+  };
+
+  if (checkingAccess) return (
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} items-center justify-center`}>
+      <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
+    </div>
+  );
+
+  // Locked state
+  if (!isUnlocked) return (
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+        <button onClick={() => setGameState(GameState.PROFILE)}
+          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+          <ArrowLeft size={22} />
+        </button>
+        <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Мої паки слів</h2>
+      </header>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
+        <div className={`w-20 h-20 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'} flex items-center justify-center`}>
+          <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
+        </div>
+        <div>
+          <h3 className={`font-serif text-2xl mb-2 ${currentTheme.textMain}`}>Функція заблокована</h3>
+          <p className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+            Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}
+            Розблокуйте цю функцію в Магазині.
+          </p>
+        </div>
+        <button onClick={() => setGameState(GameState.STORE)}
+          className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98]`}>
+          <ShoppingBag size={16} />
+          Відкрити магазин
+        </button>
+      </div>
+    </div>
+  );
+
+  // Create view
+  if (view === 'create') return (
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+        <button onClick={() => { setView('list'); setCreateError(''); }}
+          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+          <ArrowLeft size={22} />
+        </button>
+        <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Новий пак</h2>
+      </header>
+
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5" style={{ scrollbarWidth: 'none' }}>
+        <div className="space-y-2">
+          <label className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Назва паку</label>
+          <input value={deckName} onChange={e => setDeckName(e.target.value.slice(0, 60))}
+            placeholder="наприклад: Офісна вечірка"
+            className={inputCls} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+              Слова
+              <span className={`ml-2 font-normal normal-case tracking-normal text-[10px] opacity-60`}>(кожне з нового рядка або через кому)</span>
+            </label>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-white/40 hover:text-white/70' : 'text-slate-400 hover:text-slate-600'} transition-colors`}
+            >
+              <Upload size={12} />
+              Завантажити .txt/.csv
+            </button>
+            <input ref={fileInputRef} type="file" accept=".txt,.csv" className="hidden" onChange={handleFileUpload} />
+          </div>
+          <textarea value={wordsText} onChange={e => setWordsText(e.target.value)}
+            placeholder={"яблуко\nбанан\nогірок\n..."}
+            rows={10}
+            className={`${inputCls} resize-none`} />
+          <p className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+            {wordsText.split(/[\n,;]+/).filter(w => w.trim()).length} слів
+          </p>
+        </div>
+
+        {createError && <p className="text-red-400 text-[12px] font-sans">{createError}</p>}
+      </div>
+
+      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+        <button onClick={handleCreate} disabled={creating}
+          className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}>
+          {creating ? <Loader2 size={16} className="animate-spin" /> : 'Створити пак'}
+        </button>
+      </div>
+    </div>
+  );
+
+  // List view
+  return (
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="flex justify-center pt-4 pb-2">
+        <div className="w-12 h-1 bg-white/20 rounded-full" />
+      </div>
+      <div className="px-6 pb-5 pt-2 flex justify-between items-center">
+        <div>
+          <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Мої паки слів</h2>
+          <p className={`text-[10px] mt-1 ${isDark ? 'text-white/25' : 'text-slate-400'}`}>{decks.length} / {MAX_USER_PACKS}</p>
+        </div>
+        <button onClick={() => setGameState(GameState.PROFILE)}
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'}`}>
+          <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-28" style={{ scrollbarWidth: 'none' }}>
+        {loading ? (
+          <div className="flex justify-center pt-16">
+            <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
+          </div>
+        ) : decks.length === 0 ? (
+          <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
+            <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
+            <p className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-50`}>Немає паків</p>
+            <p className={`text-[11px] font-sans text-center ${currentTheme.textSecondary} opacity-30`}>
+              Створіть пак зі своїми словами для корпоративів, вечірок або класу
+            </p>
+          </div>
+        ) : decks.map(deck => (
+          <div key={deck.id} className={`${cardBg} rounded-2xl p-5 space-y-3`}>
+            <div className="flex justify-between items-start">
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-serif text-[18px] leading-tight ${currentTheme.textMain} truncate`}>{deck.name}</h3>
+                <p className={`text-[11px] font-sans mt-1 ${currentTheme.textSecondary}`}>{deck.wordCount} слів</p>
+              </div>
+              <button onClick={() => handleDelete(deck.id)} disabled={deleting === deck.id}
+                className={`ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 ${isDark ? 'text-red-400/50 hover:text-red-400 hover:bg-red-400/10' : 'text-red-400/50 hover:text-red-500 hover:bg-red-50'}`}>
+                {deleting === deck.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              </button>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}>
+                {deck.status === 'approved' ? 'Активний' : deck.status === 'pending' ? 'На розгляді' : 'Відхилено'}
+              </span>
+              {deck.accessCode && (
+                <button onClick={() => handleCopyCode(deck.accessCode!)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all ${
+                    isDark ? 'bg-white/5 hover:bg-white/10 text-white/60' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
+                  <Copy size={11} />
+                  {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {decks.length < MAX_USER_PACKS && (
+        <div className="absolute bottom-0 left-0 right-0 px-6 py-4 pointer-events-none"
+          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+          <button onClick={() => setView('create')}
+            className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}>
+            <Plus size={16} />
+            Створити пак
+          </button>
+        </div>
+      )}
     </div>
   );
 };

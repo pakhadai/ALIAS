@@ -10,6 +10,7 @@ import {
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
+import { fetchLobbySettings } from '../services/api';
 import type { GameSyncState } from '@alias/shared';
 
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
@@ -438,7 +439,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGameState: (s: GameState) => {
       dispatch({ type: 'SET_STATE', payload: { gameState: s } });
     },
-    createNewRoom: () => dispatch({ type: 'SET_STATE', payload: { isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } }),
+    createNewRoom: () => {
+      dispatch({ type: 'SET_STATE', payload: { isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } });
+      // Auto-apply saved lobby settings when host creates a room
+      fetchLobbySettings().then(saved => {
+        if (saved && typeof saved === 'object') {
+          dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...(saved as Partial<GameSettings>) } } });
+        }
+      }).catch(() => {});
+    },
     handleJoin: (id: string, name: string, avatar: string) => {
       const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
       let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');

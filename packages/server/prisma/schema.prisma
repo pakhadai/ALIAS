@@ -8,13 +8,16 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  anonymousId  String?  @unique
-  email        String?  @unique
-  authProvider String   @default("anonymous")
-  createdAt    DateTime @default(now())
-  purchases    Purchase[]
-  customDecks  CustomDeck[]
+  id              String   @id @default(uuid())
+  anonymousId     String?  @unique
+  email           String?  @unique
+  authProvider    String   @default("anonymous")
+  displayName     String?                      // custom in-game name
+  avatarId        String?                      // preset avatar index "0"–"19"
+  defaultSettings Json?                        // saved GameSettings for lobby
+  createdAt       DateTime @default(now())
+  purchases       Purchase[]
+  customDecks     CustomDeck[]
 }
 
 model WordPack {
