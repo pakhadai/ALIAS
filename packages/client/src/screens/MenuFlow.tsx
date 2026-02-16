@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy, Settings, SlidersHorizontal, Lock, Upload, ChevronRight } from 'lucide-react';
+import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy, Settings, SlidersHorizontal, Lock, Upload, ChevronRight, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
@@ -8,7 +8,8 @@ import { ProfileModal } from '../components/Auth/ProfileModal';
 import { GameState, Language, AppTheme, Category } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
-import { fetchProfile, updateProfile, fetchLobbySettings, saveLobbySettings, fetchStore, createCheckout, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
+import { fetchProfile, updateProfile, fetchLobbySettings, saveLobbySettings, fetchStore, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
+import { QuickBuyModal } from '../components/Store/QuickBuyModal';
 import { TRANSLATIONS, ROOM_CODE_LENGTH, THEME_CONFIG } from '../constants';
 import versionData from '../version.json';
 
@@ -1387,6 +1388,7 @@ export const StoreScreen = () => {
   const [themes, setThemes] = useState<ThemeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
+  const [quickBuy, setQuickBuy] = useState<{ itemType: 'wordPack' | 'theme' | 'soundPack'; itemId: string } | null>(null);
 
   // Detect Stripe redirect result
   const purchaseResult = (() => {
@@ -1425,13 +1427,9 @@ export const StoreScreen = () => {
     setActing(null);
   };
 
-  const handleBuy = async (itemType: 'wordPack' | 'theme', itemId: string) => {
+  const handleBuy = (itemType: 'wordPack' | 'theme' | 'soundPack', itemId: string) => {
     if (!isAuthenticated) { setGameState(GameState.PROFILE); return; }
-    setActing(itemId);
-    try {
-      const { checkoutUrl } = await createCheckout(itemType, itemId);
-      window.location.href = checkoutUrl;
-    } catch { setActing(null); }
+    setQuickBuy({ itemType, itemId });
   };
 
   // Feature packs (special purchasable features, not actual word sets)
@@ -1667,10 +1665,30 @@ export const StoreScreen = () => {
       {/* Bottom bar */}
       <div className={`px-6 py-4 border-t ${divider} ${isDark ? 'bg-[#121212]/95' : 'bg-slate-50/95'} backdrop-blur`}
            style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-        <p className={`text-center text-[10px] uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
-          Оплата через Stripe · Безпечно
-        </p>
+        <div className="flex items-center justify-center gap-1.5">
+          <ShieldCheck size={12} className={isDark ? 'text-white/20' : 'text-slate-400'} />
+          <p className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
+            Оплата через Stripe · Безпечно
+          </p>
+        </div>
       </div>
+
+      {/* Quick buy modal */}
+      {quickBuy && (
+        <QuickBuyModal
+          itemType={quickBuy.itemType}
+          itemId={quickBuy.itemId}
+          isDark={isDark}
+          onClose={() => setQuickBuy(null)}
+          onSuccess={() => {
+            setQuickBuy(null);
+            setBanner('success');
+            loadStore();
+            const t = setTimeout(() => setBanner(null), 4000);
+            return () => clearTimeout(t);
+          }}
+        />
+      )}
     </div>
   );
 };

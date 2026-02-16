@@ -189,6 +189,24 @@ export async function createCheckout(
   });
 }
 
+export interface PaymentIntentResponse {
+  clientSecret: string;
+  purchaseId: string;
+  amount: number;
+  itemName: string;
+}
+
+/** Create a Stripe PaymentIntent for in-app quick pay (Apple Pay / Google Pay / card) */
+export async function createPaymentIntent(
+  itemType: 'wordPack' | 'theme' | 'soundPack',
+  itemId: string,
+): Promise<PaymentIntentResponse> {
+  return apiFetch<PaymentIntentResponse>('/api/purchases/payment-intent', {
+    method: 'POST',
+    body: JSON.stringify({ itemType, itemId }),
+  });
+}
+
 /** Claim a free item — instantly marks it as owned (idempotent) */
 export async function claimFreeItem(
   itemType: 'wordPack' | 'theme' | 'soundPack',

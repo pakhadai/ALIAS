@@ -114,6 +114,97 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
     res.json({ checkoutUrl: session.url, purchaseId: purchase.id });
   });
 
+  // ─── Payment Intent (in-app quick pay) ────────────────────────────────
+
+  /**
+   * POST /api/purchases/payment-intent
+   * Body: { itemType: 'wordPack'|'theme'|'soundPack', itemId: string }
+   * Creates a Stripe PaymentIntent for in-app payment (Apple Pay / Google Pay / card).
+   * Returns: { clientSecret, purchaseId, amount }
+   */
+  router.post('/payment-intent', async (req, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    if (!stripe) {
+      res.status(503).json({ error: 'Payment system not configured' });
+      return;
+    }
+
+    const { itemType, itemId } = req.body as { itemType?: string; itemId?: string };
+    if (!itemType || !itemId || !['wordPack', 'theme', 'soundPack'].includes(itemType)) {
+      res.status(400).json({ error: 'itemType and itemId are required' });
+      return;
+    }
+
+    let itemName = '';
+    let priceInCents = 0;
+
+    if (itemType === 'wordPack') {
+      const pack = await prisma.wordPack.findUnique({ where: { id: itemId } });
+      if (!pack || pack.isFree) { res.status(404).json({ error: 'Pack not found or is free' }); return; }
+      itemName = pack.name;
+      priceInCents = pack.price;
+    } else if (itemType === 'theme') {
+      const theme = await prisma.theme.findUnique({ where: { id: itemId } });
+      if (!theme || theme.isFree) { res.status(404).json({ error: 'Theme not found or is free' }); return; }
+      itemName = theme.name;
+      priceInCents = theme.price;
+    } else if (itemType === 'soundPack') {
+      const sp = await prisma.soundPack.findUnique({ where: { id: itemId } });
+      if (!sp || sp.isFree) { res.status(404).json({ error: 'Sound pack not found or is free' }); return; }
+      itemName = sp.name;
+      priceInCents = sp.price;
+    }
+
+    if (priceInCents <= 0) {
+      res.status(400).json({ error: 'Invalid price' });
+      return;
+    }
+
+    // Check if already purchased
+    const existing = await prisma.purchase.findFirst({
+      where: {
+        userId,
+        status: 'completed',
+        ...(itemType === 'wordPack' ? { wordPackId: itemId }
+          : itemType === 'theme' ? { themeId: itemId }
+          : { soundPackId: itemId }),
+      },
+    });
+    if (existing) {
+      res.status(409).json({ error: 'Already purchased' });
+      return;
+    }
+
+    const purchase = await prisma.purchase.create({
+      data: {
+        userId,
+        amount: priceInCents,
+        paymentProvider: 'stripe',
+        status: 'pending',
+        wordPackId: itemType === 'wordPack' ? itemId : null,
+        themeId: itemType === 'theme' ? itemId : null,
+        soundPackId: itemType === 'soundPack' ? itemId : null,
+      },
+    });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: priceInCents,
+      currency: 'usd',
+      automatic_payment_methods: { enabled: true },
+      description: `ALIAS — ${itemName}`,
+      metadata: { purchaseId: purchase.id, userId, itemType, itemId },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      purchaseId: purchase.id,
+      amount: priceInCents,
+      itemName,
+    });
+  });
+
   // ─── Webhook ───────────────────────────────────────────────────────────
 
   /**
@@ -145,13 +236,18 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const purchaseId = session.metadata?.purchaseId;
-
       if (purchaseId) {
-        await prisma.purchase.update({
-          where: { id: purchaseId },
-          data: { status: 'completed' },
-        });
-        console.log(`[Purchase] Completed: ${purchaseId}`);
+        await prisma.purchase.update({ where: { id: purchaseId }, data: { status: 'completed' } });
+        console.log(`[Purchase] Checkout completed: ${purchaseId}`);
+      }
+    }
+
+    if (event.type === 'payment_intent.succeeded') {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      const purchaseId = pi.metadata?.purchaseId;
+      if (purchaseId) {
+        await prisma.purchase.update({ where: { id: purchaseId }, data: { status: 'completed' } });
+        console.log(`[Purchase] PaymentIntent succeeded: ${purchaseId}`);
       }
     }
 
