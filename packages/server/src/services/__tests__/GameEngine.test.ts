@@ -65,6 +65,7 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     socketToPlayer: new Map(),
     roundsPlayed: 0,
     createdAt: Date.now(),
+    usedWords: [],
     ...overrides,
   };
 }
@@ -163,7 +164,7 @@ describe('START_ROUND', () => {
 
 describe('START_PLAYING', () => {
   it('sets PLAYING state, resets time and fetches first word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Кіт', deck: ['Собака'] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Кіт', deck: ['Собака'], usedWords: [], deckReshuffled: false });
     const room = makeRoom();
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.gameState).toBe(GameState.PLAYING);
@@ -173,7 +174,7 @@ describe('START_PLAYING', () => {
   });
 
   it('starts a countdown timer', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Test', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Test', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 5 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timerInterval).not.toBeNull();
@@ -184,7 +185,7 @@ describe('START_PLAYING', () => {
 
 describe('CORRECT', () => {
   it('increments correct count and fetches next word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ currentWord: 'Кіт', currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' } });
     await engine.handleAction(room, { action: 'CORRECT' });
     expect(room.currentRoundStats.correct).toBe(1);
@@ -196,7 +197,7 @@ describe('CORRECT', () => {
 
 describe('SKIP', () => {
   it('increments skipped count and fetches next word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ currentWord: 'Собака', currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' } });
     await engine.handleAction(room, { action: 'SKIP' });
     expect(room.currentRoundStats.skipped).toBe(1);
@@ -220,7 +221,7 @@ describe('PAUSE_GAME', () => {
 
 describe('TIME_UP', () => {
   it('stops timer and sets ROUND_SUMMARY', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom();
     await engine.handleAction(room, { action: 'START_PLAYING' });
     await engine.handleAction(room, { action: 'TIME_UP' });
@@ -382,7 +383,7 @@ describe('NEXT_ROUND', () => {
 
 describe('RESET_GAME', () => {
   it('resets all game state to lobby defaults', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ gameState: GameState.PLAYING, currentWord: 'Test', timeLeft: 30 });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     await engine.handleAction(room, { action: 'RESET_GAME' });
@@ -479,7 +480,7 @@ describe('START_DUEL', () => {
 
 describe('Timer', () => {
   it('decrements timeLeft every second and fires TIME_UP at 0', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 3 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timeLeft).toBe(3);
@@ -491,7 +492,7 @@ describe('Timer', () => {
   });
 
   it('does not decrement while paused', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [] });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 10 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     room.isPaused = true;

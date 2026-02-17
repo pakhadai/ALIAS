@@ -7,6 +7,9 @@ import type { WordService } from './WordService';
 export class GameEngine {
   private prisma: PrismaClient | null = null;
   private timerBroadcast: ((room: Room) => void) | null = null;
+  private notificationBroadcast:
+    | ((room: Room, message: string, type: 'info' | 'error' | 'success') => void)
+    | null = null;
 
   constructor(
     private roomManager: RoomManager,
@@ -16,6 +19,13 @@ export class GameEngine {
   /** Provide a callback that broadcasts current room state during active timer ticks */
   setTimerBroadcast(fn: (room: Room) => void): void {
     this.timerBroadcast = fn;
+  }
+
+  /** Provide a callback that sends in-game notifications to all room clients */
+  setNotificationBroadcast(
+    fn: (room: Room, message: string, type: 'info' | 'error' | 'success') => void,
+  ): void {
+    this.notificationBroadcast = fn;
   }
 
   setPrisma(prisma: PrismaClient) {
@@ -168,6 +178,7 @@ export class GameEngine {
         room.currentTeamIndex = 0;
         room.currentWord = '';
         room.wordDeck = [];
+        room.usedWords = [];
         room.timeLeft = 0;
         room.isPaused = false;
         room.currentRoundStats = {
@@ -199,6 +210,7 @@ export class GameEngine {
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.wordDeck = [];
+        room.usedWords = [];
         room.currentWord = '';
         break;
       }
@@ -284,9 +296,18 @@ export class GameEngine {
   }
 
   private async nextWord(room: Room): Promise<void> {
-    const { word, deck } = await this.wordService.nextWord(room.wordDeck, room.settings);
+    const { word, deck, usedWords, deckReshuffled } = await this.wordService.nextWord(
+      room.wordDeck,
+      room.settings,
+      room.usedWords,
+    );
     room.currentWord = word;
     room.wordDeck = deck;
+    room.usedWords = usedWords;
+    if (deckReshuffled) {
+      // Notify all players that the deck has been reshuffled (new cycle)
+      this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
+    }
   }
 
   private startTimer(room: Room): void {

@@ -74,6 +74,11 @@ gameEngine.setTimerBroadcast((room) => {
   io.to(room.code).emit('game:state-sync', roomManager.getSyncState(room));
 });
 
+// In-game notifications (e.g. deck reshuffled)
+gameEngine.setNotificationBroadcast((room, message, type) => {
+  io.to(room.code).emit('game:notification', { message, type });
+});
+
 /** Pending disconnects: socketId → timeout handle (60s grace period) */
 const pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
 const RECONNECT_GRACE_MS = 60_000;

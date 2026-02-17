@@ -32,6 +32,8 @@ export interface Room {
   hostUserId?: string;
   // timestamp when the room was created (for stale cleanup)
   createdAt: number;
+  // words already shown this game session — used to avoid repeats on deck rebuild
+  usedWords: string[];
 }
 
 const defaultSettings: GameSettings = {
@@ -117,6 +119,7 @@ export class RoomManager {
       socketToPlayer: new Map(),
       roundsPlayed: 0,
       createdAt: Date.now(),
+      usedWords: [],
     };
     this.rooms.set(code, room);
     this.persistRoom(room);
@@ -158,6 +161,7 @@ export class RoomManager {
       socketToPlayer: new Map(),
       roundsPlayed: 0,
       createdAt: Date.now(),
+      usedWords: [],          // can't restore from Redis; new deck will be built fresh
     };
 
     this.rooms.set(code, room);

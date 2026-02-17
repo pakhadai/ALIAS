@@ -146,7 +146,7 @@ describe('removePlayer', () => {
     expect(result).toBeNull();
   });
 
-  it('removes player from teams too', () => {
+  it('removes player from teams and drops empty teams', () => {
     const room = rm.createRoom('s1');
     const p = rm.addPlayer(room.code, 's1', 'Alice', '🦊')!;
     room.teams = [{
@@ -154,7 +154,8 @@ describe('removePlayer', () => {
       players: [p], nextPlayerIndex: 0,
     }];
     rm.removePlayer(room.code, 's1');
-    expect(room.teams[0].players).toHaveLength(0);
+    // Team becomes empty → filtered out entirely to prevent game-over hang
+    expect(room.teams).toHaveLength(0);
   });
 
   it('clamps nextPlayerIndex when removing last player', () => {

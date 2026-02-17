@@ -247,10 +247,13 @@ describe('nextWord', () => {
     expect(deck.length).toBe(allWords.length - 1);
   });
 
-  it('returns Error string on unexpected empty build', async () => {
+  it('falls back to emergency words when buildDeck returns empty', async () => {
     vi.spyOn(service, 'buildDeck').mockResolvedValue([]);
-    const { word } = await service.nextWord([], baseSettings);
-    expect(word).toBe('Error');
+    const { word, deckReshuffled } = await service.nextWord([], baseSettings);
+    // Should never return the old 'Error' string — use hardcoded emergency fallback instead
+    expect(word).not.toBe('Error');
+    expect(word.length).toBeGreaterThan(0);
+    expect(deckReshuffled).toBe(true);
   });
 
   it('does not mutate the input deck', async () => {
