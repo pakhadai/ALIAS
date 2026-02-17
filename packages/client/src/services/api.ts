@@ -266,3 +266,28 @@ export async function fetchDeckByCode(code: string): Promise<CustomDeckDetail> {
 export async function deleteCustomDeck(id: string): Promise<void> {
   return apiFetch<void>(`/api/custom-decks/${id}`, { method: 'DELETE' });
 }
+
+// ─── Push Notifications ────────────────────────────────────────────────────
+
+export async function fetchVapidPublicKey(): Promise<string> {
+  const data = await apiFetch<{ publicKey: string }>('/api/push/vapid-key');
+  return data.publicKey;
+}
+
+export async function savePushSubscription(sub: PushSubscription): Promise<void> {
+  const json = sub.toJSON();
+  await apiFetch('/api/push/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({
+      endpoint: sub.endpoint,
+      keys: { p256dh: json.keys?.p256dh, auth: json.keys?.auth },
+    }),
+  });
+}
+
+export async function removePushSubscription(endpoint: string): Promise<void> {
+  await apiFetch('/api/push/unsubscribe', {
+    method: 'DELETE',
+    body: JSON.stringify({ endpoint }),
+  });
+}

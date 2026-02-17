@@ -16,6 +16,7 @@ import versionData from '../version.json';
 // ─── Preset avatar system ──────────────────────────────────────────────
 import { PRESET_AVATARS, AvatarDisplay } from '../components/AvatarDisplay';
 export { PRESET_AVATARS, AvatarDisplay };
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -634,6 +635,7 @@ export const ProfileSettingsScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
   const { authState } = useAuthContext();
   const isDark = currentTheme.isDark;
+  const { permission: pushPermission, supported: pushSupported, loading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState('');
@@ -742,6 +744,35 @@ export const ProfileSettingsScreen = () => {
             </div>
           )}
         </div>
+
+        {/* Push notifications */}
+        {pushSupported && (
+          <div className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5`}>
+            <p className={`text-[9px] font-bold tracking-[0.25em] uppercase mb-3 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Сповіщення</p>
+            <div className="flex justify-between items-center">
+              <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>Push-сповіщення</span>
+              {pushPermission === 'granted' ? (
+                <button
+                  onClick={pushUnsubscribe}
+                  disabled={pushLoading}
+                  className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${isDark ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} disabled:opacity-50`}
+                >
+                  {pushLoading ? '...' : '✓ Увімкнено'}
+                </button>
+              ) : pushPermission === 'denied' ? (
+                <span className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Заблоковано</span>
+              ) : (
+                <button
+                  onClick={pushSubscribe}
+                  disabled={pushLoading}
+                  className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${currentTheme.button} disabled:opacity-50`}
+                >
+                  {pushLoading ? '...' : 'Увімкнути'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>

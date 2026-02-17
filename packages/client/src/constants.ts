@@ -145,6 +145,12 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     shareResults: 'Поділитися',
     shareCopied: 'Скопійовано!',
     infoSettingSound: 'Звук — увімкнути або вимкнути звукові ефекти та обрати звукову схему.',
+    notifications: 'Сповіщення',
+    notificationsOn: 'Увімкнено',
+    notificationsOff: 'Вимкнено',
+    enableNotifications: 'Увімкнути',
+    store: 'Магазин',
+    myPacks: 'Мої паки',
   },
   [Language.DE]: {
     slogan: 'Sprich schnell, spiel hell.',
@@ -279,6 +285,12 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
   topGuessers: 'Top-Spieler',
   guessedStat: 'erraten',
     finalResults: 'Spielergebnis',
+    notifications: 'Benachrichtigungen',
+    notificationsOn: 'Aktiviert',
+    notificationsOff: 'Deaktiviert',
+    enableNotifications: 'Aktivieren',
+    store: 'Shop',
+    myPacks: 'Meine Packs',
   },
   [Language.EN]: {
     slogan: 'Speak fast, play bright.',
@@ -413,6 +425,12 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
   topGuessers: 'Top Guessers',
   guessedStat: 'guessed',
     finalResults: 'Final Results',
+    notifications: 'Notifications',
+    notificationsOn: 'Enabled',
+    notificationsOff: 'Disabled',
+    enableNotifications: 'Enable',
+    store: 'Store',
+    myPacks: 'My Packs',
   }
 };
 

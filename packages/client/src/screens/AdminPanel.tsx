@@ -119,6 +119,11 @@ export function AdminPanel() {
   const [themes, setThemes] = useState<ThemeRow[]>([]);
   const [editingTheme, setEditingTheme] = useState<{ id: string; price: string; isFree: boolean } | null>(null);
 
+  // Push broadcast
+  const [broadcastForm, setBroadcastForm] = useState({ title: '', body: '', url: '' });
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [broadcastResult, setBroadcastResult] = useState<string | null>(null);
+
   // ── Load data ──────────────────────────────────────────────────────────────
 
   const load = useCallback(async (key: string, activeTab: Tab) => {
@@ -433,6 +438,61 @@ export function AdminPanel() {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* Push broadcast */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Push-розсилка</h2>
+              <div className="space-y-3">
+                <input
+                  value={broadcastForm.title}
+                  onChange={e => setBroadcastForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Заголовок"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                />
+                <input
+                  value={broadcastForm.body}
+                  onChange={e => setBroadcastForm(f => ({ ...f, body: e.target.value }))}
+                  placeholder="Текст повідомлення"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                />
+                <input
+                  value={broadcastForm.url}
+                  onChange={e => setBroadcastForm(f => ({ ...f, url: e.target.value }))}
+                  placeholder="URL (необов'язково)"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={async () => {
+                    if (!broadcastForm.title || !broadcastForm.body) return;
+                    setBroadcastLoading(true);
+                    setBroadcastResult(null);
+                    try {
+                      await adminFetch('/api/admin/push/broadcast', apiKey, {
+                        method: 'POST',
+                        body: JSON.stringify(broadcastForm),
+                      });
+                      setBroadcastResult('Розіслано!');
+                      setBroadcastForm({ title: '', body: '', url: '' });
+                    } catch (e: any) {
+                      setBroadcastResult(`Помилка: ${e.message}`);
+                    } finally {
+                      setBroadcastLoading(false);
+                    }
+                  }}
+                  disabled={broadcastLoading || !broadcastForm.title || !broadcastForm.body}
+                  className="px-5 py-2.5 rounded-xl bg-[#D4AF6A] text-black font-bold text-[11px] uppercase tracking-widest transition-all hover:opacity-90 disabled:opacity-40"
+                >
+                  {broadcastLoading ? '...' : 'Розіслати всім'}
+                </button>
+                {broadcastResult && (
+                  <span className={`text-[12px] ${broadcastResult.startsWith('Помилка') ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {broadcastResult}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}

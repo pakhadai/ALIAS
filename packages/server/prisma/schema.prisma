@@ -17,8 +17,9 @@ model User {
   defaultSettings Json?                        // saved GameSettings for lobby
   isAdmin         Boolean  @default(false)
   createdAt       DateTime @default(now())
-  purchases       Purchase[]
-  customDecks     CustomDeck[]
+  purchases           Purchase[]
+  customDecks         CustomDeck[]
+  pushSubscriptions   PushSubscription[]
 }
 
 model WordPack {
@@ -115,4 +116,16 @@ model GameSession {
 
   @@index([roomCode])
   @@index([status])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

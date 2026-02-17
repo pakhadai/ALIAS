@@ -18,6 +18,7 @@ import { createAdminRoutes } from './routes/admin';
 import { createStoreRoutes } from './routes/store';
 import { createPurchaseRoutes } from './routes/purchases';
 import { createCustomDeckRoutes } from './routes/custom-decks';
+import { createPushRoutes } from './routes/push';
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -44,6 +45,7 @@ app.use('/api/admin', createAdminRoutes(prisma));
 app.use('/api/store', createStoreRoutes(prisma));
 app.use('/api/purchases', createPurchaseRoutes(prisma));
 app.use('/api/custom-decks', createCustomDeckRoutes(prisma));
+app.use('/api/push', createPushRoutes(prisma));
 
 const httpServer = createServer(app);
 

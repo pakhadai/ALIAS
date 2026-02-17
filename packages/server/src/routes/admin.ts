@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response, type NextFunction } 
 import type { PrismaClient } from '@prisma/client';
 import { config } from '../config';
 import { AuthService } from '../services/AuthService';
+import { broadcastPush } from './push';
 
 const authService = new AuthService();
 
@@ -66,6 +67,12 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     const pack = await prisma.wordPack.create({
       data: { slug, name, language, category, difficulty, price, isFree, description },
     });
+    // Auto-notify subscribers about new pack
+    broadcastPush(prisma, {
+      title: '🃏 Новий набір слів!',
+      body: `«${pack.name}» вже доступний у магазині`,
+      url: '/?tab=store',
+    }).catch(() => {});
     res.status(201).json(pack);
   });
 
@@ -319,6 +326,18 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     }
 
     res.json(result);
+  });
+
+  /** POST /api/admin/push/broadcast — send push notification to all subscribers */
+  router.post('/push/broadcast', async (req, res) => {
+    const { title, body, url } = req.body as { title?: string; body?: string; url?: string };
+    if (!title || !body) {
+      res.status(400).json({ error: 'title and body are required' });
+      return;
+    }
+    const count = await prisma.pushSubscription.count();
+    await broadcastPush(prisma, { title, body, url });
+    res.json({ ok: true, sent: count });
   });
 
   return router;

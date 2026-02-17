@@ -27,4 +27,9 @@ export const config = {
     successUrl: process.env.STRIPE_SUCCESS_URL || 'http://localhost:5173/?purchase=success',
     cancelUrl: process.env.STRIPE_CANCEL_URL || 'http://localhost:5173/?purchase=cancelled',
   },
+  vapid: {
+    publicKey:  process.env.VAPID_PUBLIC_KEY  || '',
+    privateKey: process.env.VAPID_PRIVATE_KEY || '',
+    email:      process.env.VAPID_EMAIL       || 'mailto:admin@aliasmaster.app',
+  },
 };

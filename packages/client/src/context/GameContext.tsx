@@ -445,6 +445,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     r.style.setProperty('--theme-radius', currentTheme.borderRadius);
   }, [currentTheme]);
 
+  // Sync <html lang> with app language setting
+  useEffect(() => {
+    const lang = state.settings.language === Language.UA ? 'uk'
+      : state.settings.language === Language.DE ? 'de' : 'en';
+    document.documentElement.lang = lang;
+  }, [state.settings.language]);
+
   const contextValue = useMemo(() => ({
     ...state,
     currentTheme,
