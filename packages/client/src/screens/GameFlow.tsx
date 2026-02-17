@@ -218,11 +218,11 @@ export const PlayingScreen = () => {
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   const isActualExplainer = explainer?.id === myPlayerId;
   const isOnActiveTeam = activeTeam.players.some(p => p.id === myPlayerId);
-  const is1v1 = teams.every(t => t.players.length <= 1);
-  // 1v1 mode: opponent sees word + buttons; explainer sees nothing (explains verbally)
-  // 2+ players per team: explainer + other teams see word; teammates guess (no word)
-  const canSeeWord = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer || !isOnActiveTeam);
-  const canUseButtons = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer);
+  // Explainer and opponents see the word; only guessing teammates (same team, not explaining) don't.
+  // Host always has buttons (server enforces host-only for CORRECT/SKIP); explainer also gets them
+  // so that when the host IS the explainer it works naturally in all team sizes incl. 1v1.
+  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer || !isOnActiveTeam;
+  const canUseButtons = gameMode === 'OFFLINE' || isHost || isActualExplainer;
   const isCriticalTime = timeLeft <= 10;
   const isUrgentTime = timeLeft <= 5;
 
@@ -332,8 +332,8 @@ export const PlayingScreen = () => {
             ) : (
                 <div className="space-y-8 opacity-40 text-center animate-fade-in">
                     <AlertCircle size={64} className="mx-auto" />
-                    <p className={`text-xl font-serif text-white`}>{is1v1 && isActualExplainer ? t.youExplain : t.youGuess}</p>
-                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{is1v1 && isActualExplainer ? t.explainHint : t.sayAloud}</p>
+                    <p className={`text-xl font-serif text-white`}>{t.youGuess}</p>
+                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{t.sayAloud}</p>
                 </div>
             )}
         </main>
