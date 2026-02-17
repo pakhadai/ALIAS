@@ -1,10 +1,11 @@
 
-const CACHE_NAME = 'alias-master-v4';
+const CACHE_NAME = 'alias-master-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/admin.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/offline.html',
 ];
 
 // CDN domains that should be cached for offline support
@@ -65,9 +66,10 @@ self.addEventListener('fetch', (event) => {
           });
           return response;
         })
-        .catch(() => {
+        .catch(async () => {
           const url = new URL(event.request.url);
-          return caches.match(url.pathname === '/admin' ? '/admin.html' : '/index.html');
+          const cached = await caches.match(url.pathname === '/admin' ? '/admin.html' : '/index.html');
+          return cached || caches.match('/offline.html');
         })
     );
     return;

@@ -17,6 +17,8 @@ import versionData from '../version.json';
 import { PRESET_AVATARS, AvatarDisplay } from '../components/AvatarDisplay';
 export { PRESET_AVATARS, AvatarDisplay };
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { usePlayerStats } from '../hooks/usePlayerStats';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -206,6 +208,8 @@ export const MenuScreen = () => {
     fetchStore().then(data => setStoreThemes(data.themes)).catch(() => {});
   }, []);
 
+  const { canInstall, install, dismiss } = useInstallPrompt();
+
   const handleProfileClick = () => {
     if (isAuthenticated) {
       setGameState(GameState.PROFILE);
@@ -270,8 +274,23 @@ export const MenuScreen = () => {
           </div>
         )}
 
+        {canInstall && (
+          <div className={`mt-6 w-full flex items-center justify-between px-4 py-3 rounded-2xl border animate-fade-in ${currentTheme.isDark ? 'bg-[#D4AF6A]/8 border-[#D4AF6A]/20' : 'bg-amber-50 border-amber-200'}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-[18px]">📲</span>
+              <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-[#D4AF6A]' : 'text-amber-700'}`}>Додати на головний екран</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={install} className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest ${currentTheme.isDark ? 'bg-[#D4AF6A]/20 text-[#D4AF6A]' : 'bg-amber-200 text-amber-800'}`}>
+                Встановити
+              </button>
+              <button onClick={dismiss} className={`opacity-40 hover:opacity-70 text-xs ${currentTheme.isDark ? 'text-white' : 'text-slate-600'}`}>✕</button>
+            </div>
+          </div>
+        )}
+
         <div className="w-full space-y-6 flex flex-col items-center mt-12 animate-slide-up">
-          <button 
+          <button
             onClick={createNewRoom}
             className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl`}
           >
@@ -592,6 +611,15 @@ export const ProfileScreen = () => {
           <div className="flex items-center gap-3">
             <SlidersHorizontal size={16} className={currentTheme.iconColor} />
             <span className={navLabel}>Налаштування лоббі</span>
+          </div>
+          <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
+        </button>
+
+        {/* Моя статистика */}
+        <button onClick={() => setGameState(GameState.PLAYER_STATS)} className={navBtn}>
+          <div className="flex items-center gap-3">
+            <ShieldCheck size={16} className={currentTheme.iconColor} />
+            <span className={navLabel}>Моя статистика</span>
           </div>
           <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
         </button>
@@ -1831,6 +1859,61 @@ export const StoreScreen = () => {
           }}
         />
       )}
+    </div>
+  );
+};
+
+/* ──────────────────────────────────────────────────
+   PlayerStatsScreen
+────────────────────────────────────────────────── */
+export const PlayerStatsScreen = () => {
+  const { setGameState, currentTheme } = useGame();
+  const { get: getStats } = usePlayerStats();
+  const stats = getStats();
+  const isDark = currentTheme.isDark;
+
+  const accuracy = stats.wordsGuessed + stats.wordsSkipped > 0
+    ? Math.round((stats.wordsGuessed / (stats.wordsGuessed + stats.wordsSkipped)) * 100)
+    : 0;
+
+  const rows = [
+    { label: 'Ігор зіграно', value: stats.gamesPlayed, icon: '🎮' },
+    { label: 'Вгадано слів', value: stats.wordsGuessed, icon: '✅' },
+    { label: 'Пропущено', value: stats.wordsSkipped, icon: '❌' },
+    { label: 'Точність', value: `${accuracy}%`, icon: '🎯' },
+  ];
+
+  return (
+    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+        <button onClick={() => setGameState(GameState.PROFILE)}
+          className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
+          <ArrowLeft size={22} />
+        </button>
+        <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Моя статистика</h2>
+      </header>
+
+      <div className="flex-1 px-6 py-4 space-y-3">
+        {rows.map(row => (
+          <div key={row.label}
+            className={`flex items-center justify-between px-5 py-4 rounded-2xl ${
+              isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{row.icon}</span>
+              <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-slate-600'}`}>{row.label}</span>
+            </div>
+            <span className={`text-xl font-bold font-serif ${currentTheme.textMain}`}>{row.value}</span>
+          </div>
+        ))}
+
+        {stats.lastPlayed && (
+          <p className={`text-center text-[11px] pt-4 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
+            Остання гра: {new Date(stats.lastPlayed).toLocaleDateString('uk')}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

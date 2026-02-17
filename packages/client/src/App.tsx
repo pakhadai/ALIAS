@@ -5,7 +5,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
 import { PageTransition, ErrorBoundary } from './components/Shared';
-import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen, ProfileScreen, ProfileSettingsScreen, LobbySettingsScreen, MyWordPacksScreen, StoreScreen, MyDecksScreen } from './screens/MenuFlow';
+import { MenuScreen, EnterNameScreen, JoinInputScreen, RulesScreen, ProfileScreen, ProfileSettingsScreen, LobbySettingsScreen, MyWordPacksScreen, StoreScreen, MyDecksScreen, PlayerStatsScreen } from './screens/MenuFlow';
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
 import { VSScreen, PreRoundScreen, PlayingScreen, RoundSummaryScreen, ScoreboardScreen, GameOverScreen, CountdownScreen } from './screens/GameFlow';
 
@@ -20,6 +20,7 @@ const GameRouter = () => {
       case GameState.PROFILE_SETTINGS: return <PageTransition key="profile_settings"><ProfileSettingsScreen /></PageTransition>;
       case GameState.LOBBY_SETTINGS: return <PageTransition key="lobby_settings"><LobbySettingsScreen /></PageTransition>;
       case GameState.MY_WORD_PACKS: return <PageTransition key="my_word_packs"><MyWordPacksScreen /></PageTransition>;
+      case GameState.PLAYER_STATS: return <PageTransition key="player_stats"><PlayerStatsScreen /></PageTransition>;
       case GameState.STORE: return <PageTransition key="store"><StoreScreen /></PageTransition>;
       case GameState.MY_DECKS: return <PageTransition key="my_decks"><MyDecksScreen /></PageTransition>;
       case GameState.RULES: return <PageTransition key="rules"><RulesScreen /></PageTransition>;
