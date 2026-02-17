@@ -106,26 +106,47 @@ export function registerSocketHandlers(
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    // Protect host-only actions: only allow if this socket is the room host.
-    // Use dual identification: direct socketId match OR socketToPlayer lookup.
-    // This self-heals a stale hostSocketId (e.g. after Redis restore or brief reconnect).
-    const hostOnlyActions = new Set([
-      'START_GAME', 'START_DUEL', 'START_ROUND', 'START_PLAYING',
-      'NEXT_ROUND', 'RESET_GAME', 'REMATCH', 'GENERATE_TEAMS',
-      'PAUSE_GAME', 'CONFIRM_ROUND', 'UPDATE_SETTINGS', 'KICK_PLAYER',
-      'CORRECT', 'SKIP', 'TIME_UP'
-    ]);
+    // Identify the sender.
+    // Dual check: direct socketId match OR socketToPlayer lookup (self-heals stale hostSocketId
+    // after Redis restore or brief reconnect before room:rejoin is processed).
     const socketPlayerId = room.socketToPlayer.get(socket.id);
     const isHost =
       socket.id === room.hostSocketId ||
       (!!socketPlayerId && socketPlayerId === room.hostPlayerId);
-    // Lazily heal stale hostSocketId so future checks pass without lookup
     if (isHost && socket.id !== room.hostSocketId) {
-      room.hostSocketId = socket.id;
+      room.hostSocketId = socket.id; // lazily heal stale hostSocketId
     }
+
+    // Host-only: lobby/game-flow management actions
+    const hostOnlyActions = new Set([
+      'START_GAME', 'START_DUEL', 'GENERATE_TEAMS',
+      'NEXT_ROUND', 'CONFIRM_ROUND',
+      'RESET_GAME', 'REMATCH',
+      'PAUSE_GAME', 'UPDATE_SETTINGS', 'KICK_PLAYER',
+    ]);
     if (hostOnlyActions.has(payload.action) && !isHost) {
       socket.emit('room:error', { message: 'Only the host can perform this action' });
       return;
+    }
+
+    // Explainer-only: round control actions (only the current explainer may send these,
+    // host is also allowed as an emergency fallback).
+    // START_ROUND fires before explainerId is set — validate against the upcoming explainer.
+    const explainerActions = new Set(['START_ROUND', 'START_PLAYING', 'CORRECT', 'SKIP', 'TIME_UP']);
+    if (explainerActions.has(payload.action) && !isHost) {
+      const upcomingExplainerId = (() => {
+        const team = room.teams[room.currentTeamIndex];
+        if (!team || team.players.length === 0) return null;
+        return team.players[Math.min(team.nextPlayerIndex, team.players.length - 1)]?.id ?? null;
+      })();
+      const expectedId =
+        payload.action === 'START_ROUND'
+          ? upcomingExplainerId
+          : (room.currentRoundStats.explainerId || upcomingExplainerId);
+      if (!socketPlayerId || socketPlayerId !== expectedId) {
+        socket.emit('room:error', { message: 'Only the current explainer can perform this action' });
+        return;
+      }
     }
 
     await gameEngine.handleAction(room, payload);

@@ -96,7 +96,7 @@ export const VSScreen = () => {
 
 // Pre-Round Screen: Shows who's next
 export const PreRoundScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost, gameMode } = useGame();
+  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost, myPlayerId, gameMode } = useGame();
   const t = TRANSLATIONS[settings.language];
   const activeTeam = teams[currentTeamIndex];
 
@@ -116,6 +116,7 @@ export const PreRoundScreen = () => {
 
   const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
+  const isActualExplainer = explainer?.id === myPlayerId;
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
@@ -149,7 +150,7 @@ export const PreRoundScreen = () => {
         )}
 
         <div className={gameMode === 'OFFLINE' ? 'pt-6' : 'pt-12'}>
-            {isHost ? (
+            {(gameMode === 'OFFLINE' || isActualExplainer) ? (
               <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
                   {t.takePhone}
               </Button>
@@ -166,18 +167,25 @@ export const PreRoundScreen = () => {
 
 // Countdown Screen before playing
 export const CountdownScreen = () => {
-  const { currentTheme, startGameplay, playSound, isHost } = useGame();
+  const { currentTheme, startGameplay, playSound, gameMode, teams, currentTeamIndex, myPlayerId, currentRoundStats } = useGame();
   const [count, setCount] = useState(3);
+
+  const explainerId = currentRoundStats.explainerId || (() => {
+    const team = teams[currentTeamIndex];
+    if (!team || team.players.length === 0) return '';
+    return team.players[Math.min(team.nextPlayerIndex, team.players.length - 1)]?.id ?? '';
+  })();
+  const isActualExplainer = gameMode === 'OFFLINE' || explainerId === myPlayerId;
 
   useEffect(() => {
     if (count > 0) {
       playSound('tick');
       const timer = setTimeout(() => setCount(count - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (isHost) {
+    } else if (isActualExplainer) {
       startGameplay();
     }
-  }, [count, startGameplay, playSound, isHost]);
+  }, [count, startGameplay, playSound, isActualExplainer]);
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>
@@ -217,12 +225,10 @@ export const PlayingScreen = () => {
   const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   const isActualExplainer = explainer?.id === myPlayerId;
-  const isOnActiveTeam = activeTeam.players.some(p => p.id === myPlayerId);
-  // Explainer and opponents see the word; only guessing teammates (same team, not explaining) don't.
-  // Host always has buttons (server enforces host-only for CORRECT/SKIP); explainer also gets them
-  // so that when the host IS the explainer it works naturally in all team sizes incl. 1v1.
-  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer || !isOnActiveTeam;
-  const canUseButtons = gameMode === 'OFFLINE' || isHost || isActualExplainer;
+  // Only the explainer sees the word and has the buttons.
+  // Guessing teammates and opponents do not see the word (fair play for all team sizes).
+  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer;
+  const canUseButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const isCriticalTime = timeLeft <= 10;
   const isUrgentTime = timeLeft <= 5;
 
@@ -239,15 +245,15 @@ export const PlayingScreen = () => {
     return () => clearInterval(interval);
   }, [gameState, isPaused, setTimeLeft]);
 
-  // Host sends TIME_UP action when timer reaches 0 (this broadcasts to clients)
+  // Explainer sends TIME_UP when timer reaches 0 (server timer also fires it independently)
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
     if (timeLeft <= 6 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
-    if (isHost && timeLeft === 0) {
+    if (isActualExplainer && timeLeft === 0) {
         sendAction({ action: 'TIME_UP' });
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
-  }, [timeLeft, isHost, gameState, isPaused, settings.soundEnabled, playSound, sendAction]);
+  }, [timeLeft, isActualExplainer, gameState, isPaused, settings.soundEnabled, playSound, sendAction]);
 
   const onAction = (type: 'correct' | 'skip', x: number, y: number) => {
       if (isPaused || actionProcessingRef.current) return;
