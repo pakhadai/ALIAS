@@ -101,6 +101,11 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
   const createRoom = useCallback((playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
+    // Clear any previous session data BEFORE connecting so the connect handler
+    // does not auto-send room:rejoin and interfere with the new room creation.
+    localStorage.removeItem(ROOM_CODE_KEY);
+    localStorage.removeItem(PLAYER_ID_KEY);
+
     if (!socket?.connected) socket?.connect();
 
     socket?.once('room:created', ({ roomCode: code, playerId }) => {
@@ -115,6 +120,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
   const joinRoom = useCallback((code: string, playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
+    // Clear previous session data so auto-rejoin does not fire for a different room.
+    localStorage.removeItem(ROOM_CODE_KEY);
+    localStorage.removeItem(PLAYER_ID_KEY);
+
     if (!socket?.connected) socket?.connect();
 
     socket?.once('room:joined', ({ roomCode: joinedCode, playerId }) => {

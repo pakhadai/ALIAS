@@ -389,7 +389,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     onStateSync: useCallback((syncState: GameSyncState) => {
       // Client-only navigation states that overlay the lobby — don't let
       // a server LOBBY broadcast kick the user out of a settings screen.
+      // ENTER_NAME is also protected: auto-rejoin can fire mid-creation and
+      // must not navigate the user away before room:create is processed.
       const CLIENT_NAV_STATES = new Set([
+        GameState.ENTER_NAME,
         GameState.SETTINGS, GameState.MY_WORD_PACKS, GameState.MY_DECKS,
         GameState.RULES, GameState.PLAYER_STATS, GameState.STORE,
         GameState.PROFILE, GameState.PROFILE_SETTINGS, GameState.LOBBY_SETTINGS,
@@ -505,10 +508,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     createNewRoom: () => {
       dispatch({ type: 'SET_STATE', payload: { isHost: true, gameState: GameState.ENTER_NAME, gameMode: 'ONLINE' } });
-      // Auto-apply saved lobby settings when host creates a room
+      // Auto-apply saved lobby settings (roundTime, categories, etc.) but keep
+      // personal preferences (theme, language, sound) from the user's device.
       fetchLobbySettings().then(saved => {
         if (saved && typeof saved === 'object') {
-          dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...(saved as Partial<GameSettings>) } } });
+          const { theme: _t, language: _l, soundEnabled: _se, soundPreset: _sp, ...roomSettings } = saved as Partial<GameSettings>;
+          dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...roomSettings } } });
         }
       }).catch(() => {});
     },
