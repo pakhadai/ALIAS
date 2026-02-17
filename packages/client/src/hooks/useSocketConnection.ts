@@ -99,7 +99,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socketRef.current?.disconnect();
   }, []);
 
-  const createRoom = useCallback((playerName: string, avatar: string) => {
+  const createRoom = useCallback((playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
     if (!socket?.connected) socket?.connect();
 
@@ -110,10 +110,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       localStorage.setItem(PLAYER_ID_KEY, playerId);
     });
 
-    socket?.emit('room:create', { playerName, avatar });
+    socket?.emit('room:create', { playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
   }, []);
 
-  const joinRoom = useCallback((code: string, playerName: string, avatar: string) => {
+  const joinRoom = useCallback((code: string, playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
     if (!socket?.connected) socket?.connect();
 
@@ -124,7 +124,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       localStorage.setItem(PLAYER_ID_KEY, playerId);
     });
 
-    socket?.emit('room:join', { roomCode: code, playerName, avatar });
+    socket?.emit('room:join', { roomCode: code, playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
   }, []);
 
   const leaveRoom = useCallback(() => {

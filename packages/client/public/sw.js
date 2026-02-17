@@ -1,8 +1,9 @@
 
-const CACHE_NAME = 'alias-master-v3';
+const CACHE_NAME = 'alias-master-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/admin.html',
   '/manifest.json'
 ];
 
@@ -65,7 +66,8 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          return caches.match('/index.html');
+          const url = new URL(event.request.url);
+          return caches.match(url.pathname === '/admin' ? '/admin.html' : '/index.html');
         })
     );
     return;

@@ -7,6 +7,7 @@ import { Confetti, FloatingParticle, MilestoneNotification } from '../components
 import { GameState, Player, Team, AppTheme } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 
 // VS Screen: Animated 1v1 / 1v1v1 matchup display
 export const VSScreen = () => {
@@ -57,13 +58,17 @@ export const VSScreen = () => {
                 {isFromLeft ? (
                   <>
                     <div className={`w-4 h-4 rounded-full ${el.team?.color}`} />
-                    <span className="text-5xl">{el.player?.avatar}</span>
+                    {el.player?.avatarId != null
+                      ? <AvatarDisplay avatarId={el.player.avatarId} size={56} />
+                      : <span className="text-5xl">{el.player?.avatar}</span>}
                     <span className={`text-3xl font-serif font-bold tracking-wide ${currentTheme.textMain}`}>{el.player?.name}</span>
                   </>
                 ) : (
                   <>
                     <span className={`text-3xl font-serif font-bold tracking-wide ${currentTheme.textMain}`}>{el.player?.name}</span>
-                    <span className="text-5xl">{el.player?.avatar}</span>
+                    {el.player?.avatarId != null
+                      ? <AvatarDisplay avatarId={el.player.avatarId} size={56} />
+                      : <span className="text-5xl">{el.player?.avatar}</span>}
                     <div className={`w-4 h-4 rounded-full ${el.team?.color}`} />
                   </>
                 )}
@@ -124,7 +129,12 @@ export const PreRoundScreen = () => {
             </div>
         </div>
 
-        <div className="pt-12 space-y-4">
+        <div className="pt-12 space-y-4 flex flex-col items-center">
+            <div className="mb-1">
+              {explainer.avatarId != null
+                ? <AvatarDisplay avatarId={explainer.avatarId} size={64} />
+                : <span className="text-6xl">{explainer.avatar}</span>}
+            </div>
             <p className={`text-5xl font-serif ${currentTheme.textMain}`}>{explainer.name}</p>
             <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}>
                 {t.explains}
@@ -569,34 +579,121 @@ export const ScoreboardScreen = () => {
 export const GameOverScreen = () => {
   const { teams, currentTheme, settings, resetGame, rematch, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
-  const winners = [...teams].sort((a, b) => b.score - a.score);
-  const winner = winners[0];
+  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const sorted = [...teams].sort((a, b) => b.score - a.score);
+  const winner = sorted[0];
+  const [copied, setCopied] = useState(false);
+
+  // Collect top guessers across all teams
+  const allPlayers = teams.flatMap(team => team.players.map((p: any) => ({ ...p, teamName: team.name })));
+  const topGuessers = [...allPlayers]
+    .filter((p: any) => (p.stats?.guessed ?? 0) > 0)
+    .sort((a: any, b: any) => (b.stats?.guessed ?? 0) - (a.stats?.guessed ?? 0))
+    .slice(0, 5);
+
+  const handleShare = async () => {
+    const lines = sorted.map((team, i) => {
+      const medal = ['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`;
+      return `${medal} ${team.name}: ${team.score} ${t.pts}`;
+    });
+    const text = `🎮 ALIAS — ${t.finalResults}\n${lines.join('\n')}`;
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const cardBg = isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100 shadow-sm';
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 items-center justify-center text-center`}>
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-12 items-center overflow-y-auto no-scrollbar`}
+         style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
       <Confetti />
-      <div className="space-y-12 animate-slide-up">
-        <Trophy size={80} className="text-yellow-500 mx-auto animate-bounce" />
 
-        <div className="space-y-4">
-            <h2 className={`text-5xl font-serif ${currentTheme.textMain}`}>{winner?.name}</h2>
-            <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] text-yellow-500`}>{t.winners}</p>
-        </div>
+      {/* Winner banner */}
+      <div className="w-full max-w-sm pb-6 text-center animate-slide-up">
+        <Trophy size={56} className="text-yellow-500 mx-auto mb-4 animate-bounce" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-yellow-500 mb-2">{t.winners}</p>
+        <h2 className={`text-4xl font-serif ${currentTheme.textMain}`}>{winner?.name}</h2>
+      </div>
 
-        <div className="space-y-4 pt-12">
-            {isHost ? (
-              <>
-                <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={rematch}>
-                    {t.rematch}
-                </Button>
-                <button onClick={resetGame} className={`w-full py-4 text-[10px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>
-                    {t.playAgain}
-                </button>
-              </>
-            ) : (
-              <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitAdmin}</p>
-            )}
+      {/* Team leaderboard */}
+      <div className="w-full max-w-sm space-y-2 animate-fade-in">
+        <p className={`text-[10px] uppercase tracking-widest font-bold opacity-40 mb-3 ${currentTheme.textMain}`}>
+          {t.finalResults}
+        </p>
+        {sorted.map((team, i) => (
+          <div key={team.id} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${cardBg}`}>
+            <span className="text-xl w-7 text-center">{medals[i] ?? `${i + 1}`}</span>
+            <div className="flex-1 min-w-0">
+              <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{team.name}</p>
+              {team.players.length > 0 && (
+                <p className={`text-[10px] truncate opacity-40 ${currentTheme.textMain}`}>
+                  {team.players.map((p: any) => p.name).join(', ')}
+                </p>
+              )}
+            </div>
+            <span className={`font-bold text-base tabular-nums ${i === 0 ? 'text-yellow-500' : currentTheme.textMain}`}>
+              {team.score} <span className="text-[10px] opacity-40">{t.pts}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Top guessers podium */}
+      {topGuessers.length > 0 && (
+        <div className="w-full max-w-sm mt-8 space-y-2 animate-fade-in">
+          <p className={`text-[10px] uppercase tracking-widest font-bold opacity-40 mb-3 ${currentTheme.textMain}`}>
+            {t.topGuessers ?? 'Top Guessers'}
+          </p>
+          {topGuessers.map((p: any, i) => (
+            <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${cardBg}`}>
+              <span className="text-xl w-7 text-center">{medals[i] ?? `${i + 1}`}</span>
+              {p.avatarId != null
+                ? <AvatarDisplay avatarId={p.avatarId} size={32} />
+                : <span className="text-2xl">{p.avatar}</span>}
+              <div className="flex-1 min-w-0">
+                <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{p.name}</p>
+                <p className={`text-[10px] truncate opacity-40 ${currentTheme.textMain}`}>{p.teamName}</p>
+              </div>
+              <div className="text-right">
+                <span className={`font-bold text-base tabular-nums ${i === 0 ? 'text-[#D4AF6A]' : currentTheme.textMain}`}>
+                  {p.stats?.guessed ?? 0}
+                </span>
+                <p className={`text-[9px] opacity-40 ${currentTheme.textMain}`}>
+                  {t.guessedStat ?? 'guessed'}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Actions */}
+      <div className="w-full max-w-sm space-y-3 pt-6 pb-2">
+        <button
+          onClick={handleShare}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all text-[12px] font-bold uppercase tracking-widest ${isDark ? 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/20' : 'border-slate-200 text-slate-400 hover:text-slate-600'}`}
+        >
+          {copied ? t.shareCopied : t.shareResults}
+        </button>
+
+        {isHost ? (
+          <>
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={rematch}>
+              {t.rematch}
+            </Button>
+            <button onClick={resetGame} className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>
+              {t.playAgain}
+            </button>
+          </>
+        ) : (
+          <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitAdmin}</p>
+        )}
       </div>
     </div>
   );

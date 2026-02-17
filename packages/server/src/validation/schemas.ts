@@ -7,12 +7,14 @@ import type { GameActionPayload } from '@alias/shared';
 export const roomCreateSchema = z.object({
   playerName: z.string().min(1).max(20).transform(s => s.replace(/<[^>]*>/g, '')),
   avatar: z.string().min(1).max(4),
+  avatarId: z.string().max(3).optional().nullable(),
 });
 
 export const roomJoinSchema = z.object({
   roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
   playerName: z.string().min(1).max(20).transform(s => s.replace(/<[^>]*>/g, '')),
   avatar: z.string().min(1).max(4),
+  avatarId: z.string().max(3).optional().nullable(),
 });
 
 // --- Game settings validation ---
@@ -28,6 +30,8 @@ const gameSettingsPartialSchema = z.object({
   teamCount: z.number().int().min(2).max(8),
   theme: z.nativeEnum(AppTheme),
   customWords: z.string().max(5000).optional(),
+  customDeckCode: z.string().max(20).optional(),
+  selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
 }).partial();
 
 // --- Game action validation ---

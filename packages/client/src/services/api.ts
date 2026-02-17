@@ -119,16 +119,6 @@ export async function signInWithGoogle(idToken: string): Promise<AuthResponse> {
   return data;
 }
 
-/** Sign in with Apple identity token */
-export async function signInWithApple(idToken: string, email?: string): Promise<AuthResponse> {
-  const deviceId = getDeviceId();
-  const data = await apiFetch<AuthResponse>('/api/auth/apple', {
-    method: 'POST',
-    body: JSON.stringify({ idToken, email, deviceId }),
-  });
-  setAuthToken(data.token);
-  return data;
-}
 
 /** Get current user profile */
 export async function fetchProfile(): Promise<UserProfile> {
@@ -152,6 +142,7 @@ export interface WordPackItem extends StoreItem {
   difficulty: string;
   wordCount: number;
   description: string | null;
+  isDefault: boolean;
 }
 
 export interface ThemeItem extends StoreItem {

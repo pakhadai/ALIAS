@@ -61,12 +61,13 @@ export class WordService {
         });
         dbWords = rows.map((r) => r.text);
       } else if (dbCategories.length > 0) {
-        // Default: query by language + category
+        // Default: only use isDefault packs (free standard content available to all)
         const rows = await this.prisma.word.findMany({
           where: {
             pack: {
               language: settings.language,
               category: { in: dbCategories },
+              isDefault: true,
             },
           },
           select: { text: true },

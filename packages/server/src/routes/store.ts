@@ -43,7 +43,7 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
         orderBy: [{ language: 'asc' }, { category: 'asc' }],
         select: {
           id: true, slug: true, name: true, language: true, category: true,
-          difficulty: true, price: true, isFree: true, wordCount: true, description: true,
+          difficulty: true, price: true, isFree: true, isDefault: true, wordCount: true, description: true,
         },
       }),
       prisma.theme.findMany({
@@ -57,7 +57,7 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
     ]);
 
     res.json({
-      wordPacks: wordPacks.map(p => ({ ...p, owned: purchasedWordPackIds.has(p.id) })),
+      wordPacks: wordPacks.map(p => ({ ...p, owned: p.isDefault || purchasedWordPackIds.has(p.id) })),
       themes: themes.map(t => ({ ...t, owned: purchasedThemeIds.has(t.id) })),
       soundPacks: soundPacks.map(s => ({ ...s, owned: purchasedSoundPackIds.has(s.id) })),
     });

@@ -30,6 +30,7 @@ model WordPack {
   version     Int      @default(1)
   price       Int      @default(0)      // cents, 0 = free
   isFree      Boolean  @default(true)
+  isDefault   Boolean  @default(false)   // always available to all users without claiming
   wordCount   Int      @default(0)
   description String?
   createdAt   DateTime @default(now())

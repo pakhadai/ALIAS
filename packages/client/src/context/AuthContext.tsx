@@ -6,7 +6,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   userId: string;
   loginWithGoogle: (idToken: string) => Promise<void>;
-  loginWithApple: (idToken: string, email?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 

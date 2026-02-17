@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   fetchAnonymousToken,
   signInWithGoogle,
-  signInWithApple,
   fetchProfile,
   getAuthToken,
   clearAuthToken,
@@ -72,22 +71,6 @@ export function useAuth() {
     }
   }, []);
 
-  const loginWithApple = useCallback(async (idToken: string, email?: string) => {
-    try {
-      const { userId, email: returnedEmail } = await signInWithApple(idToken, email);
-      const profile = await fetchProfile();
-      setAuthState({
-        status: 'authenticated',
-        userId,
-        email: returnedEmail || email || '',
-        provider: 'apple',
-        profile,
-      });
-    } catch (e) {
-      setAuthState({ status: 'error', message: (e as Error).message });
-    }
-  }, []);
-
   const logout = useCallback(async () => {
     clearAuthToken();
     // Revert to anonymous
@@ -102,5 +85,5 @@ export function useAuth() {
   const isAuthenticated = authState.status === 'authenticated';
   const userId = authState.status !== 'loading' ? authState.userId : '';
 
-  return { authState, isAuthenticated, userId, loginWithGoogle, loginWithApple, logout, initialize };
+  return { authState, isAuthenticated, userId, loginWithGoogle, logout, initialize };
 }

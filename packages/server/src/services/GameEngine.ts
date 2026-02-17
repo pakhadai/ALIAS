@@ -149,6 +149,14 @@ export class GameEngine {
 
       case 'RESET_GAME': {
         this.stopTimer(room);
+        // Mark active session as abandoned
+        if (this.prisma && room.sessionId) {
+          this.prisma.gameSession.update({
+            where: { id: room.sessionId },
+            data: { status: 'abandoned', completedAt: new Date() },
+          }).catch(() => {});
+          room.sessionId = undefined;
+        }
         room.gameState = GameState.LOBBY;
         room.teams = [];
         room.currentTeamIndex = 0;
@@ -163,6 +171,20 @@ export class GameEngine {
       }
 
       case 'REMATCH': {
+        // Create new session for the rematch
+        if (this.prisma) {
+          this.prisma.gameSession.create({
+            data: {
+              roomCode: room.code,
+              hostPlayerId: room.hostPlayerId,
+              playerCount: room.players.length,
+              settings: room.settings as object,
+              status: 'active',
+            },
+          }).then((session) => {
+            room.sessionId = session.id;
+          }).catch(() => {});
+        }
         room.teams = room.teams.map((t) => ({
           ...t,
           score: 0,
@@ -205,10 +227,22 @@ export class GameEngine {
         const points = Math.max(0, rawPoints);
 
         const activeTeam = teams[currentTeamIndex];
+        const explainerId = currentRoundStats.explainerId;
+        const correctCount = currentRoundStats.correct;
         room.teams = teams.map((t) => {
           const updated = { ...t };
           if (t.id === currentRoundStats.teamId) {
             updated.score = Math.max(0, t.score + points);
+            // Update per-player guessed stats for non-explainers
+            if (correctCount > 0) {
+              updated.players = t.players.map(p => ({
+                ...p,
+                stats: {
+                  ...p.stats,
+                  guessed: p.stats.guessed + (p.id !== explainerId ? correctCount : 0),
+                },
+              }));
+            }
           }
           if (activeTeam && t.id === activeTeam.id) {
             updated.nextPlayerIndex = (t.nextPlayerIndex + 1) % (t.players.length || 1);

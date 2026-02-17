@@ -54,8 +54,8 @@ function PayForm({ amount, itemName, isDark, onSuccess, onClose }: PayFormProps)
   };
 
   const inputBg = isDark
-    ? 'bg-[#1E1E1E] border-white/10 text-white'
-    : 'bg-white border-slate-200 text-slate-900';
+    ? 'bg-[#111] border-white/10 text-white'
+    : 'bg-slate-50 border-slate-200 text-slate-900';
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -142,7 +142,7 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
     },
   };
 
-  const bgCard = isDark ? 'bg-[#1A1A1A] border border-white/10' : 'bg-white border border-slate-200';
+  const bgCard = isDark ? 'bg-[#161616] border border-white/10' : 'bg-white border border-slate-200';
 
   return (
     /* Backdrop */
@@ -167,7 +167,7 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
           </h2>
           <button
             onClick={onClose}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/8 hover:bg-white/15' : 'bg-slate-100 hover:bg-slate-200'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/[0.08] hover:bg-white/[0.15]' : 'bg-slate-100 hover:bg-slate-200'}`}
           >
             <X size={16} className={isDark ? 'text-white/70' : 'text-slate-500'} />
           </button>

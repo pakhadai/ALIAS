@@ -21,9 +21,6 @@ export const config = {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
   },
-  apple: {
-    clientId: process.env.APPLE_CLIENT_ID || '',  // Bundle ID or Service ID
-  },
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY || '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',

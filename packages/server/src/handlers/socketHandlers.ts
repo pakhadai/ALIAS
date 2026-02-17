@@ -26,7 +26,7 @@ export function registerSocketHandlers(
     }
 
     const room = roomManager.createRoom(socket.id);
-    const player = roomManager.addPlayer(room.code, socket.id, data.playerName, data.avatar);
+    const player = roomManager.addPlayer(room.code, socket.id, data.playerName, data.avatar, data.avatarId);
     if (!player) {
       socket.emit('room:error', { message: 'Failed to create room' });
       return;
@@ -56,7 +56,7 @@ export function registerSocketHandlers(
       return;
     }
 
-    const player = roomManager.addPlayer(data.roomCode, socket.id, data.playerName, data.avatar);
+    const player = roomManager.addPlayer(data.roomCode, socket.id, data.playerName, data.avatar, data.avatarId);
     if (!player) {
       socket.emit('room:error', { message: 'Room is full' });
       return;

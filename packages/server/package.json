@@ -10,6 +10,9 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "tsx test/e2e-game-flow.ts"
   },
   "dependencies": {
@@ -17,7 +20,6 @@
     "@prisma/client": "^6.19.2",
     "@socket.io/redis-adapter": "^8.3.0",
     "@types/multer": "^2.0.0",
-    "apple-signin-auth": "^2.0.0",
     "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
     "dotenv": "^16.4.5",
@@ -38,8 +40,10 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.14.0",
     "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "socket.io-client": "^4.8.3",
     "tsx": "^4.19.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "vitest": "^3.2.4"
   }
 }

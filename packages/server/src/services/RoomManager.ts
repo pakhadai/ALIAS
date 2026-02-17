@@ -110,7 +110,7 @@ export class RoomManager {
     return this.rooms.get(code);
   }
 
-  addPlayer(roomCode: string, socketId: string, name: string, avatar: string): Player | null {
+  addPlayer(roomCode: string, socketId: string, name: string, avatar: string, avatarId?: string | null): Player | null {
     const room = this.rooms.get(roomCode);
     if (!room) return null;
     if (room.players.length >= MAX_PLAYERS) return null;
@@ -120,8 +120,9 @@ export class RoomManager {
       id: playerId,
       name: name.replace(/<[^>]*>/g, '').slice(0, 20),
       avatar,
+      ...(avatarId != null ? { avatarId } : {}),
       isHost: socketId === room.hostSocketId,
-      stats: { explained: 0 },
+      stats: { explained: 0, guessed: 0 },
     };
 
     room.players.push(player);

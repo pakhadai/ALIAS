@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import appleSignin from 'apple-signin-auth';
 import { config } from '../config';
 
 export type TokenPayload = {
   sub: string;   // userId (UUID)
-  type: 'anonymous' | 'google' | 'apple';
+  type: 'anonymous' | 'google';
   email?: string;
 };
 
@@ -54,17 +53,4 @@ export class AuthService {
     }
   }
 
-  /** Verify an Apple identity token, return { appleId, email } or null */
-  async verifyAppleToken(idToken: string): Promise<{ appleId: string; email: string } | null> {
-    if (!config.apple.clientId) return null;
-    try {
-      const p = await appleSignin.verifyIdToken(idToken, {
-        audience: config.apple.clientId,
-        ignoreExpiration: false,
-      });
-      return { appleId: p.sub, email: p.email || '' };
-    } catch {
-      return null;
-    }
-  }
 }

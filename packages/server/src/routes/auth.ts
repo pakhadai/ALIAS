@@ -91,66 +91,6 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     res.json({ token, userId: user.id, email: user.email });
   });
 
-  // ─── Apple Sign In ────────────────────────────────────────────────────
-
-  /**
-   * POST /api/auth/apple
-   * Body: { idToken: string, email?: string, deviceId?: string }
-   * Apple only sends email on first sign-in, so client should pass it too.
-   */
-  router.post('/apple', async (req, res) => {
-    const { idToken, email: clientEmail, deviceId } = req.body as {
-      idToken?: string;
-      email?: string;
-      deviceId?: string;
-    };
-    if (!idToken || typeof idToken !== 'string') {
-      res.status(400).json({ error: 'idToken is required' });
-      return;
-    }
-
-    const verified = await authService.verifyAppleToken(idToken);
-    if (!verified) {
-      res.status(401).json({ error: 'Invalid Apple token' });
-      return;
-    }
-
-    const email = verified.email || clientEmail || `apple_${verified.appleId}@privaterelay.appleid.com`;
-
-    let user = await prisma.user.findFirst({
-      where: { OR: [{ email }, { anonymousId: verified.appleId }] },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: { email, authProvider: 'apple', anonymousId: verified.appleId },
-      });
-    } else if (user.authProvider === 'anonymous') {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { email, authProvider: 'apple' },
-      });
-    }
-
-    // Merge anonymous purchases
-    if (deviceId) {
-      const anonUser = await prisma.user.findUnique({ where: { anonymousId: deviceId } });
-      if (anonUser && anonUser.id !== user.id) {
-        await prisma.purchase.updateMany({
-          where: { userId: anonUser.id },
-          data: { userId: user.id },
-        });
-        await prisma.customDeck.updateMany({
-          where: { userId: anonUser.id },
-          data: { userId: user.id },
-        });
-      }
-    }
-
-    const token = authService.createToken({ sub: user.id, type: 'apple', email });
-    res.json({ token, userId: user.id, email });
-  });
-
   // ─── Update profile ───────────────────────────────────────────────────
 
   router.patch('/profile', async (req, res) => {
