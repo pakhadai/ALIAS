@@ -91,7 +91,7 @@ export const LobbyScreen = () => {
           <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{t.players} ({players.length})</h3>
           <div className="space-y-3">
             {players.map((p: any) => (
-              <div key={p.id} className={`flex items-center p-4 rounded-2xl border ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'}`}>
+              <div key={p.id} className={`flex items-center p-4 rounded-2xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'}`}>
                 {p.avatarId != null
                   ? <AvatarDisplay avatarId={p.avatarId} size={36} />
                   : <span className="text-2xl">{p.avatar}</span>}
@@ -128,7 +128,7 @@ export const LobbyScreen = () => {
                 setNewPlayerAvatar(AVATARS[(players.length + 1) % AVATARS.length]);
                 setShowAddPlayer(true);
               }}
-              className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${settings.theme === AppTheme.PREMIUM_DARK ? 'border-white/10 hover:border-white/30 text-white/30 hover:text-white/60' : 'border-slate-300 hover:border-slate-400 text-slate-400 hover:text-slate-600'}`}
+              className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${currentTheme.isDark ? 'border-white/10 hover:border-white/30 text-white/30 hover:text-white/60' : 'border-slate-300 hover:border-slate-400 text-slate-400 hover:text-slate-600'}`}
             >
               <Plus size={18} />
               <span className="text-[10px] uppercase tracking-widest font-bold">{t.addPlayer}</span>
@@ -149,7 +149,7 @@ export const LobbyScreen = () => {
                     value={newPlayerName}
                     onChange={(e) => setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
                     placeholder={t.namePlaceholder}
-                    className={`w-full ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+                    className={`w-full ${currentTheme.isDark ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
                   />
                   <div className="grid grid-cols-6 gap-2">
                     {AVATARS.slice(0, 12).map(a => (
@@ -222,7 +222,7 @@ export const TeamSetupScreen = () => {
 
         <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar">
             {teams.map((team: any) => (
-                <div key={team.id} className={`p-6 rounded-3xl border ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+                <div key={team.id} className={`p-6 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
                     <div className="flex items-center gap-3 mb-4">
                         <div className={`w-3 h-3 rounded-full ${team.color}`} />
                         <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{team.name}</h3>
@@ -230,7 +230,7 @@ export const TeamSetupScreen = () => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {team.players.map((p: any) => (
-                            <div key={p.id} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-full flex items-center gap-2">
+                            <div key={p.id} className={`px-3 py-1.5 rounded-full flex items-center gap-2 border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'}`}>
                                 {p.avatarId != null
                                   ? <AvatarDisplay avatarId={p.avatarId} size={20} />
                                   : <span>{p.avatar}</span>}
@@ -272,7 +272,7 @@ export const SettingsScreen = () => {
   const t = TRANSLATIONS[settings.language];
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
   const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   useEffect(() => {
     fetchStore()
@@ -316,7 +316,7 @@ export const SettingsScreen = () => {
                         <button
                             key={l}
                             onClick={() => updateSetting('language', l)}
-                            className={`flex-1 py-3 rounded-xl border transition-all ${settings.language === l ? 'bg-champagne-gold text-black border-champagne-gold' : 'bg-white/5 border-white/5 text-white/40'}`}
+                            className={`flex-1 py-3 rounded-xl border transition-all ${settings.language === l ? 'bg-champagne-gold text-black border-champagne-gold' : isDark ? 'bg-white/5 border-white/5 text-white/40' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
                         >
                             {l}
                         </button>
@@ -331,7 +331,7 @@ export const SettingsScreen = () => {
                         <button
                             key={themeId}
                             onClick={() => updateSetting('theme', themeId)}
-                            className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.theme === themeId ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
+                            className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.theme === themeId ? 'border-yellow-500 bg-yellow-500/10' : isDark ? 'border-white/5 bg-white/5 opacity-40' : 'border-slate-200 bg-slate-50 opacity-60'}`}
                         >
                             <span className={currentTheme.textMain}>{THEME_CONFIG[themeId].name}</span>
                             {settings.theme === themeId && <Check size={16} className="text-yellow-500" />}
@@ -349,7 +349,7 @@ export const SettingsScreen = () => {
                     type="range" min="30" max="180" step="10"
                     value={settings.roundTime}
                     onChange={(e) => updateSetting('roundTime', parseInt(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
                 />
             </div>
 
@@ -367,7 +367,7 @@ export const SettingsScreen = () => {
                                       : [...settings.categories, cat];
                                   if (newCats.length > 0) updateSetting('categories', newCats);
                               }}
-                              className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
+                              className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : isDark ? 'border-white/5 bg-white/5 text-white/40' : 'border-slate-200 bg-slate-50 text-slate-400'}`}
                           >
                               {t[catKey] || cat}
                           </button>
@@ -446,7 +446,7 @@ export const SettingsScreen = () => {
                     type="range" min="10" max="100" step="5"
                     value={settings.scoreToWin}
                     onChange={(e) => updateSetting('scoreToWin', parseInt(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
                 />
             </div>
 
@@ -459,7 +459,7 @@ export const SettingsScreen = () => {
                     type="range" min="2" max="10" step="1"
                     value={settings.teamCount}
                     onChange={(e) => updateSetting('teamCount', parseInt(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
                 />
             </div>
 

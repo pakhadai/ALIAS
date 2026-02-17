@@ -9,6 +9,13 @@ export default defineConfig({
       // Allow Google OAuth popup to postMessage back to parent window
       'Cross-Origin-Opener-Policy': 'unsafe-none',
     },
+    // Ensure HMR websocket binds to localhost on the expected port
+    host: 'localhost',
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173,
+    },
   },
   resolve: {
     alias: {

@@ -16,6 +16,7 @@ import type { GameSyncState } from '@alias/shared';
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
 
 const SESSION_KEY = 'alias_active_session';
+const PREFS_KEY = 'alias_preferences';
 
 // States that are safe to restore (no active timers/countdowns)
 const SAVABLE_STATES = new Set([
@@ -71,6 +72,15 @@ function gameReducer(state: AppState, action: Action): AppState {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 function restoreSession(init: AppState): AppState {
+  // Always restore user preferences (theme, language, sound) regardless of active session
+  try {
+    const rawPrefs = localStorage.getItem(PREFS_KEY);
+    if (rawPrefs) {
+      const prefs = JSON.parse(rawPrefs);
+      init = { ...init, settings: { ...init.settings, ...prefs } };
+    }
+  } catch {}
+
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return init;
@@ -377,9 +387,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Socket.io connection for server-based online mode
   const socketConn = useSocketConnection({
     onStateSync: useCallback((syncState: GameSyncState) => {
+      // Client-only navigation states that overlay the lobby — don't let
+      // a server LOBBY broadcast kick the user out of a settings screen.
+      const CLIENT_NAV_STATES = new Set([
+        GameState.SETTINGS, GameState.MY_WORD_PACKS, GameState.MY_DECKS,
+        GameState.RULES, GameState.PLAYER_STATS, GameState.STORE,
+        GameState.PROFILE, GameState.PROFILE_SETTINGS, GameState.LOBBY_SETTINGS,
+      ]);
+      const currentClientState = stateRef.current.gameState;
+      const keepClientNav =
+        CLIENT_NAV_STATES.has(currentClientState) &&
+        syncState.gameState === GameState.LOBBY;
+
+      // Preserve the user's personal preferences — server room settings
+      // (roundTime, categories, etc.) are fine to sync, but theme/language/sound
+      // are per-device and must not be overwritten by the room's defaults.
+      const preservedSettings = {
+        ...syncState.settings,
+        theme: stateRef.current.settings.theme,
+        language: stateRef.current.settings.language,
+        soundEnabled: stateRef.current.settings.soundEnabled,
+        soundPreset: stateRef.current.settings.soundPreset,
+      };
+
       dispatch({ type: 'SET_STATE', payload: {
-        gameState: syncState.gameState,
-        settings: syncState.settings,
+        gameState: keepClientNav ? currentClientState : syncState.gameState,
+        settings: preservedSettings,
         roomCode: syncState.roomCode,
         players: syncState.players,
         teams: syncState.teams,
@@ -451,6 +484,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       : state.settings.language === Language.DE ? 'de' : 'en';
     document.documentElement.lang = lang;
   }, [state.settings.language]);
+
+  // Persist user preferences (theme, language, sound) across sessions
+  useEffect(() => {
+    try {
+      localStorage.setItem(PREFS_KEY, JSON.stringify({
+        theme: state.settings.theme,
+        language: state.settings.language,
+        soundEnabled: state.settings.soundEnabled,
+        soundPreset: state.settings.soundPreset,
+      }));
+    } catch {}
+  }, [state.settings.theme, state.settings.language, state.settings.soundEnabled, state.settings.soundPreset]);
 
   const contextValue = useMemo(() => ({
     ...state,

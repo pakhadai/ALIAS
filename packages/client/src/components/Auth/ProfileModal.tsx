@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Check, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuthContext } from '../../context/AuthContext';
+import { useGame } from '../../context/GameContext';
 import { fetchProfile, fetchStore, type UserProfile, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
 
@@ -21,6 +22,8 @@ function AvatarIcon() {
 
 export function ProfileModal({ onClose }: ProfileModalProps) {
   const { authState, isAuthenticated, loginWithGoogle, logout } = useAuthContext();
+  const { currentTheme } = useGame();
+  const isDark = currentTheme.isDark;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
@@ -108,7 +111,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     >
       <div
         className={`relative w-full max-w-sm mx-auto rounded-t-[2rem] overflow-hidden
-          bg-[#1C1C1E] transition-transform duration-300 ease-out
+          ${isDark ? 'bg-[#1C1C1E]' : 'bg-white'} transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0' : 'translate-y-full'}`}
         style={{ maxHeight: '90vh' }}
         onClick={e => e.stopPropagation()}
@@ -117,7 +120,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         <div className="flex justify-end px-5 pt-5 pb-0">
           <button
             onClick={handleClose}
-            className="text-white/30 hover:text-white/60 transition-colors p-1"
+            className={`${isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-400 hover:text-slate-700'} transition-colors p-1`}
           >
             <X size={18} />
           </button>
@@ -129,7 +132,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             {avatarId != null ? (
               <AvatarDisplay avatarId={avatarId} size={76} />
             ) : (
-              <div className="w-[76px] h-[76px] rounded-full bg-[#2C2C2E] flex items-center justify-center">
+              <div className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-[#2C2C2E]' : 'bg-slate-100'} flex items-center justify-center`}>
                 <AvatarIcon />
               </div>
             )}
@@ -140,10 +143,10 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             </span>
           </div>
 
-          <h2 className="mt-6 font-serif text-[22px] text-white tracking-wide">
+          <h2 className={`mt-6 font-serif text-[22px] tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
             {displayName}
           </h2>
-          <p className="text-white/40 text-[13px] font-sans mt-0.5">
+          <p className={`text-[13px] font-sans mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
             {displaySub}
           </p>
         </div>
@@ -163,26 +166,25 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         )}
 
         {/* Divider */}
-        <div className="h-px bg-white/[0.07] mx-0" />
+        <div className={`h-px ${isDark ? 'bg-white/[0.07]' : 'bg-slate-200'}`} />
 
         {/* Purchases / benefits */}
         <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
-            <p className="text-white/30 text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1">
+            <p className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
               {purchases.length > 0 ? 'My Purchases' : 'What you get'}
             </p>
           </div>
 
           {purchases.length > 0 ? (
-            /* Real purchases */
             <div className="px-6 pb-2">
               {purchases.map((p) => (
-                <div key={p.id} className="flex items-center justify-between py-3 border-b border-white/[0.05]">
+                <div key={p.id} className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}>
                   <div>
-                    <p className="text-white/80 text-[14px] font-sans">
+                    <p className={`text-[14px] font-sans ${isDark ? 'text-white/80' : 'text-slate-800'}`}>
                       {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
                     </p>
-                    <p className="text-white/30 text-[11px] font-sans mt-0.5">
+                    <p className={`text-[11px] font-sans mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                       {new Date(p.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -191,14 +193,13 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               ))}
             </div>
           ) : (
-            /* Benefits list — shows even while storeData loads */
             <div className="px-6 pb-2">
               {benefits.map((item, i) => (
-                <div key={i} className="flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0">
+                <div key={i} className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}>
                   <span className="text-[20px] leading-none w-7 text-center shrink-0">{item.emoji}</span>
                   <div className="min-w-0">
-                    <p className="text-white/80 text-[13px] font-sans font-medium">{item.label}</p>
-                    <p className="text-white/30 text-[11px] font-sans mt-0.5 leading-snug">{item.sub}</p>
+                    <p className={`text-[13px] font-sans font-medium ${isDark ? 'text-white/80' : 'text-slate-800'}`}>{item.label}</p>
+                    <p className={`text-[11px] font-sans mt-0.5 leading-snug ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{item.sub}</p>
                   </div>
                 </div>
               ))}
@@ -207,7 +208,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-white/[0.07]" />
+        <div className={`h-px ${isDark ? 'bg-white/[0.07]' : 'bg-slate-200'}`} />
 
         {/* Admin Panel link — only for admins */}
         {authState.status === 'authenticated' && authState.isAdmin && (

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { X, LogIn, Loader2 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
+import { useGame } from '../../context/GameContext';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -25,6 +26,8 @@ declare global {
 
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle, loginWithApple } = useAuthContext();
+  const { currentTheme } = useGame();
+  const isDark = currentTheme.isDark;
   const [loading, setLoading] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,11 +72,11 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-sm rounded-2xl bg-slate-900 border border-white/10 p-6 shadow-2xl">
+      <div className={`relative w-full max-w-sm rounded-2xl ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'} border p-6 shadow-2xl`}>
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+          className={`absolute top-4 right-4 p-1 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
         >
           <X size={20} />
         </button>
@@ -84,20 +87,20 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
             <LogIn size={22} className="text-indigo-400" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Увійдіть в акаунт</h2>
-            <p className="text-sm text-slate-400">Для покупок і збереження прогресу</p>
+            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Увійдіть в акаунт</h2>
+            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Для покупок і збереження прогресу</p>
           </div>
         </div>
 
         {/* Anonymous note */}
-        <p className="text-xs text-slate-500 mb-5 text-center">
+        <p className={`text-xs mb-5 text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           Грати можна без реєстрації — авторизація потрібна лише для покупок
         </p>
 
         {/* Google */}
         <div className="mb-3">
           {loading === 'google' ? (
-            <div className="flex items-center justify-center gap-2 h-11 rounded-xl bg-white/5 text-slate-400">
+            <div className={`flex items-center justify-center gap-2 h-11 rounded-xl ${isDark ? 'bg-white/5 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">Вхід через Google...</span>
             </div>
@@ -137,10 +140,10 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         )}
 
         {/* Divider */}
-        <div className="mt-5 pt-4 border-t border-white/10">
+        <div className={`mt-5 pt-4 border-t ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
           <button
             onClick={onClose}
-            className="w-full text-sm text-slate-400 hover:text-white transition-colors"
+            className={`w-full text-sm transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
           >
             Продовжити без входу
           </button>

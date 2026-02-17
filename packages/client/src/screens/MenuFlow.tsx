@@ -280,9 +280,9 @@ export const MenuScreen = () => {
             <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.createGame}</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setGameState(GameState.JOIN_INPUT)}
-            className={`w-full h-14 ${currentTheme.isDark ? 'bg-dark-btn-grey text-white/80' : 'bg-slate-200 text-slate-700'} rounded-full flex items-center justify-center transition-all active:scale-[0.98]`}
+            className={`w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] ${currentTheme.isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}
           >
             <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.joinGame}</span>
           </button>
@@ -704,7 +704,7 @@ export const ProfileSettingsScreen = () => {
         <div className="space-y-3">
           <p className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Виберіть аватарку</p>
           <div className="grid grid-cols-5 gap-3">
-            {PRESET_AVATARS.map((av, idx) => (
+            {PRESET_AVATARS.slice(0, 15).map((av, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedAvatar(idx)}
