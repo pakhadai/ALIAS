@@ -8,6 +8,7 @@ import { GameState, Player, Team, AppTheme } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
 import { AvatarDisplay } from '../components/AvatarDisplay';
+import { usePlayerStats } from '../hooks/usePlayerStats';
 
 // VS Screen: Animated 1v1 / 1v1v1 matchup display
 export const VSScreen = () => {
@@ -192,6 +193,7 @@ export const PlayingScreen = () => {
   const t = TRANSLATIONS[settings.language];
   const [particles, setParticles] = useState<{ id: number, x: number, y: number, text: string, color: string }[]>([]);
   const actionProcessingRef = useRef(false);
+  const playerStats = usePlayerStats();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const activeTeam = teams[currentTeamIndex];
 
@@ -222,6 +224,7 @@ export const PlayingScreen = () => {
   const canSeeWord = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer || !isOnActiveTeam);
   const canUseButtons = gameMode === 'OFFLINE' || (is1v1 ? !isOnActiveTeam : isActualExplainer);
   const isCriticalTime = timeLeft <= 10;
+  const isUrgentTime = timeLeft <= 5;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -251,9 +254,13 @@ export const PlayingScreen = () => {
       actionProcessingRef.current = true;
 
       if (type === 'correct') {
+          if (navigator.vibrate) navigator.vibrate(60);
+          playerStats.increment('wordsGuessed');
           handleCorrect();
           setParticles(prev => [...prev, { id: Date.now(), x, y, text: '+1', color: '#10b981' }]);
       } else {
+          if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+          playerStats.increment('wordsSkipped');
           handleSkip();
           setParticles(prev => [...prev, { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: '#ef4444' }]);
       }
@@ -291,7 +298,7 @@ export const PlayingScreen = () => {
           </div>
 
           <div className="flex justify-between items-center w-full">
-            <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums ${isCriticalTime ? 'text-red-500' : ''}`}>
+            <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-red-500' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}>
               {formatTime(timeLeft)}
             </div>
 
@@ -315,7 +322,7 @@ export const PlayingScreen = () => {
         {/* Word Card */}
         <main className="flex-1 flex flex-col items-center justify-center w-full px-8 relative z-10 pb-24">
             {canSeeWord ? (
-                <div className="w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform transition-all duration-300 border border-white/5 animate-pop-in">
+                <div className={`w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform transition-all duration-300 border animate-pop-in ${isCriticalTime ? 'border-red-500/40 animate-pulse' : 'border-white/5'}`}>
                   <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
                   <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
                   <h2 className="text-premium-white font-serif font-bold text-4xl sm:text-5xl text-center leading-tight tracking-wider uppercase break-words w-full drop-shadow-md">
@@ -583,6 +590,15 @@ export const GameOverScreen = () => {
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);
+  const statsTrackedRef = useRef(false);
+  const gameStats = usePlayerStats();
+
+  useEffect(() => {
+    if (!statsTrackedRef.current) {
+      statsTrackedRef.current = true;
+      gameStats.increment('gamesPlayed');
+    }
+  }, []);
 
   // Collect top guessers across all teams
   const allPlayers = teams.flatMap(team => team.players.map((p: any) => ({ ...p, teamName: team.name })));
@@ -591,19 +607,106 @@ export const GameOverScreen = () => {
     .sort((a: any, b: any) => (b.stats?.guessed ?? 0) - (a.stats?.guessed ?? 0))
     .slice(0, 5);
 
+  const buildShareImage = async (): Promise<Blob | null> => {
+    try {
+      const W = 640, H = 480;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      // Background
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+      // Subtle grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+      // Gold accent bar
+      ctx.fillStyle = '#D4AF6A';
+      ctx.fillRect(0, 0, W, 4);
+
+      // Title
+      ctx.fillStyle = '#D4AF6A';
+      ctx.font = 'bold 42px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ALIAS', W / 2, 60);
+
+      // Subtitle
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '13px Arial, sans-serif';
+      ctx.fillText(t.finalResults?.toUpperCase() ?? 'FINAL RESULTS', W / 2, 88);
+
+      // Teams
+      const medals = ['🥇', '🥈', '🥉'];
+      sorted.slice(0, 6).forEach((team, i) => {
+        const y = 130 + i * 54;
+        const alpha = i === 0 ? 1 : 0.75 - i * 0.08;
+
+        // Row background
+        ctx.fillStyle = i === 0 ? 'rgba(212,175,106,0.12)' : 'rgba(255,255,255,0.04)';
+        ctx.beginPath();
+        (ctx as any).roundRect?.(40, y - 30, W - 80, 44, 10);
+        ctx.fill();
+
+        // Medal / number
+        ctx.font = '22px Arial';
+        ctx.textAlign = 'left';
+        ctx.globalAlpha = alpha;
+        ctx.fillText(medals[i] ?? `${i + 1}.`, 56, y);
+
+        // Team name
+        ctx.font = i === 0 ? 'bold 20px Arial, sans-serif' : '18px Arial, sans-serif';
+        ctx.fillStyle = i === 0 ? '#D4AF6A' : '#ffffff';
+        ctx.fillText(team.name.slice(0, 22), 96, y);
+
+        // Score
+        ctx.font = 'bold 20px Arial, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = i === 0 ? '#D4AF6A' : 'rgba(255,255,255,0.6)';
+        ctx.fillText(`${team.score} ${t.pts ?? 'pts'}`, W - 56, y);
+        ctx.globalAlpha = 1;
+      });
+
+      // Footer
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = '11px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('aliasmaster.app', W / 2, H - 18);
+
+      return await new Promise<Blob | null>(res => canvas.toBlob(b => res(b), 'image/png'));
+    } catch {
+      return null;
+    }
+  };
+
   const handleShare = async () => {
-    const lines = sorted.map((team, i) => {
-      const medal = ['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`;
-      return `${medal} ${team.name}: ${team.score} ${t.pts}`;
-    });
+    const blob = await buildShareImage();
+    if (blob) {
+      const file = new File([blob], 'alias-result.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: `ALIAS — ${t.finalResults}` }); return; } catch {}
+      }
+      // Fallback: download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'alias-result.png'; a.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    // Final fallback: text share
+    const lines = sorted.map((team, i) => `${['🥇','🥈','🥉'][i] ?? `${i+1}.`} ${team.name}: ${team.score} ${t.pts}`);
     const text = `🎮 ALIAS — ${t.finalResults}\n${lines.join('\n')}`;
     if (navigator.share) {
-      try { await navigator.share({ text }); } catch {}
-    } else {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      try { await navigator.share({ text }); return; } catch {}
     }
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const medals = ['🥇', '🥈', '🥉'];
