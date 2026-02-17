@@ -43,14 +43,18 @@ export function registerSocketHandlers(
     broadcastState(io, room.code, roomManager);
   });
 
-  socket.on('room:join', (rawData) => {
+  socket.on('room:join', async (rawData) => {
     const data = validatePayload(roomJoinSchema, rawData);
     if (!data) {
       socket.emit('room:error', { message: 'Invalid data' });
       return;
     }
 
-    const room = roomManager.getRoom(data.roomCode);
+    // Try in-memory first; fall back to Redis (handles server restarts)
+    let room = roomManager.getRoom(data.roomCode);
+    if (!room) {
+      room = await roomManager.restoreRoomFromRedis(data.roomCode) ?? undefined;
+    }
     if (!room) {
       socket.emit('room:error', { message: `Room ${data.roomCode} not found` });
       return;

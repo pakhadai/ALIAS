@@ -6,11 +6,17 @@ import type { WordService } from './WordService';
 
 export class GameEngine {
   private prisma: PrismaClient | null = null;
+  private timerBroadcast: ((room: Room) => void) | null = null;
 
   constructor(
     private roomManager: RoomManager,
     private wordService: WordService,
   ) {}
+
+  /** Provide a callback that broadcasts current room state during active timer ticks */
+  setTimerBroadcast(fn: (room: Room) => void): void {
+    this.timerBroadcast = fn;
+  }
 
   setPrisma(prisma: PrismaClient) {
     this.prisma = prisma;
@@ -200,17 +206,23 @@ export class GameEngine {
       case 'KICK_PLAYER': {
         const kickedId = payload.data;
         room.players = room.players.filter((p) => p.id !== kickedId);
-        room.teams = room.teams.map((team) => {
-          const filtered = team.players.filter((p) => p.id !== kickedId);
-          return {
-            ...team,
-            players: filtered,
-            nextPlayerIndex:
-              team.nextPlayerIndex >= filtered.length
-                ? Math.max(0, filtered.length - 1)
-                : team.nextPlayerIndex,
-          };
-        });
+        room.teams = room.teams
+          .map((team) => {
+            const filtered = team.players.filter((p) => p.id !== kickedId);
+            return {
+              ...team,
+              players: filtered,
+              nextPlayerIndex:
+                team.nextPlayerIndex >= filtered.length
+                  ? Math.max(0, filtered.length - 1)
+                  : team.nextPlayerIndex,
+            };
+          })
+          .filter((team) => team.players.length > 0); // drop now-empty teams
+        // Clamp currentTeamIndex in case a team was removed
+        if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
+          room.currentTeamIndex = 0;
+        }
         break;
       }
 
@@ -279,11 +291,18 @@ export class GameEngine {
 
   private startTimer(room: Room): void {
     this.stopTimer(room);
+    let ticksSinceSync = 0;
     room.timerInterval = setInterval(() => {
       if (room.isPaused) return;
       room.timeLeft--;
+      ticksSinceSync++;
       if (room.timeLeft <= 0) {
         this.handleAction(room, { action: 'TIME_UP' });
+      } else if (ticksSinceSync >= 10) {
+        // Force-sync timeLeft to all clients every 10 s to prevent drift
+        // (browser throttling can cause client timer to deviate)
+        ticksSinceSync = 0;
+        this.timerBroadcast?.(room);
       }
     }, 1000);
   }

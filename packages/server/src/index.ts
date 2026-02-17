@@ -68,6 +68,12 @@ const roomManager = new RoomManager();
 const redisStore = new RedisRoomStore();
 const gameEngine = new GameEngine(roomManager, wordService);
 
+// Timer sync: re-broadcast room state every 10 s during active PLAYING
+// so client timers that drifted (browser tab throttle) get corrected.
+gameEngine.setTimerBroadcast((room) => {
+  io.to(room.code).emit('game:state-sync', roomManager.getSyncState(room));
+});
+
 /** Pending disconnects: socketId → timeout handle (60s grace period) */
 const pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
 const RECONNECT_GRACE_MS = 60_000;
@@ -112,8 +118,12 @@ io.on('connection', (socket) => {
   registerSocketHandlers(io, socket, roomManager, gameEngine);
 
   // Rejoin: player reconnects with stored roomCode + playerId
-  socket.on('room:rejoin', ({ roomCode, playerId }: { roomCode: string; playerId: string }) => {
-    const room = roomManager.getRoom(roomCode);
+  socket.on('room:rejoin', async ({ roomCode, playerId }: { roomCode: string; playerId: string }) => {
+    // Try in-memory first; fall back to Redis restore (handles server restarts)
+    let room = roomManager.getRoom(roomCode);
+    if (!room) {
+      room = await roomManager.restoreRoomFromRedis(roomCode) ?? undefined;
+    }
     if (!room) {
       socket.emit('room:error', { message: 'Room not found' });
       return;

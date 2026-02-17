@@ -127,6 +127,44 @@ export class RoomManager {
     return this.rooms.get(code);
   }
 
+  /**
+   * Try to restore a room from Redis if it is not currently in memory.
+   * Called during reconnects / joins after a server restart.
+   * Returns the Room if found (from memory or Redis), otherwise null.
+   */
+  async restoreRoomFromRedis(code: string): Promise<Room | null> {
+    if (this.rooms.has(code)) return this.rooms.get(code)!;
+    if (!this.redisStore?.isConnected) return null;
+
+    const syncState = await this.redisStore.getRoomState(code);
+    if (!syncState) return null;
+
+    const hostPlayer = syncState.players.find((p) => p.isHost);
+    const room: Room = {
+      code,
+      hostSocketId: '',       // unknown until host reconnects via room:rejoin
+      hostPlayerId: hostPlayer?.id ?? '',
+      gameState: syncState.gameState,
+      settings: syncState.settings,
+      players: syncState.players,
+      teams: syncState.teams,
+      currentTeamIndex: syncState.currentTeamIndex,
+      wordDeck: syncState.wordDeck,
+      currentWord: syncState.currentWord,
+      currentRoundStats: syncState.currentRoundStats,
+      timeLeft: syncState.timeLeft,
+      isPaused: true,         // always pause on restore — server timer was lost
+      timerInterval: null,
+      socketToPlayer: new Map(),
+      roundsPlayed: 0,
+      createdAt: Date.now(),
+    };
+
+    this.rooms.set(code, room);
+    console.log(`[RoomManager] Restored room ${code} from Redis`);
+    return room;
+  }
+
   addPlayer(roomCode: string, socketId: string, name: string, avatar: string, avatarId?: string | null): Player | null {
     const room = this.rooms.get(roomCode);
     if (!room) return null;
@@ -157,17 +195,23 @@ export class RoomManager {
     if (!playerId) return null;
 
     room.players = room.players.filter((p) => p.id !== playerId);
-    room.teams = room.teams.map((team) => {
-      const newPlayers = team.players.filter((p) => p.id !== playerId);
-      return {
-        ...team,
-        players: newPlayers,
-        nextPlayerIndex:
-          team.nextPlayerIndex >= newPlayers.length
-            ? Math.max(0, newPlayers.length - 1)
-            : team.nextPlayerIndex,
-      };
-    });
+    room.teams = room.teams
+      .map((team) => {
+        const newPlayers = team.players.filter((p) => p.id !== playerId);
+        return {
+          ...team,
+          players: newPlayers,
+          nextPlayerIndex:
+            team.nextPlayerIndex >= newPlayers.length
+              ? Math.max(0, newPlayers.length - 1)
+              : team.nextPlayerIndex,
+        };
+      })
+      .filter((team) => team.players.length > 0); // drop now-empty teams
+    // Clamp currentTeamIndex in case a team was removed
+    if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
+      room.currentTeamIndex = 0;
+    }
     room.socketToPlayer.delete(socketId);
     this.persistRoom(room);
     if (this.redisStore?.isConnected) {
