@@ -14,6 +14,12 @@ import type { Player, Team, GameSettings, RoundStats, GameActionPayload } from '
 export interface ThemeConfig {
   id: AppTheme;
   name: string;
+  description: string;
+  isFree: boolean;
+  isDark: boolean;
+  preview: { bg: string; accent: string };
+  fonts: { heading: string; body: string };
+  borderRadius: string;
   bg: string;
   card: string;
   textMain: string;
@@ -23,7 +29,6 @@ export interface ThemeConfig {
   button: string;
   iconColor: string;
   progressBar: string;
-  isPremium?: boolean;
 }
 
 export interface AppState {

@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
   themeClass,
   ...props 
 }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-full font-medium transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px]";
+  const baseStyles = "inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px]";
   
   // Strict theme integration
   const getVariantStyle = () => {

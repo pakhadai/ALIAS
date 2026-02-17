@@ -11,7 +11,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Lato:wght@300;400;700;900&family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&family=Exo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,6 +40,11 @@
               "silver-bg": "#F8F9FA",
               "premium-black": "#111111",
               "soft-grey": "#F3F4F6",
+              "forest-accent": "#4DB6AC",
+              "forest-btn": "#2E7D6A",
+              "matte-black": "#050505",
+              "dark-indigo": "#312E81",
+              "dark-grey": "#1F1F1F",
             },
             animation: {
               'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -90,6 +95,14 @@
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Theme-aware font overrides — updated at runtime by ThemeProvider */
+    :root {
+        --font-heading: 'Playfair Display', serif;
+        --font-body: 'Lato', sans-serif;
+        --theme-radius: 9999px;
+    }
+    .font-serif { font-family: var(--font-heading) !important; }
+    .font-sans  { font-family: var(--font-body) !important; }
 </style>
 </head>
   <body class="bg-[#1A1A1A] overflow-hidden fixed inset-0 font-sans">

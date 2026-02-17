@@ -6,7 +6,8 @@ export interface Player {
   name: string;
   avatar: string;
   isHost: boolean;
-  stats: { explained: number };
+  avatarId?: string | null;
+  stats: { explained: number; guessed: number };
 }
 
 export interface Team {

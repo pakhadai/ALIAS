@@ -437,6 +437,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const currentTheme = useMemo(() => THEME_CONFIG[state.settings.theme], [state.settings.theme]);
 
+  // Apply per-theme design tokens via CSS custom properties
+  useEffect(() => {
+    const r = document.documentElement;
+    r.style.setProperty('--font-heading', currentTheme.fonts.heading);
+    r.style.setProperty('--font-body', currentTheme.fonts.body);
+    r.style.setProperty('--theme-radius', currentTheme.borderRadius);
+  }, [currentTheme]);
+
   const contextValue = useMemo(() => ({
     ...state,
     currentTheme,
@@ -452,7 +460,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }).catch(() => {});
     },
-    handleJoin: (id: string, name: string, avatar: string) => {
+    handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => {
       const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
       let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
       if (!playerData.persistentId) {
@@ -465,10 +473,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (stateRef.current.gameMode === 'ONLINE') {
         // Server-based online mode
         if (stateRef.current.isHost) {
-          socketConn.createRoom(sanitizedName, avatar);
+          socketConn.createRoom(sanitizedName, avatar, avatarId);
           dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
         } else {
-          socketConn.joinRoom(stateRef.current.roomCode, sanitizedName, avatar);
+          socketConn.joinRoom(stateRef.current.roomCode, sanitizedName, avatar, avatarId);
           dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
         }
       } else {
@@ -476,7 +484,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
         dispatch({ type: 'UPDATE_PLAYERS', payload: [
           ...stateRef.current.players.filter(p => p.id !== id),
-          { id, persistentId: playerData.persistentId, name: sanitizedName, avatar, isHost: true, stats: { explained: 0 } }
+          { id, persistentId: playerData.persistentId, name: sanitizedName, avatar, ...(avatarId != null ? { avatarId } : {}), isHost: true, stats: { explained: 0, guessed: 0 } }
         ] });
       }
     },

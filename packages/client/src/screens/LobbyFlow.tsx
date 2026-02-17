@@ -11,7 +11,7 @@ import { fetchStore, type WordPackItem } from '../services/api';
 import { TRANSLATIONS, THEME_CONFIG } from '../constants';
 import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
-import { AvatarDisplay } from './MenuFlow';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 
 export const LobbyScreen = () => {
   const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
@@ -30,7 +30,7 @@ export const LobbyScreen = () => {
     }
   }, [joinUrl, gameMode, roomCode]);
 
-  const canCreateTeams = gameMode === 'OFFLINE' ? players.length >= 2 : players.length >= 2;
+  const canCreateTeams = players.length >= 2;
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
@@ -231,7 +231,9 @@ export const TeamSetupScreen = () => {
                     <div className="flex flex-wrap gap-2">
                         {team.players.map((p: any) => (
                             <div key={p.id} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-full flex items-center gap-2">
-                                <span>{p.avatar}</span>
+                                {p.avatarId != null
+                                  ? <AvatarDisplay avatarId={p.avatarId} size={20} />
+                                  : <span>{p.avatar}</span>}
                                 <span className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}>{p.name}</span>
                             </div>
                         ))}
@@ -273,12 +275,10 @@ export const SettingsScreen = () => {
   const isDark = settings.theme === AppTheme.PREMIUM_DARK;
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchStore()
-        .then(data => setOwnedPacks(data.wordPacks.filter(p => p.owned)))
-        .catch(() => {});
-    }
-  }, [isAuthenticated]);
+    fetchStore()
+      .then(data => setOwnedPacks(data.wordPacks.filter(p => p.owned)))
+      .catch(() => {});
+  }, []);
 
   const updateSetting = (key: keyof GameSettings, value: any) => {
     if (!isHost) return;
@@ -388,12 +388,12 @@ export const SettingsScreen = () => {
                 </div>
             )}
 
-            {/* Pack selection — visible only when user has owned packs */}
+            {/* Pack selection — visible when user has any owned packs (isDefault or purchased) */}
             {ownedPacks.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
-                    Мої набори слів
+                    {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                   </p>
                   {(settings.selectedPackIds?.length ?? 0) > 0 && (
                     <button

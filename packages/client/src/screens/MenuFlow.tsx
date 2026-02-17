@@ -14,39 +14,8 @@ import { TRANSLATIONS, ROOM_CODE_LENGTH, THEME_CONFIG } from '../constants';
 import versionData from '../version.json';
 
 // ─── Preset avatar system ──────────────────────────────────────────────
-export const PRESET_AVATARS = [
-  { emoji: '🦊', bg: '#FF6B6B' }, { emoji: '🐺', bg: '#4ECDC4' },
-  { emoji: '🦁', bg: '#FFD166' }, { emoji: '🐯', bg: '#F4A261' },
-  { emoji: '🐻', bg: '#8ECAE6' }, { emoji: '🐼', bg: '#95D5B2' },
-  { emoji: '🦋', bg: '#C77DFF' }, { emoji: '🦅', bg: '#E76F51' },
-  { emoji: '🐬', bg: '#48CAE4' }, { emoji: '🦄', bg: '#F8A5C2' },
-  { emoji: '🐉', bg: '#52B788' }, { emoji: '🦉', bg: '#B5C4B1' },
-  { emoji: '🐸', bg: '#80B918' }, { emoji: '🦈', bg: '#56CFE1' },
-  { emoji: '🦚', bg: '#2EC4B6' }, { emoji: '🦝', bg: '#FFBF69' },
-  { emoji: '🐊', bg: '#40916C' }, { emoji: '🦭', bg: '#74B3CE' },
-  { emoji: '🦩', bg: '#FF8FAB' }, { emoji: '🐙', bg: '#9B5DE5' },
-];
-
-export function AvatarDisplay({ avatarId, size = 44 }: { avatarId?: string | null; size?: number }) {
-  const idx = avatarId != null ? parseInt(avatarId) : -1;
-  const preset = idx >= 0 && idx < PRESET_AVATARS.length ? PRESET_AVATARS[idx] : null;
-  if (preset) {
-    return (
-      <div style={{ width: size, height: size, background: preset.bg, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.5 }}>
-        {preset.emoji}
-      </div>
-    );
-  }
-  // Fallback: generic silhouette
-  return (
-    <div style={{ width: size, height: size, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 44 44" fill="none">
-        <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.25)" />
-        <path d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18" stroke="rgba(255,255,255,0.25)" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      </svg>
-    </div>
-  );
-}
+import { PRESET_AVATARS, AvatarDisplay } from '../components/AvatarDisplay';
+export { PRESET_AVATARS, AvatarDisplay };
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -220,6 +189,8 @@ export const MenuScreen = () => {
   const { isAuthenticated } = useAuthContext();
   const [showRules, setShowRules] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [storeThemes, setStoreThemes] = useState<ThemeItem[]>([]);
   const t = TRANSLATIONS[settings.language];
 
   // After sign-in inside the modal → close it and go to ProfileScreen
@@ -230,6 +201,10 @@ export const MenuScreen = () => {
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    fetchStore().then(data => setStoreThemes(data.themes)).catch(() => {});
+  }, []);
+
   const handleProfileClick = () => {
     if (isAuthenticated) {
       setGameState(GameState.PROFILE);
@@ -238,11 +213,10 @@ export const MenuScreen = () => {
     }
   };
 
-  const toggleTheme = () => {
-    setSettings((prev: any) => ({
-      ...prev,
-      theme: prev.theme === AppTheme.PREMIUM_DARK ? AppTheme.PREMIUM_LIGHT : AppTheme.PREMIUM_DARK
-    }));
+  const themeSlug = (id: string) => id.toLowerCase().replace(/_/g, '-');
+  const isThemeOwned = (themeId: AppTheme) => {
+    const theme = THEME_CONFIG[themeId];
+    return theme.isFree || storeThemes.find(t => t.slug === themeSlug(themeId))?.owned === true;
   };
 
   const toggleLanguage = () => {
@@ -271,10 +245,8 @@ export const MenuScreen = () => {
         <button onClick={handleProfileClick} className="transition-all active:scale-90 p-2">
           <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
         </button>
-        <button onClick={toggleTheme} className="transition-all active:scale-90 p-2">
-          <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
-            {settings.theme === AppTheme.PREMIUM_DARK ? 'light_mode' : 'dark_mode'}
-          </span>
+        <button onClick={() => setShowThemePicker(true)} className="transition-all active:scale-90 p-2">
+          <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>palette</span>
         </button>
         <button onClick={() => setShowRules(true)} className="transition-all active:scale-90 p-2">
           <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>menu_book</span>
@@ -282,7 +254,7 @@ export const MenuScreen = () => {
         <button onClick={toggleFullScreen} className="transition-all active:scale-90 p-2">
           <span className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>fullscreen</span>
         </button>
-        <button onClick={toggleLanguage} className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${settings.theme === AppTheme.PREMIUM_DARK ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}>
+        <button onClick={toggleLanguage} className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${currentTheme.isDark ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}>
           {settings.language}
         </button>
       </header>
@@ -307,13 +279,13 @@ export const MenuScreen = () => {
 
           <button 
             onClick={() => setGameState(GameState.JOIN_INPUT)}
-            className={`w-full h-14 ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-dark-btn-grey text-white/80' : 'bg-slate-200 text-slate-700'} rounded-full flex items-center justify-center transition-all active:scale-[0.98]`}
+            className={`w-full h-14 ${currentTheme.isDark ? 'bg-dark-btn-grey text-white/80' : 'bg-slate-200 text-slate-700'} rounded-full flex items-center justify-center transition-all active:scale-[0.98]`}
           >
             <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.joinGame}</span>
           </button>
 
           <div className="w-full pt-10 flex flex-col items-center gap-8">
-            <div className={`h-[1px] w-12 ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5' : 'bg-slate-900/5'}`}></div>
+            <div className={`h-[1px] w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`}></div>
             <button 
               onClick={startOfflineGame}
               className="group"
@@ -335,12 +307,76 @@ export const MenuScreen = () => {
 
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} t={t} currentTheme={currentTheme} />
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+
+      {/* Theme Picker Sheet */}
+      {showThemePicker && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 transition-all"
+          onClick={() => setShowThemePicker(false)}
+        >
+          <div
+            className="w-full max-w-sm mx-auto bg-[#1C1C1E] rounded-t-[2rem] px-5 pt-5 pb-8"
+            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-5">
+              <p className="text-white/30 text-[9px] font-sans font-bold tracking-[0.28em] uppercase">Appearance</p>
+              <button onClick={() => setShowThemePicker(false)} className="text-white/30 hover:text-white/60 p-1">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(THEME_CONFIG) as AppTheme[]).map(themeId => {
+                const theme = THEME_CONFIG[themeId];
+                const isActive = settings.theme === themeId;
+                const owned = isThemeOwned(themeId);
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      if (!owned) { setShowThemePicker(false); setGameState(GameState.STORE); return; }
+                      setSettings((prev: any) => ({ ...prev, theme: themeId }));
+                      setShowThemePicker(false);
+                    }}
+                    className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden
+                      ${isActive ? 'ring-2 ring-offset-2 ring-offset-[#1C1C1E]' : ''}`}
+                    style={{
+                      background: theme.preview.bg,
+                      ...(isActive ? { '--tw-ring-color': theme.preview.accent } as React.CSSProperties : {}),
+                    }}
+                  >
+                    <div className="w-5 h-5 rounded-full mb-1" style={{ background: theme.preview.accent }} />
+                    <span className="text-[13px] font-bold leading-tight" style={{ color: theme.isDark ? '#fff' : '#111', fontFamily: theme.fonts.heading }}>
+                      {theme.name}
+                    </span>
+                    <span className="text-[10px] opacity-50 leading-snug" style={{ color: theme.isDark ? '#fff' : '#111' }}>
+                      {theme.description}
+                    </span>
+                    {!owned && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 rounded-full px-2 py-0.5">
+                        <Lock size={9} className="text-white/80" />
+                        <span className="text-[9px] text-white/80 font-bold">$0.99</span>
+                      </div>
+                    )}
+                    {isActive && owned && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: theme.preview.accent }}>
+                        <Check size={10} className="text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export const EnterNameScreen = () => {
     const { setGameState, settings, currentTheme, handleJoin, isHost } = useGame();
+    const { authState } = useAuthContext();
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState(AVATARS[0]);
     const t = TRANSLATIONS[settings.language];
@@ -348,11 +384,24 @@ export const EnterNameScreen = () => {
     // Use consistent UUID for all players (host and guests)
     const stableId = useRef(`player-${generateUUID()}`);
 
-    // Auto-fill saved display name from profile
+    // Auto-join if authenticated with a complete profile (name + avatar)
     useEffect(() => {
+        if (authState.status === 'authenticated') {
+            const profile = authState.profile;
+            if (profile?.displayName) {
+                const avatarEmoji = profile.avatarId != null
+                    ? (PRESET_AVATARS[parseInt(profile.avatarId)]?.emoji ?? AVATARS[0])
+                    : AVATARS[0];
+                handleJoin(stableId.current, profile.displayName, avatarEmoji, profile.avatarId);
+                setGameState(GameState.LOBBY);
+                return;
+            }
+        }
+        // Anonymous: prefill display name if available
         fetchProfile().then(p => {
             if (p.displayName) setName(p.displayName);
         }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSubmit = () => {
@@ -373,7 +422,7 @@ export const EnterNameScreen = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
                     placeholder={t.namePlaceholder}
-                    className={`w-full ${settings.theme === AppTheme.PREMIUM_DARK ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+                    className={`w-full ${currentTheme.isDark ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
                 />
                 <div className="grid grid-cols-4 gap-4">
                     {AVATARS.slice(0, 12).map(a => (
@@ -432,7 +481,7 @@ export const JoinInputScreen = () => {
                         value={code}
                         onChange={handleInputChange}
                         placeholder="00000"
-                        className={`w-full bg-transparent border-b ${settings.theme === AppTheme.PREMIUM_DARK ? 'border-white/10 text-white' : 'border-slate-300 text-slate-900'} text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-champagne-gold transition-all pb-8`}
+                        className={`w-full bg-transparent border-b ${currentTheme.isDark ? 'border-white/10 text-white' : 'border-slate-300 text-slate-900'} text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-champagne-gold transition-all pb-8`}
                     />
                 </div>
 
@@ -475,7 +524,7 @@ export const ProfileScreen = () => {
   const { authState, logout } = useAuthContext();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
@@ -584,7 +633,7 @@ export const ProfileScreen = () => {
 export const ProfileSettingsScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
   const { authState } = useAuthContext();
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState('');
@@ -715,7 +764,7 @@ export const ProfileSettingsScreen = () => {
 ────────────────────────────────────────────────── */
 export const LobbySettingsScreen = () => {
   const { setGameState, currentTheme, settings: gameSettings, sendAction } = useGame();
-  const isDark = gameSettings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   // Local copy of settings for editing (don't affect live game)
   const [local, setLocal] = useState({ ...gameSettings });
@@ -879,7 +928,7 @@ const MAX_USER_PACKS = 5;
 
 export const MyWordPacksScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -1137,7 +1186,7 @@ type CreateDeckView = 'list' | 'create';
 
 export const MyDecksScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   const [view, setView] = useState<CreateDeckView>('list');
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
@@ -1380,7 +1429,7 @@ type StoreTab = typeof STORE_TABS[number];
 export const StoreScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
   const { isAuthenticated } = useAuthContext();
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const isDark = currentTheme.isDark;
 
   const [tab, setTab] = useState<StoreTab>('packs');
   const [langFilter, setLangFilter] = useState<LangFilter>('ALL');
@@ -1633,32 +1682,94 @@ export const StoreScreen = () => {
           ))}
           </>
         ) : (
-          // Themes tab
-          themes.filter(t => !t.isFree).length === 0 ? (
+          // Themes tab — all themes with visual preview
+          themes.length === 0 ? (
             <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-2`}>
               <p className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-40`}>
-                Нові теми незабаром
+                Теми незабаром
               </p>
             </div>
-          ) : themes.filter(t => !t.isFree).map(theme => (
-            <div key={theme.id} className={`${cardBg} rounded-2xl p-5 flex justify-between items-center`}>
-              <p className={`font-serif text-[18px] ${currentTheme.textMain}`}>{theme.name}</p>
-              {theme.owned ? (
-                <div className="bg-[#A1E3C8]/10 px-3 py-1 rounded-full border border-[#A1E3C8]/20 flex items-center gap-1">
-                  <Check size={11} className="text-[#85C9AE]" />
-                  <span className="text-[#85C9AE] text-[10px] font-bold uppercase tracking-wide">Куплено</span>
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleBuy('theme', theme.id)}
-                  disabled={acting === theme.id}
-                  className="bg-white hover:bg-gray-100 active:scale-95 text-black px-5 py-2 rounded-full font-bold text-[12px] shadow-lg disabled:opacity-50"
-                >
-                  {acting === theme.id ? <Loader2 size={12} className="animate-spin inline" /> : `$${(theme.price / 100).toFixed(2)}`}
-                </button>
-              )}
-            </div>
-          ))
+          ) : (
+            <>
+              {themes.map(theme => {
+                const cfg = theme.config as { preview?: { bg: string; accent: string }; fonts?: { heading: string } };
+                const previewBg = cfg.preview?.bg ?? '#1A1A1A';
+                const previewAccent = cfg.preview?.accent ?? '#F3E5AB';
+                const fontName = cfg.fonts?.heading?.match(/^'?([^']+)/)?.[1] ?? 'Default';
+                const isBuiltIn = theme.slug === 'premium-dark' || theme.slug === 'premium-light';
+                const alreadyOwned = theme.owned || isBuiltIn;
+                return (
+                  <div key={theme.id} className={`${cardBg} rounded-2xl overflow-hidden`}>
+                    <div className="flex items-stretch">
+                      {/* Color swatch */}
+                      <div
+                        className="w-20 shrink-0 flex flex-col items-center justify-center gap-1.5 p-3"
+                        style={{ background: previewBg }}
+                      >
+                        <div className="w-5 h-5 rounded-full" style={{ background: previewAccent }} />
+                        <div className="w-8 h-1 rounded-full opacity-40" style={{ background: previewAccent }} />
+                        <div className="w-6 h-1 rounded-full opacity-25" style={{ background: previewAccent }} />
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 p-4 flex flex-col justify-center gap-0.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={`font-serif text-[16px] leading-tight ${currentTheme.textMain}`}>{theme.name}</p>
+                          {theme.isFree && !isBuiltIn && (
+                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[#D4AF6A]/15 text-[#D4AF6A] border border-[#D4AF6A]/30">
+                              FREE
+                            </span>
+                          )}
+                          {isBuiltIn && (
+                            <span className={`text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded ${isDark ? 'bg-white/5 text-white/30 border border-white/10' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>
+                              БАЗОВА
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[11px] font-sans ${currentTheme.textSecondary} opacity-70`}>{fontName}</p>
+                      </div>
+                      {/* Action */}
+                      <div className="px-3 flex items-center shrink-0">
+                        {alreadyOwned ? (
+                          <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
+                            isBuiltIn
+                              ? isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-100 border border-slate-200'
+                              : 'bg-[#A1E3C8]/10 border border-[#A1E3C8]/20'
+                          }`}>
+                            <Check size={10} className={isBuiltIn ? (isDark ? 'text-white/30' : 'text-slate-400') : 'text-[#85C9AE]'} />
+                            <span className={`text-[9px] font-bold uppercase tracking-wide ${isBuiltIn ? (isDark ? 'text-white/30' : 'text-slate-400') : 'text-[#85C9AE]'}`}>
+                              {isBuiltIn ? 'Стандарт' : 'Отримано'}
+                            </span>
+                          </div>
+                        ) : theme.isFree ? (
+                          <button
+                            onClick={() => handleAddFree('theme', theme.id)}
+                            disabled={acting === theme.id}
+                            className={`px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 ${
+                              isDark
+                                ? 'bg-[#D4AF6A]/15 hover:bg-[#D4AF6A]/25 text-[#D4AF6A] border border-[#D4AF6A]/30'
+                                : 'bg-slate-800 hover:bg-slate-700 text-white'
+                            }`}
+                          >
+                            {acting === theme.id ? <Loader2 size={11} className="animate-spin inline" /> : 'Отримати'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleBuy('theme', theme.id)}
+                            disabled={acting === theme.id}
+                            className="bg-white hover:bg-gray-100 active:scale-95 text-black px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
+                          >
+                            {acting === theme.id
+                              ? <Loader2 size={11} className="animate-spin inline" />
+                              : `$${(theme.price / 100).toFixed(2)}`}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )
         )}
       </div>
 

@@ -387,36 +387,60 @@ const themes = [
     slug: 'premium-dark',
     name: 'Premium Dark',
     isFree: true,
+    price: 0,
     config: {
       id: 'PREMIUM_DARK',
-      bg: 'bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900',
-      card: 'bg-white/5 border border-white/10 backdrop-blur-sm',
-      accent: 'indigo',
-      buttonPrimary: 'bg-indigo-600 hover:bg-indigo-500',
+      description: 'Elegant dark with gold accents',
+      preview: { bg: '#1A1A1A', accent: '#F3E5AB' },
+      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
     },
   },
   {
     slug: 'premium-light',
     name: 'Premium Light',
     isFree: true,
+    price: 0,
     config: {
       id: 'PREMIUM_LIGHT',
-      bg: 'bg-gradient-to-br from-slate-100 via-indigo-50 to-white',
-      card: 'bg-white/80 border border-slate-200 backdrop-blur-sm',
-      accent: 'indigo',
-      buttonPrimary: 'bg-indigo-600 hover:bg-indigo-500',
+      description: 'Clean light with classic serif',
+      preview: { bg: '#F8FAFC', accent: '#1E293B' },
+      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
     },
   },
   {
     slug: 'cyberpunk',
-    name: 'Cyberpunk',
-    isFree: true,
+    name: 'Indigo',
+    isFree: false,
+    price: 99,
     config: {
       id: 'CYBERPUNK',
-      bg: 'bg-gradient-to-br from-gray-950 via-purple-950 to-gray-900',
-      card: 'bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm',
-      accent: 'purple',
-      buttonPrimary: 'bg-purple-600 hover:bg-purple-500',
+      description: 'Dark neon with indigo & pink',
+      preview: { bg: '#020617', accent: '#6366F1' },
+      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
+    },
+  },
+  {
+    slug: 'forest',
+    name: 'Forest',
+    isFree: false,
+    price: 99,
+    config: {
+      id: 'FOREST',
+      description: 'Deep nature vibes with Merriweather',
+      preview: { bg: '#1F2920', accent: '#4DB6AC' },
+      fonts: { heading: "'Merriweather', serif", body: "'Inter', sans-serif" },
+    },
+  },
+  {
+    slug: 'sleek',
+    name: 'Sleek',
+    isFree: true,
+    price: 0,
+    config: {
+      id: 'SLEEK',
+      description: 'Dark pro with sharp corners',
+      preview: { bg: '#050505', accent: '#4338CA' },
+      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
     },
   },
 ];
@@ -459,6 +483,7 @@ async function main() {
         name: pack.name,
         language: pack.language,
         category: pack.category,
+        isDefault: pack.category === 'General',
         wordCount: uniqueWords.length,
       },
       create: {
@@ -467,6 +492,7 @@ async function main() {
         language: pack.language,
         category: pack.category,
         isFree: true,
+        isDefault: pack.category === 'General',
         wordCount: uniqueWords.length,
       },
     });
@@ -507,8 +533,8 @@ async function main() {
   for (const theme of themes) {
     await prisma.theme.upsert({
       where: { slug: theme.slug },
-      update: { name: theme.name, config: theme.config, isFree: theme.isFree },
-      create: { slug: theme.slug, name: theme.name, config: theme.config, isFree: theme.isFree },
+      update: { name: theme.name, config: theme.config, isFree: theme.isFree, price: theme.price },
+      create: { slug: theme.slug, name: theme.name, config: theme.config, isFree: theme.isFree, price: theme.price },
     });
     console.log(`  [Theme] ${theme.slug}`);
   }

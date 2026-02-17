@@ -40,6 +40,8 @@ export enum AppTheme {
   PREMIUM_DARK = 'PREMIUM_DARK',
   PREMIUM_LIGHT = 'PREMIUM_LIGHT',
   CYBERPUNK = 'CYBERPUNK',
+  FOREST = 'FOREST',
+  SLEEK = 'SLEEK',
 }
 
 export enum SoundPreset {
