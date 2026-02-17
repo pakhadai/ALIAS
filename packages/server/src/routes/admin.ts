@@ -85,6 +85,17 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     res.json({ ok: true });
   });
 
+  /** DELETE /api/admin/packs/:packId/words/:wordId — delete a single word */
+  router.delete('/packs/:packId/words/:wordId', async (req, res) => {
+    const { packId, wordId } = req.params;
+    const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
+    if (!pack) { res.status(404).json({ error: 'Pack not found' }); return; }
+    await prisma.word.delete({ where: { id: wordId } });
+    const count = await prisma.word.count({ where: { packId } });
+    await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
+    res.json({ ok: true, totalWords: count });
+  });
+
   /** POST /api/admin/packs/:id/words — bulk add words to a pack */
   router.post('/packs/:id/words', async (req, res) => {
     const { words } = req.body as { words?: string[] };
@@ -123,6 +134,22 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
   router.get('/themes', async (_req, res) => {
     const themes = await prisma.theme.findMany({ orderBy: { name: 'asc' } });
     res.json(themes);
+  });
+
+  /** PUT /api/admin/themes/:id — update theme price/isFree/name */
+  router.put('/themes/:id', async (req, res) => {
+    const { name, price, isFree } = req.body as { name?: string; price?: number; isFree?: boolean };
+    const theme = await prisma.theme.update({
+      where: { id: req.params.id },
+      data: { ...(name !== undefined && { name }), ...(price !== undefined && { price }), ...(isFree !== undefined && { isFree }) },
+    });
+    res.json(theme);
+  });
+
+  /** DELETE /api/admin/themes/:id */
+  router.delete('/themes/:id', async (req, res) => {
+    await prisma.theme.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
   });
 
   /** POST /api/admin/themes — create a theme */
@@ -250,6 +277,48 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
         purchases: p._count.wordPackId,
       })),
     });
+  });
+
+  /** GET /api/admin/analytics/daily?days=30 — time-series activity */
+  router.get('/analytics/daily', async (req, res) => {
+    const days = Math.min(parseInt(String(req.query.days ?? '30')), 90);
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const [sessions, purchases] = await Promise.all([
+      prisma.gameSession.findMany({
+        where: { createdAt: { gte: since } },
+        select: { createdAt: true },
+      }),
+      prisma.purchase.findMany({
+        where: { status: 'completed', createdAt: { gte: since } },
+        select: { createdAt: true, amount: true },
+      }),
+    ]);
+
+    // Group by date string YYYY-MM-DD
+    const gamesByDate: Record<string, number> = {};
+    const revenueByDate: Record<string, number> = {};
+
+    for (const s of sessions) {
+      const d = s.createdAt.toISOString().slice(0, 10);
+      gamesByDate[d] = (gamesByDate[d] ?? 0) + 1;
+    }
+    for (const p of purchases) {
+      const d = p.createdAt.toISOString().slice(0, 10);
+      revenueByDate[d] = (revenueByDate[d] ?? 0) + p.amount;
+    }
+
+    // Build array for each day
+    const result: { date: string; games: number; revenue: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      result.push({ date: key, games: gamesByDate[key] ?? 0, revenue: revenueByDate[key] ?? 0 });
+    }
+
+    res.json(result);
   });
 
   return router;
