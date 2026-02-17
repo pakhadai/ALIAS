@@ -209,6 +209,20 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         {/* Divider */}
         <div className="h-px bg-white/[0.07]" />
 
+        {/* Admin Panel link — only for admins */}
+        {authState.status === 'authenticated' && authState.isAdmin && (
+          <div className="px-6 pb-2">
+            <button
+              onClick={() => window.open('/admin', '_blank')}
+              className="w-full text-center text-indigo-400 font-sans font-bold
+                text-[10px] tracking-[0.3em] uppercase py-3
+                hover:opacity-70 active:scale-[0.98] transition-all"
+            >
+              ⚙ ADMIN PANEL
+            </button>
+          </div>
+        )}
+
         {/* Logout */}
         <div className="px-6 py-5" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
           <button

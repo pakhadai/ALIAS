@@ -87,8 +87,8 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       }
     }
 
-    const token = authService.createToken({ sub: user.id, type: 'google', email: user.email! });
-    res.json({ token, userId: user.id, email: user.email });
+    const token = authService.createToken({ sub: user.id, type: 'google', email: user.email!, isAdmin: user.isAdmin });
+    res.json({ token, userId: user.id, email: user.email, isAdmin: user.isAdmin });
   });
 
   // ─── Update profile ───────────────────────────────────────────────────
@@ -192,6 +192,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       authProvider: user.authProvider,
       displayName: user.displayName,
       avatarId: user.avatarId,
+      isAdmin: user.isAdmin,
       createdAt: user.createdAt,
       purchases: user.purchases,
     });

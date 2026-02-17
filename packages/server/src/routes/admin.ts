@@ -1,22 +1,33 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from 'express';
 import type { PrismaClient } from '@prisma/client';
 import { config } from '../config';
+import { AuthService } from '../services/AuthService';
 
-const router: IRouter = Router();
-
-// Simple API key auth middleware for admin routes
-function adminAuth(req: Request, res: Response, next: NextFunction): void {
-  const apiKey = req.headers['x-admin-key'] as string;
-  if (!apiKey || apiKey !== config.adminApiKey) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
-  next();
-}
-
-router.use(adminAuth);
+const authService = new AuthService();
 
 export function createAdminRoutes(prisma: PrismaClient): IRouter {
+  const router: IRouter = Router();
+
+  // Admin auth: accept API key OR user JWT with isAdmin: true
+  function adminAuth(req: Request, res: Response, next: NextFunction): void {
+    // API key fallback (for CLI / direct API access)
+    if (req.headers['x-admin-key'] === config.adminApiKey) {
+      next();
+      return;
+    }
+    // JWT-based admin access
+    const auth = req.headers.authorization;
+    if (auth?.startsWith('Bearer ')) {
+      const payload = authService.verifyToken(auth.slice(7));
+      if (payload?.isAdmin) {
+        next();
+        return;
+      }
+    }
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  router.use(adminAuth);
   // ─── WordPacks ──────────────────────────────────────────────────────
 
   /** GET /api/admin/packs — list all packs */
@@ -243,5 +254,3 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
 
   return router;
 }
-
-export default router;

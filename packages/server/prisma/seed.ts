@@ -549,6 +549,15 @@ async function main() {
     console.log(`  [SoundPack] ${sp.slug}`);
   }
 
+  // Set admin by email
+  const adminResult = await prisma.user.updateMany({
+    where: { email: 'mrdemianpahaday@gmail.com' },
+    data: { isAdmin: true },
+  });
+  if (adminResult.count > 0) {
+    console.log(`  [Admin] mrdemianpahaday@gmail.com set as admin`);
+  }
+
   // Summary
   const wordCount = await prisma.word.count();
   const packCount = await prisma.wordPack.count();

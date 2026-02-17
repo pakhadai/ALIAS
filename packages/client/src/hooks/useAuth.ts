@@ -11,7 +11,7 @@ import {
 export type AuthState =
   | { status: 'loading' }
   | { status: 'anonymous'; userId: string }
-  | { status: 'authenticated'; userId: string; email: string; provider: string; profile: UserProfile }
+  | { status: 'authenticated'; userId: string; email: string; provider: string; isAdmin: boolean; profile: UserProfile }
   | { status: 'error'; message: string };
 
 export function useAuth() {
@@ -31,6 +31,7 @@ export function useAuth() {
             userId: profile.id,
             email: profile.email || '',
             provider: profile.authProvider,
+            isAdmin: profile.isAdmin ?? false,
             profile,
           });
         }
@@ -64,6 +65,7 @@ export function useAuth() {
         userId,
         email: email || '',
         provider: 'google',
+        isAdmin: profile.isAdmin ?? false,
         profile,
       });
     } catch (e) {

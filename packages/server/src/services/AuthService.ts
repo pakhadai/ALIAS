@@ -6,6 +6,7 @@ export type TokenPayload = {
   sub: string;   // userId (UUID)
   type: 'anonymous' | 'google';
   email?: string;
+  isAdmin?: boolean;
 };
 
 const TOKEN_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days

@@ -61,6 +61,7 @@ export interface UserProfile {
   authProvider: string;
   displayName: string | null;
   avatarId: string | null;
+  isAdmin: boolean;
   createdAt: string;
   purchases: {
     id: string;

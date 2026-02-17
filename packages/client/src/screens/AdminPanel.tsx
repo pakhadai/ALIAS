@@ -34,11 +34,16 @@ interface WordPackRow {
 
 const API_BASE = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
-async function adminFetch<T>(path: string, key: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', 'x-admin-key': key, ...(opts?.headers ?? {}) },
-  });
+async function adminFetch<T>(path: string, token: string, opts?: RequestInit): Promise<T> {
+  // token can be a JWT (Bearer) or a raw API key (x-admin-key)
+  const isJwt = token.includes('.');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (isJwt) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    headers['x-admin-key'] = token;
+  }
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers: { ...headers, ...(opts?.headers as Record<string, string> ?? {}) } });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as any).error || `HTTP ${res.status}`);
@@ -76,7 +81,12 @@ function StatusBadge({ status }: { status: string }) {
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
 export function AdminPanel() {
-  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem('admin_key') || '');
+  // Auto-auth: try JWT from localStorage first, then fall back to stored API key
+  const [apiKey, setApiKey] = useState(() => {
+    const jwt = localStorage.getItem('alias_auth_token');
+    if (jwt) return jwt;
+    return sessionStorage.getItem('admin_key') || '';
+  });
   const [inputKey, setInputKey] = useState('');
   const [authError, setAuthError] = useState('');
 
@@ -122,7 +132,7 @@ export function AdminPanel() {
       sessionStorage.setItem('admin_key', inputKey);
       setApiKey(inputKey);
     } catch {
-      setAuthError('Невірний ключ доступу');
+      setAuthError('Невірний ключ або немає доступу');
     }
   };
 
