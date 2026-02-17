@@ -498,7 +498,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sendAction,
     playSound,
     showNotification,
-    setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => dispatch({ type: 'SET_STATE', payload: { settings: typeof s === 'function' ? s(state.settings) : s } }),
+    setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => {
+      const newSettings = typeof s === 'function' ? (s(stateRef.current.settings)) : s;
+      // If we're online and host, propagate settings to server so other clients sync
+      if (stateRef.current.gameMode === 'ONLINE') {
+        if (stateRef.current.isHost) {
+          sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
+        } else {
+          // Non-hosts should not attempt to change global settings — apply locally for preview only
+          dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...newSettings } } });
+        }
+      } else {
+        // Offline/local mode — apply locally
+        dispatch({ type: 'SET_STATE', payload: { settings: { ...stateRef.current.settings, ...newSettings } } });
+      }
+    },
     startOfflineGame: () => {
       dispatch({ type: 'SET_STATE', payload: {
         gameMode: 'OFFLINE',

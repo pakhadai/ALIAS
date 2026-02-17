@@ -102,6 +102,18 @@ export function registerSocketHandlers(
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
+    // Protect host-only actions: only allow if this socket is the room host
+    const hostOnlyActions = new Set([
+      'START_GAME', 'START_DUEL', 'START_ROUND', 'START_PLAYING',
+      'NEXT_ROUND', 'RESET_GAME', 'REMATCH', 'GENERATE_TEAMS',
+      'PAUSE_GAME', 'CONFIRM_ROUND', 'UPDATE_SETTINGS', 'KICK_PLAYER',
+      'CORRECT', 'SKIP', 'TIME_UP'
+    ]);
+    if (hostOnlyActions.has(payload.action) && socket.id !== room.hostSocketId) {
+      socket.emit('room:error', { message: 'Only the host can perform this action' });
+      return;
+    }
+
     await gameEngine.handleAction(room, payload);
 
     // Handle kick: disconnect the kicked player's socket

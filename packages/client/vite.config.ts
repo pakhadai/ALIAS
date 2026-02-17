@@ -4,6 +4,12 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    headers: {
+      // Allow Google OAuth popup to postMessage back to parent window
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

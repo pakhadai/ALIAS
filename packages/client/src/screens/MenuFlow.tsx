@@ -208,8 +208,6 @@ export const MenuScreen = () => {
     fetchStore().then(data => setStoreThemes(data.themes)).catch(() => {});
   }, []);
 
-  const { canInstall, install, dismiss } = useInstallPrompt();
-
   const handleProfileClick = () => {
     if (isAuthenticated) {
       setGameState(GameState.PROFILE);
@@ -271,21 +269,6 @@ export const MenuScreen = () => {
           <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-shake">
             <AlertCircle className="text-red-500" size={20} />
             <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">Server Error: {connectionError}</p>
-          </div>
-        )}
-
-        {canInstall && (
-          <div className={`mt-6 w-full flex items-center justify-between px-4 py-3 rounded-2xl border animate-fade-in ${currentTheme.isDark ? 'bg-[#D4AF6A]/8 border-[#D4AF6A]/20' : 'bg-amber-50 border-amber-200'}`}>
-            <div className="flex items-center gap-2">
-              <span className="text-[18px]">📲</span>
-              <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-[#D4AF6A]' : 'text-amber-700'}`}>Додати на головний екран</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={install} className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest ${currentTheme.isDark ? 'bg-[#D4AF6A]/20 text-[#D4AF6A]' : 'bg-amber-200 text-amber-800'}`}>
-                Встановити
-              </button>
-              <button onClick={dismiss} className={`opacity-40 hover:opacity-70 text-xs ${currentTheme.isDark ? 'text-white' : 'text-slate-600'}`}>✕</button>
-            </div>
           </div>
         )}
 
@@ -664,6 +647,7 @@ export const ProfileSettingsScreen = () => {
   const { authState } = useAuthContext();
   const isDark = currentTheme.isDark;
   const { permission: pushPermission, supported: pushSupported, loading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
+  const { canInstall, install } = useInstallPrompt();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState('');
@@ -773,32 +757,50 @@ export const ProfileSettingsScreen = () => {
           )}
         </div>
 
-        {/* Push notifications */}
-        {pushSupported && (
-          <div className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5`}>
-            <p className={`text-[9px] font-bold tracking-[0.25em] uppercase mb-3 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Сповіщення</p>
-            <div className="flex justify-between items-center">
-              <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>Push-сповіщення</span>
-              {pushPermission === 'granted' ? (
+        {/* Push notifications + Install app */}
+        {(pushSupported || canInstall) && (
+          <div className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5 space-y-4`}>
+            <p className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Сповіщення і застосунок</p>
+
+            {pushSupported && (
+              <div className="flex justify-between items-center">
+                <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>Push-сповіщення</span>
+                {pushPermission === 'granted' ? (
+                  <button
+                    onClick={pushUnsubscribe}
+                    disabled={pushLoading}
+                    className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${isDark ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} disabled:opacity-50`}
+                  >
+                    {pushLoading ? '...' : '✓ Увімкнено'}
+                  </button>
+                ) : pushPermission === 'denied' ? (
+                  <span className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Заблоковано</span>
+                ) : (
+                  <button
+                    onClick={pushSubscribe}
+                    disabled={pushLoading}
+                    className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${currentTheme.button} disabled:opacity-50`}
+                  >
+                    {pushLoading ? '...' : 'Увімкнути'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {canInstall && (
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className={`material-symbols-outlined !text-[18px] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>install_mobile</span>
+                  <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>На головний екран</span>
+                </div>
                 <button
-                  onClick={pushUnsubscribe}
-                  disabled={pushLoading}
-                  className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${isDark ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} disabled:opacity-50`}
+                  onClick={install}
+                  className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all active:scale-95 ${currentTheme.button}`}
                 >
-                  {pushLoading ? '...' : '✓ Увімкнено'}
+                  Встановити
                 </button>
-              ) : pushPermission === 'denied' ? (
-                <span className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Заблоковано</span>
-              ) : (
-                <button
-                  onClick={pushSubscribe}
-                  disabled={pushLoading}
-                  className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${currentTheme.button} disabled:opacity-50`}
-                >
-                  {pushLoading ? '...' : 'Увімкнути'}
-                </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
