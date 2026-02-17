@@ -13,6 +13,7 @@ import { WordService } from './services/WordService';
 import { RedisRoomStore } from './services/RedisRoomStore';
 import { socketAuthMiddleware } from './middleware/socketAuth';
 import { applyRateLimit } from './middleware/rateLimit';
+import { authLimiter, storeLimiter, pushLimiter } from './middleware/httpRateLimit';
 import { createAuthRoutes } from './routes/auth';
 import { createAdminRoutes } from './routes/admin';
 import { createStoreRoutes } from './routes/store';
@@ -40,12 +41,12 @@ const prisma = new PrismaClient();
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-app.use('/api/auth', createAuthRoutes(prisma));
+app.use('/api/auth', authLimiter, createAuthRoutes(prisma));
 app.use('/api/admin', createAdminRoutes(prisma));
-app.use('/api/store', createStoreRoutes(prisma));
-app.use('/api/purchases', createPurchaseRoutes(prisma));
+app.use('/api/store', storeLimiter, createStoreRoutes(prisma));
+app.use('/api/purchases', storeLimiter, createPurchaseRoutes(prisma));
 app.use('/api/custom-decks', createCustomDeckRoutes(prisma));
-app.use('/api/push', createPushRoutes(prisma));
+app.use('/api/push', pushLimiter, createPushRoutes(prisma));
 
 const httpServer = createServer(app);
 

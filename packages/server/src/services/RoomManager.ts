@@ -30,6 +30,8 @@ export interface Room {
   roundsPlayed: number;
   // host identity (stored for future use, e.g. host migration)
   hostUserId?: string;
+  // timestamp when the room was created (for stale cleanup)
+  createdAt: number;
 }
 
 const defaultSettings: GameSettings = {
@@ -55,6 +57,20 @@ const defaultRoundStats: RoundStats = {
 export class RoomManager {
   private rooms = new Map<string, Room>();
   private redisStore: RedisRoomStore | null = null;
+
+  constructor() {
+    // Clean up stale empty rooms every 30 minutes (rooms idle for 2+ hours)
+    setInterval(() => {
+      const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+      for (const [code, room] of this.rooms) {
+        if (room.players.length === 0 && room.createdAt < cutoff) {
+          if (room.timerInterval) clearInterval(room.timerInterval);
+          this.rooms.delete(code);
+          this.redisStore?.deleteRoom(code).catch(() => {});
+        }
+      }
+    }, 30 * 60 * 1000);
+  }
 
   setRedisStore(store: RedisRoomStore): void {
     this.redisStore = store;
@@ -100,6 +116,7 @@ export class RoomManager {
       timerInterval: null,
       socketToPlayer: new Map(),
       roundsPlayed: 0,
+      createdAt: Date.now(),
     };
     this.rooms.set(code, room);
     this.persistRoom(room);

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import type { GameSyncState } from '@alias/shared';
 
-const ROOM_TTL = 3600; // 1 hour
+const ROOM_TTL = 7200; // 2 hours
 const ROOM_PREFIX = 'alias:room:';
 
 export class RedisRoomStore {

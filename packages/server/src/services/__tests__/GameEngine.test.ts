@@ -64,6 +64,7 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     timerInterval: null,
     socketToPlayer: new Map(),
     roundsPlayed: 0,
+    createdAt: Date.now(),
     ...overrides,
   };
 }
