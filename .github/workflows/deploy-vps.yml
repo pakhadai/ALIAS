@@ -32,7 +32,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Багаторядковий VPS_SSH_PRIVATE_KEY у полі `key:` часто ламається; файл + key_path надійніше.
+      # Багаторядковий secret у `key:` ламається; файл + key_path. Шлях без ~ — drone-ssh не розгортає тильду.
       - name: Prepare SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
@@ -41,16 +41,16 @@ jobs:
             echo "::error::VPS_SSH_PRIVATE_KEY secret is empty or not set"
             exit 1
           fi
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/gha_deploy_key
-          chmod 600 ~/.ssh/gha_deploy_key
+          KEY_FILE="${GITHUB_WORKSPACE}/.gha_deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
 
       - name: SSH — git pull, Docker rebuild, Prisma migrate
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: ~/.ssh/gha_deploy_key
+          key_path: ${{ github.workspace }}/.gha_deploy_key
           port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || '22' }}
           command_timeout: 30m
           script: |

@@ -48,6 +48,13 @@
 
 ---
 
+## [2026-03-29] — Deploy: key_path без тильди (~)
+
+### Fixed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): `key_path` → `${{ github.workspace }}/.gha_deploy_key` (drone-ssh не розпізнає `~/.ssh/...`). Ключ пишеться в workspace, не в `~/.ssh`.
+
+---
+
 ## [2026-03-29] — Deploy: SSH ключ через key_path
 
 ### Fixed

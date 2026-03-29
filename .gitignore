@@ -16,6 +16,9 @@ dist-ssr
 .env
 !.env.example
 
+# CI: local copy of deploy key must never be committed
+.gha_deploy_key
+
 # Prisma
 packages/server/prisma/*.db
 
