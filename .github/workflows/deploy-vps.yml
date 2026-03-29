@@ -9,14 +9,14 @@
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
-#   VPS_COMPOSE_FILE      — ім’я compose-файлу в корені клону (default: docker-compose.prod.yml). Для NPM: docker-compose.npm.yml
+#   VPS_COMPOSE_FILE      — compose-файл у корені клону. Якщо не задано: спочатку docker-compose.npm.yml (якщо є), інакше docker-compose.prod.yml
 #   VPS_ENV_FILE          — env для compose (default: .env.prod). Якщо файлу немає — використовується .env у корені клону
 #   VPS_COMPOSE_PROJECT   — опційно: docker compose -p (наприклад alias), щоб імена контейнерів збігалися з VPS
 #
 # На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
 #   - .env.prod або .env у корені клону (з .env.prod.example), НЕ в git
 #   - docker compose v2, користувач у групі docker (або sudo без пароля для docker)
-#   - перший запуск SSL за інструкцією в docker-compose.prod.yml
+#   - Перший запуск SSL: docker-compose.prod.yml (Let's Encrypt) або NPM + docker-compose.npm.yml
 
 name: Deploy to VPS
 
@@ -34,7 +34,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Багаторядковий secret у `key:` ламається; файл + key_path. Шлях без ~ — drone-ssh не розгортає тильду.
       - name: Prepare SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
@@ -72,7 +71,6 @@ jobs:
             COMPOSE_FILE="${COMPOSE_FILE#"${COMPOSE_FILE%%[![:space:]]*}"}"
             COMPOSE_FILE="${COMPOSE_FILE%"${COMPOSE_FILE##*[![:space:]]}"}"
             COMPOSE_FILE="${COMPOSE_FILE%/}"
-            [ -z "$COMPOSE_FILE" ] && COMPOSE_FILE="docker-compose.prod.yml"
             ENV_FILE="${{ secrets.VPS_ENV_FILE }}"
             ENV_FILE="${ENV_FILE//$'\r'/}"
             ENV_FILE="${ENV_FILE#"${ENV_FILE%%[![:space:]]*}"}"
@@ -98,9 +96,18 @@ jobs:
             cd "$DEPLOY_PATH"
             git fetch origin main
             git reset --hard origin/main
+            sed -i '/^packages\/client$/d' .dockerignore 2>/dev/null || true
+            if [ -z "$COMPOSE_FILE" ]; then
+              if [ -f "docker-compose.npm.yml" ]; then
+                COMPOSE_FILE="docker-compose.npm.yml"
+              else
+                COMPOSE_FILE="docker-compose.prod.yml"
+              fi
+              echo "Note: VPS_COMPOSE_FILE unset — using $COMPOSE_FILE (NPM stack avoids binding host :80 if NPM already uses it)"
+            fi
             if [ ! -f "$COMPOSE_FILE" ] && [ -f "docker-compose.npm.yml" ]; then
               COMPOSE_FILE="docker-compose.npm.yml"
-              echo "Note: using docker-compose.npm.yml (secret/default compose file not found after sync)"
+              echo "Note: requested compose file missing — using docker-compose.npm.yml"
             fi
             if [ ! -f "$COMPOSE_FILE" ]; then
               echo "ERROR: compose file not found: $COMPOSE_FILE — set VPS_COMPOSE_FILE or add the file to the repo."
