@@ -32,14 +32,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Багаторядковий VPS_SSH_PRIVATE_KEY у полі `key:` часто ламається; файл + key_path надійніше.
+      - name: Prepare SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
+            echo "::error::VPS_SSH_PRIVATE_KEY secret is empty or not set"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/gha_deploy_key
+          chmod 600 ~/.ssh/gha_deploy_key
+
       - name: SSH — git pull, Docker rebuild, Prisma migrate
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          key_path: ~/.ssh/gha_deploy_key
           port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || '22' }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           command_timeout: 30m
           script: |
             set -euo pipefail

@@ -48,6 +48,16 @@
 
 ---
 
+## [2026-03-29] — Deploy: SSH ключ через key_path
+
+### Fixed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): крок «Prepare SSH key» — запис `VPS_SSH_PRIVATE_KEY` у `~/.ssh/gha_deploy_key`, підключення через `key_path` замість `key:` (стабільніше для багаторядкового secret). Прибрано `passphrase` з кроку ssh-action (уникнення порожнього passphrase для ключів без пароля).
+
+### Changed
+- [`README.md`](./README.md): оновлено підказки для `unable to authenticate` / passphrase.
+
+---
+
 ## [2026-03-29] — Deploy workflow: прибрано script_stop
 
 ### Fixed

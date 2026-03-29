@@ -805,7 +805,7 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 
 Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
-**Якщо в Actions помилка `ssh: unable to authenticate … no supported methods remain`:** сервер не прийняв ключ. Перевір: `VPS_USER` збігається з користувачем, у чий `~/.ssh/authorized_keys` додано **публічний** ключ від **того самого** ключового пари, що й `VPS_SSH_PRIVATE_KEY`; у secret — саме **приватний** файл (цілий блок `BEGIN`/`END`, без зайвих лапок і краще без `\r` з Windows); зі свого ПК тест: `ssh -i /шлях/до/приватного -p <порт> VPS_USER@VPS_HOST`. Якщо ключ з passphrase — додай secret `VPS_SSH_PASSPHRASE`. Якщо secret `VPS_SSH_PASSPHRASE` порожній або зайвий для ключа без пароля — краще **видалити** цей secret з репозиторію (не залишати порожнім «плейсхолдер»).
+**Якщо в Actions помилка `ssh: unable to authenticate … no supported methods remain`:** (1) Локально перевір `ssh -i приватний_ключ -p порт VPS_USER@VPS_HOST`. (2) У GitHub secret `VPS_SSH_PRIVATE_KEY` — **цілий** приватний файл (`BEGIN`…`END`), без лапок навколо всього блоку. (3) Публічний ключ з пари має бути в `~VPS_USER/.ssh/authorized_keys` на сервері. (4) Якщо локально вхід ок, а Actions ні — workflow записує ключ у файл і використовує `key_path` (не сирий `key:`), щоб багаторядковий secret не псувався. (5) Для ключа **без** passphrase secret `VPS_SSH_PASSPHRASE` **не створюй** (порожній secret може заважати). Ключ **з** passphrase — зараз у workflow поле passphrase не передається; тоді або ключ без пароля для CI, або доведеться розширити workflow.
 
 ---
 
