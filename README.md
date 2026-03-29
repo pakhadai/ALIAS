@@ -794,11 +794,11 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
 
-**Опційно:** `VPS_SSH_PORT` (якщо SSH не на порту 22), `VPS_SSH_PASSPHRASE` (якщо ключ захищений паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону. Якщо **не задано**, деплой йде в **`$HOME/apps/ALIAS`** (для `root` → `/root/apps/ALIAS`), узгоджено з угодою **проєкти в `~/apps/`**. Внутрішній опис інфраструктури сервера тримай **локально** у `docs/VPS-INFRASTRUCTURE.md` (файл у `.gitignore`); у репо є лише шаблон [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
+**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `ALIAS`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/alias`** (`/root/apps/alias` для root). **`VPS_COMPOSE_FILE`** — наприклад `docker-compose.npm.yml`, якщо на VPS не стандартний `docker-compose.prod.yml`. **`VPS_ENV_FILE`** — наприклад `.env`, якщо не `.env.prod`. Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
 
 **Що має бути на VPS до першого деплою:**
 
-1. Каталог деплою: за замовчуванням **`~/apps/ALIAS`**. Якщо його ще немає, **перший запуск** workflow виконає `git clone` з `https://github.com/<repo>.git` (репозиторій має бути **публічним** або на VPS налаштований доступ до GitHub). Далі оновлення — `git fetch` / `reset`. Якщо клон робиш вручну — додай [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) або HTTPS-облікові дані для приватного репо.
+1. Каталог деплою: за замовчуванням **`~/apps/alias`**. Перший запуск без теки — автоматичний `git clone` (див. вище про публічний repo / credentials). Шлях у **`VPS_DEPLOY_PATH`** має **точно** збігатися з реальною текою (регістр літер).
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
 4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.

@@ -48,6 +48,16 @@
 
 ---
 
+## [2026-03-29] — Deploy: alias vs ALIAS, compose/npm, trim шляху
+
+### Fixed
+- Регістр шляху на Linux: дефолт **`~/apps/alias`**; обрізання завершального `/` у `VPS_DEPLOY_PATH`.
+
+### Added
+- Опційні secrets **`VPS_COMPOSE_FILE`**, **`VPS_ENV_FILE`** (наприклад `docker-compose.npm.yml` та `.env` на VPS за NPM).
+
+---
+
 ## [2026-03-29] — Deploy: auto-clone якщо ~/apps/ALIAS немає
 
 ### Changed

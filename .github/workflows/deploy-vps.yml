@@ -4,11 +4,13 @@
 #   VPS_HOST              — IP або hostname сервера
 #   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
-#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону. Якщо не задано — $HOME/apps/ALIAS (угода VPS: проєкти в ~/apps/).
+#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: alias ≠ ALIAS). Якщо не задано — $HOME/apps/alias
 #
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
+#   VPS_COMPOSE_FILE      — ім’я compose-файлу в корені клону (default: docker-compose.prod.yml). Для NPM-проксі: docker-compose.npm.yml
+#   VPS_ENV_FILE          — env для compose (default: .env.prod). Можна .env
 #
 # На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
 #   - файл .env.prod у корені клону (з .env.prod.example), НЕ в git (обов’язково до успішного docker compose)
@@ -58,10 +60,24 @@ jobs:
             DEPLOY_PATH="${DEPLOY_PATH//$'\r'/}"
             DEPLOY_PATH="${DEPLOY_PATH#"${DEPLOY_PATH%%[![:space:]]*}"}"
             DEPLOY_PATH="${DEPLOY_PATH%"${DEPLOY_PATH##*[![:space:]]}"}"
+            DEPLOY_PATH="${DEPLOY_PATH%/}"
+            while [[ "$DEPLOY_PATH" == */ ]]; do DEPLOY_PATH="${DEPLOY_PATH%/}"; done
             if [ -z "$DEPLOY_PATH" ]; then
-              DEPLOY_PATH="$HOME/apps/ALIAS"
+              DEPLOY_PATH="$HOME/apps/alias"
               echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
+            COMPOSE_FILE="${{ secrets.VPS_COMPOSE_FILE }}"
+            COMPOSE_FILE="${COMPOSE_FILE//$'\r'/}"
+            COMPOSE_FILE="${COMPOSE_FILE#"${COMPOSE_FILE%%[![:space:]]*}"}"
+            COMPOSE_FILE="${COMPOSE_FILE%"${COMPOSE_FILE##*[![:space:]]}"}"
+            COMPOSE_FILE="${COMPOSE_FILE%/}"
+            [ -z "$COMPOSE_FILE" ] && COMPOSE_FILE="docker-compose.prod.yml"
+            ENV_FILE="${{ secrets.VPS_ENV_FILE }}"
+            ENV_FILE="${ENV_FILE//$'\r'/}"
+            ENV_FILE="${ENV_FILE#"${ENV_FILE%%[![:space:]]*}"}"
+            ENV_FILE="${ENV_FILE%"${ENV_FILE##*[![:space:]]}"}"
+            [ -z "$ENV_FILE" ] && ENV_FILE=".env.prod"
+            echo "Using compose file: $COMPOSE_FILE env file: $ENV_FILE"
             if [ ! -d "$DEPLOY_PATH" ]; then
               echo "Deploy directory missing — cloning ${{ github.repository }} (branch main) ..."
               mkdir -p "$(dirname "$DEPLOY_PATH")"
@@ -74,5 +90,5 @@ jobs:
             cd "$DEPLOY_PATH"
             git fetch origin main
             git reset --hard origin/main
-            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
-            docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T app sh -c "cd packages/server && npx prisma migrate deploy"
+            docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build
+            docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T app sh -c "cd packages/server && npx prisma migrate deploy"

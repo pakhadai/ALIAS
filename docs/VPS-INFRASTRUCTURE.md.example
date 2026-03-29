@@ -18,4 +18,4 @@
 
 ## Деплой Alias з GitHub Actions
 
-За замовчуванням оновлення коду йде в **`$HOME/apps/ALIAS`**, якщо не задано secret `VPS_DEPLOY_PATH`. Деталі — у [README.md](../README.md) (розділ «Деплой на VPS»).
+За замовчуванням деплой у **`$HOME/apps/alias`** (регістр як на диску). Compose/env можна перевизначити secrets `VPS_COMPOSE_FILE` / `VPS_ENV_FILE`. Деталі — [README.md](../README.md).
