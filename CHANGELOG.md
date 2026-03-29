@@ -48,6 +48,14 @@
 
 ---
 
+## [2026-03-29] — Deploy: дефолт $HOME/ALIAS без VPS_DEPLOY_PATH
+
+### Changed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): якщо `VPS_DEPLOY_PATH` порожній — використовується `$HOME/ALIAS` (як типова угода замість окремого secret).
+- [`README.md`](./README.md): secrets — `VPS_DEPLOY_PATH` перенесено в опційні.
+
+---
+
 ## [2026-03-29] — Deploy: key_path без тильди (~)
 
 ### Fixed

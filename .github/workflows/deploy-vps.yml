@@ -4,7 +4,7 @@
 #   VPS_HOST              — IP або hostname сервера
 #   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
-#   VPS_DEPLOY_PATH       — абсолютний шлях до клону репозиторію на сервері (наприклад /home/ubuntu/ALIAS)
+#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону. Якщо не задано — використовується $HOME/ALIAS (домашня тека SSH-користувача).
 #
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
@@ -60,13 +60,12 @@ jobs:
             DEPLOY_PATH="${DEPLOY_PATH#"${DEPLOY_PATH%%[![:space:]]*}"}"
             DEPLOY_PATH="${DEPLOY_PATH%"${DEPLOY_PATH##*[![:space:]]}"}"
             if [ -z "$DEPLOY_PATH" ]; then
-              echo "VPS_DEPLOY_PATH secret is not set"
-              exit 1
+              DEPLOY_PATH="$HOME/ALIAS"
+              echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
             if [ ! -d "$DEPLOY_PATH" ]; then
-              echo "ERROR: VPS_DEPLOY_PATH is not a directory on this server."
-              echo "SSH to the host, run: ls -la && find /root /home -maxdepth 3 -name docker-compose.prod.yml 2>/dev/null"
-              echo "Set the secret to that folder (absolute path, no trailing slash)."
+              echo "ERROR: deploy directory does not exist: $DEPLOY_PATH"
+              echo "Clone the repo there (e.g. git clone ... \"$DEPLOY_PATH\") or set VPS_DEPLOY_PATH to the real path."
               exit 1
             fi
             cd "$DEPLOY_PATH"
