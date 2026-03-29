@@ -31,7 +31,17 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       });
       const token = authService.createToken({ sub: user.id, type: 'anonymous' });
       res.json({ token, userId: user.id });
-    } catch (err) {
+    } catch (err: unknown) {
+      // Race: два запити з одним deviceId — другий отримає P2002 Unique constraint
+      const prismaErr = err as { code?: string };
+      if (prismaErr?.code === 'P2002') {
+        const existing = await prisma.user.findFirst({ where: { anonymousId: deviceId } });
+        if (existing) {
+          const token = authService.createToken({ sub: existing.id, type: 'anonymous' });
+          res.json({ token, userId: existing.id });
+          return;
+        }
+      }
       console.error('[Auth] anonymous error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

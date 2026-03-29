@@ -46,6 +46,7 @@ export interface AppState {
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
+  timeUp?: boolean;
   isConnected: boolean;
   notification: { message: string, type: 'info' | 'error' | 'success' } | null;
   connectionError: string | null;
@@ -55,7 +56,7 @@ export interface GameContextType extends AppState {
   currentTheme: ThemeConfig;
   setGameState: (state: GameState) => void;
   createNewRoom: () => void;
-  handleJoin: (id: string, name: string, avatar: string) => void;
+  handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => void;
   sendAction: (action: GameActionPayload) => void;
   playSound: (soundId: string) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
@@ -71,6 +72,7 @@ export interface GameContextType extends AppState {
   setTeams: (teams: Team[]) => void;
   resetGame: () => void;
   rematch: () => void;
+  leaveRoom: () => void;
   setRoomCode: (code: string) => void;
   addOfflinePlayer: (name?: string, avatar?: string) => void;
   removeOfflinePlayer: (id: string) => void;

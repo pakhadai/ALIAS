@@ -3,7 +3,7 @@ import { X, Check, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { fetchProfile, fetchStore, type UserProfile, type StoreData } from '../../services/api';
+import { fetchStore, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
 
 interface ProfileModalProps {
@@ -21,10 +21,9 @@ function AvatarIcon() {
 }
 
 export function ProfileModal({ onClose }: ProfileModalProps) {
-  const { authState, isAuthenticated, loginWithGoogle, logout } = useAuthContext();
+  const { authState, profile, isAuthenticated, loginWithGoogle, logout } = useAuthContext();
   const { currentTheme } = useGame();
   const isDark = currentTheme.isDark;
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -35,13 +34,10 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  /* ── Load data ── */
+  /* ── Load store (profile comes from context) ── */
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchProfile().then(setProfile).catch(() => {});
-    }
     fetchStore().then(setStoreData).catch(() => {});
-  }, [isAuthenticated]);
+  }, []);
 
   const handleClose = () => {
     setVisible(false);
@@ -57,7 +53,6 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const handleGoogleSuccess = async (cred: { credential?: string }) => {
     if (!cred.credential) return;
     await loginWithGoogle(cred.credential);
-    fetchProfile().then(setProfile).catch(() => {});
   };
 
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';

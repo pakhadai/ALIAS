@@ -33,7 +33,8 @@ export const LobbyScreen = () => {
   const canCreateTeams = players.length >= 2;
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
+    <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
       <ConfirmationModal
         isOpen={showExitConfirm}
         title={t.leaveLobbyConfirm}
@@ -46,7 +47,7 @@ export const LobbyScreen = () => {
         cancelText={t.goBack}
       />
 
-      <header className="flex justify-between items-center py-6 mb-4">
+      <header className="flex justify-between items-center py-6 mb-4 shrink-0">
         <button onClick={() => setShowExitConfirm(true)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
           <X size={20} className={currentTheme.iconColor} />
         </button>
@@ -199,6 +200,7 @@ export const LobbyScreen = () => {
           <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitHost}</p>
         )}
       </footer>
+      </div>
     </div>
   );
 };
@@ -299,7 +301,8 @@ export const SettingsScreen = () => {
   const categoriesList = [Category.GENERAL, Category.FOOD, Category.TRAVEL, Category.SCIENCE, Category.MOVIES, Category.CUSTOM];
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 overflow-y-auto no-scrollbar`}>
+    <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8 overflow-y-auto no-scrollbar`}>
+        <div className="max-w-2xl w-full">
         <header className="flex justify-between items-center py-6 mb-8">
             <button onClick={() => setGameState(GameState.LOBBY)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
                 <X size={20} className={currentTheme.iconColor} />
@@ -308,7 +311,7 @@ export const SettingsScreen = () => {
             <div className="w-10"></div>
         </header>
 
-        <div className="w-full max-w-sm mx-auto space-y-10 pb-32">
+        <div className="w-full space-y-10 pb-32">
             <div className="space-y-4">
                 <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>{t.language}</p>
                 <div className="flex gap-2">
@@ -537,10 +540,14 @@ export const SettingsScreen = () => {
             )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-gradient-to-t from-black/80 to-transparent pointer-events-none flex justify-center">
+            <div className="max-w-2xl w-full pointer-events-auto">
             <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => setGameState(GameState.LOBBY)}>
                 {t.save}
             </Button>
+            </div>
         </div>
 
         {showCustomDeckPicker && (

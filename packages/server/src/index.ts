@@ -173,27 +173,47 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`[Socket] Disconnected: ${socket.id}`);
     const { roomCode, playerId } = socket.data;
+    const disconnectedSocketId = socket.id;
 
-    // Grace period: delay actual removal by 60s
+    // Grace period: delay actual removal by 60s (host can reconnect)
     if (roomCode && playerId) {
       const timeout = setTimeout(() => {
         pendingDisconnects.delete(playerId);
-        const migration = roomManager.handleDisconnect(socket.id);
-        if (migration) {
-          const room = roomManager.getRoom(migration.roomCode);
+        const result = roomManager.handleDisconnect(disconnectedSocketId);
+        if (result) {
+          const room = roomManager.getRoom(result.roomCode);
           if (room) {
-            io.to(migration.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
-            io.to(migration.roomCode).emit('game:notification', {
-              message: 'Host disconnected. New host assigned.',
-              type: 'info',
-            });
+            if (result.removedPlayerId) {
+              io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+            }
+            io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
+            if (result.wasMigration) {
+              io.to(result.roomCode).emit('game:notification', {
+                message: 'Host disconnected. New host assigned.',
+                type: 'info',
+              });
+            }
           }
         }
       }, RECONNECT_GRACE_MS);
       pendingDisconnects.set(playerId, timeout);
     } else {
-      // No room data — remove immediately
-      roomManager.handleDisconnect(socket.id);
+      const result = roomManager.handleDisconnect(disconnectedSocketId);
+      if (result) {
+        const room = roomManager.getRoom(result.roomCode);
+        if (room) {
+          if (result.removedPlayerId) {
+            io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+          }
+          io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
+          if (result.wasMigration) {
+            io.to(result.roomCode).emit('game:notification', {
+              message: 'Host disconnected. New host assigned.',
+              type: 'info',
+            });
+          }
+        }
+      }
     }
   });
 });

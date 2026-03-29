@@ -84,18 +84,33 @@ export async function updateProfile(payload: {
   });
 }
 
-/** Get saved default lobby settings */
+/** In-memory cache for lobby settings (avoids duplicate fetches from multiple screens) */
+let lobbySettingsCache: { data: Record<string, unknown> | null; ts: number } | null = null;
+const LOBBY_CACHE_TTL_MS = 30_000;
+
+/** Get saved default lobby settings (cached 30s to avoid rate limit from repeated mounts) */
 export async function fetchLobbySettings(): Promise<Record<string, unknown> | null> {
+  const now = Date.now();
+  if (lobbySettingsCache && now - lobbySettingsCache.ts < LOBBY_CACHE_TTL_MS) {
+    return lobbySettingsCache.data;
+  }
   const data = await apiFetch<{ settings: Record<string, unknown> | null }>('/api/auth/lobby-settings');
+  lobbySettingsCache = { data: data.settings, ts: now };
   return data.settings;
+}
+
+/** Invalidate lobby cache after save (so next fetch gets fresh data) */
+export function invalidateLobbySettingsCache(): void {
+  lobbySettingsCache = null;
 }
 
 /** Save default lobby settings */
 export async function saveLobbySettings(settings: Record<string, unknown>): Promise<void> {
-  return apiFetch('/api/auth/lobby-settings', {
+  await apiFetch('/api/auth/lobby-settings', {
     method: 'PUT',
     body: JSON.stringify(settings),
   });
+  invalidateLobbySettingsCache();
 }
 
 /** Get anonymous JWT (creates User record on server if needed) */

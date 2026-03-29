@@ -22,6 +22,7 @@ export interface Room {
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
+  timeUp?: boolean;
   timerInterval: ReturnType<typeof setInterval> | null;
   // socketId -> playerId mapping
   socketToPlayer: Map<string, string>;
@@ -227,14 +228,14 @@ export class RoomManager {
 
   /**
    * Handle socket disconnect with host migration.
-   * Returns { roomCode, newHostSocketId } if host was migrated, null otherwise.
+   * Returns { roomCode, removedPlayerId?, newHostSocketId?, wasMigration } — roomCode завжди, якщо кімната ще існує.
    */
-  handleDisconnect(socketId: string): { roomCode: string; newHostSocketId: string } | null {
+  handleDisconnect(socketId: string): { roomCode: string; removedPlayerId?: string; newHostSocketId?: string; wasMigration?: boolean } | null {
     for (const [code, room] of this.rooms) {
       if (!room.socketToPlayer.has(socketId)) continue;
 
       const wasHost = socketId === room.hostSocketId;
-      this.removePlayer(code, socketId);
+      const removedPlayerId = this.removePlayer(code, socketId) ?? undefined;
 
       // Room empty — clean up
       if (room.players.length === 0) {
@@ -246,9 +247,15 @@ export class RoomManager {
         return null;
       }
 
-      // Host migration: assign the first remaining player as new host
+      // Host migration: assign the first remaining connected player as new host
       if (wasHost) {
-        const [newHostSocketId, newHostPlayerId] = room.socketToPlayer.entries().next().value!;
+        const firstEntry = room.socketToPlayer.entries().next().value;
+        if (!firstEntry) {
+          console.warn(`[RoomManager] Host disconnected but no remaining sockets in room ${code}`);
+          this.persistRoom(room);
+          return { roomCode: code, removedPlayerId };
+        }
+        const [newHostSocketId, newHostPlayerId] = firstEntry;
         room.hostSocketId = newHostSocketId;
         room.hostPlayerId = newHostPlayerId;
 
@@ -268,10 +275,11 @@ export class RoomManager {
         }));
 
         this.persistRoom(room);
-        return { roomCode: code, newHostSocketId };
+        return { roomCode: code, removedPlayerId, newHostSocketId, wasMigration: true };
       }
 
-      return null;
+      this.persistRoom(room);
+      return { roomCode: code, removedPlayerId };
     }
     return null;
   }
@@ -295,6 +303,7 @@ export class RoomManager {
       currentRoundStats: room.currentRoundStats,
       timeLeft: room.timeLeft,
       isPaused: room.isPaused,
+      timeUp: room.timeUp,
       wordDeck: room.wordDeck,
     };
   }

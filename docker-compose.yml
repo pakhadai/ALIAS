@@ -24,21 +24,16 @@ services:
       dockerfile: packages/server/Dockerfile
     ports:
       - '3001:3001'
+    # ВАЖЛИВО: створіть packages/server/.env з .env.example — не комітьте реальні ключі!
+    env_file:
+      - packages/server/.env
     environment:
       PORT: 3001
       NODE_ENV: development
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://alias:alias_dev@postgres:5432/alias
-      # Ensure Google client ID is passed into the server container
-      GOOGLE_CLIENT_ID: 570220807366-c8e5if3nbg8u00gtfe8sdai9295qevjg.apps.googleusercontent.com
-      # Stripe (test keys for local development)
-      STRIPE_SECRET_KEY: sk_test_51LnOjWH7hqtFg2NMNsNsdiv59sOSZqucZrptlUnHzE4Vp2BMakUGWlvIAa5blLb2k48vI5jkkbjJVZQAHIjnQtMv00xAajBWUZ
-      STRIPE_WEBHOOK_SECRET: whsec_dQTXzyKSvfOQy0cdbJEzra5joayNBeNI
-      STRIPE_PUBLISHABLE_KEY: pk_test_51LnOjWH7hqtFg2NMNsNsdiv59sOSZqucZrptlUnHzE4Vp2BMakUGWlvIAa5blLb2k48vI5jkkbjJVZQAHIjnQtMv00pJTd9BM0
-      STRIPE_SUCCESS_URL: http://localhost:5173/?purchase=success
-      STRIPE_CANCEL_URL: http://localhost:5173/?purchase=cancelled
-      JWT_SECRET: dev-secret-change-me
       CORS_ORIGIN: http://localhost:5173,http://localhost:5174
+      # GOOGLE_CLIENT_ID, STRIPE_*, JWT_SECRET — з packages/server/.env (не комітити .env!)
     depends_on:
       - redis
       - postgres

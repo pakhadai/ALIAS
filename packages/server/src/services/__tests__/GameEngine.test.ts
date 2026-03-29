@@ -479,7 +479,7 @@ describe('START_DUEL', () => {
 // ─── timer integration ───────────────────────────────────────────────────────
 
 describe('Timer', () => {
-  it('decrements timeLeft every second and fires TIME_UP at 0', async () => {
+  it('decrements timeLeft every second, stops timer at 0, and sets timeUp (round ends on explainer action or TIME_UP)', async () => {
     vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 3 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
@@ -487,7 +487,9 @@ describe('Timer', () => {
     vi.advanceTimersByTime(1000);
     expect(room.timeLeft).toBe(2);
     vi.advanceTimersByTime(2000);
-    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+    expect(room.gameState).toBe(GameState.PLAYING);
+    expect(room.timeUp).toBe(true);
+    expect(room.timeLeft).toBe(0);
     expect(room.timerInterval).toBeNull();
   });
 

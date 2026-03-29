@@ -3,8 +3,8 @@ import type { GameState } from './enums';
 
 // Client -> Server events
 export interface ClientToServerEvents {
-  'room:create': (data: { playerName: string; avatar: string }) => void;
-  'room:join': (data: { roomCode: string; playerName: string; avatar: string }) => void;
+  'room:create': (data: { playerName: string; avatar: string; avatarId?: string | null }) => void;
+  'room:join': (data: { roomCode: string; playerName: string; avatar: string; avatarId?: string | null }) => void;
   'room:leave': () => void;
   'room:rejoin': (data: { roomCode: string; playerId: string }) => void;
   'game:action': (payload: GameActionPayload) => void;
@@ -35,6 +35,7 @@ export interface GameSyncState {
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
+  timeUp?: boolean;
   wordDeck: string[];
 }
 

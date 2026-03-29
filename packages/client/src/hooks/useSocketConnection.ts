@@ -29,6 +29,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const [roomCode, setRoomCode] = useState('');
   const optionsRef = useRef(options);
   optionsRef.current = options;
+  /** Синхронний ref для myPlayerId — потрібен для onStateSync, щоб одразу мати актуальний id після room:created */
+  const myPlayerIdRef = useRef('');
 
   useEffect(() => {
     const token = getAuthToken();
@@ -55,6 +57,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     });
 
     socket.on('room:rejoined', ({ roomCode: code, playerId }) => {
+      myPlayerIdRef.current = playerId;
       setMyPlayerId(playerId);
       setRoomCode(code);
       optionsRef.current.onRejoined?.(code, playerId);
@@ -101,45 +104,64 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
   const createRoom = useCallback((playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
+    if (!socket) return;
+
     // Clear any previous session data BEFORE connecting so the connect handler
     // does not auto-send room:rejoin and interfere with the new room creation.
     localStorage.removeItem(ROOM_CODE_KEY);
     localStorage.removeItem(PLAYER_ID_KEY);
 
-    if (!socket?.connected) socket?.connect();
+    const doEmit = () => {
+      socket.once('room:created', ({ roomCode: code, playerId }) => {
+        myPlayerIdRef.current = playerId;
+        setMyPlayerId(playerId);
+        setRoomCode(code);
+        localStorage.setItem(ROOM_CODE_KEY, code);
+        localStorage.setItem(PLAYER_ID_KEY, playerId);
+      });
+      socket.emit('room:create', { playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
+    };
 
-    socket?.once('room:created', ({ roomCode: code, playerId }) => {
-      setMyPlayerId(playerId);
-      setRoomCode(code);
-      localStorage.setItem(ROOM_CODE_KEY, code);
-      localStorage.setItem(PLAYER_ID_KEY, playerId);
-    });
-
-    socket?.emit('room:create', { playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
+    if (socket.connected) {
+      doEmit();
+    } else {
+      socket.connect();
+      socket.once('connect', doEmit);
+    }
   }, []);
 
   const joinRoom = useCallback((code: string, playerName: string, avatar: string, avatarId?: string | null) => {
     const socket = socketRef.current;
+    if (!socket) return;
+
     // Clear previous session data so auto-rejoin does not fire for a different room.
     localStorage.removeItem(ROOM_CODE_KEY);
     localStorage.removeItem(PLAYER_ID_KEY);
 
-    if (!socket?.connected) socket?.connect();
+    const doEmit = () => {
+      socket.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
+        myPlayerIdRef.current = playerId;
+        setMyPlayerId(playerId);
+        setRoomCode(joinedCode);
+        localStorage.setItem(ROOM_CODE_KEY, joinedCode);
+        localStorage.setItem(PLAYER_ID_KEY, playerId);
+      });
+      socket.emit('room:join', { roomCode: code, playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
+    };
 
-    socket?.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
-      setMyPlayerId(playerId);
-      setRoomCode(joinedCode);
-      localStorage.setItem(ROOM_CODE_KEY, joinedCode);
-      localStorage.setItem(PLAYER_ID_KEY, playerId);
-    });
-
-    socket?.emit('room:join', { roomCode: code, playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
+    if (socket.connected) {
+      doEmit();
+    } else {
+      socket.connect();
+      socket.once('connect', doEmit);
+    }
   }, []);
 
   const leaveRoom = useCallback(() => {
     socketRef.current?.emit('room:leave');
     setRoomCode('');
     setMyPlayerId('');
+    myPlayerIdRef.current = '';
     localStorage.removeItem(ROOM_CODE_KEY);
     localStorage.removeItem(PLAYER_ID_KEY);
   }, []);
@@ -151,6 +173,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   return {
     isConnected,
     myPlayerId,
+    myPlayerIdRef,
     roomCode,
     connect,
     disconnect,

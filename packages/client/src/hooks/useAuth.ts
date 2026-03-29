@@ -10,7 +10,7 @@ import {
 
 export type AuthState =
   | { status: 'loading' }
-  | { status: 'anonymous'; userId: string }
+  | { status: 'anonymous'; userId: string; profile: UserProfile | null }
   | { status: 'authenticated'; userId: string; email: string; provider: string; isAdmin: boolean; profile: UserProfile }
   | { status: 'error'; message: string };
 
@@ -24,7 +24,7 @@ export function useAuth() {
       try {
         const profile = await fetchProfile();
         if (profile.authProvider === 'anonymous') {
-          setAuthState({ status: 'anonymous', userId: profile.id });
+          setAuthState({ status: 'anonymous', userId: profile.id, profile });
         } else {
           setAuthState({
             status: 'authenticated',
@@ -45,10 +45,11 @@ export function useAuth() {
     // Get anonymous token (no account required)
     try {
       const { userId } = await fetchAnonymousToken();
-      setAuthState({ status: 'anonymous', userId });
+      const profile = await fetchProfile();
+      setAuthState({ status: 'anonymous', userId, profile });
     } catch (e) {
       // Offline or server down — still allow app to load
-      setAuthState({ status: 'anonymous', userId: '' });
+      setAuthState({ status: 'anonymous', userId: '', profile: null });
     }
   }, []);
 
@@ -73,19 +74,41 @@ export function useAuth() {
     }
   }, []);
 
+  /** Apple Sign In — бекенд поки не підтримує. Кидає помилку, щоб LoginModal її показав. */
+  const loginWithApple = useCallback(async (_idToken: string, _email?: string) => {
+    throw new Error('Apple Sign In ще не налаштовано. Використовуйте Google.');
+  }, []);
+
   const logout = useCallback(async () => {
     clearAuthToken();
     // Revert to anonymous
     try {
       const { userId } = await fetchAnonymousToken();
-      setAuthState({ status: 'anonymous', userId });
+      const profile = await fetchProfile();
+      setAuthState({ status: 'anonymous', userId, profile });
     } catch {
-      setAuthState({ status: 'anonymous', userId: '' });
+      setAuthState({ status: 'anonymous', userId: '', profile: null });
+    }
+  }, []);
+
+  /** Refresh profile (e.g. after update) — avoids duplicate fetches across screens */
+  const refreshProfile = useCallback(async () => {
+    try {
+      const profile = await fetchProfile();
+      setAuthState(prev => {
+        if (prev.status === 'anonymous') return { ...prev, profile };
+        if (prev.status === 'authenticated') return { ...prev, profile };
+        return prev;
+      });
+      return profile;
+    } catch {
+      return null;
     }
   }, []);
 
   const isAuthenticated = authState.status === 'authenticated';
   const userId = authState.status !== 'loading' ? authState.userId : '';
+  const profile = authState.status === 'anonymous' ? authState.profile : authState.status === 'authenticated' ? authState.profile : null;
 
-  return { authState, isAuthenticated, userId, loginWithGoogle, logout, initialize };
+  return { authState, isAuthenticated, userId, profile, refreshProfile, loginWithGoogle, loginWithApple, logout, initialize };
 }

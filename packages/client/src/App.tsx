@@ -48,7 +48,7 @@ const AppContent = () => {
   const baseTextColor = currentTheme.id === 'PREMIUM_LIGHT' ? 'text-slate-900' : 'text-white';
 
   return (
-    <div className={`min-h-screen ${currentTheme.bg} ${baseTextColor} font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-500`}>
+    <div className={`min-h-screen w-full ${currentTheme.bg} ${baseTextColor} font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-500`}>
       <GameRouter />
     </div>
   );

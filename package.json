@@ -7,7 +7,7 @@
     "dev": "pnpm run --parallel dev:client dev:server",
     "build:client": "pnpm --filter @alias/client build",
     "build:server": "pnpm --filter @alias/server build",
-    "build": "pnpm run build:shared && pnpm run --parallel build:client build:server",
+    "build": "pnpm run build:shared && pnpm --parallel --filter @alias/client --filter @alias/server run build",
     "build:shared": "pnpm --filter @alias/shared build",
     "test:server": "pnpm --filter @alias/server test",
     "test:e2e": "pnpm --filter @alias/e2e run test",

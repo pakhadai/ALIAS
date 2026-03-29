@@ -196,14 +196,14 @@ describe('handleDisconnect', () => {
     expect(room.players[0].isHost).toBe(true);
   });
 
-  it('returns null when non-host disconnects', () => {
+  it('returns roomCode and removedPlayerId when non-host disconnects', () => {
     const room = rm.createRoom('socket-host');
     rm.addPlayer(room.code, 'socket-host', 'Host', '🦁');
-    rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺');
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
 
     const result = rm.handleDisconnect('socket-guest');
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ roomCode: room.code, removedPlayerId: guest.id });
     expect(room.players).toHaveLength(1);
     expect(room.hostSocketId).toBe('socket-host');
   });

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy, Settings, SlidersHorizontal, Lock, Upload, ChevronRight, ShieldCheck } from 'lucide-react';
+import { X, AlertCircle, User, ArrowLeft, Check, Loader2, ShoppingBag, Globe, Plus, Trash2, BookOpen, Copy, Settings, SlidersHorizontal, Lock, Upload, ChevronRight, ShieldCheck, WifiOff } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
@@ -8,7 +8,7 @@ import { ProfileModal } from '../components/Auth/ProfileModal';
 import { GameState, Language, AppTheme, Category } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
-import { fetchProfile, updateProfile, fetchLobbySettings, saveLobbySettings, fetchStore, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
+import { updateProfile, fetchLobbySettings, saveLobbySettings, fetchStore, claimFreeItem, fetchMyDecks, createCustomDeck, deleteCustomDeck, type UserProfile, type WordPackItem, type ThemeItem, type CustomDeckSummary } from '../services/api';
 import { QuickBuyModal } from '../components/Store/QuickBuyModal';
 import { TRANSLATIONS, ROOM_CODE_LENGTH, THEME_CONFIG } from '../constants';
 import versionData from '../version.json';
@@ -168,8 +168,8 @@ export const RulesScreen = () => {
   const { setGameState, settings, currentTheme } = useGame();
   const t = TRANSLATIONS[settings.language];
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
-      <div className={`w-full max-w-sm space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`} style={{ maxHeight: '85vh' }}>
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}>
+      <div className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`} style={{ maxHeight: '85vh' }}>
         <h2 className={`text-3xl font-serif mb-6 text-center ${currentTheme.textMain}`}>{t.infoRules}</h2>
         <div className="space-y-5 mb-8">
           {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map((rule: string, i: number) => (
@@ -244,7 +244,7 @@ export const MenuScreen = () => {
 
   return (
     <div className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}>
-      <header className="relative z-10 w-full px-8 pt-12 pb-4 flex justify-end items-center gap-6">
+      <header className="relative z-10 w-full px-6 md:px-8 pt-12 pb-4 flex justify-end items-center gap-6 shrink-0">
         <button onClick={handleProfileClick} className="transition-all active:scale-90 p-2">
           <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
         </button>
@@ -262,7 +262,8 @@ export const MenuScreen = () => {
         </button>
       </header>
 
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs mx-auto px-6 pb-20">
+      <div className="max-w-2xl w-full flex-1 flex flex-col items-center mx-auto">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs px-6 md:px-8 pb-20">
         <Logo theme={currentTheme} />
 
         {connectionError && (
@@ -286,39 +287,39 @@ export const MenuScreen = () => {
           >
             <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">{t.joinGame}</span>
           </button>
-
-          <div className="w-full pt-10 flex flex-col items-center gap-8">
-            <div className={`h-[1px] w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`}></div>
-            <button 
-              onClick={startOfflineGame}
-              className="group"
-            >
-              <span className={`font-sans font-medium text-[9px] uppercase tracking-[0.5em] border-b border-transparent hover:border-current pb-2 transition-all opacity-30 hover:opacity-100 ${currentTheme.textMain}`}>
-                {t.playOffline}
-              </span>
-            </button>
-          </div>
         </div>
 
-        {/* App Version */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+        {/* Offline mode + Version — fixed at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-6 pt-4"
+          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+          <div className={`h-[1px] w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`} />
+          <button
+            onClick={startOfflineGame}
+            className="inline-flex items-center gap-2 group h-6"
+          >
+            <WifiOff size={14} className={`shrink-0 ${currentTheme.iconColor} opacity-40 group-hover:opacity-100 transition-opacity`} strokeWidth={2} />
+            <span className={`font-sans font-medium text-[9px] uppercase tracking-[0.5em] border-b border-transparent group-hover:border-current pb-2 transition-all opacity-30 group-hover:opacity-100 leading-none ${currentTheme.textMain}`}>
+              {t.playOffline}
+            </span>
+          </button>
           <span className={`font-sans text-[8px] uppercase tracking-widest opacity-20 ${currentTheme.textMain}`}>
             v{versionData.version}
           </span>
         </div>
       </main>
 
+      </div>
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} t={t} currentTheme={currentTheme} />
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
       {/* Theme Picker Sheet */}
       {showThemePicker && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 transition-all"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-black/60 transition-all"
           onClick={() => setShowThemePicker(false)}
         >
           <div
-            className="w-full max-w-sm mx-auto bg-[#1C1C1E] rounded-t-[2rem] px-5 pt-5 pb-8"
+            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-[2rem] md:rounded-[2rem] px-5 pt-5 pb-8"
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={e => e.stopPropagation()}
           >
@@ -328,7 +329,7 @@ export const MenuScreen = () => {
                 <X size={16} />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
               {(Object.keys(THEME_CONFIG) as AppTheme[]).map(themeId => {
                 const theme = THEME_CONFIG[themeId];
                 const isActive = settings.theme === themeId;
@@ -379,7 +380,7 @@ export const MenuScreen = () => {
 
 export const EnterNameScreen = () => {
     const { setGameState, settings, currentTheme, handleJoin, isHost } = useGame();
-    const { authState } = useAuthContext();
+    const { authState, profile } = useAuthContext();
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState(AVATARS[0]);
     const t = TRANSLATIONS[settings.language];
@@ -389,23 +390,18 @@ export const EnterNameScreen = () => {
 
     // Auto-join if authenticated with a complete profile (name + avatar)
     useEffect(() => {
-        if (authState.status === 'authenticated') {
-            const profile = authState.profile;
-            if (profile?.displayName) {
-                const avatarEmoji = profile.avatarId != null
-                    ? (PRESET_AVATARS[parseInt(profile.avatarId)]?.emoji ?? AVATARS[0])
-                    : AVATARS[0];
-                handleJoin(stableId.current, profile.displayName, avatarEmoji, profile.avatarId);
-                setGameState(GameState.LOBBY);
-                return;
-            }
+        if (authState.status === 'authenticated' && profile?.displayName) {
+            const avatarEmoji = profile.avatarId != null
+                ? (PRESET_AVATARS[parseInt(profile.avatarId)]?.emoji ?? AVATARS[0])
+                : AVATARS[0];
+            handleJoin(stableId.current, profile.displayName, avatarEmoji, profile.avatarId);
+            setGameState(GameState.LOBBY);
+            return;
         }
-        // Anonymous: prefill display name if available
-        fetchProfile().then(p => {
-            if (p.displayName) setName(p.displayName);
-        }).catch(() => {});
+        // Prefill display name from profile (anonymous or authenticated)
+        if (profile?.displayName) setName(profile.displayName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [authState.status, profile?.displayName, profile?.avatarId]);
 
     const handleSubmit = () => {
         const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);
@@ -416,9 +412,9 @@ export const EnterNameScreen = () => {
     };
 
     return (
-        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
+        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}>
             <Logo theme={currentTheme} />
-            <div className={`w-full max-w-sm mt-12 space-y-10 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
+            <div className={`w-full max-w-2xl mt-12 space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}>
                 <h2 className={`text-2xl font-serif text-center tracking-wide ${currentTheme.textMain}`}>{t.whoAreYou}</h2>
                 <input 
                     autoFocus
@@ -467,9 +463,9 @@ export const JoinInputScreen = () => {
     };
 
     return (
-        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-10 justify-center items-center`}>
+        <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}>
             <Logo theme={currentTheme} />
-            <div className={`w-full max-w-sm mt-12 space-y-12 p-12 rounded-[2.5rem] ${currentTheme.card}`}>
+            <div className={`w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}>
                 <div className="text-center space-y-4">
                     <h2 className={`text-3xl font-serif tracking-wide ${currentTheme.textMain}`}>{t.joinTitle}</h2>
                     <p className={`text-[9px] opacity-30 tracking-[0.4em] font-bold uppercase ${currentTheme.textMain}`}>{t.enterCode}</p>
@@ -524,17 +520,12 @@ function ProviderBadge({ provider }: { provider: string }) {
 
 export const ProfileScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
-  const { authState, logout } = useAuthContext();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { authState, profile, logout } = useAuthContext();
   const [loggingOut, setLoggingOut] = useState(false);
   const isDark = currentTheme.isDark;
 
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
-
-  useEffect(() => {
-    fetchProfile().then(setProfile).catch(() => {});
-  }, []);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -552,9 +543,10 @@ export const ProfileScreen = () => {
   const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
+    <div className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
       {/* Header */}
-      <header className="flex items-center px-6 pt-12 pb-4">
+      <header className="flex items-center px-6 pt-12 pb-4 md:px-8">
         <button onClick={() => setGameState(GameState.MENU)}
           className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
@@ -562,7 +554,7 @@ export const ProfileScreen = () => {
       </header>
 
       {/* Avatar + identity */}
-      <div className="flex flex-col items-center pt-4 pb-8 px-6">
+      <div className="flex flex-col items-center pt-4 pb-8 px-6 md:px-8">
         <AvatarDisplay avatarId={profile?.avatarId} size={88} />
         <h1 className={`mt-4 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>{displayName}</h1>
         {email && <p className={`text-[13px] mt-1 mb-3 ${currentTheme.textSecondary}`}>{email}</p>}
@@ -570,7 +562,7 @@ export const ProfileScreen = () => {
       </div>
 
       {/* Navigation menu */}
-      <div className="flex-1 px-6 space-y-3">
+      <div className="flex-1 px-6 md:px-8 space-y-3">
         {/* Магазин */}
         <button onClick={() => setGameState(GameState.STORE)} className={`${navBtn} ${currentTheme.button}`}>
           <div className="flex items-center gap-3">
@@ -629,11 +621,12 @@ export const ProfileScreen = () => {
       </div>
 
       {/* Logout */}
-      <div className="px-6 py-6" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+      <div className="px-6 md:px-8 py-6" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         <button onClick={handleLogout} disabled={loggingOut}
           className="w-full text-center text-red-500 font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30">
           {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'ВИЙТИ З АКАУНТУ'}
         </button>
+      </div>
       </div>
     </div>
   );
@@ -644,12 +637,11 @@ export const ProfileScreen = () => {
 ────────────────────────────────────────────────── */
 export const ProfileSettingsScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
-  const { authState } = useAuthContext();
+  const { authState, profile, refreshProfile } = useAuthContext();
   const isDark = currentTheme.isDark;
   const { permission: pushPermission, supported: pushSupported, loading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
   const { canInstall, install } = useInstallPrompt();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<number>(-1);
   const [saving, setSaving] = useState(false);
@@ -659,13 +651,12 @@ export const ProfileSettingsScreen = () => {
   const provider = authState.status === 'authenticated' ? authState.provider : '';
 
   useEffect(() => {
-    fetchProfile().then(p => {
-      setProfile(p);
-      setName(p.displayName || (p.email ? p.email.split('@')[0] : ''));
-      const idx = p.avatarId != null ? parseInt(p.avatarId) : -1;
+    if (profile) {
+      setName(profile.displayName || (profile.email ? profile.email.split('@')[0] : ''));
+      const idx = profile.avatarId != null ? parseInt(profile.avatarId) : -1;
       setSelectedAvatar(idx >= 0 ? idx : -1);
-    }).catch(() => {});
-  }, []);
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -674,6 +665,7 @@ export const ProfileSettingsScreen = () => {
         displayName: name.trim() || undefined,
         avatarId: selectedAvatar >= 0 ? String(selectedAvatar) : undefined,
       });
+      await refreshProfile();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {}
@@ -685,8 +677,9 @@ export const ProfileSettingsScreen = () => {
            : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'}`;
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
-      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+    <div className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
+      <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
         <button onClick={() => setGameState(GameState.PROFILE)}
           className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
@@ -694,31 +687,31 @@ export const ProfileSettingsScreen = () => {
         <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Налаштування профілю</h2>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-8" style={{ scrollbarWidth: 'none' }}>
         {/* Current avatar preview */}
         <div className="flex justify-center pt-2">
-          <AvatarDisplay avatarId={selectedAvatar >= 0 ? String(selectedAvatar) : null} size={88} />
+          <AvatarDisplay avatarId={selectedAvatar >= 0 ? String(selectedAvatar) : null} size={64} />
         </div>
 
         {/* Avatar picker */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <p className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Виберіть аватарку</p>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-6 gap-2 max-w-xs mx-auto">
             {PRESET_AVATARS.slice(0, 15).map((av, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedAvatar(idx)}
-                className={`relative flex items-center justify-center rounded-2xl aspect-square transition-all active:scale-95 ${
+                className={`relative flex items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${
                   selectedAvatar === idx
                     ? 'ring-2 ring-[#D4AF6A] scale-105'
                     : 'opacity-70 hover:opacity-100'
                 }`}
                 style={{ background: av.bg }}
               >
-                <span style={{ fontSize: 28 }}>{av.emoji}</span>
+                <span className="text-xl">{av.emoji}</span>
                 {selectedAvatar === idx && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF6A] rounded-full flex items-center justify-center">
-                    <Check size={9} className="text-black" />
+                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#D4AF6A] rounded-full flex items-center justify-center">
+                    <Check size={7} className="text-black" />
                   </div>
                 )}
               </button>
@@ -805,7 +798,7 @@ export const ProfileSettingsScreen = () => {
         )}
       </div>
 
-      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+      <div className="px-6 md:px-8 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         <button
           onClick={handleSave}
           disabled={saving}
@@ -815,6 +808,7 @@ export const ProfileSettingsScreen = () => {
             : saved ? <><Check size={14} /> Збережено</>
             : 'Зберегти'}
         </button>
+      </div>
       </div>
     </div>
   );
@@ -867,8 +861,9 @@ export const LobbySettingsScreen = () => {
     }`;
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
-      <header className="flex items-center justify-between px-6 pt-12 pb-4">
+    <div className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
+      <header className="flex items-center justify-between px-6 md:px-8 pt-12 pb-4">
         <div className="flex items-center gap-3">
           <button onClick={() => setGameState(GameState.PROFILE)}
             className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
@@ -887,7 +882,7 @@ export const LobbySettingsScreen = () => {
           <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8 pb-28" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-8 pb-28" style={{ scrollbarWidth: 'none' }}>
           {/* Language */}
           <div className="space-y-3">
             <p className={sectionLabel}>Мова слів</p>
@@ -970,13 +965,14 @@ export const LobbySettingsScreen = () => {
         </div>
       )}
 
-      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+      <div className="px-6 md:px-8 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         <button onClick={handleSave} disabled={saving}
           className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}>
           {saving ? <Loader2 size={16} className="animate-spin" />
             : saved ? <><Check size={14} /> Збережено</>
             : 'Зберегти як стандартні'}
         </button>
+      </div>
       </div>
     </div>
   );
@@ -989,10 +985,11 @@ const MAX_USER_PACKS = 5;
 
 export const MyWordPacksScreen = () => {
   const { setGameState, currentTheme, settings } = useGame();
+  const { authState, profile } = useAuthContext();
   const isDark = currentTheme.isDark;
 
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [checkingAccess, setCheckingAccess] = useState(true);
+  const isUnlocked = profile?.purchases?.some(pu => pu.wordPack?.slug === 'feature-custom-packs') ?? false;
+  const checkingAccess = authState.status === 'loading';
   const [view, setView] = useState<'list' | 'create'>('list');
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1012,17 +1009,13 @@ export const MyWordPacksScreen = () => {
            : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'}`;
 
   useEffect(() => {
-    // Check purchase access
-    fetchProfile().then(p => {
-      const unlocked = p.purchases?.some(pu => pu.wordPack?.slug === 'feature-custom-packs') ?? false;
-      setIsUnlocked(unlocked);
-      if (unlocked) {
-        fetchMyDecks().then(setDecks).catch(() => {}).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => { setLoading(false); }).finally(() => setCheckingAccess(false));
-  }, []);
+    if (authState.status === 'loading') return;
+    if (isUnlocked) {
+      fetchMyDecks().then(setDecks).catch(() => {}).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [authState.status, isUnlocked]);
 
   const handleDelete = async (id: string) => {
     setDeleting(id);
@@ -1083,8 +1076,9 @@ export const MyWordPacksScreen = () => {
 
   // Locked state
   if (!isUnlocked) return (
-    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
-      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+    <div className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
+      <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
         <button onClick={() => setGameState(GameState.PROFILE)}
           className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
@@ -1109,13 +1103,15 @@ export const MyWordPacksScreen = () => {
           Відкрити магазин
         </button>
       </div>
+      </div>
     </div>
   );
 
   // Create view
   if (view === 'create') return (
-    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
-      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+    <div className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
+      <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
         <button onClick={() => { setView('list'); setCreateError(''); }}
           className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
@@ -1123,7 +1119,7 @@ export const MyWordPacksScreen = () => {
         <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Новий пак</h2>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-5" style={{ scrollbarWidth: 'none' }}>
         <div className="space-y-2">
           <label className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Назва паку</label>
           <input value={deckName} onChange={e => setDeckName(e.target.value.slice(0, 60))}
@@ -1158,11 +1154,12 @@ export const MyWordPacksScreen = () => {
         {createError && <p className="text-red-400 text-[12px] font-sans">{createError}</p>}
       </div>
 
-      <div className="px-6 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+      <div className="px-6 md:px-8 py-4" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         <button onClick={handleCreate} disabled={creating}
           className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}>
           {creating ? <Loader2 size={16} className="animate-spin" /> : 'Створити пак'}
         </button>
+      </div>
       </div>
     </div>
   );
@@ -1170,10 +1167,11 @@ export const MyWordPacksScreen = () => {
   // List view
   return (
     <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col overflow-hidden">
       <div className="flex justify-center pt-4 pb-2">
         <div className="w-12 h-1 bg-white/20 rounded-full" />
       </div>
-      <div className="px-6 pb-5 pt-2 flex justify-between items-center">
+      <div className="px-6 md:px-8 pb-5 pt-2 flex justify-between items-center">
         <div>
           <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Мої паки слів</h2>
           <p className={`text-[10px] mt-1 ${isDark ? 'text-white/25' : 'text-slate-400'}`}>{decks.length} / {MAX_USER_PACKS}</p>
@@ -1227,15 +1225,18 @@ export const MyWordPacksScreen = () => {
       </div>
 
       {decks.length < MAX_USER_PACKS && (
-        <div className="absolute bottom-0 left-0 right-0 px-6 py-4 pointer-events-none"
+        <div className="absolute bottom-0 left-0 right-0 px-6 md:px-8 py-4 pointer-events-none flex justify-center"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+          <div className="w-full max-w-2xl pointer-events-auto">
           <button onClick={() => setView('create')}
             className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}>
             <Plus size={16} />
             Створити пак
           </button>
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
@@ -1562,11 +1563,11 @@ export const StoreScreen = () => {
   const chipActive = 'border-[#D4AF6A] text-[#D4AF6A] bg-[#D4AF6A]/8';
 
   return (
-    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
-
+    <div className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col overflow-hidden">
       {/* Purchase result banner */}
       {banner && (
-        <div className={`mx-4 mt-3 mb-0 px-4 py-3 rounded-2xl flex items-center gap-3 transition-all ${
+        <div className={`mx-6 md:mx-8 mt-3 mb-0 px-4 py-3 rounded-2xl flex items-center gap-3 transition-all shrink-0 ${
           banner === 'success'
             ? 'bg-emerald-500/15 border border-emerald-500/30'
             : 'bg-red-500/10 border border-red-500/20'
@@ -1587,10 +1588,10 @@ export const StoreScreen = () => {
       )}
 
       {/* Drag handle + Header */}
-      <div className="flex justify-center pt-4 pb-2">
+      <div className="flex justify-center pt-4 pb-2 shrink-0">
         <div className="w-12 h-1 bg-white/20 rounded-full" />
       </div>
-      <div className="px-6 pb-4 pt-2 flex justify-between items-center">
+      <div className="px-6 md:px-8 pb-4 pt-2 flex justify-between items-center shrink-0">
         <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Магазин</h2>
         <button
           onClick={() => setGameState(GameState.PROFILE)}
@@ -1601,7 +1602,7 @@ export const StoreScreen = () => {
       </div>
 
       {/* Tabs — underline style */}
-      <div className={`px-6 border-b ${divider}`}>
+      <div className={`px-6 md:px-8 border-b ${divider} shrink-0`}>
         <div className="flex space-x-8">
           {STORE_TABS.map(t => (
             <button
@@ -1621,7 +1622,7 @@ export const StoreScreen = () => {
 
       {/* Language filter chips — only on packs tab */}
       {tab === 'packs' && (
-        <div className="px-6 pt-4 pb-2 flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="px-6 md:px-8 pt-4 pb-2 flex gap-2 overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
           {LANG_FILTERS.map(lang => (
             <button
               key={lang}
@@ -1637,7 +1638,7 @@ export const StoreScreen = () => {
       )}
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-20"
+      <div className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-4 pb-20 min-h-0"
            style={{ scrollbarWidth: 'none' }}>
         {loading ? (
           <div className="flex justify-center pt-16">
@@ -1835,7 +1836,7 @@ export const StoreScreen = () => {
       </div>
 
       {/* Bottom bar */}
-      <div className={`px-6 py-4 border-t ${divider} ${isDark ? 'bg-[#121212]/95' : 'bg-slate-50/95'} backdrop-blur`}
+      <div className={`px-6 md:px-8 py-4 border-t ${divider} ${isDark ? 'bg-[#121212]/95' : 'bg-slate-50/95'} backdrop-blur shrink-0`}
            style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
         <div className="flex items-center justify-center gap-1.5">
           <ShieldCheck size={12} className={isDark ? 'text-white/20' : 'text-slate-400'} />
@@ -1861,6 +1862,7 @@ export const StoreScreen = () => {
           }}
         />
       )}
+      </div>
     </div>
   );
 };
@@ -1886,8 +1888,9 @@ export const PlayerStatsScreen = () => {
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
-      <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+    <div className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="max-w-2xl w-full flex-1 flex flex-col">
+      <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
         <button onClick={() => setGameState(GameState.PROFILE)}
           className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}>
           <ArrowLeft size={22} />
@@ -1895,7 +1898,7 @@ export const PlayerStatsScreen = () => {
         <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>Моя статистика</h2>
       </header>
 
-      <div className="flex-1 px-6 py-4 space-y-3">
+      <div className="flex-1 px-6 md:px-8 py-4 space-y-3">
         {rows.map(row => (
           <div key={row.label}
             className={`flex items-center justify-between px-5 py-4 rounded-2xl ${
@@ -1915,6 +1918,7 @@ export const PlayerStatsScreen = () => {
             Остання гра: {new Date(stats.lastPlayed).toLocaleDateString('uk')}
           </p>
         )}
+      </div>
       </div>
     </div>
   );

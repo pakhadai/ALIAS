@@ -258,7 +258,7 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
 
   /**
    * POST /api/purchases/claim
-   * Body: { itemType: 'wordPack'|'theme', itemId: string }
+   * Body: { itemType: 'wordPack'|'theme'|'soundPack', itemId: string }
    * Instantly claims a free item for the current user (idempotent).
    */
   router.post('/claim', async (req, res) => {
@@ -280,6 +280,10 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       const theme = await prisma.theme.findUnique({ where: { id: itemId }, select: { isFree: true } });
       if (!theme) { res.status(404).json({ error: 'Not found' }); return; }
       isFree = theme.isFree;
+    } else if (itemType === 'soundPack') {
+      const sp = await prisma.soundPack.findUnique({ where: { id: itemId }, select: { isFree: true } });
+      if (!sp) { res.status(404).json({ error: 'Not found' }); return; }
+      isFree = sp.isFree;
     }
 
     if (!isFree) { res.status(400).json({ error: 'Item is not free' }); return; }

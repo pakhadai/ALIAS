@@ -103,12 +103,14 @@ export const ToastNotification: React.FC<{ message: string, type?: 'info' | 'err
   };
 
   return (
-    <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-sm animate-slide-up">
-      <div className={`${styles[type]} border rounded-[2rem] px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-white/5`}>
-        <div className="flex-1 text-center">
-          <p className="text-[10px] font-sans font-bold uppercase tracking-[0.4em] leading-relaxed">{message}</p>
+    <div className="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-4 px-4 pointer-events-none">
+      <div className="pointer-events-auto w-[90%] max-w-sm animate-slide-up">
+        <div className={`${styles[type]} border rounded-[2rem] px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-white/5`}>
+          <div className="flex-1 text-center">
+            <p className="text-[10px] font-sans font-bold uppercase tracking-[0.4em] leading-relaxed">{message}</p>
+          </div>
+          <button onClick={onClose} className="opacity-30 hover:opacity-100 transition-opacity"><X size={16} /></button>
         </div>
-        <button onClick={onClose} className="opacity-30 hover:opacity-100 transition-opacity"><X size={16} /></button>
       </div>
     </div>
   );

@@ -2,10 +2,12 @@ import rateLimit from 'express-rate-limit';
 
 const message = { error: 'Too many requests, please try again later.' };
 
-/** Auth endpoints: 20 requests per 15 minutes */
+const isDev = process.env.NODE_ENV !== 'production';
+
+/** Auth endpoints: 20/min prod, 1000/min dev (React StrictMode + many screens = many requests) */
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs: 60 * 1000,
+  max: isDev ? 1000 : 20,
   standardHeaders: true,
   legacyHeaders: false,
   message,

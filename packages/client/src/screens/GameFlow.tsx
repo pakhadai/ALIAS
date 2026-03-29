@@ -96,7 +96,7 @@ export const VSScreen = () => {
 
 // Pre-Round Screen: Shows who's next
 export const PreRoundScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost, myPlayerId, gameMode } = useGame();
+  const { currentTheme, teams, currentTeamIndex, settings, handleStartRound, setGameState, isHost, myPlayerId, gameMode, leaveRoom } = useGame();
   const t = TRANSLATIONS[settings.language];
   const activeTeam = teams[currentTeamIndex];
 
@@ -119,46 +119,56 @@ export const PreRoundScreen = () => {
   const isActualExplainer = explainer?.id === myPlayerId;
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}>
-      <div className="space-y-8 animate-pop-in">
-        <h2 className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] opacity-40 ${currentTheme.textMain}`}>
-          {t.playingNow}
-        </h2>
-        <div className={`inline-block px-8 py-3 rounded-full border border-white/10 bg-white/5`}>
-            <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${activeTeam.color}`} />
-                <span className={`font-serif text-3xl ${currentTheme.textMain}`}>{activeTeam.name}</span>
-            </div>
-        </div>
-
-        <div className="pt-12 space-y-4 flex flex-col items-center">
-            <div className="mb-1">
-              {explainer.avatarId != null
-                ? <AvatarDisplay avatarId={explainer.avatarId} size={64} />
-                : <span className="text-6xl">{explainer.avatar}</span>}
-            </div>
-            <p className={`text-5xl font-serif ${currentTheme.textMain}`}>{explainer.name}</p>
-            <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}>
-                {t.explains}
-            </p>
-        </div>
-
-        {gameMode === 'OFFLINE' && (
-          <div className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] opacity-50 ${currentTheme.textSecondary}`}>
-            {t.passPhoneTo.replace('{0}', explainer.name)}
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 text-center relative`}>
+      <div className="flex-1 flex flex-col justify-center items-center">
+        <div className="space-y-8 animate-pop-in w-full max-w-sm">
+          <h2 className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] opacity-40 ${currentTheme.textMain}`}>
+            {t.playingNow}
+          </h2>
+          <div className={`inline-block px-8 py-3 rounded-full border border-white/10 bg-white/5`}>
+              <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${activeTeam.color}`} />
+                  <span className={`font-serif text-3xl ${currentTheme.textMain}`}>{activeTeam.name}</span>
+              </div>
           </div>
-        )}
 
-        <div className={gameMode === 'OFFLINE' ? 'pt-6' : 'pt-12'}>
-            {(gameMode === 'OFFLINE' || isActualExplainer) ? (
-              <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
-                  {t.takePhone}
-              </Button>
-            ) : (
-              <p className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}>
-                {t.waitAdmin}
+          <div className="pt-12 space-y-4 flex flex-col items-center">
+              <div className="mb-1">
+                {explainer.avatarId != null
+                  ? <AvatarDisplay avatarId={explainer.avatarId} size={64} />
+                  : <span className="text-6xl">{explainer.avatar}</span>}
+              </div>
+              <p className={`text-5xl font-serif ${currentTheme.textMain}`}>{explainer.name}</p>
+              <p className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}>
+                  {t.explains}
               </p>
-            )}
+          </div>
+
+          {gameMode === 'OFFLINE' && (
+            <div className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] opacity-50 ${currentTheme.textSecondary}`}>
+              {t.passPhoneTo.replace('{0}', explainer.name)}
+            </div>
+          )}
+
+          <div className={gameMode === 'OFFLINE' ? 'pt-6' : 'pt-12'}>
+              {(gameMode === 'OFFLINE' || isActualExplainer) ? (
+                <Button themeClass={currentTheme.button} size="xl" onClick={handleStartRound} fullWidth>
+                    {t.takePhone}
+                </Button>
+              ) : (
+                <p className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}>
+                  {t.waitAdmin}
+                </p>
+              )}
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+        <div className="max-w-sm mx-auto pointer-events-auto">
+          <Button themeClass={currentTheme.button} variant="outline" fullWidth icon={<X size={18} />} onClick={leaveRoom}>
+            {t.toMainMenu}
+          </Button>
         </div>
       </div>
     </div>
@@ -197,7 +207,7 @@ export const CountdownScreen = () => {
 };
 
 export const PlayingScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, togglePause, gameMode, sendAction } = useGame();
+  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, timeUp, togglePause, gameMode, sendAction } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [particles, setParticles] = useState<{ id: number, x: number, y: number, text: string, color: string }[]>([]);
   const actionProcessingRef = useRef(false);
@@ -245,15 +255,19 @@ export const PlayingScreen = () => {
     return () => clearInterval(interval);
   }, [gameState, isPaused, setTimeLeft]);
 
-  // Explainer sends TIME_UP when timer reaches 0 (server timer also fires it independently)
+  const timeUpVibratedRef = useRef(false);
+  useEffect(() => {
+    if (timeUp && isActualExplainer && !timeUpVibratedRef.current && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+      timeUpVibratedRef.current = true;
+    }
+    if (!timeUp) timeUpVibratedRef.current = false;
+  }, [timeUp, isActualExplainer]);
+
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
     if (timeLeft <= 6 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
-    if (isActualExplainer && timeLeft === 0) {
-        sendAction({ action: 'TIME_UP' });
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }
-  }, [timeLeft, isActualExplainer, gameState, isPaused, settings.soundEnabled, playSound, sendAction]);
+  }, [timeLeft, gameState, isPaused, settings.soundEnabled, playSound]);
 
   const onAction = (type: 'correct' | 'skip', x: number, y: number) => {
       if (isPaused || actionProcessingRef.current) return;
@@ -296,6 +310,11 @@ export const PlayingScreen = () => {
 
         {/* Progress Bar Header */}
         <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-6 z-20">
+          {timeUp && canUseButtons && (
+            <p className="text-center text-champagne-gold text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
+              {t.finishWord}
+            </p>
+          )}
           <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full shadow-[0_0_10px_rgba(243,229,171,0.5)] transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-champagne-gold'}`}
@@ -590,7 +609,7 @@ export const ScoreboardScreen = () => {
 
 // GameOver Screen: Winners
 export const GameOverScreen = () => {
-  const { teams, currentTheme, settings, resetGame, rematch, isHost } = useGame();
+  const { teams, currentTheme, settings, resetGame, rematch, leaveRoom, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
   const isDark = settings.theme === AppTheme.PREMIUM_DARK;
   const sorted = [...teams].sort((a, b) => b.score - a.score);
@@ -796,12 +815,20 @@ export const GameOverScreen = () => {
             <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={rematch}>
               {t.rematch}
             </Button>
-            <button onClick={resetGame} className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>
-              {t.playAgain}
+            <Button themeClass={currentTheme.button} variant="ghost" fullWidth size="lg" onClick={resetGame}>
+              {t.toLobby}
+            </Button>
+            <button onClick={leaveRoom} className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>
+              {t.toMainMenu}
             </button>
           </>
         ) : (
-          <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitAdmin}</p>
+          <div className="space-y-3">
+            <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitAdmin}</p>
+            <Button themeClass={currentTheme.button} variant="ghost" fullWidth size="lg" onClick={leaveRoom}>
+              {t.toMainMenu}
+            </Button>
+          </div>
         )}
       </div>
     </div>

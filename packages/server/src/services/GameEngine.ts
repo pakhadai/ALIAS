@@ -44,6 +44,9 @@ export class GameEngine {
           ],
         };
         await this.nextWord(room);
+        if (room.timeUp) {
+          this.transitionToRoundSummary(room);
+        }
         break;
       }
 
@@ -57,6 +60,9 @@ export class GameEngine {
           ],
         };
         await this.nextWord(room);
+        if (room.timeUp) {
+          this.transitionToRoundSummary(room);
+        }
         break;
       }
 
@@ -84,6 +90,7 @@ export class GameEngine {
         room.gameState = GameState.PLAYING;
         room.timeLeft = room.settings.roundTime;
         room.isPaused = false;
+        room.timeUp = false;
         await this.nextWord(room);
         this.startTimer(room);
         break;
@@ -239,9 +246,7 @@ export class GameEngine {
       }
 
       case 'TIME_UP': {
-        this.stopTimer(room);
-        room.gameState = GameState.ROUND_SUMMARY;
-        room.timeLeft = 0;
+        this.transitionToRoundSummary(room);
         break;
       }
 
@@ -295,6 +300,13 @@ export class GameEngine {
     }
   }
 
+  private transitionToRoundSummary(room: Room): void {
+    this.stopTimer(room);
+    room.gameState = GameState.ROUND_SUMMARY;
+    room.timeLeft = 0;
+    room.timeUp = false;
+  }
+
   private async nextWord(room: Room): Promise<void> {
     const { word, deck, usedWords, deckReshuffled } = await this.wordService.nextWord(
       room.wordDeck,
@@ -304,8 +316,8 @@ export class GameEngine {
     room.currentWord = word;
     room.wordDeck = deck;
     room.usedWords = usedWords;
-    if (deckReshuffled) {
-      // Notify all players that the deck has been reshuffled (new cycle)
+    if (deckReshuffled && room.currentRoundStats.words.length > 0) {
+      // Notify only when reshuffled mid-round (not on first word of round)
       this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
     }
   }
@@ -318,7 +330,10 @@ export class GameEngine {
       room.timeLeft--;
       ticksSinceSync++;
       if (room.timeLeft <= 0) {
-        this.handleAction(room, { action: 'TIME_UP' });
+        room.timeUp = true;
+        this.stopTimer(room);
+        room.timeLeft = 0;
+        this.timerBroadcast?.(room);
       } else if (ticksSinceSync >= 10) {
         // Force-sync timeLeft to all clients every 10 s to prevent drift
         // (browser throttling can cause client timer to deviate)
