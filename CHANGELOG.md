@@ -30,6 +30,24 @@
 
 ---
 
+## [2026-03-29] — Лобі: відключення, вихід, кік
+
+### Added
+- Поле `Player.isConnected` у [`packages/shared/src/types.ts`](./packages/shared/src/types.ts): сервер одразу позначає гравця як офлайн при розриві сокета (grace period лишається для видалення з кімнати).
+- [`packages/server/src/services/disconnectGrace.ts`](./packages/server/src/services/disconnectGrace.ts): таймери grace + скасування при `room:rejoin`, `room:leave`, `KICK_PLAYER`.
+- Локалізації `playerDisconnected`, `playerOnlineHint`, `kickPlayerTitle` (UA/DE/EN) у [`packages/client/src/constants.ts`](./packages/client/src/constants.ts).
+
+### Changed
+- [`RoomManager`](./packages/server/src/services/RoomManager.ts): `markSocketDisconnected` / `finalizeGraceRemoval` / `markPlayerReconnected` / `detachSocketsForPlayer`; відновлення з Redis — усі гравці `isConnected: false` до rejoin.
+- [`index.ts`](./packages/server/src/index.ts): при `disconnect` одразу `game:state-sync` з офлайн-станом; через 60 с — фінальне видалення як раніше.
+- [`socketHandlers.ts`](./packages/server/src/handlers/socketHandlers.ts): `room:leave` очищає `socket.data`, скасовує grace; кік — скасування grace, `detachSockets`, очищення `socket.data` у вигнаного.
+- [`LobbyFlow.tsx`](./packages/client/src/screens/LobbyFlow.tsx): підтвердження виходу з лобі в онлайні викликає `leaveRoom()` (раніше лише перехід у меню без `room:leave`); індикація «Відключено», стилі рядка, кнопка кіку з перекладеним `title`; QR-блок з ring під світлу/темну тему; екран команд — мітка для відключених.
+
+### Fixed
+- Гість, який сам виходить з лобі, одразу зникає в інших клієнтів (без очікування grace).
+
+---
+
 ## [2026-03-29] — GitHub Actions: деплой на VPS
 
 ### Added

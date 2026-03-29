@@ -7,6 +7,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { config } from './config';
 import { registerSocketHandlers } from './handlers/socketHandlers';
+import { scheduleGraceRemoval, cancelGraceRemoval } from './services/disconnectGrace';
 import { RoomManager } from './services/RoomManager';
 import { GameEngine } from './services/GameEngine';
 import { WordService } from './services/WordService';
@@ -79,8 +80,6 @@ gameEngine.setNotificationBroadcast((room, message, type) => {
   io.to(room.code).emit('game:notification', { message, type });
 });
 
-/** Pending disconnects: socketId → timeout handle (60s grace period) */
-const pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
 const RECONNECT_GRACE_MS = 60_000;
 
 // Initialize Redis connection (room store + pub/sub adapter)
@@ -141,12 +140,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Cancel pending removal if any
-    const existingTimeout = pendingDisconnects.get(playerId);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-      pendingDisconnects.delete(playerId);
-    }
+    cancelGraceRemoval(playerId);
 
     // Re-map socketId → playerId
     // Remove old stale socket entries for this playerId
@@ -165,6 +159,8 @@ io.on('connection', (socket) => {
     socket.data.playerName = player.name;
     socket.data.roomCode = roomCode;
 
+    roomManager.markPlayerReconnected(roomCode, playerId);
+
     socket.emit('room:rejoined', { roomCode, playerId });
     io.to(roomCode).emit('game:state-sync', roomManager.getSyncState(room));
     console.log(`[Socket] Rejoined: ${socket.id} → room ${roomCode}`);
@@ -175,28 +171,36 @@ io.on('connection', (socket) => {
     const { roomCode, playerId } = socket.data;
     const disconnectedSocketId = socket.id;
 
-    // Grace period: delay actual removal by 60s (host can reconnect)
     if (roomCode && playerId) {
-      const timeout = setTimeout(() => {
-        pendingDisconnects.delete(playerId);
-        const result = roomManager.handleDisconnect(disconnectedSocketId);
-        if (result) {
-          const room = roomManager.getRoom(result.roomCode);
-          if (room) {
-            if (result.removedPlayerId) {
-              io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
-            }
-            io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
-            if (result.wasMigration) {
-              io.to(result.roomCode).emit('game:notification', {
-                message: 'Host disconnected. New host assigned.',
-                type: 'info',
-              });
-            }
+      const graceInfo = roomManager.markSocketDisconnected(disconnectedSocketId);
+      if (graceInfo) {
+        const roomAfter = roomManager.getRoom(graceInfo.roomCode);
+        if (roomAfter) {
+          io.to(graceInfo.roomCode).emit('game:state-sync', roomManager.getSyncState(roomAfter));
+          if (graceInfo.wasHostMigration) {
+            io.to(graceInfo.roomCode).emit('game:notification', {
+              message: 'Host disconnected. New host assigned.',
+              type: 'info',
+            });
           }
         }
-      }, RECONNECT_GRACE_MS);
-      pendingDisconnects.set(playerId, timeout);
+        scheduleGraceRemoval(graceInfo.playerId, RECONNECT_GRACE_MS, () => {
+          const result = roomManager.finalizeGraceRemoval(graceInfo.roomCode, graceInfo.playerId);
+          if (!result) return;
+          const room = roomManager.getRoom(result.roomCode);
+          if (!room) return;
+          if (result.removedPlayerId) {
+            io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+          }
+          io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
+          if (result.wasMigration) {
+            io.to(result.roomCode).emit('game:notification', {
+              message: 'Host disconnected. New host assigned.',
+              type: 'info',
+            });
+          }
+        });
+      }
     } else {
       const result = roomManager.handleDisconnect(disconnectedSocketId);
       if (result) {

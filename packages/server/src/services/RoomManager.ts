@@ -144,14 +144,19 @@ export class RoomManager {
     if (!syncState) return null;
 
     const hostPlayer = syncState.players.find((p) => p.isHost);
+    const playersRestored = syncState.players.map((p) => ({ ...p, isConnected: false }));
+    const teamsRestored = syncState.teams.map((team) => ({
+      ...team,
+      players: team.players.map((p) => ({ ...p, isConnected: false })),
+    }));
     const room: Room = {
       code,
       hostSocketId: '',       // unknown until host reconnects via room:rejoin
       hostPlayerId: hostPlayer?.id ?? '',
       gameState: syncState.gameState,
       settings: syncState.settings,
-      players: syncState.players,
-      teams: syncState.teams,
+      players: playersRestored,
+      teams: teamsRestored,
       currentTeamIndex: syncState.currentTeamIndex,
       wordDeck: syncState.wordDeck,
       currentWord: syncState.currentWord,
@@ -182,6 +187,7 @@ export class RoomManager {
       avatar,
       ...(avatarId != null ? { avatarId } : {}),
       isHost: socketId === room.hostSocketId,
+      isConnected: true,
       stats: { explained: 0, guessed: 0 },
     };
 
@@ -289,6 +295,151 @@ export class RoomManager {
       if (pId === playerId) return socketId;
     }
     return undefined;
+  }
+
+  /**
+   * Socket dropped: remove socket mapping, mark player disconnected, migrate host if needed.
+   * Player stays in room until grace timeout or rejoin.
+   */
+  markSocketDisconnected(socketId: string): {
+    roomCode: string;
+    playerId: string;
+    wasHostMigration: boolean;
+  } | null {
+    for (const [code, room] of this.rooms) {
+      const playerId = room.socketToPlayer.get(socketId);
+      if (!playerId) continue;
+
+      const wasHost = socketId === room.hostSocketId;
+      room.socketToPlayer.delete(socketId);
+      if (this.redisStore?.isConnected) {
+        this.redisStore.removeSocket(socketId).catch(() => {});
+      }
+      this.setPlayerConnectionFlag(room, playerId, false);
+
+      let wasHostMigration = false;
+      if (wasHost) {
+        const firstEntry = room.socketToPlayer.entries().next().value;
+        if (firstEntry) {
+          const [newHostSocketId, newHostPlayerId] = firstEntry;
+          room.hostSocketId = newHostSocketId;
+          room.hostPlayerId = newHostPlayerId;
+          this.applyHostFlags(room, newHostPlayerId);
+          wasHostMigration = true;
+        } else {
+          room.hostSocketId = '';
+        }
+      }
+
+      this.persistRoom(room);
+      return { roomCode: code, playerId, wasHostMigration };
+    }
+    return null;
+  }
+
+  /** After grace: remove player if they did not reconnect (no socket mapping). */
+  finalizeGraceRemoval(roomCode: string, playerId: string): {
+    roomCode: string;
+    removedPlayerId?: string;
+    newHostSocketId?: string;
+    wasMigration?: boolean;
+  } | null {
+    const room = this.rooms.get(roomCode);
+    if (!room) return null;
+
+    for (const [, pid] of room.socketToPlayer) {
+      if (pid === playerId) return null;
+    }
+    if (!room.players.some((p) => p.id === playerId)) return null;
+
+    const wasHost = room.hostPlayerId === playerId;
+
+    room.players = room.players.filter((p) => p.id !== playerId);
+    room.teams = room.teams
+      .map((team) => {
+        const newPlayers = team.players.filter((p) => p.id !== playerId);
+        return {
+          ...team,
+          players: newPlayers,
+          nextPlayerIndex:
+            team.nextPlayerIndex >= newPlayers.length
+              ? Math.max(0, newPlayers.length - 1)
+              : team.nextPlayerIndex,
+        };
+      })
+      .filter((team) => team.players.length > 0);
+    if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
+      room.currentTeamIndex = 0;
+    }
+
+    if (room.players.length === 0) {
+      if (room.timerInterval) clearInterval(room.timerInterval);
+      this.rooms.delete(roomCode);
+      if (this.redisStore?.isConnected) {
+        this.redisStore.deleteRoom(roomCode).catch(() => {});
+      }
+      return null;
+    }
+
+    if (wasHost) {
+      const firstEntry = room.socketToPlayer.entries().next().value;
+      if (firstEntry) {
+        const [newHostSocketId, newHostPlayerId] = firstEntry;
+        room.hostSocketId = newHostSocketId;
+        room.hostPlayerId = newHostPlayerId;
+        this.applyHostFlags(room, newHostPlayerId);
+        this.persistRoom(room);
+        return { roomCode, removedPlayerId: playerId, newHostSocketId, wasMigration: true };
+      }
+      const newHostP = room.players[0];
+      room.hostPlayerId = newHostP.id;
+      room.hostSocketId = this.getPlayerSocketId(room, newHostP.id) ?? '';
+      this.applyHostFlags(room, newHostP.id);
+      this.persistRoom(room);
+      return { roomCode, removedPlayerId: playerId, wasMigration: true };
+    }
+
+    this.persistRoom(room);
+    return { roomCode, removedPlayerId: playerId };
+  }
+
+  markPlayerReconnected(roomCode: string, playerId: string): void {
+    const room = this.rooms.get(roomCode);
+    if (!room) return;
+    if (!room.players.some((p) => p.id === playerId)) return;
+    this.setPlayerConnectionFlag(room, playerId, true);
+    this.persistRoom(room);
+  }
+
+  /** Drop all socket mappings for a player (kick / cleanup). Does not remove the player from lists. */
+  detachSocketsForPlayer(room: Room, playerId: string): void {
+    for (const [sid, pid] of [...room.socketToPlayer.entries()]) {
+      if (pid !== playerId) continue;
+      room.socketToPlayer.delete(sid);
+      if (this.redisStore?.isConnected) {
+        this.redisStore.removeSocket(sid).catch(() => {});
+      }
+    }
+  }
+
+  private setPlayerConnectionFlag(room: Room, playerId: string, connected: boolean): void {
+    room.players = room.players.map((p) =>
+      p.id === playerId ? { ...p, isConnected: connected } : p,
+    );
+    room.teams = room.teams.map((team) => ({
+      ...team,
+      players: team.players.map((p) =>
+        p.id === playerId ? { ...p, isConnected: connected } : p,
+      ),
+    }));
+  }
+
+  private applyHostFlags(room: Room, hostPlayerId: string): void {
+    room.players = room.players.map((p) => ({ ...p, isHost: p.id === hostPlayerId }));
+    room.teams = room.teams.map((team) => ({
+      ...team,
+      players: team.players.map((p) => ({ ...p, isHost: p.id === hostPlayerId })),
+    }));
   }
 
   getSyncState(room: Room): GameSyncState {

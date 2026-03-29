@@ -718,7 +718,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 
 ### Кроки
 
-```bash
+   ```bash
 # 1. Встановити залежності
 pnpm install
 
@@ -727,15 +727,15 @@ cp packages/server/.env.example packages/server/.env
 # Відредагувати .env: DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID (опційно)
 
 # 3. Запустити Redis + PostgreSQL
-docker-compose up -d redis postgres
+   docker-compose up -d redis postgres
 
 # 4. Застосувати міграції та seed
-pnpm --filter @alias/server db:migrate
-pnpm --filter @alias/server db:seed
+   pnpm --filter @alias/server db:migrate
+   pnpm --filter @alias/server db:seed
 
 # 5. Запустити dev-сервер (клієнт + сервер паралельно)
-pnpm run dev
-```
+   pnpm run dev
+   ```
 
 **Після запуску:**
 - Клієнт: `http://localhost:5173`

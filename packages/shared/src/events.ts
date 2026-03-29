@@ -45,7 +45,7 @@ export interface InterServerEvents {}
 // Socket data attached to each connection
 export interface SocketData {
   userId?: string;
-  playerId: string;
-  playerName: string;
-  roomCode: string;
+  playerId?: string;
+  playerName?: string;
+  roomCode?: string;
 }

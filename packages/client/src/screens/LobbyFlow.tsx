@@ -13,8 +13,12 @@ import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
 import { AvatarDisplay } from '../components/AvatarDisplay';
 
+function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
+  return p.isConnected !== false;
+}
+
 export const LobbyScreen = () => {
-  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer } = useGame();
+  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer, leaveRoom } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -42,7 +46,10 @@ export const LobbyScreen = () => {
         isDanger
         theme={currentTheme}
         onCancel={() => setShowExitConfirm(false)}
-        onConfirm={() => setGameState(GameState.MENU)}
+        onConfirm={() => {
+          if (gameMode === 'ONLINE') leaveRoom();
+          else setGameState(GameState.MENU);
+        }}
         confirmText={t.confirmExit}
         cancelText={t.goBack}
       />
@@ -80,8 +87,12 @@ export const LobbyScreen = () => {
       <main className="flex-1 flex flex-col items-center space-y-10">
         {gameMode === 'ONLINE' && qrCodeData && (
           <div className="w-full max-w-xs text-center space-y-4">
-            <div className="bg-white p-4 rounded-3xl inline-block shadow-2xl">
-              <img src={qrCodeData} alt="QR" className="w-32 h-32" />
+            <div
+              className={`p-4 rounded-3xl inline-block shadow-2xl ${
+                currentTheme.isDark ? 'bg-white ring-1 ring-white/10' : 'bg-white ring-1 ring-slate-200/80'
+              }`}
+            >
+              <img src={qrCodeData} alt="QR" className="w-32 h-32 rounded-lg" />
             </div>
             <p className={`text-[8px] uppercase tracking-[0.5em] font-bold ${currentTheme.textSecondary}`}>{t.roomCode}</p>
             <span className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>{roomCode}</span>
@@ -91,25 +102,46 @@ export const LobbyScreen = () => {
         <div className="w-full max-w-sm space-y-6">
           <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{t.players} ({players.length})</h3>
           <div className="space-y-3">
-            {players.map((p: any) => (
-              <div key={p.id} className={`flex items-center p-4 rounded-2xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'}`}>
+            {players.map((p: any) => {
+              const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
+              return (
+              <div
+                key={p.id}
+                className={`flex items-center p-4 rounded-2xl border transition-opacity ${
+                  currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100'
+                } ${!online ? 'opacity-75 border-amber-500/35' : ''}`}
+              >
                 {p.avatarId != null
                   ? <AvatarDisplay avatarId={p.avatarId} size={36} />
                   : <span className="text-2xl">{p.avatar}</span>}
-                <span className={`ml-4 font-bold ${currentTheme.textMain}`}>{p.name}</span>
-                <div className="ml-auto flex items-center gap-3">
-                  {p.id === myPlayerId && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" />}
+                <div className="ml-4 flex flex-col min-w-0 flex-1">
+                  <span className={`font-bold truncate ${currentTheme.textMain}`}>{p.name}</span>
+                  {gameMode === 'ONLINE' && !online && (
+                    <span className={`text-[9px] uppercase tracking-widest font-bold mt-0.5 ${currentTheme.textSecondary}`}>
+                      {t.playerDisconnected}
+                    </span>
+                  )}
+                </div>
+                <div className="ml-auto flex items-center gap-3 shrink-0">
+                  {p.id === myPlayerId && online && (
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" title={t.playerOnlineHint} />
+                  )}
+                  {p.id === myPlayerId && !online && gameMode === 'ONLINE' && (
+                    <div className="w-2 h-2 rounded-full bg-amber-500 shadow-lg animate-pulse" title={t.playerDisconnected} />
+                  )}
                   {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
                     <button
+                      type="button"
                       onClick={() => sendAction({ action: 'KICK_PLAYER', data: p.id })}
                       className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
-                      title="Kick player"
+                      title={t.kickPlayerTitle}
                     >
                       <X size={14} className="text-red-400 group-hover:text-red-300" />
                     </button>
                   )}
                   {isHost && gameMode === 'OFFLINE' && !p.isHost && (
                     <button
+                      type="button"
                       onClick={() => removeOfflinePlayer(p.id)}
                       className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
                     >
@@ -118,7 +150,8 @@ export const LobbyScreen = () => {
                   )}
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {/* Add Player button for offline mode */}
@@ -206,7 +239,7 @@ export const LobbyScreen = () => {
 };
 
 export const TeamSetupScreen = () => {
-  const { teams, settings, currentTheme, sendAction, setGameState, isHost } = useGame();
+  const { teams, settings, currentTheme, sendAction, setGameState, isHost, gameMode } = useGame();
   const t = TRANSLATIONS[settings.language];
 
   // Check that all teams have at least one player
@@ -231,14 +264,25 @@ export const TeamSetupScreen = () => {
                         <span className={`ml-auto text-[10px] ${currentTheme.textSecondary}`}>({team.players.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {team.players.map((p: any) => (
-                            <div key={p.id} className={`px-3 py-1.5 rounded-full flex items-center gap-2 border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'}`}>
+                        {team.players.map((p: any) => {
+                          const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
+                          return (
+                            <div
+                              key={p.id}
+                              className={`px-3 py-1.5 rounded-full flex items-center gap-2 border ${
+                                currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
+                              } ${gameMode === 'ONLINE' && !online ? 'opacity-70 border-amber-500/30' : ''}`}
+                            >
                                 {p.avatarId != null
                                   ? <AvatarDisplay avatarId={p.avatarId} size={20} />
                                   : <span>{p.avatar}</span>}
                                 <span className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}>{p.name}</span>
+                                {gameMode === 'ONLINE' && !online && (
+                                  <span className="text-[8px] font-bold uppercase text-amber-500/90">{t.playerDisconnected}</span>
+                                )}
                             </div>
-                        ))}
+                          );
+                        })}
                         {team.players.length === 0 && (
                           <span className={`text-[10px] italic ${currentTheme.textSecondary} opacity-50`}>{t.noPlayersInTeam}</span>
                         )}

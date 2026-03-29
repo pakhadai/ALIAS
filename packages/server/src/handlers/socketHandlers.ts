@@ -8,6 +8,7 @@ import type {
 import type { RoomManager } from '../services/RoomManager';
 import type { GameEngine } from '../services/GameEngine';
 import { roomCreateSchema, roomJoinSchema, validatePayload, validateGameAction } from '../validation/schemas';
+import { cancelGraceRemoval } from '../services/disconnectGrace';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
@@ -80,10 +81,16 @@ export function registerSocketHandlers(
     const { roomCode } = socket.data;
     if (!roomCode) return;
 
-    const playerId = roomManager.removePlayer(roomCode, socket.id);
-    if (playerId) {
-      socket.leave(roomCode);
-      io.to(roomCode).emit('room:player-left', { playerId });
+    const removedId = roomManager.removePlayer(roomCode, socket.id);
+    if (removedId) {
+      cancelGraceRemoval(removedId);
+    }
+    socket.leave(roomCode);
+    delete socket.data.roomCode;
+    delete socket.data.playerId;
+    delete socket.data.playerName;
+    if (removedId) {
+      io.to(roomCode).emit('room:player-left', { playerId: removedId });
       broadcastState(io, roomCode, roomManager);
     }
   });
@@ -105,6 +112,12 @@ export function registerSocketHandlers(
 
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+
+    const kickTargetId =
+      payload.action === 'KICK_PLAYER' && typeof payload.data === 'string' ? payload.data : undefined;
+    const kickedSocketIdEarly = kickTargetId
+      ? roomManager.getPlayerSocketId(room, kickTargetId)
+      : undefined;
 
     // Identify the sender.
     // Dual check: direct socketId match OR socketToPlayer lookup (self-heals stale hostSocketId
@@ -151,15 +164,17 @@ export function registerSocketHandlers(
 
     await gameEngine.handleAction(room, payload);
 
-    // Handle kick: disconnect the kicked player's socket
-    if (payload.action === 'KICK_PLAYER' && payload.data) {
-      const kickedSocketId = roomManager.getPlayerSocketId(room, payload.data);
-      if (kickedSocketId) {
-        const kickedSocket = io.sockets.sockets.get(kickedSocketId);
+    if (payload.action === 'KICK_PLAYER' && kickTargetId) {
+      cancelGraceRemoval(kickTargetId);
+      roomManager.detachSocketsForPlayer(room, kickTargetId);
+      if (kickedSocketIdEarly) {
+        const kickedSocket = io.sockets.sockets.get(kickedSocketIdEarly);
         if (kickedSocket) {
           kickedSocket.emit('player:kicked');
           kickedSocket.leave(roomCode);
-          room.socketToPlayer.delete(kickedSocketId);
+          delete kickedSocket.data.roomCode;
+          delete kickedSocket.data.playerId;
+          delete kickedSocket.data.playerName;
         }
       }
     }

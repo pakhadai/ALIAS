@@ -68,6 +68,7 @@ describe('addPlayer', () => {
     expect(player).not.toBeNull();
     expect(player!.name).toBe('Alice');
     expect(player!.avatar).toBe('🦊');
+    expect(player!.isConnected).toBe(true);
     expect(player!.stats).toEqual({ explained: 0, guessed: 0 });
     expect(room.players).toHaveLength(1);
   });

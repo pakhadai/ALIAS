@@ -7,6 +7,8 @@ export interface Player {
   avatar: string;
   isHost: boolean;
   avatarId?: string | null;
+  /** false = socket offline, grace period or gone; true/undefined = connected (undefined for offline/local). */
+  isConnected?: boolean;
   stats: { explained: number; guessed: number };
 }
 
