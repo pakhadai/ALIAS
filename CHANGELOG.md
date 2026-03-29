@@ -30,6 +30,14 @@
 
 ---
 
+## [2026-03-29] — GitHub Actions: деплой на VPS
+
+### Added
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): при push у `main` (і `workflow_dispatch`) — SSH на VPS, `git reset` на `origin/main`, `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build`, `prisma migrate deploy` у контейнері `app`.
+- У [`README.md`](./README.md): секція «Деплой на VPS (GitHub Actions)», таблиця secrets, чекліст підготовки сервера, приклад ручного `docker compose` з `.env.prod`.
+
+---
+
 ## [2026-03-29] — Довідник коду CODE_REFERENCE.md
 
 ### Fixed

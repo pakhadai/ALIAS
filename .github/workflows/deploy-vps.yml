@@ -1,0 +1,56 @@
+# Після push у main: оновлення коду на VPS, перезбірка Docker і застосування міграцій Prisma.
+#
+# Потрібні GitHub Secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST              — IP або hostname сервера
+#   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
+#   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
+#   VPS_DEPLOY_PATH       — абсолютний шлях до клону репозиторію на сервері (наприклад /home/ubuntu/ALIAS)
+#
+# Опційно:
+#   VPS_SSH_PORT          — порт SSH (якщо не 22)
+#   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
+#
+# На VPS заздалегідь:
+#   - git clone репозиторію, налаштований fetch (deploy key Read або HTTPS)
+#   - файл .env.prod у корені клону (з .env.prod.example), НЕ в git
+#   - docker compose v2, користувач у групі docker (або sudo без пароля для docker)
+#   - перший запуск SSL за інструкцією в docker-compose.prod.yml
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH — git pull, Docker rebuild, Prisma migrate
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || '22' }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="${{ secrets.VPS_DEPLOY_PATH }}"
+            if [ -z "$DEPLOY_PATH" ]; then
+              echo "VPS_DEPLOY_PATH secret is not set"
+              exit 1
+            fi
+            cd "$DEPLOY_PATH"
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+            docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T app sh -c "cd packages/server && npx prisma migrate deploy"

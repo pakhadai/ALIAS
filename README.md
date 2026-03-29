@@ -39,6 +39,7 @@
 - [Безпека та валідація](#безпека-та-валідація)
 - [Запуск проекту](#запуск-проекту)
 - [Docker](#docker)
+- [Деплой на VPS (GitHub Actions)](#деплой-на-vps-github-actions)
 - [Тести](#тести)
 - [Конфігурація (env змінні)](#конфігурація-env-змінні)
 - [Seed даних](#seed-даних)
@@ -773,6 +774,36 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 Production конфіг включає: побудову Docker images для client та server, nginx reverse proxy.
+
+Типовий ручний запуск з env для compose (змінні підставляються з `.env.prod`):
+
+```bash
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+```
+
+### Деплой на VPS (GitHub Actions)
+
+Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml) запускається **після кожного push у гілку `main`** і за запитом (**Actions → Deploy to VPS → Run workflow**). Він підключається по SSH до сервера, оновлює код (`git fetch` + `reset` на `origin/main`), виконує `docker compose ... up -d --build` і **`npx prisma migrate deploy`** у контейнері сервісу `app`.
+
+**Обов’язкові secrets** (репозиторій GitHub → **Settings → Secrets and variables → Actions**):
+
+| Secret | Опис |
+|--------|------|
+| `VPS_HOST` | IP або hostname VPS |
+| `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
+| `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
+| `VPS_DEPLOY_PATH` | Абсолютний шлях до **вже клонованого** репозиторію на сервері (наприклад `/home/ubuntu/ALIAS`) |
+
+**Опційно:** `VPS_SSH_PORT` (якщо SSH не на порту 22), `VPS_SSH_PASSPHRASE` (якщо ключ захищений паролем).
+
+**Що має бути на VPS до першого деплою:**
+
+1. `git clone` цього репозиторію в `VPS_DEPLOY_PATH`, remote `origin` з доступом до `git fetch` (наприклад [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) з правом **read** або HTTPS з збереженими обліковими даними).
+2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
+3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
+4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.
+
+Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
 ---
 
