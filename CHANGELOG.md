@@ -48,6 +48,14 @@
 
 ---
 
+## [2026-03-29] — Deploy: auto-clone якщо ~/apps/ALIAS немає
+
+### Changed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): якщо каталог `DEPLOY_PATH` відсутній — `mkdir -p` батьківської теки та `git clone` (branch `main`, shallow). Для **приватного** репозиторію клон на сервері треба налаштувати вручну або через deploy key.
+- [`README.md`](./README.md): перший запуск і вимога `.env.prod` перед `docker compose`.
+
+---
+
 ## [2026-03-29] — VPS-нотатки лише локально + дефолт ~/apps/ALIAS
 
 ### Security

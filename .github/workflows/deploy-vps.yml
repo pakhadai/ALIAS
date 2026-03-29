@@ -10,9 +10,8 @@
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
 #
-# На VPS заздалегідь:
-#   - git clone репозиторію, налаштований fetch (deploy key Read або HTTPS)
-#   - файл .env.prod у корені клону (з .env.prod.example), НЕ в git
+# На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
+#   - файл .env.prod у корені клону (з .env.prod.example), НЕ в git (обов’язково до успішного docker compose)
 #   - docker compose v2, користувач у групі docker (або sudo без пароля для docker)
 #   - перший запуск SSL за інструкцією в docker-compose.prod.yml
 
@@ -64,8 +63,12 @@ jobs:
               echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
             if [ ! -d "$DEPLOY_PATH" ]; then
-              echo "ERROR: deploy directory does not exist: $DEPLOY_PATH"
-              echo "Create ~/apps/ALIAS and clone the repo, or set VPS_DEPLOY_PATH (see README deploy section)."
+              echo "Deploy directory missing — cloning ${{ github.repository }} (branch main) ..."
+              mkdir -p "$(dirname "$DEPLOY_PATH")"
+              git clone --depth 1 -b main "https://github.com/${{ github.repository }}.git" "$DEPLOY_PATH"
+            fi
+            if [ ! -d "$DEPLOY_PATH/.git" ]; then
+              echo "ERROR: $DEPLOY_PATH exists but is not a git clone. Remove the folder or set VPS_DEPLOY_PATH."
               exit 1
             fi
             cd "$DEPLOY_PATH"

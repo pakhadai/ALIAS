@@ -798,7 +798,7 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 
 **Що має бути на VPS до першого деплою:**
 
-1. `git clone` у каталог деплою: за замовчуванням **`~/apps/ALIAS`** (або шлях з `VPS_DEPLOY_PATH`). Remote `origin` має дозволяти `git fetch` (наприклад [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) з правом **read** або HTTPS).
+1. Каталог деплою: за замовчуванням **`~/apps/ALIAS`**. Якщо його ще немає, **перший запуск** workflow виконає `git clone` з `https://github.com/<repo>.git` (репозиторій має бути **публічним** або на VPS налаштований доступ до GitHub). Далі оновлення — `git fetch` / `reset`. Якщо клон робиш вручну — додай [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) або HTTPS-облікові дані для приватного репо.
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
 4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.
