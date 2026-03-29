@@ -792,7 +792,7 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_HOST` | IP або hostname VPS |
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
-| `VPS_DEPLOY_PATH` | Абсолютний шлях до **вже клонованого** репозиторію на сервері (наприклад `/home/ubuntu/ALIAS`) |
+| `VPS_DEPLOY_PATH` | Абсолютний шлях до **вже клонованого** репозиторію на сервері (наприклад `/root/ALIAS`) — саме та папка, де лежить `docker-compose.prod.yml`. Без слеша в кінці, без пробілів. Якщо `cd` у Actions падає — на VPS виконай `find /root /home -maxdepth 4 -name docker-compose.prod.yml 2>/dev/null` і підстав батьківський каталог. |
 
 **Опційно:** `VPS_SSH_PORT` (якщо SSH не на порту 22), `VPS_SSH_PASSPHRASE` (якщо ключ захищений паролем).
 
