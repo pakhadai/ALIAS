@@ -48,6 +48,16 @@
 
 ---
 
+## [2026-03-29] — Deploy workflow: прибрано script_stop
+
+### Fixed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): видалено `script_stop` (у `appleboy/ssh-action@v1.2.2` не підтримується — попередження в логах). Зупинка на першій помилці лишається через `set -euo pipefail` у `script`.
+
+### Changed
+- [`README.md`](./README.md): підказки для помилки SSH `unable to authenticate` / ключі та `VPS_SSH_PASSPHRASE`.
+
+---
+
 ## [2026-03-29] — GitHub Actions: деплой на VPS
 
 ### Added

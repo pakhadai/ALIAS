@@ -805,6 +805,8 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 
 Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
+**Якщо в Actions помилка `ssh: unable to authenticate … no supported methods remain`:** сервер не прийняв ключ. Перевір: `VPS_USER` збігається з користувачем, у чий `~/.ssh/authorized_keys` додано **публічний** ключ від **того самого** ключового пари, що й `VPS_SSH_PRIVATE_KEY`; у secret — саме **приватний** файл (цілий блок `BEGIN`/`END`, без зайвих лапок і краще без `\r` з Windows); зі свого ПК тест: `ssh -i /шлях/до/приватного -p <порт> VPS_USER@VPS_HOST`. Якщо ключ з passphrase — додай secret `VPS_SSH_PASSPHRASE`. Якщо secret `VPS_SSH_PASSPHRASE` порожній або зайвий для ключа без пароля — краще **видалити** цей secret з репозиторію (не залишати порожнім «плейсхолдер»).
+
 ---
 
 ## Тести
