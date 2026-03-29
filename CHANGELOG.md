@@ -48,11 +48,17 @@
 
 ---
 
-## [2026-03-29] — Deploy: дефолт $HOME/ALIAS без VPS_DEPLOY_PATH
+## [2026-03-29] — VPS-нотатки лише локально + дефолт ~/apps/ALIAS
+
+### Security
+- [`docs/VPS-INFRASTRUCTURE.md`](./docs/VPS-INFRASTRUCTURE.md) додано в [`.gitignore`](./.gitignore) — реальні IP, домени та топологія не комітяться.
+
+### Added
+- [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example): шаблон для копії в локальний `VPS-INFRASTRUCTURE.md`.
 
 ### Changed
-- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): якщо `VPS_DEPLOY_PATH` порожній — використовується `$HOME/ALIAS` (як типова угода замість окремого secret).
-- [`README.md`](./README.md): secrets — `VPS_DEPLOY_PATH` перенесено в опційні.
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): дефолтний каталог деплою **`$HOME/apps/ALIAS`**.
+- [`README.md`](./README.md): деплой, secrets, посилання на `.example` замість чутливого файлу.
 
 ---
 

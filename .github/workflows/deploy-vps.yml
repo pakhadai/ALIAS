@@ -4,7 +4,7 @@
 #   VPS_HOST              — IP або hostname сервера
 #   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
-#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону. Якщо не задано — використовується $HOME/ALIAS (домашня тека SSH-користувача).
+#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону. Якщо не задано — $HOME/apps/ALIAS (угода VPS: проєкти в ~/apps/).
 #
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
@@ -60,12 +60,12 @@ jobs:
             DEPLOY_PATH="${DEPLOY_PATH#"${DEPLOY_PATH%%[![:space:]]*}"}"
             DEPLOY_PATH="${DEPLOY_PATH%"${DEPLOY_PATH##*[![:space:]]}"}"
             if [ -z "$DEPLOY_PATH" ]; then
-              DEPLOY_PATH="$HOME/ALIAS"
+              DEPLOY_PATH="$HOME/apps/ALIAS"
               echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
             if [ ! -d "$DEPLOY_PATH" ]; then
               echo "ERROR: deploy directory does not exist: $DEPLOY_PATH"
-              echo "Clone the repo there (e.g. git clone ... \"$DEPLOY_PATH\") or set VPS_DEPLOY_PATH to the real path."
+              echo "Create ~/apps/ALIAS and clone the repo, or set VPS_DEPLOY_PATH (see README deploy section)."
               exit 1
             fi
             cd "$DEPLOY_PATH"

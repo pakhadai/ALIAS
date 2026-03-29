@@ -1,0 +1,21 @@
+# VPS — локальні нотатки (шаблон)
+
+**У репозиторії лише цей приклад.** Робочий файл з реальними IP, доменами та внутрішньою топологією не комітиться.
+
+## Як користуватися
+
+1. Скопіюй цей файл:  
+   `cp docs/VPS-INFRASTRUCTURE.md.example docs/VPS-INFRASTRUCTURE.md`
+2. Заповни `docs/VPS-INFRASTRUCTURE.md` для себе. Файл **`VPS-INFRASTRUCTURE.md`** у `.gitignore` і **не потрапить** у GitHub.
+
+## Що варто записати локально
+
+- IP / hostname, SSH-порт, користувач деплою
+- Шляхи проєктів (`~/apps/...`), де лежить клон Alias
+- NPM, VPN, UFW, бекапи (без паролів і секретів у тексті, якщо копіюєш кудись)
+- Домени та Proxy Hosts (якщо потрібно для пам’яті)
+- Примітки щодо `npm_network` vs власний nginx у `docker-compose.prod.yml`
+
+## Деплой Alias з GitHub Actions
+
+За замовчуванням оновлення коду йде в **`$HOME/apps/ALIAS`**, якщо не задано secret `VPS_DEPLOY_PATH`. Деталі — у [README.md](../README.md) (розділ «Деплой на VPS»).

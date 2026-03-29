@@ -40,6 +40,7 @@
 - [Запуск проекту](#запуск-проекту)
 - [Docker](#docker)
 - [Деплой на VPS (GitHub Actions)](#деплой-на-vps-github-actions)
+- [Шаблон локальних нотаток VPS](./docs/VPS-INFRASTRUCTURE.md.example) (`VPS-INFRASTRUCTURE.md` — у `.gitignore`)
 - [Тести](#тести)
 - [Конфігурація (env змінні)](#конфігурація-env-змінні)
 - [Seed даних](#seed-даних)
@@ -793,11 +794,11 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
 
-**Опційно:** `VPS_SSH_PORT` (якщо SSH не на порту 22), `VPS_SSH_PASSPHRASE` (якщо ключ захищений паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону. Якщо **не задано**, деплой йде в **`$HOME/ALIAS`** (для `root` це `/root/ALIAS`). Інші проєкти часто теж фіксують один каталог у скрипті замість secret — тут те саме через дефолт.
+**Опційно:** `VPS_SSH_PORT` (якщо SSH не на порту 22), `VPS_SSH_PASSPHRASE` (якщо ключ захищений паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону. Якщо **не задано**, деплой йде в **`$HOME/apps/ALIAS`** (для `root` → `/root/apps/ALIAS`), узгоджено з угодою **проєкти в `~/apps/`**. Внутрішній опис інфраструктури сервера тримай **локально** у `docs/VPS-INFRASTRUCTURE.md` (файл у `.gitignore`); у репо є лише шаблон [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
 
 **Що має бути на VPS до першого деплою:**
 
-1. `git clone` у каталог деплою: за замовчуванням **`~/ALIAS`** (або шлях з `VPS_DEPLOY_PATH`, якщо задав secret). Remote `origin` має дозволяти `git fetch` (наприклад [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) з правом **read** або HTTPS).
+1. `git clone` у каталог деплою: за замовчуванням **`~/apps/ALIAS`** (або шлях з `VPS_DEPLOY_PATH`). Remote `origin` має дозволяти `git fetch` (наприклад [Deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys) з правом **read** або HTTPS).
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
 4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.

@@ -19,6 +19,9 @@ dist-ssr
 # CI: local copy of deploy key must never be committed
 .gha_deploy_key
 
+# Локальні нотатки про VPS (IP, домени, топологія) — не в репозиторій
+docs/VPS-INFRASTRUCTURE.md
+
 # Prisma
 packages/server/prisma/*.db
 
