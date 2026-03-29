@@ -1,0 +1,84 @@
+# Production stack за Nginx Proxy Manager: TLS і 80/443 на хості займає NPM.
+# Стек публікує лише gateway на localhost — у NPM вкажи forward на http://<docker-host>:9080
+# (або зміни GATEWAY_PUBLISH у .env.prod).
+#
+# Запуск (як на VPS): docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-alias}
+      POSTGRES_USER: ${POSTGRES_USER:-alias}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alias}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-alias}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-alias}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://${DOMAIN}}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://${DOMAIN}/store?payment=success}
+      STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://${DOMAIN}/store}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  client:
+    build:
+      context: .
+      dockerfile: packages/client/Dockerfile
+      args:
+        VITE_SERVER_URL: ${VITE_SERVER_URL:-https://${DOMAIN}}
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PUBLISH:-127.0.0.1:9080}:80"
+    volumes:
+      - ./nginx/npm-edge.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+      - client
+
+volumes:
+  postgres-data:
+  redis-data:

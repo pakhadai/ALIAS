@@ -30,6 +30,24 @@
 
 ---
 
+## [2026-03-29] — VPS: NPM compose у репо, dockerignore, Actions
+
+### Added
+- [`docker-compose.npm.yml`](./docker-compose.npm.yml) — стек за Nginx Proxy Manager (gateway на localhost:9080).
+- [`nginx/npm-edge.conf`](./nginx/npm-edge.conf) — HTTP edge: `/api`, `/socket.io`, SPA.
+
+### Fixed
+- [`.dockerignore`](./.dockerignore): прибрано `packages/client`, інакше збірка client-образа в Docker падає.
+- [`packages/client/Dockerfile`](./packages/client/Dockerfile): healthcheck на `/health`, `127.0.0.1`, довший `start-period`.
+
+### Changed
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): опційний secret `VPS_COMPOSE_PROJECT` для `docker compose -p`.
+
+### Docs
+- [`.env.prod.example`](./.env.prod.example): підказки для `CORS_ORIGIN`, `VITE_SERVER_URL`, `GATEWAY_PUBLISH` (NPM).
+
+---
+
 ## [2026-03-29] — Лобі: відключення, вихід, кік
 
 ### Added
