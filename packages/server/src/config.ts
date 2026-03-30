@@ -5,6 +5,15 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
+  trustProxyHops: (() => {
+    // For deployments behind a reverse proxy (e.g. Nginx Proxy Manager),
+    // trust only a specific number of proxy hops (NOT `true`), otherwise IP-based
+    // rate limiting can be bypassed via X-Forwarded-For.
+    const raw = process.env.TRUST_PROXY_HOPS;
+    if (raw == null) return process.env.NODE_ENV === 'production' ? 1 : 0;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  })(),
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
   },

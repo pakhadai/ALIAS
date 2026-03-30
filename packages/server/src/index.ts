@@ -31,7 +31,7 @@ import type {
 const app = express();
 // Behind reverse proxies (e.g. Nginx Proxy Manager) we rely on X-Forwarded-* headers
 // for correct client IP handling (e.g. express-rate-limit).
-app.set('trust proxy', true);
+app.set('trust proxy', config.trustProxyHops);
 app.use(cors({ origin: config.cors.origin }));
 
 // Stripe webhook needs raw body BEFORE express.json()
