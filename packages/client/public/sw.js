@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'alias-master-v6';
+const CACHE_NAME = 'alias-master-v7';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
   // Skip PeerJS/WebSocket connections
   if (event.request.url.includes('peerjs') || event.request.url.includes('wss://')) return;
 
-  // Allow caching of critical CDN resources (Tailwind, Google Fonts) for offline support
+  // Allow caching of critical CDN resources (Google Fonts) for offline support
   const isCacheableCDN = CACHEABLE_CDNS.some(cdn => event.request.url.includes(cdn));
 
   // Skip other external requests
@@ -87,8 +87,9 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // Network failed, return cached if available
-        return cachedResponse;
+        // Network failed — return cached if available, otherwise a controlled error response.
+        // Returning `undefined` here breaks `respondWith` and can surface as failed resource loads.
+        return cachedResponse || new Response('', { status: 504, statusText: 'Offline' });
       });
       return cachedResponse || fetchPromise;
     })
