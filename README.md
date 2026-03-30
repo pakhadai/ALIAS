@@ -803,6 +803,8 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
 4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.
 
+**Примітка для Nginx Proxy Manager (NPM):** якщо NPM працює у зовнішній docker-мережі `proxy`, сервіс `gateway` (з `docker-compose.npm.yml`) також має бути підключений до цієї мережі, інакше NPM не резолвить хост `gateway` та віддає `502 Bad Gateway`. У репо це зафіксовано як `networks.proxy.name: proxy` + `gateway.networks: [default, proxy]`.
+
 Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
 **Якщо в Actions помилка `ssh: unable to authenticate … no supported methods remain`:** (1) Локально перевір `ssh -i приватний_ключ -p порт VPS_USER@VPS_HOST`. (2) У GitHub secret `VPS_SSH_PRIVATE_KEY` — **цілий** приватний файл (`BEGIN`…`END`), без лапок навколо всього блоку. (3) Публічний ключ з пари має бути в `~VPS_USER/.ssh/authorized_keys` на сервері. (4) Якщо локально вхід ок, а Actions ні — workflow записує ключ у файл і використовує `key_path` (не сирий `key:`), щоб багаторядковий secret не псувався. (5) Для ключа **без** passphrase secret `VPS_SSH_PASSPHRASE` **не створюй** (порожній secret може заважати). Ключ **з** passphrase — зараз у workflow поле passphrase не передається; тоді або ключ без пароля для CI, або доведеться розширити workflow.

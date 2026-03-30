@@ -146,6 +146,7 @@
 - [`nginx/npm-edge.conf`](./nginx/npm-edge.conf) — HTTP edge: `/api`, `/socket.io`, SPA.
 
 ### Fixed
+- [`docker-compose.npm.yml`](./docker-compose.npm.yml): `gateway` завжди підключається до зовнішньої мережі **`proxy`** через `networks.proxy.name: proxy`, щоб NPM резолвив `gateway` (інакше після деплою буде `502 Bad Gateway`).
 - [`.dockerignore`](./.dockerignore): прибрано `packages/client`, інакше збірка client-образа в Docker падає.
 - [`packages/client/Dockerfile`](./packages/client/Dockerfile): healthcheck на `/health`, `127.0.0.1`, довший `start-period`.
 
