@@ -451,6 +451,13 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |---------|------|
 | `useAudio(settings)` | Повертає `{ play(type) }` — делегує в `playSoundEffect` якщо `soundEnabled` |
 
+### `utils/haptics.ts`
+
+| Експорт | Опис |
+|---------|------|
+| `vibrate(pattern)` | Безпечний wrapper над `navigator.vibrate` з урахуванням user preference `hapticsEnabled` у `localStorage` |
+| `HAPTIC` | Пресети патернів вібрації: `nav`, `correct`, `skip`, `timeUp` |
+
 ### `hooks/useInstallPrompt.ts`
 
 | Експорт | Опис |
@@ -526,7 +533,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | Експорт | Тип | Опис |
 |---------|-----|------|
 | `ErrorBoundary` | class | Ловить помилки React-дерева |
-| `PageTransition` | FC | Обгортка анімації переходу |
+| `PageTransition` | FC | Обгортка анімації переходу між екранами (короткий м’який вхід) |
 | `Confetti` | FC | Ефект конфеті |
 | `ToastNotification` | FC | Тост повідомлення |
 | `ConfirmationModal` | FC | Модалка підтвердження |

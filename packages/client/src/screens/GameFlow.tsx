@@ -9,6 +9,7 @@ import { useGame } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
 import { AvatarDisplay } from '../components/AvatarDisplay';
 import { usePlayerStats } from '../hooks/usePlayerStats';
+import { vibrate, HAPTIC } from '../utils/haptics';
 
 // VS Screen: Animated 1v1 / 1v1v1 matchup display
 export const VSScreen = () => {
@@ -199,7 +200,10 @@ export const CountdownScreen = () => {
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>
-      <span className={`text-[12rem] font-serif font-black animate-ping ${currentTheme.textMain}`}>
+      <span
+        key={count}
+        className={`text-[9rem] sm:text-[11rem] font-sans font-black tracking-tight animate-countdown-hit ${currentTheme.textMain}`}
+      >
         {count}
       </span>
     </div>
@@ -241,6 +245,7 @@ export const PlayingScreen = () => {
   const canUseButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const isCriticalTime = timeLeft <= 10;
   const isUrgentTime = timeLeft <= 5;
+  const [wordExit, setWordExit] = useState<null | 'left' | 'right'>(null);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -258,7 +263,7 @@ export const PlayingScreen = () => {
   const timeUpVibratedRef = useRef(false);
   useEffect(() => {
     if (timeUp && isActualExplainer && !timeUpVibratedRef.current && navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
+      vibrate(HAPTIC.timeUp);
       timeUpVibratedRef.current = true;
     }
     if (!timeUp) timeUpVibratedRef.current = false;
@@ -266,24 +271,34 @@ export const PlayingScreen = () => {
 
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
-    if (timeLeft <= 6 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
+    if (timeLeft <= 10 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
   }, [timeLeft, gameState, isPaused, settings.soundEnabled, playSound]);
 
   const onAction = (type: 'correct' | 'skip', x: number, y: number) => {
       if (isPaused || actionProcessingRef.current) return;
       actionProcessingRef.current = true;
 
-      if (type === 'correct') {
-          if (navigator.vibrate) navigator.vibrate(60);
-          playerStats.increment('wordsGuessed');
-          handleCorrect();
-          setParticles(prev => [...prev, { id: Date.now(), x, y, text: '+1', color: '#10b981' }]);
-      } else {
-          if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
-          playerStats.increment('wordsSkipped');
-          handleSkip();
-          setParticles(prev => [...prev, { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: '#ef4444' }]);
-      }
+      const teamColor =
+        (activeTeam && typeof (activeTeam as any).colorHex === 'string' && (activeTeam as any).colorHex)
+          ? (activeTeam as any).colorHex
+          : (type === 'correct' ? '#10b981' : '#ef4444');
+
+      setWordExit(type === 'correct' ? 'right' : 'left');
+      if (type === 'correct') vibrate(HAPTIC.correct);
+      else vibrate(HAPTIC.skip);
+
+      window.setTimeout(() => {
+        if (type === 'correct') {
+            playerStats.increment('wordsGuessed');
+            handleCorrect();
+            setParticles(prev => [...prev, { id: Date.now(), x, y, text: '+1', color: teamColor }]);
+        } else {
+            playerStats.increment('wordsSkipped');
+            handleSkip();
+            setParticles(prev => [...prev, { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: teamColor }]);
+        }
+        setWordExit(null);
+      }, 120);
 
       const ACTION_DEBOUNCE_MS = 300;
       setTimeout(() => {
@@ -291,8 +306,17 @@ export const PlayingScreen = () => {
       }, ACTION_DEBOUNCE_MS);
   };
 
+  const pctLeft = settings.roundTime > 0 ? (timeLeft / settings.roundTime) : 0;
+  const dangerBar = pctLeft <= 0.2;
+
   return (
-      <div className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}>
+      <div
+        className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
         {particles.map(p => <FloatingParticle key={p.id} {...p} onComplete={() => setParticles(prev => prev.filter(x => x.id !== p.id))} />)}
 
         {/* Pause Overlay */}
@@ -309,21 +333,25 @@ export const PlayingScreen = () => {
         )}
 
         {/* Progress Bar Header */}
-        <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-6 z-20">
+        <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-5 z-20">
           {timeUp && canUseButtons && (
             <p className="text-center text-champagne-gold text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
               {t.finishWord}
             </p>
           )}
-          <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
+          <div className="w-full h-[5px] bg-white/5 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full shadow-[0_0_10px_rgba(243,229,171,0.5)] transition-all duration-1000 ease-linear ${isCriticalTime ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-champagne-gold'}`}
+              className={`h-full rounded-full transition-[width,background-color,box-shadow] duration-300 ease-linear ${
+                dangerBar
+                  ? 'bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.55)]'
+                  : `${currentTheme.progressBar} shadow-[0_0_14px_rgba(243,229,171,0.35)]`
+              }`}
               style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }}
             />
           </div>
 
           <div className="flex justify-between items-center w-full">
-            <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-red-500' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}>
+            <div className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-red-500 animate-pulse' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}>
               {formatTime(timeLeft)}
             </div>
 
@@ -347,10 +375,17 @@ export const PlayingScreen = () => {
         {/* Word Card */}
         <main className="flex-1 flex flex-col items-center justify-center w-full px-8 relative z-10 pb-24">
             {canSeeWord ? (
-                <div className={`w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform transition-all duration-300 border animate-pop-in ${isCriticalTime ? 'border-red-500/40 animate-pulse' : 'border-white/5'}`}>
+                <div
+                  key={currentWord}
+                  className={`w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform border ${
+                    isCriticalTime ? 'border-red-500/40' : 'border-white/5'
+                  } transition-all duration-150 ease-out ${
+                    wordExit === 'right' ? 'opacity-0 translate-x-4' : wordExit === 'left' ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0 animate-pop-in'
+                  }`}
+                >
                   <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
                   <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
-                  <h2 className="text-premium-white font-serif font-bold text-4xl sm:text-5xl text-center leading-tight tracking-wider uppercase break-words w-full drop-shadow-md">
+                  <h2 className="text-premium-white font-sans font-black text-5xl sm:text-6xl text-center leading-tight tracking-tight uppercase break-words w-full drop-shadow-md">
                       {currentWord}
                   </h2>
                 </div>
@@ -365,10 +400,13 @@ export const PlayingScreen = () => {
 
         {/* Action Buttons Footer */}
         {canUseButtons && (
-          <footer className="w-full fixed bottom-0 left-0 z-20 h-24 sm:h-28 flex">
+          <footer
+            className="w-full fixed bottom-0 left-0 z-20 flex"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
             <button
                 onClick={(e) => onAction('skip', e.clientX, e.clientY)}
-                className="flex-1 h-full bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5"
+                className="flex-1 h-24 sm:h-28 bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5"
             >
               <span className="material-symbols-outlined text-burgundy-text text-3xl group-active:scale-90 transition-transform">close</span>
               <span className="text-burgundy-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-burgundy-text transition-colors">
@@ -377,7 +415,7 @@ export const PlayingScreen = () => {
             </button>
             <button
                 onClick={(e) => onAction('correct', e.clientX, e.clientY)}
-                className="flex-1 h-full bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5 border-l border-l-white/5"
+                className="flex-1 h-24 sm:h-28 bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5 border-l border-l-white/5"
             >
               <span className="material-symbols-outlined text-forest-green-text text-3xl group-active:scale-90 transition-transform font-bold">check</span>
               <span className="text-forest-green-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-forest-green-text transition-colors">
@@ -479,6 +517,7 @@ export const RoundSummaryScreen = () => {
 export const ScoreboardScreen = () => {
   const { teams, settings, handleNextRound, isHost } = useGame();
   const t = TRANSLATIONS[settings.language];
+  const [mounted, setMounted] = useState(false);
 
   const isDark = settings.theme === AppTheme.PREMIUM_DARK;
   const bgColor = isDark ? 'bg-premium-dark-bg' : 'bg-silver-bg';
@@ -487,6 +526,11 @@ export const ScoreboardScreen = () => {
 
   const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
   const goal = settings.scoreToWin;
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setMounted(true), 30);
+    return () => window.clearTimeout(t);
+  }, []);
 
   return (
     <div className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}>
@@ -571,14 +615,14 @@ export const ScoreboardScreen = () => {
                     <div className={`bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden w-24 ${isDark ? 'bg-white/10' : 'bg-gray-100'}`}>
                       <div
                         className="h-full rounded-full transition-all duration-1000 ease-out"
-                        style={{ backgroundColor: team.colorHex || '#888', width: `${progress}%` }}
+                        style={{ backgroundColor: team.colorHex || '#888', width: mounted ? `${progress}%` : '0%' }}
                       ></div>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className={`block text-2xl font-serif ${textColor}`}>{team.score}</span>
-                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t.points}</span>
+                  <span className={`text-[10px] uppercase tracking-widest ${subTextColor}`}>{t.points}</span>
                 </div>
               </div>
             );

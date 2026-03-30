@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText, PackageOpen } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText, PackageOpen, Copy, Loader2 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
 import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
@@ -18,11 +18,13 @@ function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
 }
 
 export const LobbyScreen = () => {
-  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer, leaveRoom } = useGame();
+  const { setGameState, currentTheme, roomCode, players, settings, sendAction, isHost, gameMode, myPlayerId, connectionError, isConnected, addOfflinePlayer, removeOfflinePlayer, leaveRoom, showNotification } = useGame();
   const t = TRANSLATIONS[settings.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [kickTarget, setKickTarget] = useState<{ id: string; name: string } | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(AVATARS[0]);
 
@@ -35,6 +37,26 @@ export const LobbyScreen = () => {
   }, [joinUrl, gameMode, roomCode]);
 
   const canCreateTeams = players.length >= 2;
+  const categoriesPreview = useMemo(() => {
+    const cats = settings.categories ?? [];
+    const names = cats
+      .map((cat) => {
+        const key = `cat_${String(cat).toLowerCase()}` as keyof typeof t;
+        return t[key] ?? String(cat);
+      })
+      .slice(0, 2);
+    const rest = Math.max(0, cats.length - names.length);
+    return rest > 0 ? `${names.join(', ')} +${rest}` : names.join(', ');
+  }, [settings.categories, t]);
+
+  const copyRoomCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      showNotification(t.shareCopied ?? 'Copied!', 'success');
+    } catch {
+      showNotification('Clipboard недоступний', 'error');
+    }
+  };
 
   return (
     <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
@@ -53,6 +75,37 @@ export const LobbyScreen = () => {
         confirmText={t.confirmExit}
         cancelText={t.goBack}
       />
+
+      <ConfirmationModal
+        isOpen={!!kickTarget}
+        title={t.kickConfirmTitle ?? 'Вигнати гравця?'}
+        message={(t.kickConfirmMsg ?? 'Точно вигнати {0}?').replace('{0}', kickTarget?.name ?? '')}
+        isDanger
+        theme={currentTheme}
+        onCancel={() => setKickTarget(null)}
+        onConfirm={() => {
+          if (kickTarget) sendAction({ action: 'KICK_PLAYER', data: kickTarget.id });
+          setKickTarget(null);
+        }}
+        confirmText={t.kickConfirmYes ?? 'Так, вигнати'}
+        cancelText={t.goBack}
+      />
+
+      {showQrModal && qrCodeData && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div className="flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl ring-1 ring-black/5 animate-pop-in">
+              <img src={qrCodeData} alt="QR" className="w-72 h-72 rounded-2xl" />
+            </div>
+            <p className="text-white/80 text-[10px] uppercase tracking-[0.5em] font-bold animate-pulse">
+              {t.scanToJoin ?? 'Відскануйте для приєднання'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <header className="flex justify-between items-center py-6 mb-4 shrink-0">
         <button onClick={() => setShowExitConfirm(true)} className="p-2 opacity-30 hover:opacity-100 transition-opacity">
@@ -88,14 +141,42 @@ export const LobbyScreen = () => {
         {gameMode === 'ONLINE' && qrCodeData && (
           <div className="w-full max-w-xs text-center space-y-4">
             <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setShowQrModal(true)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowQrModal(true); }}
               className={`p-4 rounded-3xl inline-block shadow-2xl ${
                 currentTheme.isDark ? 'bg-white ring-1 ring-white/10' : 'bg-white ring-1 ring-slate-200/80'
-              }`}
+              } transition-transform duration-150 ease-out active:scale-95 cursor-pointer`}
             >
               <img src={qrCodeData} alt="QR" className="w-32 h-32 rounded-lg" />
             </div>
             <p className={`text-[8px] uppercase tracking-[0.5em] font-bold ${currentTheme.textSecondary}`}>{t.roomCode}</p>
-            <span className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>{roomCode}</span>
+            <button
+              type="button"
+              onClick={copyRoomCode}
+              className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-150 ease-out active:scale-95 ${
+                currentTheme.isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 hover:bg-slate-50'
+              }`}
+              title={t.copyRoomCodeTitle ?? 'Скопіювати код'}
+            >
+              <span className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>{roomCode}</span>
+              <Copy size={18} className={currentTheme.iconColor} />
+            </button>
+
+            {!isHost && (
+              <div className="flex flex-wrap justify-center gap-2 pt-2">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                  currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
+                }`}>⏱ {settings.roundTime}s</span>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                  currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
+                }`}>🏆 {settings.scoreToWin} {t.pts}</span>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                  currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
+                }`}>📚 {categoriesPreview || '—'}</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -132,7 +213,7 @@ export const LobbyScreen = () => {
                   {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
                     <button
                       type="button"
-                      onClick={() => sendAction({ action: 'KICK_PLAYER', data: p.id })}
+                      onClick={() => setKickTarget({ id: p.id, name: p.name })}
                       className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
                       title={t.kickPlayerTitle}
                     >
@@ -221,16 +302,19 @@ export const LobbyScreen = () => {
       <footer className="w-full max-w-sm mx-auto py-8">
         {isHost ? (
           players.length <= 3 ? (
-            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'START_DUEL' })} disabled={!canCreateTeams}>
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'START_DUEL' })} disabled={!canCreateTeams} className={canCreateTeams ? 'animate-pulse' : ''}>
               {t.startGame}
             </Button>
           ) : (
-            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'GENERATE_TEAMS' })} disabled={!canCreateTeams}>
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={() => sendAction({ action: 'GENERATE_TEAMS' })} disabled={!canCreateTeams} className={canCreateTeams ? 'animate-pulse' : ''}>
               {t.createTeams}
             </Button>
           )
         ) : (
-          <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">{t.waitHost}</p>
+          <div className="flex items-center justify-center gap-3 text-center text-[10px] uppercase tracking-widest opacity-60">
+            <Loader2 size={16} className={`animate-spin ${currentTheme.iconColor}`} />
+            <span className="animate-pulse">{t.waitHost}</span>
+          </div>
         )}
       </footer>
       </div>
@@ -257,7 +341,11 @@ export const TeamSetupScreen = () => {
 
         <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar">
             {teams.map((team: any) => (
-                <div key={team.id} className={`p-6 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+                <div
+                  key={team.id}
+                  className={`p-6 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}
+                  style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
+                >
                     <div className="flex items-center gap-3 mb-4">
                         <div className={`w-3 h-3 rounded-full ${team.color}`} />
                         <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{team.name}</h3>
@@ -319,6 +407,16 @@ export const SettingsScreen = () => {
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
   const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
   const isDark = currentTheme.isDark;
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('alias_preferences');
+      if (!raw) return true;
+      const prefs = JSON.parse(raw);
+      return prefs?.hapticsEnabled !== false;
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     fetchStore()
@@ -331,6 +429,15 @@ export const SettingsScreen = () => {
     if (gameState !== GameState.LOBBY && gameState !== GameState.MENU && gameState !== GameState.SETTINGS) return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
+  };
+
+  const setHapticsPref = (next: boolean) => {
+    setHapticsEnabled(next);
+    try {
+      const raw = localStorage.getItem('alias_preferences');
+      const prefs = raw ? JSON.parse(raw) : {};
+      localStorage.setItem('alias_preferences', JSON.stringify({ ...prefs, hapticsEnabled: next }));
+    } catch {}
   };
 
   const togglePack = (packId: string) => {
@@ -552,6 +659,21 @@ export const SettingsScreen = () => {
                     </div>
                 </div>
             )}
+
+            <div className="space-y-4">
+                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>Вібрація</p>
+                <button
+                    onClick={() => setHapticsPref(!hapticsEnabled)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                      hapticsEnabled ? 'border-yellow-500 bg-yellow-500/10' : (isDark ? 'border-white/5 bg-white/5 opacity-40' : 'border-slate-200 bg-slate-50 opacity-60')
+                    }`}
+                >
+                    <span className={currentTheme.textMain}>{hapticsEnabled ? 'Увімкнено' : 'Вимкнено'}</span>
+                    <div className={`w-12 h-6 rounded-full transition-all relative ${hapticsEnabled ? 'bg-yellow-500' : (isDark ? 'bg-white/20' : 'bg-slate-300')}`}>
+                        <div className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${hapticsEnabled ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                </button>
+            </div>
         </div>
 
         {/* Custom Deck picker */}

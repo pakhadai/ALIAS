@@ -27,21 +27,21 @@ function PackCard({ pack, onBuy, buying }: {
   buying: string | null;
 }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+    <div className="bg-[color:var(--ui-surface)] border border-[color:var(--ui-border)] rounded-2xl p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-lg">{LANG_FLAGS[pack.language] || '🌐'}</span>
-            <span className="font-semibold text-white text-sm">{pack.name.replace(/🇺🇦|🇬🇧|🇩🇪/g, '').trim()}</span>
+            <span className="font-semibold text-[color:var(--ui-fg)] text-sm">{pack.name.replace(/🇺🇦|🇬🇧|🇩🇪/g, '').trim()}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider">{pack.category}</span>
+            <span className="text-[10px] text-[color:var(--ui-fg-muted)] uppercase tracking-wider">{pack.category}</span>
             <span className="text-slate-600">·</span>
-            <span className="text-[10px] text-slate-400">{pack.wordCount} слів</span>
+            <span className="text-[10px] text-[color:var(--ui-fg-muted)]">{pack.wordCount} слів</span>
             {pack.difficulty !== 'mixed' && (
               <>
                 <span className="text-slate-600">·</span>
-                <span className="text-[10px] text-slate-400">{DIFF_LABELS[pack.difficulty] || pack.difficulty}</span>
+                <span className="text-[10px] text-[color:var(--ui-fg-muted)]">{DIFF_LABELS[pack.difficulty] || pack.difficulty}</span>
               </>
             )}
           </div>
@@ -56,7 +56,7 @@ function PackCard({ pack, onBuy, buying }: {
           <button
             onClick={() => onBuy(pack.id)}
             disabled={buying !== null}
-            className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-colors"
+            className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
           >
             {buying === pack.id ? <Loader2 size={12} className="animate-spin" /> : null}
             {pack.isFree ? 'Отримати' : formatPrice(pack.price)}
@@ -75,10 +75,10 @@ function ThemeCard({ theme, onBuy, buying }: {
 }) {
   const cfg = theme.config as Record<string, string>;
   return (
-    <div className={`border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-white/5'}`}>
+    <div className={`border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-[color:var(--ui-surface)]'}`}>
       <div>
-        <p className="font-semibold text-white text-sm">{theme.name}</p>
-        <p className="text-[10px] text-white/50 mt-0.5">Тема оформлення</p>
+        <p className="font-semibold text-[color:var(--ui-fg)] text-sm">{theme.name}</p>
+        <p className="text-[10px] text-[color:var(--ui-fg-muted)] mt-0.5">Тема оформлення</p>
       </div>
       {theme.owned ? (
         <div className="flex items-center gap-1.5 text-emerald-400 shrink-0">
@@ -89,7 +89,7 @@ function ThemeCard({ theme, onBuy, buying }: {
         <button
           onClick={() => onBuy(theme.id)}
           disabled={buying !== null}
-          className="shrink-0 h-8 px-3 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-colors"
+          className="shrink-0 h-8 px-3 rounded-full bg-[color:var(--ui-surface)] hover:bg-[color:var(--ui-surface-hover)] text-[color:var(--ui-fg)] text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
         >
           {buying === theme.id ? <Loader2 size={12} className="animate-spin" /> : <Lock size={12} />}
           {theme.isFree ? 'Отримати' : formatPrice(theme.price)}
@@ -106,13 +106,13 @@ function SoundCard({ sp, onBuy, buying }: {
   buying: string | null;
 }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3">
+    <div className="bg-[color:var(--ui-surface)] border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3">
       <div>
         <div className="flex items-center gap-2">
           <Music size={14} className="text-indigo-400" />
-          <span className="font-semibold text-white text-sm">{sp.name}</span>
+          <span className="font-semibold text-[color:var(--ui-fg)] text-sm">{sp.name}</span>
         </div>
-        <p className="text-[10px] text-slate-400 mt-0.5">Звуковий пресет</p>
+        <p className="text-[10px] text-[color:var(--ui-fg-muted)] mt-0.5">Звуковий пресет</p>
       </div>
       {sp.owned ? (
         <div className="flex items-center gap-1.5 text-emerald-400 shrink-0">
@@ -123,7 +123,7 @@ function SoundCard({ sp, onBuy, buying }: {
         <button
           onClick={() => onBuy(sp.id)}
           disabled={buying !== null}
-          className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-colors"
+          className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
         >
           {buying === sp.id ? <Loader2 size={12} className="animate-spin" /> : null}
           {sp.isFree ? 'Отримати' : formatPrice(sp.price)}
@@ -198,37 +198,37 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden">
+      <div className="fixed inset-0 z-50 flex flex-col bg-[color:var(--ui-bg)] overflow-hidden">
         {/* Header */}
-        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-white/10">
+        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-[color:var(--ui-border)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-indigo-500/20">
                 <ShoppingBag size={20} className="text-indigo-400" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">Магазин</h1>
-                <p className="text-xs text-slate-400">Додаткові словники, теми та звуки</p>
+                <h1 className="text-lg font-bold text-[color:var(--ui-fg)]">Магазин</h1>
+                <p className="text-xs text-[color:var(--ui-fg-muted)]">Додаткові словники, теми та звуки</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)] transition-all duration-150 ease-out active:scale-95"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-4 p-1 bg-white/5 rounded-xl">
+          <div className="flex gap-1 mt-4 p-1 bg-[color:var(--ui-surface)] rounded-xl">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold tracking-wider transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold tracking-wider transition-all duration-150 ease-out active:scale-95 ${
                   activeTab === tab.id
                     ? 'bg-indigo-600 text-white'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)]'
                 }`}
               >
                 {tab.icon}
@@ -309,7 +309,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
         </div>
 
         {/* Footer note */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-white/5">
+        <div className="flex-shrink-0 px-5 py-3 border-t border-[color:var(--ui-border)]">
           <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px]">
             <ExternalLink size={10} />
             <span>Оплата через Stripe — безпечно та швидко</span>

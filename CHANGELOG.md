@@ -30,6 +30,110 @@
 
 ---
 
+## [2026-03-30] — UI: theme-safe базові компоненти, швидкий фідбек
+
+### Fixed
+- Світла тема (`PREMIUM_LIGHT`) більше не ламається через хардкод `text-white/bg-white` у базових варіантах кнопок/карток.
+- Які файли змінено: `packages/client/src/components/Button.tsx`, `packages/client/src/components/Card.tsx`, `packages/client/src/context/GameContext.tsx`.
+- Чому: компоненти мають брати семантичні кольори/токени теми, а не припущення «завжди темно».
+
+### Changed
+- Прискорено мікроінтеракції кнопок: `duration-150 ease-out`, збережено `active:scale-95`.
+- Які файли змінено: `packages/client/src/components/Button.tsx`.
+- Чому: девіз гри про швидкість; 300 мс відчувалось «в’язко».
+
+### Added
+- Короткий системний “click” звук, прив’язаний до натискання кнопки (якщо звук увімкнено).
+- Які файли змінено: `packages/client/src/utils/audio.ts`, `packages/client/src/hooks/useAudio.ts`, `packages/client/src/components/Button.tsx`.
+- Чому: поєднання анімації + звуку дає відчуття матеріальності.
+
+### Changed
+- Колір `FloatingParticle` (`+1/-1`) тепер прив’язаний до кольору активної команди (`team.colorHex`).
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: підсилює змагальність і візуальний зв’язок з командою.
+
+### Changed
+- Уніфіковано press-патерн (`active:scale-95`) для клікабельних store-карток.
+- Які файли змінено: `packages/client/src/screens/MenuFlow.tsx`.
+- Чому: однакова “фізика” та м’язова пам’ять по всьому застосунку.
+
+### Added
+- Haptic feedback (вібрація) з можливістю вимкнути в налаштуваннях (зберігається локально).
+- Які файли змінено: `packages/client/src/utils/haptics.ts`, `packages/client/src/screens/LobbyFlow.tsx`, `packages/client/src/screens/GameFlow.tsx`.
+- Чому: тактильний відгук критично підсилює фідбек на мобільних (PWA).
+
+### Changed
+- Анімація картки зі словом у `PLAYING`: підтвердження дії через fade/slide при `CORRECT`/`SKIP`, поява нового слова — швидко й м’яко.
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: гравець периферійним зором бачить, що дія зарахована.
+
+### Changed
+- “Стресовий” таймер на останніх 10 секундах: пульсація + червоний колір; tick-звук для останніх 10 сек.
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: таймер — головний драйвер напруги, має відчуватись.
+
+### Changed
+- `PageTransition`: короткий м’який вхід (opacity + translateY, ~180ms) без “в’язких” затримок.
+- Які файли змінено: `packages/client/src/components/Shared.tsx`, `packages/client/src/App.tsx`, `packages/client/index.html`.
+- Чому: переходи між станами не повинні смикатись і дратувати гравця.
+
+### Changed
+- Scoreboard: прогрес-бар команд анімовано заповнюється при вході на екран.
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: додає відчуття “зароблених” очок.
+
+### Fixed
+- Узгоджено правила гри з фактичним UI: в `PLAYING` використовуються кнопки `Correct/Skip` (свайпів немає) — згадки про свайпи прибрано/замінено.
+- Які файли змінено: `packages/client/src/constants.ts`.
+- Чому: уникнення плутанини для гравця (один стандарт взаємодії).
+
+### Changed
+- Поліпшено копірайт/локалізації: DE/EN слоган, DE “Skip” як `Überspringen`, уточнено тексти правил та опис категорій.
+- Які файли змінено: `packages/client/src/constants.ts`.
+- Чому: природніший текст і консистентність термінів.
+
+### Changed
+- `takePhone`: замінено “START/ПОЧАТИ” на семантичні “I'M READY / ICH BIN BEREIT / Я ГОТОВИЙ”.
+- Які файли змінено: `packages/client/src/constants.ts`.
+- Чому: відокремити підготовчу дію від старту гри.
+
+### Fixed
+- Розширено `MOCK_WORDS` для EN/DE, щоб офлайн-раунд не вичерпував колоду надто швидко.
+- Які файли змінено: `packages/shared/src/constants.ts`.
+- Чому: стабільніший офлайн-режим; виконано `pnpm --filter @alias/shared build`.
+
+### Changed
+- `PLAYING`: підвищено читабельність головного слова (font-sans/font-black, більший розмір); прогрес-бар таймера став товстішим, використовує `currentTheme.progressBar`, і переходить у “danger” при <20% часу.
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: швидше зчитування слова під стресом + периферійне відчуття таймера.
+
+### Changed
+- `COUNTDOWN`: кінематографічний відлік (scale-in + fade-out для кожної цифри).
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`, `packages/client/index.html`.
+- Чому: сильніший ритм/адреналін перед стартом раунду.
+
+### Fixed
+- PWA safe areas (notch/home indicator): додано `env(safe-area-inset-top/bottom)` для `PLAYING`, включно з нижнім футером кнопок.
+- Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.
+- Чому: елементи не перекриваються системними зонами на iOS.
+
+### Changed
+- Командні кольори як делікатний акцент: у списку команд використано ліву кольорову смугу замість “заливки” кольором.
+- Які файли змінено: `packages/client/src/screens/LobbyFlow.tsx`.
+- Чому: менше візуального шуму при насичених темах (FOREST/CYBERPUNK).
+
+### Added
+- Лобі: модальне збільшення QR-коду (білий фон для кращого сканування) + підказка “Scan to join”.
+- Лобі: копіювання коду кімнати в 1 клік (Clipboard API) + toast.
+- Лобі: підтвердження кіку гравця (захист від випадкового натискання).
+- Які файли змінено: `packages/client/src/screens/LobbyFlow.tsx`, `packages/client/src/constants.ts`.
+- Чому: швидше приєднання, менше помилок, кращий мобільний UX.
+
+### Changed
+- Лобі: для гостей додано read-only прев’ю налаштувань (пігулки: час/ціль/категорії) та стан очікування зі спінером; для хоста CTA пульсує коли можна стартувати.
+- Які файли змінено: `packages/client/src/screens/LobbyFlow.tsx`.
+- Чому: чіткий розподіл ролей хост/гість і менше питань “за якими правилами граємо?”.
+
 ## [2026-03-29] — VPS: NPM compose у репо, dockerignore, Actions
 
 ### Added

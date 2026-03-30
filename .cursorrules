@@ -1,0 +1,38 @@
+# Alias Master - Project Context & AI Agent Skills
+
+## 🛠 Tech Stack
+- **Monorepo**: pnpm workspaces (`@alias/client`, `@alias/server`, `@alias/shared`, `@alias/e2e`).
+- **Frontend**: React 19, TypeScript, Vite 7, Tailwind CSS, PWA.
+- **Backend**: Node.js, Express 4, Socket.IO 4.8, TypeScript.
+- **Database & Cache**: PostgreSQL 16 (via Prisma ORM), Redis 7 (ioredis).
+- **Validation & Auth**: Zod, JWT, Google OAuth.
+- **Testing**: Vitest (backend unit tests), Playwright (E2E).
+- **Deployment**: Docker, Nginx.
+
+## 🏛 Architecture & Patterns
+1. **Authoritative Server**: Вся ігрова логіка виконується виключно на сервері (`packages/server/src/services/GameEngine.ts`). Клієнт є "тонким" і лише відображає стан.
+2. **State Machine замість Routing**: На клієнті немає URL-роутингу. Екрани змінюються на основі `GameState` через `GameRouter` (`packages/client/src/App.tsx`).
+3. **Full State Sync**: Після кожної ігрової дії сервер надсилає клієнтам повний об'єкт стану `GameSyncState`, клієнти повністю замінюють свій стан.
+4. **Dual Mode (Онлайн/Офлайн)**: `GameContext` на клієнті підтримує обидва режими. В онлайні дії йдуть через Socket.IO, в офлайні — обробляються локально в `handleGameAction`.
+5. **Shared Package**: Пакет `@alias/shared` є єдиним джерелом істини для типів та констант.
+
+## 🚨 CRITICAL RULES FOR AI DEVELOPERS (MUST FOLLOW)
+- **Rule 1 (GameSyncState)**: НІКОЛИ не змінюй інтерфейс `GameSyncState` без одночасного оновлення логіки і клієнта, і сервера — вони жорстко пов'язані.
+- **Rule 2 (Game Actions)**: При додаванні нової дії (`GameAction`) ОБОВ'ЯЗКОВО:
+  1. Додати її в union-тип в `packages/shared/src/types.ts`.
+  2. Додати її в Set `validActions` у `packages/server/src/validation/schemas.ts`.
+  3. Обробити її в `packages/server/src/services/GameEngine.ts` (метод `handleAction`).
+- **Rule 3 (Game State)**: При додаванні нового екрану чи стану (`GameState`) ОБОВ'ЯЗКОВО:
+  1. Додати його в enum `GameState` (`packages/shared/src/enums.ts`).
+  2. Оновити `GameRouter` у `packages/client/src/App.tsx`.
+- **Rule 4 (Security & Auth)**: Завжди перевіряй авторизацію дій в `packages/server/src/handlers/socketHandlers.ts`. Дії хоста (host-only) та дії того, хто пояснює (explainer-only), повинні суворо перевірятися.
+- **Rule 5 (Shared Package)**: Якщо ти змінюєш файли в `packages/shared/`, ти МАЄШ виконати команду `pnpm build:shared`, інакше зміни не підтягнуться в клієнт чи сервер.
+- **Rule 6 (Context)**: Перед написанням коду завжди звертайся до `CODE_REFERENCE.md` та `CHANGELOG.md`, щоб розуміти існуючу структуру та історію змін.
+
+## 💻 Commands
+- **Dev**: `pnpm run dev` (паралельний запуск клієнта і сервера)
+- **Build Shared**: `pnpm --filter @alias/shared build`
+- **DB Push**: `pnpm --filter @alias/server db:push`
+- **Prisma Studio**: `pnpm --filter @alias/server exec prisma studio`
+- **Test Server**: `pnpm test:server`
+- **Test E2E**: `pnpm test:e2e:ui`

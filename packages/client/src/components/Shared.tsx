@@ -54,7 +54,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="animate-fade-in w-full h-full flex flex-col">
+  <div className="animate-page-in w-full h-full flex flex-col">
     {children}
   </div>
 );

@@ -43,7 +43,7 @@ const createOsc = (
     return osc;
 };
 
-export const playSoundEffect = (type: 'correct' | 'skip' | 'start' | 'end' | 'tick' | 'win', preset: SoundPreset = SoundPreset.FUN) => {
+export const playSoundEffect = (type: 'correct' | 'skip' | 'start' | 'end' | 'tick' | 'win' | 'click', preset: SoundPreset = SoundPreset.FUN) => {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
@@ -59,6 +59,10 @@ export const playSoundEffect = (type: 'correct' | 'skip' | 'start' | 'end' | 'ti
         case SoundPreset.EIGHT_BIT:
             // 8-Bit Style: Square and Sawtooth waves, abrupt endings
             switch (type) {
+                case 'click':
+                    createOsc(ctx, 'square', 1200, now, 0.03, 0.04, 'linear');
+                    createOsc(ctx, 'square', 900, now + 0.03, 0.03, 0.035, 'linear');
+                    break;
                 case 'correct':
                     createOsc(ctx, 'square', 880, now, 0.1, 0.1, 'linear'); // A5
                     createOsc(ctx, 'square', 1760, now + 0.1, 0.2, 0.1, 'linear'); // A6
@@ -93,6 +97,9 @@ export const playSoundEffect = (type: 'correct' | 'skip' | 'start' | 'end' | 'ti
         case SoundPreset.MINIMAL:
             // Minimal Style: Sine waves, soft attacks, quiet
             switch (type) {
+                case 'click':
+                    createOsc(ctx, 'sine', 900, now, 0.03, 0.03);
+                    break;
                 case 'correct':
                     createOsc(ctx, 'sine', 600, now, 0.2, 0.1);
                     break;
@@ -119,6 +126,9 @@ export const playSoundEffect = (type: 'correct' | 'skip' | 'start' | 'end' | 'ti
         default:
             // Default "Fun" Style: Mixed waves, slides, existing logic
             switch (type) {
+                case 'click':
+                    createOsc(ctx, 'triangle', 850, now, 0.035, 0.05);
+                    break;
                 case 'correct':
                     createOsc(ctx, 'sine', 523.25, now, 0.1, 0.1); // C5
                     createOsc(ctx, 'sine', 659.25, now + 0.1, 0.3, 0.1); // E5

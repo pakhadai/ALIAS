@@ -490,6 +490,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     r.style.setProperty('--font-heading', currentTheme.fonts.heading);
     r.style.setProperty('--font-body', currentTheme.fonts.body);
     r.style.setProperty('--theme-radius', currentTheme.borderRadius);
+
+    // Theme-safe semantic colors for base components (Button/Card fallbacks, etc.)
+    if (currentTheme.isDark) {
+      r.style.setProperty('--ui-bg', '#020617'); // slate-950
+      r.style.setProperty('--ui-fg', 'rgba(255,255,255,0.92)');
+      r.style.setProperty('--ui-fg-muted', 'rgba(255,255,255,0.55)');
+      r.style.setProperty('--ui-border', 'rgba(255,255,255,0.12)');
+      r.style.setProperty('--ui-surface', 'rgba(255,255,255,0.06)');
+      r.style.setProperty('--ui-surface-hover', 'rgba(255,255,255,0.10)');
+      r.style.setProperty('--ui-card', 'rgba(15,23,42,0.55)'); // slate-900 tint
+    } else {
+      r.style.setProperty('--ui-bg', '#F8FAFC'); // slate-50
+      r.style.setProperty('--ui-fg', '#0F172A'); // slate-900
+      r.style.setProperty('--ui-fg-muted', 'rgba(15,23,42,0.65)');
+      r.style.setProperty('--ui-border', 'rgba(15,23,42,0.14)');
+      r.style.setProperty('--ui-surface', 'rgba(15,23,42,0.06)');
+      r.style.setProperty('--ui-surface-hover', 'rgba(15,23,42,0.10)');
+      r.style.setProperty('--ui-card', 'rgba(255,255,255,0.90)');
+    }
   }, [currentTheme]);
 
   // Sync <html lang> with app language setting

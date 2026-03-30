@@ -31,8 +31,8 @@ const GameRouter = () => {
       case GameState.TEAMS: return <PageTransition key="teams"><TeamSetupScreen /></PageTransition>;
       case GameState.VS_SCREEN: return <PageTransition key="vs"><VSScreen /></PageTransition>;
       case GameState.PRE_ROUND: return <PageTransition key="pre_round"><PreRoundScreen /></PageTransition>;
-      case GameState.COUNTDOWN: return <div key="countdown" className="animate-fade-in"><CountdownScreen /></div>;
-      case GameState.PLAYING: return <div key="playing" className="animate-fade-in"><PlayingScreen /></div>;
+      case GameState.COUNTDOWN: return <div key="countdown" className="animate-page-in"><CountdownScreen /></div>;
+      case GameState.PLAYING: return <div key="playing" className="animate-page-in"><PlayingScreen /></div>;
       case GameState.ROUND_SUMMARY: return <PageTransition key="summary"><RoundSummaryScreen /></PageTransition>;
       case GameState.SCOREBOARD: return <PageTransition key="scoreboard"><ScoreboardScreen /></PageTransition>;
       case GameState.GAME_OVER: return <PageTransition key="gameover"><GameOverScreen /></PageTransition>;

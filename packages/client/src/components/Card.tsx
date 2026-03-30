@@ -11,7 +11,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, className = '', noPadding = false, themeClass, style }) => {
   // Removed hardcoded backdrop-blur-xl as it's often duplicated in theme configs
-  const bgStyle = themeClass || 'bg-gray-800/60 border border-white/10 backdrop-blur-md';
+  const bgStyle = themeClass || 'bg-[color:var(--ui-card)] border border-[color:var(--ui-border)] backdrop-blur-md';
   
   return (
     <div 

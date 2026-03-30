@@ -1648,7 +1648,7 @@ export const StoreScreen = () => {
           <>
             {/* Feature pack card */}
             {featurePacks.map(pack => (
-              <div key={pack.id} className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 ${
+              <div key={pack.id} className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-150 ease-out active:scale-95 ${
                 pack.owned
                   ? isDark ? 'bg-[#1A2A1A] border-[#A1E3C8]/30' : 'bg-emerald-50 border-emerald-200'
                   : 'border-[#D4AF6A]/40 bg-gradient-to-br from-[#D4AF6A]/8 to-transparent'
@@ -1684,7 +1684,7 @@ export const StoreScreen = () => {
             {visiblePacks.length === 0 ? (
             <p className={`text-center text-sm pt-12 ${currentTheme.textSecondary} opacity-40`}>Немає доступних наборів</p>
           ) : visiblePacks.map(pack => (
-            <div key={pack.id} className={`${cardBg} rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden`}>
+            <div key={pack.id} className={`${cardBg} rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden transition-all duration-150 ease-out active:scale-95`}>
               {pack.isFree && (
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-[#D4AF6A]/5 rounded-full blur-2xl pointer-events-none" />
               )}
