@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Clock, X, Check, Trophy, Star, Pause, Play, AlertCircle } from 'lucide-react';
+import { Clock, X, Check, Trophy, Star, Pause, Play } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Confetti, FloatingParticle, MilestoneNotification } from '../components/Shared';
@@ -221,6 +221,87 @@ export const CountdownScreen = () => {
   );
 };
 
+const GuesserFeedback = ({ correct, skipped, words, theme, t, teamColorHex }: {
+  correct: number;
+  skipped: number;
+  words: { word: string; result: string }[];
+  theme: any;
+  t: any;
+  teamColorHex?: string;
+}) => {
+  const lastCorrect = words.filter(w => w.result === 'correct').at(-1);
+  const prevCorrectRef = useRef(correct);
+  const [flash, setFlash] = useState(false);
+
+  useEffect(() => {
+    if (correct > prevCorrectRef.current) {
+      setFlash(true);
+      const id = window.setTimeout(() => setFlash(false), 600);
+      prevCorrectRef.current = correct;
+      return () => clearTimeout(id);
+    }
+    prevCorrectRef.current = correct;
+  }, [correct]);
+
+  const accentColor = teamColorHex || '#D4AF6A';
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-6 text-center w-full max-w-sm animate-fade-in">
+      <p className={`text-[9px] uppercase tracking-[0.5em] font-bold ${theme.textSecondary}`}>
+        {t.youGuess}
+      </p>
+
+      <div
+        key={correct}
+        className="animate-pop-in"
+      >
+        <span
+          className="text-[9rem] font-sans font-black tabular-nums leading-none"
+          style={{ color: accentColor }}
+        >
+          {correct}
+        </span>
+      </div>
+
+      <p className={`text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 ${theme.textMain}`}>
+        {t.guessed}
+      </p>
+
+      {lastCorrect && (
+        <div
+          key={lastCorrect.word}
+          className={`mt-4 px-6 py-3 rounded-2xl border transition-all animate-pop-in ${
+            flash ? 'scale-105' : ''
+          }`}
+          style={{
+            borderColor: `${accentColor}33`,
+            backgroundColor: `${accentColor}0D`,
+          }}
+        >
+          <p className="text-2xl font-serif uppercase tracking-wide" style={{ color: `${accentColor}CC` }}>
+            {lastCorrect.word}
+          </p>
+          <p className="text-[9px] uppercase tracking-widest font-bold mt-1 text-emerald-400/70">
+            ✓ {t.correct}
+          </p>
+        </div>
+      )}
+
+      {correct === 0 && (
+        <p className={`text-[10px] uppercase tracking-widest font-bold opacity-30 ${theme.textMain} animate-pulse`}>
+          {t.guesserListenHint}
+        </p>
+      )}
+
+      {skipped > 0 && (
+        <p className={`text-[10px] uppercase tracking-widest font-bold opacity-20 ${theme.textMain}`}>
+          {t.skippedWord}: {skipped}
+        </p>
+      )}
+    </div>
+  );
+};
+
 export const PlayingScreen = () => {
   const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, timeUp, togglePause, gameMode, sendAction } = useGame();
   const t = TRANSLATIONS[settings.language];
@@ -401,11 +482,14 @@ export const PlayingScreen = () => {
                   </h2>
                 </div>
             ) : (
-                <div className="space-y-8 opacity-40 text-center animate-fade-in">
-                    <AlertCircle size={64} className="mx-auto" />
-                    <p className={`text-xl font-serif text-white`}>{t.youGuess}</p>
-                    <p className={`text-[10px] uppercase tracking-widest font-bold text-text-sub-dark`}>{t.sayAloud}</p>
-                </div>
+                <GuesserFeedback
+                  correct={currentRoundStats.correct}
+                  skipped={currentRoundStats.skipped}
+                  words={currentRoundStats.words}
+                  theme={currentTheme}
+                  t={t}
+                  teamColorHex={(activeTeam as any)?.colorHex}
+                />
             )}
         </main>
 

@@ -203,13 +203,7 @@ export const LobbyScreen = () => {
                     </span>
                   )}
                 </div>
-                <div className="ml-auto flex items-center gap-3 shrink-0">
-                  {p.id === myPlayerId && online && (
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg" title={t.playerOnlineHint} />
-                  )}
-                  {p.id === myPlayerId && !online && gameMode === 'ONLINE' && (
-                    <div className="w-2 h-2 rounded-full bg-amber-500 shadow-lg animate-pulse" title={t.playerDisconnected} />
-                  )}
+                <div className="ml-auto flex items-center gap-2 shrink-0">
                   {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
                     <button
                       type="button"
@@ -228,6 +222,12 @@ export const LobbyScreen = () => {
                     >
                       <Minus size={14} className="text-red-400 group-hover:text-red-300" />
                     </button>
+                  )}
+                  {gameMode === 'ONLINE' && online && (
+                    <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" title={t.playerOnlineHint} />
+                  )}
+                  {gameMode === 'ONLINE' && !online && (
+                    <div className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.6)] animate-pulse" title={t.playerDisconnected} />
                   )}
                 </div>
               </div>
