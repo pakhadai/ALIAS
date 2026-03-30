@@ -10,7 +10,14 @@ import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+function normalizeBaseUrl(url: string): string {
+  return url.replace(/\/+$/, '');
+}
+
+// Prefer same-origin by default so Socket.IO works behind nginx gateway/NPM without CORS/host mismatch.
+const SERVER_URL =
+  (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
+  (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3001');
 
 interface UseSocketConnectionOptions {
   onStateSync: (state: GameSyncState) => void;
