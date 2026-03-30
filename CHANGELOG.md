@@ -134,6 +134,11 @@
 - Які файли змінено: `packages/client/src/screens/LobbyFlow.tsx`.
 - Чому: чіткий розподіл ролей хост/гість і менше питань “за якими правилами граємо?”.
 
+### Fixed
+- Prisma/DB drift: додано міграцію, яка додає відсутні в проді колонки (`WordPack.isDefault`, `User.isAdmin`) для відповідності `schema.prisma`.
+- Які файли змінено: `packages/server/prisma/migrations/20260330160000_align_schema_defaults/migration.sql`.
+- Чому: без цього Prisma може падати з `P2022` і проксі повертає 502 на ігрових/магазинних ендпойнтах.
+
 ## [2026-03-29] — VPS: NPM compose у репо, dockerignore, Actions
 
 ### Added
