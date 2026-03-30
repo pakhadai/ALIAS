@@ -18,4 +18,4 @@
 
 ## Деплой Alias з GitHub Actions
 
-За замовчуванням деплой у **`$HOME/apps/alias`** (регістр як на диску). Compose/env можна перевизначити secrets `VPS_COMPOSE_FILE` / `VPS_ENV_FILE`. Деталі — [README.md](../README.md).
+За замовчуванням деплой у **`$HOME/apps/ALIAS`** (регістр як на диску). Compose/env можна перевизначити secrets `VPS_COMPOSE_FILE` / `VPS_ENV_FILE`. Деталі — [README.md](../README.md).

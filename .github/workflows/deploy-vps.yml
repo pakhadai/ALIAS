@@ -4,7 +4,7 @@
 #   VPS_HOST              — IP або hostname сервера
 #   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
-#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: alias ≠ ALIAS). Якщо не задано — $HOME/apps/alias
+#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: alias ≠ ALIAS). Якщо не задано — $HOME/apps/ALIAS
 #
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
@@ -63,7 +63,7 @@ jobs:
             DEPLOY_PATH="${DEPLOY_PATH%/}"
             while [[ "$DEPLOY_PATH" == */ ]]; do DEPLOY_PATH="${DEPLOY_PATH%/}"; done
             if [ -z "$DEPLOY_PATH" ]; then
-              DEPLOY_PATH="$HOME/apps/alias"
+              DEPLOY_PATH="$HOME/apps/ALIAS"
               echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
             COMPOSE_FILE="${{ secrets.VPS_COMPOSE_FILE }}"
