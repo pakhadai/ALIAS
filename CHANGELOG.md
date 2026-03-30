@@ -77,6 +77,26 @@
 - Які файли змінено: `packages/client/src/components/Shared.tsx`, `packages/client/src/App.tsx`, `packages/client/index.html`.
 - Чому: переходи між станами не повинні смикатись і дратувати гравця.
 
+---
+
+## [2026-03-30] — Build/Deploy: Tailwind без CDN, PWA cache, docker edge
+
+### Fixed
+- **Tailwind v4 без CDN**: `styles.css` переведено на v4 синтаксис (`@import "tailwindcss";` + `@config`), щоб утиліти генерувались у build (і UI не був “голим”).
+- Які файли змінено: `packages/client/src/styles.css`.
+
+### Changed
+- **API base URL**: за замовчуванням клієнт використовує same-origin (`window.location.origin`), а `VITE_SERVER_URL` лишається лише як явний override (менше CORS/`www`-mismatch сюрпризів у проді).
+- Які файли змінено: `packages/client/src/services/api.ts`, `docker-compose.npm.yml`.
+
+### Changed
+- **Edge nginx (NPM stack)**: додано Docker DNS resolver для upstream’ів та вимкнено агресивний кеш для `sw.js` і `manifest.json`, щоб клієнти не застрягали на старому Service Worker (симптом “немає CSS”).
+- Які файли змінено: `nginx/npm-edge.conf`.
+
+### Added
+- **Auto-migrate on boot** для NPM/docker стеку: `prisma migrate deploy` запускається перед стартом `app` (ідемпотентно).
+- Які файли змінено: `docker-compose.npm.yml`.
+
 ### Changed
 - Scoreboard: прогрес-бар команд анімовано заповнюється при вході на екран.
 - Які файли змінено: `packages/client/src/screens/GameFlow.tsx`.

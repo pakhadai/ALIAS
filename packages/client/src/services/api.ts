@@ -1,4 +1,11 @@
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+function normalizeBaseUrl(url: string): string {
+  return url.replace(/\/+$/, '');
+}
+
+// Prefer same-origin by default. This avoids CORS surprises in local Docker/proxy setups.
+const SERVER_URL =
+  (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
+  (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3001');
 
 /** Storage keys */
 export const AUTH_TOKEN_KEY = 'alias_auth_token';
