@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'alias-master-v5';
+const CACHE_NAME = 'alias-master-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
