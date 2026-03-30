@@ -200,12 +200,23 @@ export const CountdownScreen = () => {
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>
-      <span
-        key={count}
-        className={`text-[9rem] sm:text-[11rem] font-sans font-black tracking-tight animate-countdown-hit ${currentTheme.textMain}`}
-      >
-        {count}
-      </span>
+      {count > 0 ? (
+        <span
+          key={count}
+          className={`text-[9rem] sm:text-[11rem] font-sans font-black tracking-tight animate-countdown-hit ${currentTheme.textMain}`}
+        >
+          {count}
+        </span>
+      ) : (
+        <div className="flex flex-col items-center gap-4 animate-page-in">
+          <span className={`text-[7rem] sm:text-[9rem] font-sans font-black tracking-tight ${currentTheme.textMain}`}>
+            GO
+          </span>
+          <span className={`text-[10px] uppercase tracking-[0.5em] font-bold opacity-50 ${currentTheme.textMain} animate-pulse`}>
+            {gameMode === 'OFFLINE' || isActualExplainer ? 'Starting…' : 'Waiting…'}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

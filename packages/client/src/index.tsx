@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './styles.css';
 
 // Register service worker for PWA + push notifications
 if ('serviceWorker' in navigator) {

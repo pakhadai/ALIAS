@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Keep Material Symbols baseline consistent */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Theme-aware font overrides — updated at runtime by GameContext */
+:root {
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Lato', sans-serif;
+  --theme-radius: 9999px;
+}
+.font-serif {
+  font-family: var(--font-heading) !important;
+}
+.font-sans {
+  font-family: var(--font-body) !important;
+}
+
+/* Admin page accent color */
+:root {
+  --admin-gold: #D4AF6A;
+}

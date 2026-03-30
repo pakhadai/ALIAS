@@ -8,22 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Lato', 'sans-serif'],
-              serif: ["'Playfair Display'", "serif"],
-            },
-            colors: {
-              gold: '#D4AF6A',
-            },
-          }
-        }
-      }
-    </script>
+    <!-- Tailwind is built via PostCSS (no CDN in production) -->
   </head>
   <body class="bg-[#111] text-white font-sans min-h-screen">
     <div id="admin-root"></div>

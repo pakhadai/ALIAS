@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
 ];
 
 // CDN domains that should be cached for offline support
-const CACHEABLE_CDNS = ['cdn.tailwindcss.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+const CACHEABLE_CDNS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 // Install Event
 self.addEventListener('install', (event) => {
