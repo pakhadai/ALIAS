@@ -1,4 +1,4 @@
-import type { GameSettings, Player, Team, RoundStats, GameActionPayload } from './types';
+import type { GameSettings, GameTask, Player, Team, RoundStats, GameActionPayload } from './types';
 import type { GameState } from './enums';
 
 // Client -> Server events
@@ -32,6 +32,7 @@ export interface GameSyncState {
   teams: Team[];
   currentTeamIndex: number;
   currentWord: string;
+  currentTask: GameTask | null;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;

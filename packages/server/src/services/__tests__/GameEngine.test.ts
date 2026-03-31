@@ -58,6 +58,7 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     currentTeamIndex: 0,
     wordDeck: [],
     currentWord: '',
+    currentTask: null,
     currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: '', explainerName: '' },
     timeLeft: 0,
     isPaused: false,
@@ -186,11 +187,20 @@ describe('START_PLAYING', () => {
 describe('CORRECT', () => {
   it('increments correct count and fetches next word', async () => {
     vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
-    const room = makeRoom({ currentWord: 'Кіт', currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' } });
+    const currentTask = { id: 'task-cat', prompt: 'Кіт' };
+    const room = makeRoom({
+      currentWord: 'Кіт',
+      currentTask,
+      currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' },
+    });
     await engine.handleAction(room, { action: 'CORRECT' });
     expect(room.currentRoundStats.correct).toBe(1);
     expect(room.currentRoundStats.words).toHaveLength(1);
-    expect(room.currentRoundStats.words[0]).toEqual({ word: 'Кіт', result: 'correct' });
+    expect(room.currentRoundStats.words[0]).toEqual({
+      word: 'Кіт',
+      taskId: 'task-cat',
+      result: 'correct',
+    });
     expect(room.currentWord).toBe('Next');
   });
 });
@@ -198,10 +208,19 @@ describe('CORRECT', () => {
 describe('SKIP', () => {
   it('increments skipped count and fetches next word', async () => {
     vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
-    const room = makeRoom({ currentWord: 'Собака', currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' } });
+    const currentTask = { id: 'task-dog', prompt: 'Собака' };
+    const room = makeRoom({
+      currentWord: 'Собака',
+      currentTask,
+      currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' },
+    });
     await engine.handleAction(room, { action: 'SKIP' });
     expect(room.currentRoundStats.skipped).toBe(1);
-    expect(room.currentRoundStats.words[0]).toEqual({ word: 'Собака', result: 'skipped' });
+    expect(room.currentRoundStats.words[0]).toEqual({
+      word: 'Собака',
+      taskId: 'task-dog',
+      result: 'skipped',
+    });
   });
 });
 
@@ -392,6 +411,7 @@ describe('RESET_GAME', () => {
     expect(room.teams).toHaveLength(0);
     expect(room.currentTeamIndex).toBe(0);
     expect(room.currentWord).toBe('');
+    expect(room.currentTask).toBeNull();
     expect(room.wordDeck).toHaveLength(0);
     expect(room.timeLeft).toBe(0);
     expect(room.isPaused).toBe(false);

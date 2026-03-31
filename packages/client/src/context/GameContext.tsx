@@ -1,8 +1,8 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  GameState, Language, Team, GameSettings, Category, RoundStats,
-  Player, AppTheme, GameActionPayload, SoundPreset, AppState, GameContextType
+  GameState, Language, Team, GameSettings, GameTask, Category, RoundStats,
+  Player, AppTheme, GameActionPayload, SoundPreset, AppState, GameContextType, GameMode,
 } from '../types';
 import {
   MOCK_WORDS, TEAM_COLORS, THEME_CONFIG, TRANSLATIONS, ROOM_CODE_LENGTH
@@ -12,6 +12,34 @@ import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
 import { fetchLobbySettings } from '../services/api';
 import type { GameSyncState } from '@alias/shared';
+
+function buildOfflineTask(
+  rawWord: string,
+  remainingDeck: string[],
+  mode: GameMode | undefined,
+  taskId: string,
+): GameTask {
+  const m = mode ?? GameMode.CLASSIC;
+  if (m === GameMode.TRANSLATION) {
+    const parts = rawWord.split('|');
+    return {
+      id: taskId,
+      prompt: parts[0]?.trim() || rawWord,
+      answer: parts[1]?.trim(),
+    };
+  }
+  if (m === GameMode.QUIZ) {
+    const correct = rawWord;
+    const shuffled = [...remainingDeck].sort(() => Math.random() - 0.5);
+    const distractors: string[] = [];
+    for (const w of shuffled) {
+      if (w !== correct && distractors.length < 3) distractors.push(w);
+    }
+    const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
+    return { id: taskId, prompt: correct, answer: correct, options };
+  }
+  return { id: taskId, prompt: rawWord };
+}
 
 export const AVATARS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔'];
 
@@ -52,6 +80,7 @@ const initialState: AppState = {
   currentTeamIndex: 0,
   wordDeck: [],
   currentWord: '',
+  currentTask: null,
   currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: '', explainerName: '' },
   timeLeft: 0,
   isPaused: false,
@@ -107,6 +136,7 @@ function restoreSession(init: AppState): AppState {
       currentTeamIndex: typeof saved.currentTeamIndex === 'number' ? saved.currentTeamIndex : 0,
       wordDeck: Array.isArray(saved.wordDeck) ? saved.wordDeck : [],
       currentWord: gameState === GameState.ROUND_SUMMARY ? (saved.currentWord || '') : '',
+      currentTask: gameState === GameState.ROUND_SUMMARY ? (saved.currentTask || null) : null,
       currentRoundStats: gameState === GameState.ROUND_SUMMARY ? (saved.currentRoundStats || init.currentRoundStats) : init.currentRoundStats,
       timeLeft: 0,
       isPaused: false,
@@ -158,7 +188,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isHost: true, myPlayerId: state.myPlayerId,
         players: state.players, teams: state.teams,
         currentTeamIndex: state.currentTeamIndex, wordDeck: state.wordDeck,
-        currentWord: state.currentWord, currentRoundStats: state.currentRoundStats,
+        currentWord: state.currentWord, currentTask: state.currentTask, currentRoundStats: state.currentRoundStats,
         timeLeft: state.timeLeft, isPaused: state.isPaused
       }));
     } catch {}
@@ -186,7 +216,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return shuffled;
   };
 
+  const offlineTaskIdRef = useRef(0);
+  const offlineQuizLockTaskIdRef = useRef<string | null>(null);
+
   const nextWordLogic = useCallback(() => {
+    offlineQuizLockTaskIdRef.current = null;
     const { settings, wordDeck } = stateRef.current;
     let deck = [...wordDeck];
     if (deck.length === 0) {
@@ -201,7 +235,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       deck = shuffleArray(finalPool);
     }
     const word = deck.pop() || 'Error';
-    dispatch({ type: 'SET_STATE', payload: { wordDeck: deck, currentWord: word } });
+    offlineTaskIdRef.current += 1;
+    const taskId = `offline-${offlineTaskIdRef.current}-${Date.now()}`;
+    const task = buildOfflineTask(word, deck, settings.gameMode, taskId);
+    dispatch({ type: 'SET_STATE', payload: { wordDeck: deck, currentWord: task.prompt, currentTask: task } });
   }, []);
 
 
@@ -211,11 +248,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     switch (payload.action) {
       case 'CORRECT': {
         playSound('correct');
+        const taskPrompt = stateRef.current.currentTask?.prompt ?? stateRef.current.currentWord;
+        const taskId = stateRef.current.currentTask?.id;
         dispatch({ type: 'SET_STATE', payload: {
           currentRoundStats: {
             ...stateRef.current.currentRoundStats,
             correct: stateRef.current.currentRoundStats.correct + 1,
-            words: [...stateRef.current.currentRoundStats.words, { word: stateRef.current.currentWord, result: 'correct' }]
+            words: [...stateRef.current.currentRoundStats.words, { word: taskPrompt, taskId, result: 'correct' }]
           }
         }});
         if (stateRef.current.timeUp) {
@@ -227,14 +266,46 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       case 'SKIP': {
         playSound('skip');
+        const skipPrompt = stateRef.current.currentTask?.prompt ?? stateRef.current.currentWord;
+        const skipTaskId = stateRef.current.currentTask?.id;
         dispatch({ type: 'SET_STATE', payload: {
           currentRoundStats: {
             ...stateRef.current.currentRoundStats,
             skipped: stateRef.current.currentRoundStats.skipped + 1,
-            words: [...stateRef.current.currentRoundStats.words, { word: stateRef.current.currentWord, result: 'skipped' }]
+            words: [...stateRef.current.currentRoundStats.words, { word: skipPrompt, taskId: skipTaskId, result: 'skipped' }]
           }
         }});
         if (stateRef.current.timeUp) {
+          dispatch({ type: 'SET_STATE', payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false } });
+        } else {
+          nextWordLogic();
+        }
+        break;
+      }
+      case 'GUESS_OPTION': {
+        const { settings, currentTask, timeUp } = stateRef.current;
+        if (settings.gameMode !== GameMode.QUIZ || !currentTask?.answer) break;
+        const sel = payload.data?.selectedOption;
+        if (typeof sel !== 'string') break;
+        if (offlineQuizLockTaskIdRef.current === currentTask.id) break;
+        if (sel !== currentTask.answer) {
+          playSound('skip');
+          break;
+        }
+        offlineQuizLockTaskIdRef.current = currentTask.id;
+        playSound('correct');
+        dispatch({ type: 'SET_STATE', payload: {
+          currentRoundStats: {
+            ...stateRef.current.currentRoundStats,
+            correct: stateRef.current.currentRoundStats.correct + 1,
+            words: [...stateRef.current.currentRoundStats.words, {
+              word: currentTask.prompt,
+              taskId: currentTask.id,
+              result: 'guessed' as const,
+            }],
+          },
+        }});
+        if (timeUp) {
           dispatch({ type: 'SET_STATE', payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false } });
         } else {
           nextWordLogic();
@@ -315,6 +386,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           teams: [],
           currentTeamIndex: 0,
           currentWord: '',
+          currentTask: null,
           wordDeck: [],
           timeLeft: 0,
           isPaused: false,
@@ -324,7 +396,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         break;
       case 'REMATCH': {
         const remTeams = stateRef.current.teams.map(t => ({ ...t, score: 0, nextPlayerIndex: 0 }));
-        dispatch({ type: 'SET_STATE', payload: { teams: remTeams, gameState: GameState.PRE_ROUND, currentTeamIndex: 0, wordDeck: [], currentWord: '' } });
+        dispatch({ type: 'SET_STATE', payload: { teams: remTeams, gameState: GameState.PRE_ROUND, currentTeamIndex: 0, wordDeck: [], currentWord: '', currentTask: null } });
         break;
       }
       case 'KICK_PLAYER': {
@@ -429,6 +501,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         teams: syncState.teams,
         currentTeamIndex: syncState.currentTeamIndex,
         currentWord: syncState.currentWord,
+        currentTask: syncState.currentTask ?? null,
         currentRoundStats: syncState.currentRoundStats,
         timeLeft: syncState.timeLeft,
         isPaused: syncState.isPaused,
@@ -603,6 +676,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     handleCorrect: () => sendAction({ action: 'CORRECT' }),
     handleSkip: () => sendAction({ action: 'SKIP' }),
+    sendGuessOption: (selectedOption: string) =>
+      sendAction({ action: 'GUESS_OPTION', data: { selectedOption } }),
     handleStartRound: () => sendAction({ action: 'START_ROUND' }),
     startGameplay: () => sendAction({ action: 'START_PLAYING' }),
     handleNextRound: () => sendAction({ action: 'NEXT_ROUND' }),

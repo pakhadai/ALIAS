@@ -4,7 +4,7 @@ import {
   ROOM_CODE_LENGTH, TEAM_COLORS, MAX_PLAYERS,
 } from '@alias/shared';
 import type {
-  Player, Team, GameSettings, RoundStats, GameSyncState,
+  Player, Team, GameSettings, GameTask, RoundStats, GameSyncState,
 } from '@alias/shared';
 import { RedisRoomStore } from './RedisRoomStore';
 
@@ -19,21 +19,18 @@ export interface Room {
   currentTeamIndex: number;
   wordDeck: string[];
   currentWord: string;
+  currentTask: GameTask | null;
+  currentTaskAnswered?: string;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
   timeUp?: boolean;
   timerInterval: ReturnType<typeof setInterval> | null;
-  // socketId -> playerId mapping
   socketToPlayer: Map<string, string>;
-  // analytics
   sessionId?: string;
   roundsPlayed: number;
-  // host identity (stored for future use, e.g. host migration)
   hostUserId?: string;
-  // timestamp when the room was created (for stale cleanup)
   createdAt: number;
-  // words already shown this game session — used to avoid repeats on deck rebuild
   usedWords: string[];
 }
 
@@ -113,6 +110,7 @@ export class RoomManager {
       currentTeamIndex: 0,
       wordDeck: [],
       currentWord: '',
+      currentTask: null,
       currentRoundStats: { ...defaultRoundStats },
       timeLeft: 0,
       isPaused: false,
@@ -160,6 +158,7 @@ export class RoomManager {
       currentTeamIndex: syncState.currentTeamIndex,
       wordDeck: syncState.wordDeck,
       currentWord: syncState.currentWord,
+      currentTask: syncState.currentTask ?? null,
       currentRoundStats: syncState.currentRoundStats,
       timeLeft: syncState.timeLeft,
       isPaused: true,         // always pause on restore — server timer was lost
@@ -450,7 +449,8 @@ export class RoomManager {
       players: room.players,
       teams: room.teams,
       currentTeamIndex: room.currentTeamIndex,
-      currentWord: room.currentWord,
+      currentWord: room.currentTask?.prompt ?? room.currentWord,
+      currentTask: room.currentTask,
       currentRoundStats: room.currentRoundStats,
       timeLeft: room.timeLeft,
       isPaused: room.isPaused,

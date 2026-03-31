@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Language, Category, SoundPreset, AppTheme } from '@alias/shared';
+import { Language, Category, SoundPreset, AppTheme, GameMode } from '@alias/shared';
 import type { GameActionPayload } from '@alias/shared';
 
 // --- Socket event payloads ---
@@ -32,6 +32,8 @@ const gameSettingsPartialSchema = z.object({
   customWords: z.string().max(5000).optional(),
   customDeckCode: z.string().max(20).optional(),
   selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
+  gameMode: z.nativeEnum(GameMode),
+  targetLanguage: z.nativeEnum(Language),
 }).partial();
 
 // --- Game action validation ---
@@ -42,6 +44,7 @@ const validActions = new Set([
   'GENERATE_TEAMS', 'PAUSE_GAME', 'TIME_UP', 'CONFIRM_ROUND',
   'UPDATE_SETTINGS', 'KICK_PLAYER',
   'ADD_OFFLINE_PLAYER', 'REMOVE_OFFLINE_PLAYER',
+  'GUESS_OPTION',
 ]);
 
 /**
@@ -75,6 +78,18 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
         return null;
       }
       return { action, data: obj.data };
+    }
+    case 'GUESS_OPTION': {
+      if (!obj.data || typeof obj.data !== 'object') {
+        console.warn('[Validation] Invalid GUESS_OPTION data');
+        return null;
+      }
+      const d = obj.data as Record<string, unknown>;
+      if (typeof d.selectedOption !== 'string' || d.selectedOption.length === 0 || d.selectedOption.length > 200) {
+        console.warn('[Validation] Invalid GUESS_OPTION selectedOption');
+        return null;
+      }
+      return { action, data: { selectedOption: d.selectedOption } };
     }
     default:
       // Actions that don't need data

@@ -30,6 +30,22 @@
 
 ---
 
+## [2026-03-31] — Режими гри (GameMode), GameTask, патерн Стратегія на сервері та модульний UI гри
+
+### Added
+- **@alias/shared**: enum `GameMode` (`CLASSIC`, `TRANSLATION`, `SYNONYMS`, `QUIZ`); інтерфейс `GameTask` (`id`, `prompt`, `answer?`, `options?`); у `GameSettings` — `gameMode?`, `targetLanguage?`; дія `GUESS_OPTION` з `data.selectedOption`; у `RoundStats.words` — `taskId?`, результат `guessed`; у `GameSyncState` — `currentTask` (поряд із `currentWord` для сумісності).
+- **@alias/server**: каталог `src/modes/` — `IGameModeHandler`, `ClassicModeHandler`, `TranslationModeHandler` (формат `Слово|Переклад`), `QuizModeHandler` (4 варіанти, перший коректний відповідь через `room.currentTaskAnswered`), `ModeFactory.getHandler`; `GameEngine` делегує `generateTask` / `handleAction`; валідація `GUESS_OPTION` у `schemas.ts`; socket: `GUESS_OPTION` доступна всім гравцям, не лише пояснювачу.
+- **@alias/client**: `PlayingScreen` як оболонка; `GameFlow/modes/ClassicUI` (`ClassicWordCard`, `ClassicActionFooter`), `QuizUI` (сітка 2×2); синхронізація `currentTask` з сервера; офлайн `buildOfflineTask` + `sendGuessOption`; хук `useHapticFeedback`, розширення `HAPTIC` (`quizCorrect`, `quizWrong`); легка вібрація на базовій `Button`; модальне вікно QR у лобі (більше біле поле для сканування); семантичні `--ui-*` у елементах таймера/гри замість жорсткого `text-white` на екрані гри.
+
+### Changed
+- Документація: `README.md` (новий підрозділ про GameMode/GameTask/Стратегія, оновлені таблиці дій і `GameSyncState`, структура репо, Quick Reference, примітки для розробників); `CODE_REFERENCE.md` (детальний довідник по `modes/`, оновлені `shared`/`GameEngine`/`Room`/`schemas`/`GameContext`/клієнтські модулі); цей запис у `CHANGELOG.md`.
+- **Лобі — налаштування:** вибір **режиму гри** (`CLASSIC` / `TRANSLATION` / `SYNONYMS` / `QUIZ`) з короткими підказками; для перекладу — додатковий вибір **мови відповіді** (`targetLanguage`). У лобі для гостей показується чіп поточного режиму. Файли: `LobbyFlow.tsx`, `constants.ts` (UA/DE/EN).
+
+### Refactored
+- Ігровий рушій: замість монолітної логіки CORRECT/SKIP у `GameEngine` — плагінні хендлери за режимом, щоб додавати режими без роздування ядра.
+
+---
+
 ## [2026-03-30] — Guesser Live Feedback, Lobby UX, дедуплікація словника
 
 ### Added

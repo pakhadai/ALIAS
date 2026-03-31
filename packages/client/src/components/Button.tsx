@@ -2,6 +2,7 @@
 import React from 'react';
 import { playSoundEffect } from '../utils/audio';
 import { SoundPreset } from '../types';
+import { vibrate, HAPTIC } from '../utils/haptics';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
@@ -42,6 +43,9 @@ export const Button: React.FC<ButtonProps> = ({
   const handlePointerDown: React.PointerEventHandler<HTMLButtonElement> = (e) => {
     props.onPointerDown?.(e);
     if (e.defaultPrevented) return;
+    if (!props.disabled) {
+      vibrate(HAPTIC.nav);
+    }
     if (!clickSound || props.disabled) return;
 
     try {

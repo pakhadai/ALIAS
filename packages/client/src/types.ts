@@ -1,15 +1,15 @@
 // Re-export shared types and enums
 export {
-  GameState, Language, Category, AppTheme, SoundPreset,
+  GameState, Language, Category, AppTheme, SoundPreset, GameMode,
 } from '@alias/shared';
 
 export type {
-  Player, Team, GameSettings, RoundStats,
+  Player, Team, GameSettings, GameTask, RoundStats,
   GameActionPayload, NetworkMessage, GameActionType, NetworkActionType,
 } from '@alias/shared';
 
 import type { GameState, AppTheme } from '@alias/shared';
-import type { Player, Team, GameSettings, RoundStats, GameActionPayload } from '@alias/shared';
+import type { Player, Team, GameSettings, GameTask, RoundStats, GameActionPayload } from '@alias/shared';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -43,6 +43,7 @@ export interface AppState {
   currentTeamIndex: number;
   wordDeck: string[];
   currentWord: string;
+  currentTask: GameTask | null;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
@@ -64,6 +65,7 @@ export interface GameContextType extends AppState {
   startOfflineGame: () => void;
   handleCorrect: () => void;
   handleSkip: () => void;
+  sendGuessOption: (selectedOption: string) => void;
   handleStartRound: () => void;
   startGameplay: () => void;
   handleNextRound: () => void;

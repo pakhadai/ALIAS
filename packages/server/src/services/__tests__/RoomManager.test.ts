@@ -244,6 +244,7 @@ describe('getSyncState', () => {
     expect(state).toHaveProperty('teams');
     expect(state).toHaveProperty('currentTeamIndex');
     expect(state).toHaveProperty('currentWord');
+    expect(state).toHaveProperty('currentTask');
     expect(state).toHaveProperty('currentRoundStats');
     expect(state).toHaveProperty('timeLeft');
     expect(state).toHaveProperty('isPaused');

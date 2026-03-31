@@ -1,6 +1,6 @@
-type VibratePattern = number | number[];
-
 const PREFS_KEY = 'alias_preferences';
+
+export type VibratePattern = number | number[];
 
 function isVibrationSupported(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
@@ -32,5 +32,7 @@ export const HAPTIC = {
   correct: [30, 50, 30] as number[],
   skip: 50,
   timeUp: [100, 50, 100, 50, 200] as number[],
+  quizCorrect: [40, 30, 40] as number[],
+  quizWrong: [80] as number[],
 } as const;
 

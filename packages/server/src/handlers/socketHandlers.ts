@@ -145,6 +145,7 @@ export function registerSocketHandlers(
     // Explainer-only: round control actions (only the current explainer may send these,
     // host is also allowed as an emergency fallback).
     // START_ROUND fires before explainerId is set — validate against the upcoming explainer.
+    // GUESS_OPTION is available to any player (quiz mode) — skip explainer check
     const explainerActions = new Set(['START_ROUND', 'START_PLAYING', 'CORRECT', 'SKIP', 'TIME_UP']);
     if (explainerActions.has(payload.action) && !isHost) {
       const upcomingExplainerId = (() => {
@@ -162,7 +163,7 @@ export function registerSocketHandlers(
       }
     }
 
-    await gameEngine.handleAction(room, payload);
+    await gameEngine.handleAction(room, payload, socketPlayerId ?? undefined);
 
     if (payload.action === 'KICK_PLAYER' && kickTargetId) {
       cancelGraceRemoval(kickTargetId);

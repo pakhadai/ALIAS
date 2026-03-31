@@ -50,3 +50,10 @@ export enum SoundPreset {
   MINIMAL = 'MINIMAL',
   EIGHT_BIT = 'EIGHT_BIT',
 }
+
+export enum GameMode {
+  CLASSIC = 'CLASSIC',
+  TRANSLATION = 'TRANSLATION',
+  SYNONYMS = 'SYNONYMS',
+  QUIZ = 'QUIZ',
+}

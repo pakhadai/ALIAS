@@ -4,12 +4,14 @@ import { Clock, X, Check, Trophy, Star, Pause, Play } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Confetti, FloatingParticle, MilestoneNotification } from '../components/Shared';
-import { GameState, Player, Team, AppTheme } from '../types';
+import { GameState, Player, Team, AppTheme, GameMode } from '../types';
 import { useGame } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
 import { AvatarDisplay } from '../components/AvatarDisplay';
 import { usePlayerStats } from '../hooks/usePlayerStats';
-import { vibrate, HAPTIC } from '../utils/haptics';
+import { HAPTIC } from '../utils/haptics';
+import { useHapticFeedback } from '../hooks/useHapticFeedback';
+import { ClassicWordCard, ClassicActionFooter, QuizUI } from './GameFlow/modes';
 
 // VS Screen: Animated 1v1 / 1v1v1 matchup display
 export const VSScreen = () => {
@@ -224,12 +226,12 @@ export const CountdownScreen = () => {
 const GuesserFeedback = ({ correct, skipped, words, theme, t, teamColorHex }: {
   correct: number;
   skipped: number;
-  words: { word: string; result: string }[];
+  words: { word: string; result: string; taskId?: string }[];
   theme: any;
   t: any;
   teamColorHex?: string;
 }) => {
-  const lastCorrect = words.filter(w => w.result === 'correct').at(-1);
+  const lastCorrect = words.filter(w => w.result === 'correct' || w.result === 'guessed').at(-1);
   const prevCorrectRef = useRef(correct);
   const [flash, setFlash] = useState(false);
 
@@ -303,13 +305,16 @@ const GuesserFeedback = ({ correct, skipped, words, theme, t, teamColorHex }: {
 };
 
 export const PlayingScreen = () => {
-  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, timeUp, togglePause, gameMode, sendAction } = useGame();
+  const { currentTheme, teams, currentTeamIndex, playSound, timeLeft, setTimeLeft, settings, currentWord, currentTask, handleCorrect, handleSkip, isHost, myPlayerId, gameState, currentRoundStats, isPaused, timeUp, togglePause, gameMode, sendAction } = useGame();
+  const haptic = useHapticFeedback();
   const t = TRANSLATIONS[settings.language];
   const [particles, setParticles] = useState<{ id: number, x: number, y: number, text: string, color: string }[]>([]);
   const actionProcessingRef = useRef(false);
   const playerStats = usePlayerStats();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const activeTeam = teams[currentTeamIndex];
+  const modeSetting = settings.gameMode ?? GameMode.CLASSIC;
+  const isQuizMode = modeSetting === GameMode.QUIZ;
 
   // Safety check: use useEffect instead of dispatching during render
   useEffect(() => {
@@ -331,10 +336,9 @@ export const PlayingScreen = () => {
   const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   const isActualExplainer = explainer?.id === myPlayerId;
-  // Only the explainer sees the word and has the buttons.
-  // Guessing teammates and opponents do not see the word (fair play for all team sizes).
-  const canSeeWord = gameMode === 'OFFLINE' || isActualExplainer;
-  const canUseButtons = gameMode === 'OFFLINE' || isActualExplainer;
+  const canSeeClassicWord = gameMode === 'OFFLINE' || isActualExplainer;
+  const canUseClassicButtons = gameMode === 'OFFLINE' || isActualExplainer;
+  const displayPrompt = currentTask?.prompt ?? currentWord;
   const isCriticalTime = timeLeft <= 10;
   const isUrgentTime = timeLeft <= 5;
   const [wordExit, setWordExit] = useState<null | 'left' | 'right'>(null);
@@ -354,12 +358,12 @@ export const PlayingScreen = () => {
 
   const timeUpVibratedRef = useRef(false);
   useEffect(() => {
-    if (timeUp && isActualExplainer && !timeUpVibratedRef.current && navigator.vibrate) {
-      vibrate(HAPTIC.timeUp);
+    if (timeUp && isActualExplainer && !timeUpVibratedRef.current) {
+      haptic(HAPTIC.timeUp);
       timeUpVibratedRef.current = true;
     }
     if (!timeUp) timeUpVibratedRef.current = false;
-  }, [timeUp, isActualExplainer]);
+  }, [timeUp, isActualExplainer, haptic]);
 
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
@@ -376,8 +380,8 @@ export const PlayingScreen = () => {
           : (type === 'correct' ? '#10b981' : '#ef4444');
 
       setWordExit(type === 'correct' ? 'right' : 'left');
-      if (type === 'correct') vibrate(HAPTIC.correct);
-      else vibrate(HAPTIC.skip);
+      if (type === 'correct') haptic(HAPTIC.correct);
+      else haptic(HAPTIC.skip);
 
       window.setTimeout(() => {
         if (type === 'correct') {
@@ -414,7 +418,7 @@ export const PlayingScreen = () => {
         {/* Pause Overlay */}
         {isPaused && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[50] animate-fade-in">
-            <div className={`${currentTheme.card} border border-white/10 rounded-[3rem] p-16 shadow-2xl text-center`}>
+            <div className={`${currentTheme.card} border border-[color:var(--ui-border)] rounded-[3rem] p-16 shadow-2xl text-center`}>
               <span className="material-symbols-outlined text-champagne-gold text-6xl mb-4 block">pause_circle</span>
               <p className={`text-2xl font-serif ${currentTheme.textMain} uppercase tracking-widest`}>{t.paused}</p>
               {isHost && (
@@ -426,12 +430,12 @@ export const PlayingScreen = () => {
 
         {/* Progress Bar Header */}
         <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-5 z-20">
-          {timeUp && canUseButtons && (
+          {timeUp && canUseClassicButtons && !isQuizMode && (
             <p className="text-center text-champagne-gold text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
               {t.finishWord}
             </p>
           )}
-          <div className="w-full h-[5px] bg-white/5 rounded-full overflow-hidden">
+          <div className="w-full h-[5px] bg-[color:var(--ui-surface)] rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-[width,background-color,box-shadow] duration-300 ease-linear ${
                 dangerBar
@@ -449,8 +453,9 @@ export const PlayingScreen = () => {
 
             {isHost && (
               <button
-                onClick={togglePause}
-                className="w-10 h-10 flex items-center justify-center rounded-full active:bg-white/5 transition-colors"
+                type="button"
+                onClick={() => { haptic(HAPTIC.nav); togglePause(); }}
+                className="w-10 h-10 flex items-center justify-center rounded-full active:bg-[color:var(--ui-surface-hover)] transition-colors"
               >
                 <span className="material-symbols-outlined text-champagne-gold text-2xl">
                   {isPaused ? 'play_arrow' : 'pause'}
@@ -459,65 +464,45 @@ export const PlayingScreen = () => {
             )}
 
             <div className="text-text-sub-dark font-sans text-sm tracking-wide w-20 text-right">
-                {t.score}: <span className="text-white font-medium">{currentRoundStats.correct}</span>
+                {t.score}: <span className="text-[color:var(--ui-fg)] font-medium">{currentRoundStats.correct}</span>
             </div>
           </div>
         </header>
 
         {/* Word Card */}
         <main className="flex-1 flex flex-col items-center justify-center w-full px-8 relative z-10 pb-24">
-            {canSeeWord ? (
-                <div
-                  key={currentWord}
-                  className={`w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform border ${
-                    isCriticalTime ? 'border-red-500/40' : 'border-white/5'
-                  } transition-all duration-150 ease-out ${
-                    wordExit === 'right' ? 'opacity-0 translate-x-4' : wordExit === 'left' ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0 animate-pop-in'
-                  }`}
-                >
-                  <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
-                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-white/10"></div>
-                  <h2 className="text-premium-white font-sans font-black text-5xl sm:text-6xl text-center leading-tight tracking-tight uppercase break-words w-full drop-shadow-md">
-                      {currentWord}
-                  </h2>
-                </div>
-            ) : (
-                <GuesserFeedback
-                  correct={currentRoundStats.correct}
-                  skipped={currentRoundStats.skipped}
-                  words={currentRoundStats.words}
-                  theme={currentTheme}
-                  t={t}
-                  teamColorHex={(activeTeam as any)?.colorHex}
-                />
-            )}
+          {isQuizMode && currentTask ? (
+            <QuizUI
+              task={currentTask}
+              disabled={isPaused}
+              currentTheme={currentTheme}
+              onAction={sendAction}
+            />
+          ) : canSeeClassicWord ? (
+            <ClassicWordCard
+              displayPrompt={displayPrompt}
+              isCriticalTime={isCriticalTime}
+              wordExit={wordExit}
+              currentTheme={currentTheme}
+            />
+          ) : (
+            <GuesserFeedback
+              correct={currentRoundStats.correct}
+              skipped={currentRoundStats.skipped}
+              words={currentRoundStats.words}
+              theme={currentTheme}
+              t={t}
+              teamColorHex={(activeTeam as any)?.colorHex}
+            />
+          )}
         </main>
 
-        {/* Action Buttons Footer */}
-        {canUseButtons && (
-          <footer
-            className="w-full fixed bottom-0 left-0 z-20 flex"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-          >
-            <button
-                onClick={(e) => onAction('skip', e.clientX, e.clientY)}
-                className="flex-1 h-24 sm:h-28 bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5"
-            >
-              <span className="material-symbols-outlined text-burgundy-text text-3xl group-active:scale-90 transition-transform">close</span>
-              <span className="text-burgundy-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-burgundy-text transition-colors">
-                {t.skip}
-              </span>
-            </button>
-            <button
-                onClick={(e) => onAction('correct', e.clientX, e.clientY)}
-                className="flex-1 h-24 sm:h-28 bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-white/5 border-l border-l-white/5"
-            >
-              <span className="material-symbols-outlined text-forest-green-text text-3xl group-active:scale-90 transition-transform font-bold">check</span>
-              <span className="text-forest-green-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-forest-green-text transition-colors">
-                {t.correct}
-              </span>
-            </button>
-          </footer>
+        {canUseClassicButtons && !isQuizMode && (
+          <ClassicActionFooter
+            t={t}
+            onCorrect={(e) => onAction('correct', e.clientX, e.clientY)}
+            onSkip={(e) => onAction('skip', e.clientX, e.clientY)}
+          />
         )}
       </div>
   );

@@ -1,8 +1,10 @@
 import { GameState, TEAM_COLORS } from '@alias/shared';
-import type { GameActionPayload, Team } from '@alias/shared';
+import type { GameActionPayload, GameTask, Team } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
 import type { WordService } from './WordService';
+import { getHandler } from '../modes';
+import type { IGameModeHandler } from '../modes';
 
 export class GameEngine {
   private prisma: PrismaClient | null = null;
@@ -32,35 +34,51 @@ export class GameEngine {
     this.prisma = prisma;
   }
 
-  async handleAction(room: Room, payload: GameActionPayload): Promise<void> {
-    switch (payload.action) {
-      case 'CORRECT': {
-        room.currentRoundStats = {
-          ...room.currentRoundStats,
-          correct: room.currentRoundStats.correct + 1,
-          words: [
-            ...room.currentRoundStats.words,
-            { word: room.currentWord, result: 'correct' },
-          ],
-        };
-        await this.nextWord(room);
-        if (room.timeUp) {
-          this.transitionToRoundSummary(room);
-        }
-        break;
-      }
+  private getActiveHandler(room: Room): IGameModeHandler {
+    return getHandler(room.settings.gameMode);
+  }
 
-      case 'SKIP': {
-        room.currentRoundStats = {
-          ...room.currentRoundStats,
-          skipped: room.currentRoundStats.skipped + 1,
-          words: [
-            ...room.currentRoundStats.words,
-            { word: room.currentWord, result: 'skipped' },
-          ],
-        };
-        await this.nextWord(room);
-        if (room.timeUp) {
+  async handleAction(room: Room, payload: GameActionPayload, senderId?: string): Promise<void> {
+    switch (payload.action) {
+      case 'CORRECT':
+      case 'SKIP':
+      case 'GUESS_OPTION': {
+        if (!room.currentTask) break;
+
+        const handler = this.getActiveHandler(room);
+        const result = handler.handleAction(payload, room.currentTask, {
+          room,
+          senderId,
+        });
+
+        if (result.isCorrect) {
+          room.currentRoundStats = {
+            ...room.currentRoundStats,
+            correct: room.currentRoundStats.correct + 1,
+            words: [
+              ...room.currentRoundStats.words,
+              { word: room.currentTask.prompt, taskId: room.currentTask.id, result: payload.action === 'GUESS_OPTION' ? 'guessed' : 'correct' },
+            ],
+          };
+        } else if (payload.action === 'SKIP') {
+          room.currentRoundStats = {
+            ...room.currentRoundStats,
+            skipped: room.currentRoundStats.skipped + 1,
+            words: [
+              ...room.currentRoundStats.words,
+              { word: room.currentTask.prompt, taskId: room.currentTask.id, result: 'skipped' },
+            ],
+          };
+        }
+
+        if (result.nextWord) {
+          await this.nextWord(room);
+          if (room.timeUp) {
+            this.transitionToRoundSummary(room);
+          }
+        }
+
+        if (result.endTurn) {
           this.transitionToRoundSummary(room);
         }
         break;
@@ -136,7 +154,6 @@ export class GameEngine {
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.roundsPlayed = 0;
-        // Create GameSession record
         if (this.prisma) {
           this.prisma.gameSession.create({
             data: {
@@ -172,7 +189,6 @@ export class GameEngine {
 
       case 'RESET_GAME': {
         this.stopTimer(room);
-        // Mark active session as abandoned
         if (this.prisma && room.sessionId) {
           this.prisma.gameSession.update({
             where: { id: room.sessionId },
@@ -184,6 +200,7 @@ export class GameEngine {
         room.teams = [];
         room.currentTeamIndex = 0;
         room.currentWord = '';
+        room.currentTask = null;
         room.wordDeck = [];
         room.usedWords = [];
         room.timeLeft = 0;
@@ -195,7 +212,6 @@ export class GameEngine {
       }
 
       case 'REMATCH': {
-        // Create new session for the rematch
         if (this.prisma) {
           this.prisma.gameSession.create({
             data: {
@@ -219,6 +235,7 @@ export class GameEngine {
         room.wordDeck = [];
         room.usedWords = [];
         room.currentWord = '';
+        room.currentTask = null;
         break;
       }
 
@@ -237,8 +254,7 @@ export class GameEngine {
                   : team.nextPlayerIndex,
             };
           })
-          .filter((team) => team.players.length > 0); // drop now-empty teams
-        // Clamp currentTeamIndex in case a team was removed
+          .filter((team) => team.players.length > 0);
         if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
           room.currentTeamIndex = 0;
         }
@@ -262,7 +278,6 @@ export class GameEngine {
           const updated = { ...t };
           if (t.id === currentRoundStats.teamId) {
             updated.score = Math.max(0, t.score + points);
-            // Update per-player guessed stats for non-explainers
             if (correctCount > 0) {
               updated.players = t.players.map(p => ({
                 ...p,
@@ -285,7 +300,6 @@ export class GameEngine {
         const isGameOver = isLastTeam && hasWinner;
         room.gameState = isGameOver ? GameState.GAME_OVER : GameState.SCOREBOARD;
 
-        // Update GameSession analytics
         if (this.prisma && room.sessionId) {
           this.prisma.gameSession.update({
             where: { id: room.sessionId },
@@ -313,11 +327,19 @@ export class GameEngine {
       room.settings,
       room.usedWords,
     );
-    room.currentWord = word;
     room.wordDeck = deck;
     room.usedWords = usedWords;
+
+    // Let the active mode handler produce a GameTask from the raw word + remaining deck
+    const handler = this.getActiveHandler(room);
+    // Temporarily push word back so handler can pop it via its generateTask()
+    room.wordDeck.push(word);
+    const task = handler.generateTask(room.wordDeck, room.settings);
+    room.currentTask = task;
+    room.currentWord = task.prompt;
+    room.currentTaskAnswered = undefined;
+
     if (deckReshuffled && room.currentRoundStats.words.length > 0) {
-      // Notify only when reshuffled mid-round (not on first word of round)
       this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
     }
   }
@@ -335,8 +357,6 @@ export class GameEngine {
         room.timeLeft = 0;
         this.timerBroadcast?.(room);
       } else if (ticksSinceSync >= 10) {
-        // Force-sync timeLeft to all clients every 10 s to prevent drift
-        // (browser throttling can cause client timer to deviate)
         ticksSinceSync = 0;
         this.timerBroadcast?.(room);
       }

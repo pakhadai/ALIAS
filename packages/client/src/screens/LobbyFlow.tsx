@@ -4,7 +4,7 @@ import { X, Settings as SettingsIcon, Check, Plus, Minus, FileText, PackageOpen,
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
 import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
-import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset } from '../types';
+import { GameState, AppTheme, Language, Category, GameSettings, SoundPreset, GameMode } from '../types';
 import { useGame } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
 import { fetchStore, type WordPackItem } from '../services/api';
@@ -93,14 +93,14 @@ export const LobbyScreen = () => {
 
       {showQrModal && qrCodeData && (
         <div
-          className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in"
           onClick={() => setShowQrModal(false)}
         >
-          <div className="flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl ring-1 ring-black/5 animate-pop-in">
-              <img src={qrCodeData} alt="QR" className="w-72 h-72 rounded-2xl" />
+          <div className="flex flex-col items-center gap-6 max-w-[min(92vw,420px)]" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white p-8 rounded-2xl shadow-2xl ring-1 ring-black/10 animate-pop-in w-full flex justify-center">
+              <img src={qrCodeData} alt="QR" className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl" />
             </div>
-            <p className="text-white/80 text-[10px] uppercase tracking-[0.5em] font-bold animate-pulse">
+            <p className="text-[color:var(--ui-fg)] text-[10px] uppercase tracking-[0.5em] font-bold text-center px-4">
               {t.scanToJoin ?? 'Відскануйте для приєднання'}
             </p>
           </div>
@@ -172,6 +172,15 @@ export const LobbyScreen = () => {
                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                   currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
                 }`}>🏆 {settings.scoreToWin} {t.pts}</span>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                  currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
+                }`}>
+                  🎮{' '}
+                  {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.CLASSIC && (t.gameModeClassic ?? 'Classic')}
+                  {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (t.gameModeTranslation ?? 'Translation')}
+                  {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.SYNONYMS && (t.gameModeSynonyms ?? 'Synonyms')}
+                  {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ && (t.gameModeQuiz ?? 'Quiz')}
+                </span>
                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                   currentTheme.isDark ? 'border-white/10 text-white/50' : 'border-slate-200 text-slate-500'
                 }`}>📚 {categoriesPreview || '—'}</span>
@@ -476,6 +485,83 @@ export const SettingsScreen = () => {
                         </button>
                     ))}
                 </div>
+            </div>
+
+            <div className="space-y-4">
+                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                  {t.gameMode ?? 'Режим гри'}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      [GameMode.CLASSIC, t.gameModeClassic ?? 'Classic'],
+                      [GameMode.TRANSLATION, t.gameModeTranslation ?? 'Translation'],
+                      [GameMode.SYNONYMS, t.gameModeSynonyms ?? 'Synonyms'],
+                      [GameMode.QUIZ, t.gameModeQuiz ?? 'Quiz'],
+                    ] as const
+                  ).map(([mode, label]) => {
+                    const active = (settings.gameMode ?? GameMode.CLASSIC) === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => updateSetting('gameMode', mode)}
+                        className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all leading-tight ${
+                          active
+                            ? 'bg-champagne-gold text-black border-champagne-gold'
+                            : isDark
+                              ? 'bg-white/5 border-white/5 text-white/50 hover:text-white/80'
+                              : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {(() => {
+                  const m = settings.gameMode ?? GameMode.CLASSIC;
+                  const hint =
+                    m === GameMode.TRANSLATION
+                      ? (t.gameModeHintTranslation ??
+                        'У колоді використовуйте формат «Слово|Переклад» (кастомні слова або свій словник).')
+                      : m === GameMode.QUIZ
+                        ? (t.gameModeHintQuiz ??
+                          'Усі обирають варіант на екрані; перша правильна відповідь дає бал команді.')
+                        : m === GameMode.SYNONYMS
+                          ? (t.gameModeHintSynonyms ??
+                            'Поки що як класика — окрема колода синонімів з’явиться пізніше.')
+                          : (t.gameModeHintClassic as string | undefined);
+                  if (!hint) return null;
+                  return (
+                    <p className={`text-[10px] leading-relaxed opacity-50 ${currentTheme.textSecondary}`}>{hint}</p>
+                  );
+                })()}
+                {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
+                  <div className="space-y-2 pt-1">
+                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                      {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
+                    </p>
+                    <div className="flex gap-2">
+                      {[Language.UA, Language.DE, Language.EN].map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          onClick={() => updateSetting('targetLanguage', l)}
+                          className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all ${
+                            (settings.targetLanguage ?? Language.EN) === l
+                              ? `border-yellow-500 bg-yellow-500/15 ${isDark ? 'text-yellow-400' : 'text-amber-900'}`
+                              : isDark
+                                ? 'bg-white/5 border-white/5 text-white/40'
+                                : 'bg-slate-100 border-slate-200 text-slate-400'
+                          }`}
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
 
             <div className="space-y-4">

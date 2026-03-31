@@ -2,7 +2,7 @@
 
 Повний перелік модулів, класів, функцій, типів і зовнішніх бібліотек проекту **Alias Master**. Доповнює [`README.md`](./README.md) (архітектура, запуск) і призначений для глибокого навігаційного пошуку під час розробки та написання тестів.
 
-**Оновлено:** за станом репозиторію на момент створення файлу.
+**Оновлено:** з урахуванням рефакторингу **режимів гри** (`GameMode`, `GameTask`, `server/src/modes/`, UI у `GameFlow/modes/`).
 
 ---
 
@@ -108,6 +108,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `Category` | `enum` | Категорії слів: `General`, `Food`, `Travel`, `Science`, `Movies`, `Custom` (рядкові значення для БД/схем) |
 | `AppTheme` | `enum` | Візуальні теми додатку |
 | `SoundPreset` | `enum` | `FUN`, `MINIMAL`, `EIGHT_BIT` |
+| `GameMode` | `enum` | Режим слів/завдань: `CLASSIC`, `TRANSLATION`, `SYNONYMS`, `QUIZ` |
 
 ### `types.ts`
 
@@ -115,9 +116,10 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |------|-----|-------------------|
 | `Player` | `interface` | `id`, `persistentId?`, `name`, `avatar`, `isHost`, `avatarId?`, `stats: { explained, guessed }` |
 | `Team` | `interface` | `id`, `name`, `score`, `color`, `colorHex`, `players`, `nextPlayerIndex` |
-| `GameSettings` | `interface` | Мова, час раунду, перемога, штраф, категорії, звук, пресет, кількість команд, тема, `customWords?`, `customDeckCode?`, `selectedPackIds?` |
-| `RoundStats` | `interface` | Лічильники раунду, масив слів з результатом, `teamId`, `explainerName`, `explainerId?` |
-| `GameActionType` | union type | Рядок-літерал дій гри (див. README) |
+| `GameTask` | `interface` | `id`, `prompt` (текст на екрані), `answer?`, `options?` (до 4 рядків для QUIZ) |
+| `GameSettings` | `interface` | Як раніше, плюс `gameMode?: GameMode` (дефолт — класика), `targetLanguage?: Language` (зарезервовано для перекладу) |
+| `RoundStats` | `interface` | `words[]`: `{ word, taskId?, result: 'correct' \| 'skipped' \| 'guessed' }`; решта без змін |
+| `GameActionType` | union type | Усі дії з README, включно з `GUESS_OPTION` (payload: `data.selectedOption`) |
 | `GameActionPayload` | `interface` | `{ action, data? }` |
 | `NetworkActionType` | union type | Застарілий/допоміжний контракт мережі |
 | `NetworkMessage` | `interface` | `{ type, payload }` |
@@ -128,7 +130,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |------|-----|------|
 | `ClientToServerEvents` | `interface` | Типізація подій клієнт → сервер: `room:create`, `room:join`, `room:leave`, `room:rejoin`, `game:action` |
 | `ServerToClientEvents` | `interface` | Події сервер → клієнт: `room:*`, `game:state-sync`, `game:notification`, `player:kicked` |
-| `GameSyncState` | `interface` | Повний знімок кімнати для синхронізації |
+| `GameSyncState` | `interface` | Повний знімок кімнати: `currentWord`, **`currentTask: GameTask \| null`**, решта полів як у README |
 | `InterServerEvents` | `interface` | Порожній (зарезервовано для кластера) |
 | `SocketData` | `interface` | `userId?`, `playerId`, `playerName`, `roomCode` на об'єкті socket |
 
@@ -190,18 +192,49 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `setTimerBroadcast(fn)` | Колбек `(room) => void` — викликається при тіку таймера (sync) |
 | `setNotificationBroadcast(fn)` | Колбек для `game:notification` |
 | `setPrisma(prisma)` | Опційно для `GameSession` create/update |
-| `handleAction(room, payload)` | `async` — головний диспетчер `GameActionPayload` |
+| `handleAction(room, payload, senderId?)` | `async` — головний диспетчер `GameActionPayload`; для `CORRECT` / `SKIP` / `GUESS_OPTION` делегує активному **режимному хендлеру** (`getHandler(room.settings.gameMode)`) |
+| `private getActiveHandler(room)` | Повертає `IGameModeHandler` через `ModeFactory` |
 | `private transitionToRoundSummary(room)` | `ROUND_SUMMARY`, зупинка таймера |
-| `private nextWord(room)` | `async` — наступне слово через WordService |
+| `private nextWord(room)` | `async` — `WordService.nextWord`, потім `handler.generateTask` → `room.currentTask`, `room.currentWord = task.prompt`, скидання `currentTaskAnswered` |
 | `private startTimer(room)` | `setInterval` 1 с, `timeUp`, broadcast кожні 10 с |
 | `private stopTimer(room)` | `clearInterval` |
 | `private shuffleArray<T>(array)` | Fisher–Yates |
 
 **Тести:** `services/__tests__/GameEngine.test.ts`.
 
+### `modes/` (патерн Стратегія)
+
+Каталог: `packages/server/src/modes/`. Barrel: `index.ts` реекспортує типи та фабрику.
+
+#### `modes/IGameModeHandler.ts`
+
+| Ім'я | Тип | Опис |
+|------|-----|------|
+| `ActionContext` | `interface` | `room`, `senderId?` — хто надіслав дію (для QUIZ) |
+| `ActionResult` | `interface` | `isCorrect`, `points`, `nextWord`, `endTurn` |
+| `IGameModeHandler` | `interface` | `generateTask(deck, settings): GameTask`; `handleAction(payload, currentTask, context): ActionResult` |
+
+#### `modes/ClassicModeHandler.ts`
+
+Клас **`ClassicModeHandler`**: `generateTask` — `deck.pop()` → `{ id: uuid, prompt: word }`; `CORRECT` / `SKIP` як у класичному Alias; інші дії — без ефекту.
+
+#### `modes/TranslationModeHandler.ts`
+
+Клас **`TranslationModeHandler`**: рядок колоди `Підказка\|Відповідь` → `prompt` / `answer`; ходи як у класиці (`CORRECT` / `SKIP`).
+
+#### `modes/QuizModeHandler.ts`
+
+Клас **`QuizModeHandler`**: `generateTask` — одне правильне слово з колоди + 3 дистрактори з решти колоди, перемішані `options`; `handleAction` для `GUESS_OPTION` порівнює `data.selectedOption` з `currentTask.answer`; при першій коректній відповіді виставляє `room.currentTaskAnswered = senderId` (ідемпотентність для інших).
+
+#### `modes/ModeFactory.ts`
+
+| Експорт | Опис |
+|---------|------|
+| `getHandler(mode?: GameMode)` | Повертає новий екземпляр хендлера; `SYNONYMS` → тимчасово `ClassicModeHandler`; `undefined` → класика |
+
 ### `services/RoomManager.ts`
 
-**Інтерфейс `Room`:** повний стан кімнати в пам'яті (гравці, команди, таймер, `socketToPlayer`, `usedWords`, тощо).
+**Інтерфейс `Room`:** повний стан кімнати в пам'яті (гравці, команди, таймер, `socketToPlayer`, `usedWords`, **`currentTask: GameTask \| null`**, **`currentTaskAnswered?`** для QUIZ, тощо).
 
 Клас **`RoomManager`**
 
@@ -219,7 +252,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `removePlayer(roomCode, socketId)` | Видалення з гравців і команд |
 | `handleDisconnect(socketId)` | Host migration, видалення порожньої кімнати; повертає метадані для broadcast |
 | `getPlayerSocketId(room, playerId)` | Пошук socketId |
-| `getSyncState(room)` | Побудова `GameSyncState` |
+| `getSyncState(room)` | Побудова `GameSyncState` (`currentWord` узгоджується з `currentTask?.prompt`) |
 | `deleteRoom(code)` | Повне видалення |
 
 **Тести:** `services/__tests__/RoomManager.test.ts`.
@@ -261,7 +294,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `registerSocketHandlers` | `io`, `socket`, `roomManager`, `gameEngine` | Реєструє всі `socket.on` |
 | `broadcastState` | `io`, `roomCode`, `roomManager` | `game:state-sync` + `persistRoom` |
 
-**Події всередині `registerSocketHandlers`:** `room:create`, `room:join`, `room:leave`, `game:action` з валідацією, перевірками host/explainer, kick → `player:kicked`.
+**Події всередині `registerSocketHandlers`:** `room:create`, `room:join`, `room:leave`, `game:action` з валідацією, перевірками host/explainer, kick → `player:kicked`. Дія **`GUESS_OPTION`** не входить у explainer-only множину — доступна будь-якому гравцеві в кімнаті (квіз).
 
 ### `validation/schemas.ts`
 
@@ -269,8 +302,8 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |---------|-----|------|
 | `roomCreateSchema` | `z.ZodObject` | `playerName`, `avatar`, `avatarId?` |
 | `roomJoinSchema` | `z.ZodObject` | `roomCode` regex 5 цифр, ім'я, аватар |
-| `gameSettingsPartialSchema` | (внутрішній) | Часткові `GameSettings` з обмеженнями |
-| `validateGameAction` | `function` | `(raw: unknown) => GameActionPayload \| null` |
+| `gameSettingsPartialSchema` | (внутрішній) | Часткові `GameSettings` з обмеженнями; поля **`gameMode`** (`nativeEnum(GameMode)`), **`targetLanguage`** |
+| `validateGameAction` | `function` | `(raw: unknown) => GameActionPayload \| null`; гілка **`GUESS_OPTION`**: непорожній `data.selectedOption` (рядок ≤ 200 симв.) |
 | `validatePayload` | `function` | `<T>(schema, data) => T \| null` |
 
 **Тести:** `validation/__tests__/schemas.test.ts`.
@@ -386,8 +419,8 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 - Реекспорт enum/type з `@alias/shared`.
 - **`ThemeConfig`** — повна конфігурація теми для UI (класи Tailwind, шрифти).
-- **`AppState`** — клієнтський стан гри (надмножина полів для офлайн/connection).
-- **`GameContextType`** — `AppState` + методи контексту (`setGameState`, `sendAction`, …).
+- **`AppState`** — клієнтський стан гри: **`currentTask: GameTask \| null`**, `currentWord`, решта полів для офлайн/connection.
+- **`GameContextType`** — `AppState` + методи контексту (`setGameState`, `sendAction`, **`sendGuessOption(selectedOption)`**, …).
 
 **Примітка:** `handleJoin` у `GameContextType` включає опційний `avatarId` (синхронізовано з `GameContext`).
 
@@ -413,13 +446,16 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Ім'я | Опис |
 |------|------|
+| `buildOfflineTask` | (модульний хелпер) Будує `GameTask` з сирого рядка колоди залежно від `settings.gameMode` (класика, `A\|B`, квіз з `options`) |
 | `gameReducer` | `SET_STATE`, `UPDATE_PLAYERS`, `SHOW_NOTIF` |
 | `restoreSession` | `initialState` initializer — localStorage сесія хоста + PREFS |
 | `shuffleArray` | Fisher–Yates для офлайн колоди |
-| `handleGameAction` | Локальна імітація сервера для `gameMode === 'OFFLINE'` |
-| `nextWordLogic` | Офлайн: наступне слово з MOCK_WORDS / custom |
+| `handleGameAction` | Локальна імітація сервера для `gameMode === 'OFFLINE'`; обробка **`GUESS_OPTION`** у режимі `QUIZ` з блоком повторного зарахування за `task.id` (`offlineQuizLockTaskIdRef`) |
+| `nextWordLogic` | Офлайн: наступне слово з MOCK_WORDS / custom → **`buildOfflineTask`** → `currentTask` + `currentWord` |
 
-**Методи контексту (публічні через `contextValue`):** `setGameState`, `createNewRoom`, `handleJoin`, `sendAction`, `playSound`, `showNotification`, `setSettings`, `startOfflineGame`, `handleCorrect`, `handleSkip`, `handleStartRound`, `startGameplay`, `handleNextRound`, `togglePause`, `setTimeLeft`, `setTeams`, `resetGame`, `rematch`, `leaveRoom`, `setRoomCode`, `addOfflinePlayer`, `removeOfflinePlayer`.
+**Синхронізація онлайн:** у колбеці `onStateSync` диспатчиться **`currentTask`** з `GameSyncState`.
+
+**Методи контексту (публічні через `contextValue`):** `setGameState`, `createNewRoom`, `handleJoin`, `sendAction`, `playSound`, `showNotification`, `setSettings`, `startOfflineGame`, `handleCorrect`, `handleSkip`, **`sendGuessOption`**, `handleStartRound`, `startGameplay`, `handleNextRound`, `togglePause`, `setTimeLeft`, `setTeams`, `resetGame`, `rematch`, `leaveRoom`, `setRoomCode`, `addOfflinePlayer`, `removeOfflinePlayer`.
 
 ### `context/AuthContext.tsx`
 
@@ -455,8 +491,15 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Експорт | Опис |
 |---------|------|
+| `VibratePattern` | Тип: `number \| number[]` |
 | `vibrate(pattern)` | Безпечний wrapper над `navigator.vibrate` з урахуванням user preference `hapticsEnabled` у `localStorage` |
-| `HAPTIC` | Пресети патернів вібрації: `nav`, `correct`, `skip`, `timeUp` |
+| `HAPTIC` | Пресети: `nav`, `correct`, `skip`, `timeUp`, **`quizCorrect`**, **`quizWrong`** |
+
+### `hooks/useHapticFeedback.ts`
+
+| Експорт | Опис |
+|---------|------|
+| `useHapticFeedback()` | Повертає стабільний `useCallback((pattern) => vibrate(pattern))` для компонентів |
 
 ### `hooks/useInstallPrompt.ts`
 
@@ -515,7 +558,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 ### `components/Button.tsx`
 
-**Експорт:** `Button` — універсальна кнопка з варіантами (props див. файл).
+**Експорт:** `Button` — універсальна кнопка з варіантами (props див. файл). На `pointerdown` (якщо не `disabled`) — коротка вібрація `HAPTIC.nav`; варіанти стилів опираються на CSS-змінні `--ui-*` де застосовно.
 
 ### `components/Card.tsx`
 
@@ -585,7 +628,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Компонент | Призначення |
 |-----------|-------------|
-| `LobbyScreen` | Список гравців, код кімнати, QR |
+| `LobbyScreen` | Список гравців, код кімнати, QR; **модальне вікно QR** (клік по прев’ю) — велике біле полотно для зручного сканування |
 | `TeamSetupScreen` | Команди, shuffle, старт |
 | `SettingsScreen` | Налаштування раунду, категорії, тема |
 
@@ -596,10 +639,18 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `VSScreen` | Екран дуелі |
 | `PreRoundScreen` | Хто пояснює, старт раунду |
 | `CountdownScreen` | 3-2-1 |
-| `PlayingScreen` | Слово, таймер, correct/skip, пауза |
+| `PlayingScreen` | Оболонка: таймер, рахунок, пауза, хаптики; **`settings.gameMode === QUIZ`** → `QuizUI`; інакше картка **`ClassicWordCard`** + **`ClassicActionFooter`** для пояснювача або `GuesserFeedback` для відгадувачів |
 | `RoundSummaryScreen` | Підсумок слів раунду |
 | `ScoreboardScreen` | Таблиця очок |
 | `GameOverScreen` | Перемога, реванш, вихід |
+
+### `screens/GameFlow/modes/`
+
+| Файл | Експорт | Опис |
+|------|---------|------|
+| `ClassicUI.tsx` | `ClassicWordCard`, `ClassicActionFooter` | Картка слова (семантичні border) + фіксований футер «Пропуск» / «Вгадано» |
+| `QuizUI.tsx` | `QuizUI` | Підказка + сітка 2×2 варіантів; `onAction({ GUESS_OPTION })`; локальний фідбек помилки / успіху + хаптики |
+| `index.ts` | re-export | Публічна точка імпорту для `GameFlow.tsx` |
 
 ### `screens/AdminPanel.tsx`
 
@@ -640,7 +691,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Файл | Що покриває |
 |------|-------------|
-| `GameEngine.test.ts` | Дії гри, таймер, очки, rematch, kick |
+| `GameEngine.test.ts` | Дії гри, таймер, очки, rematch, kick; `CORRECT`/`SKIP` з `currentTask` |
 | `RoomManager.test.ts` | Кімнати, гравці, disconnect, host migration |
 | `WordService.test.ts` | Колода, custom deck, fallback |
 | `schemas.test.ts` | Zod-схеми socket payload |
@@ -651,6 +702,6 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 ## Подальші кроки (за планом користувача)
 
-1. Розширити **unit/integration** тести за цим довідником (пріоритет: роути з багатою логікою — `purchases`, `custom-decks`, `auth` merge).
+1. Розширити **unit/integration** тести за цим довідником (пріоритет: роути з багатою логікою — `purchases`, `custom-decks`, `auth` merge). Окремо варто додати тести **`modes/*`** (`generateTask` / `handleAction` для QUIZ і перекладу).
 2. Додати **клієнтські** тести (React Testing Library / Vitest browser) для критичних хуків (`useSocketConnection` з моком socket, `GameContext` reducer).
 3. Оновлювати **цей файл** при додаванні нових публічних функцій або зміні контрактів — разом із записом у `CHANGELOG.md`.

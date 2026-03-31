@@ -18,6 +18,7 @@
 - [Ігрова логіка (детально)](#ігрова-логіка-детально)
   - [Стан гри (GameState)](#стан-гри-gamestate)
   - [Ігрові дії (GameAction)](#ігрові-дії-gameaction)
+  - [Режими слів (GameMode), GameTask та патерн Стратегія](#режими-слів-gamemode-gametask-та-патерн-стратегія)
   - [Механіка раунду](#механіка-раунду)
   - [Підрахунок очок](#підрахунок-очок)
   - [Умова перемоги](#умова-перемоги)
@@ -128,8 +129,8 @@ ALIAS/                          ← Корінь монорепо
 ├── packages/
 │   ├── shared/                 ← @alias/shared — спільні типи, enum, контракти
 │   │   └── src/
-│   │       ├── enums.ts        ← GameState, Language, Category, AppTheme, SoundPreset
-│   │       ├── types.ts        ← Player, Team, GameSettings, RoundStats, GameActionPayload
+│   │       ├── enums.ts        ← GameState, Language, Category, AppTheme, SoundPreset, GameMode
+│   │       ├── types.ts        ← Player, Team, GameSettings, GameTask, RoundStats, GameActionPayload
 │   │       ├── events.ts       ← ClientToServerEvents, ServerToClientEvents, GameSyncState
 │   │       ├── constants.ts    ← DEFAULT_ROUND_TIME, TEAM_COLORS, MOCK_WORDS (fallback)
 │   │       └── index.ts        ← Re-export all
@@ -144,8 +145,13 @@ ALIAS/                          ← Корінь монорепо
 │   │   │   ├── config.ts       ← Env змінні
 │   │   │   ├── handlers/
 │   │   │   │   └── socketHandlers.ts  ← Socket.IO обробники подій
+│   │   │   ├── modes/                 ← Патерн Стратегія: хендлери режимів гри
+│   │   │   │   ├── IGameModeHandler.ts
+│   │   │   │   ├── ClassicModeHandler.ts, TranslationModeHandler.ts, QuizModeHandler.ts
+│   │   │   │   ├── ModeFactory.ts     ← getHandler(gameMode)
+│   │   │   │   └── index.ts
 │   │   │   ├── services/
-│   │   │   │   ├── GameEngine.ts      ← Авторитетна ігрова логіка
+│   │   │   │   ├── GameEngine.ts      ← Авторитетна ігрова логіка (делегує режимам)
 │   │   │   │   ├── RoomManager.ts     ← Керування кімнатами та гравцями
 │   │   │   │   ├── WordService.ts     ← Побудова колоди слів
 │   │   │   │   ├── RedisRoomStore.ts  ← Персистенція кімнат у Redis
@@ -183,7 +189,8 @@ ALIAS/                          ← Корінь монорепо
 │   │   │   ├── screens/
 │   │   │   │   ├── MenuFlow.tsx    ← Меню, профіль, магазин, правила
 │   │   │   │   ├── LobbyFlow.tsx   ← Лобі, налаштування, команди
-│   │   │   │   └── GameFlow.tsx    ← Гра, рахунок, підсумки
+│   │   │   │   ├── GameFlow.tsx    ← Гра, рахунок, підсумки (PlayingScreen + режимний UI)
+│   │   │   │   └── GameFlow/modes/ ← UI за GameMode: ClassicWordCard, ClassicActionFooter, QuizUI
 │   │   │   ├── components/         ← UI компоненти
 │   │   │   ├── services/api.ts     ← REST API клієнт
 │   │   │   ├── constants.ts        ← Переклади, конфіг тем
@@ -231,7 +238,8 @@ ALIAS/                          ← Корінь монорепо
 │  │              Services Layer                  │    │
 │  │  ┌────────────┐ ┌───────────┐ ┌───────────┐ │   │
 │  │  │ GameEngine │ │RoomManager│ │WordService │ │   │
-│  │  │ (rules)    │ │ (rooms)   │ │ (words)    │ │   │
+│  │  │ + modes/   │ │ (rooms)   │ │ (words)    │ │   │
+│  │  │ (strategy) │ │           │ │            │ │   │
 │  │  └────────────┘ └───────────┘ └───────────┘ │   │
 │  └─────────────────────────────────────────────┘    │
 │        │                │                            │
@@ -290,7 +298,7 @@ PRE_ROUND → COUNTDOWN → PLAYING → ROUND_SUMMARY → SCOREBOARD → PRE_ROU
 | `VS_SCREEN` | GameFlow | Екран "команда vs команда" (дуель) |
 | `PRE_ROUND` | GameFlow | Підготовка до раунду (хто пояснює) |
 | `COUNTDOWN` | GameFlow | Відлік 3-2-1 |
-| `PLAYING` | GameFlow | Активна гра (слово + таймер + кнопки) |
+| `PLAYING` | GameFlow | Активна гра (таймер + UI залежно від `GameMode`: класика / квіз тощо) |
 | `ROUND_SUMMARY` | GameFlow | Підсумок раунду (список слів) |
 | `SCOREBOARD` | GameFlow | Таблиця рахунку |
 | `GAME_OVER` | GameFlow | Екран перемоги |
@@ -303,6 +311,7 @@ PRE_ROUND → COUNTDOWN → PLAYING → ROUND_SUMMARY → SCOREBOARD → PRE_ROU
 |-----|---------|------|
 | `CORRECT` | Explainer | Слово вгадано (+1 correct) |
 | `SKIP` | Explainer | Пропуск слова (+1 skipped) |
+| `GUESS_OPTION` | Будь-який гравець | Режим **QUIZ**: обраний варіант відповіді. Payload: `{ selectedOption: string }`. Зараховується лише **перша** коректна відповідь на поточне завдання. |
 | `START_GAME` | Host | Запуск гри (після команд) |
 | `START_DUEL` | Host | Запуск дуелі (кожен гравець = команда) |
 | `GENERATE_TEAMS` | Host | Автоматичне створення команд |
@@ -319,13 +328,47 @@ PRE_ROUND → COUNTDOWN → PLAYING → ROUND_SUMMARY → SCOREBOARD → PRE_ROU
 | `ADD_OFFLINE_PLAYER` | Host (offline) | Додати локального гравця |
 | `REMOVE_OFFLINE_PLAYER` | Host (offline) | Видалити локального гравця |
 
+### Режими слів (GameMode), GameTask та патерн Стратегія
+
+Окрім класичного пояснення одного слова, рушій підтримує кілька **режимів слів** (`GameMode` у `packages/shared/src/enums.ts`):
+
+| Режим | Опис |
+|-------|------|
+| `CLASSIC` | За замовчуванням (або `undefined` у `settings.gameMode`). Пояснювач бачить `prompt`, команда вгадує; дії `CORRECT` / `SKIP`. |
+| `TRANSLATION` | Картки в колоді у вигляді `Слово\|Переклад`: на екрані показується частина до `\|`, вгадати треба переклад (логіка ходів як у класиці). Поле `GameSettings.targetLanguage` зарезервоване для майбутнього UI/фільтрів. |
+| `SYNONYMS` | Поки що той самий потік, що й класика (заглушка для майбутньої логіки колоди). |
+| `QUIZ` | «Бліц»: у `GameTask` є `prompt` (питання/слово), `answer` та `options` (до 4 варіантів). Усі гравці натискають варіант; `GUESS_OPTION` обробляється хендлером; бал отримує лише той, хто **першим** дав правильну відповідь на поточний `currentTask` (на сервері: `room.currentTaskAnswered`). |
+
+**Модель завдання** — `GameTask` (`packages/shared/src/types.ts`):
+
+```typescript
+interface GameTask {
+  id: string;
+  prompt: string;       // Великий текст на екрані
+  answer?: string;      // Еталон (квіз, переклад, підказка хоста)
+  options?: string[];   // Варіанти лише для QUIZ
+}
+```
+
+**Синхронізація:** у `GameSyncState` є `currentTask: GameTask | null` і збережене поле `currentWord: string` (зазвичай дорівнює `currentTask.prompt`) для сумісності зі старими клієнтами та логами.
+
+**Сервер (патерн Стратегія):** `packages/server/src/modes/`
+
+- Інтерфейс `IGameModeHandler`: `generateTask(deck, settings) → GameTask`, `handleAction(payload, currentTask, context) → ActionResult`.
+- `ModeFactory.getHandler(settings.gameMode)` повертає хендлер; `GameEngine` після отримання сирого слова з `WordService` викликає `generateTask` і зберігає результат у `room.currentTask`.
+- Ігрові дії `CORRECT`, `SKIP`, `GUESS_OPTION` у режимі `PLAYING` делегуються активному хендлеру; далі рушій застосовує `ActionResult` (очки, перехід до наступного слова, завершення раунду).
+
+**Клієнт:** `PlayingScreen` лишається оболонкою (таймер, рахунок, пауза). Для `QUIZ` рендериться `QuizUI` (сітка 2×2); для класики / перекладу / синонімів — `ClassicWordCard` + `ClassicActionFooter` для пояснювача, для відгадувачів — попередній екран з лічильником. Офлайн: у `GameContext` формування `GameTask` через `buildOfflineTask` та обробка `GUESS_OPTION` з блокуванням повторного зарахування за `task.id`.
+
+**Додатково (UX):** хаптики — `packages/client/src/utils/haptics.ts` (`quizCorrect` / `quizWrong`), хук `useHapticFeedback`, легка вібрація на `Button`; модальне вікно QR у лобі — збільшене біле полотно для сканування; у грі використовуються семантичні CSS-змінні `--ui-*` там, де раніше був жорсткий `text-white` / `border-white`.
+
 ### Механіка раунду
 
 **Серверна сторона** (`packages/server/src/services/GameEngine.ts`):
 
 1. **START_ROUND**: Визначається поточна команда та пояснювач за `nextPlayerIndex`. Стан → `COUNTDOWN`. Ініціалізується `currentRoundStats`.
-2. **START_PLAYING**: Стан → `PLAYING`. Встановлюється `timeLeft = roundTime`. Запускається серверний таймер. Беруться перше слово з колоди.
-3. **CORRECT/SKIP**: Оновлюється `currentRoundStats` (correct/skipped + слово в масив words). Береться наступне слово. Якщо `timeUp === true`, перехід у `ROUND_SUMMARY`.
+2. **START_PLAYING**: Стан → `PLAYING`. Встановлюється `timeLeft = roundTime`. Запускається серверний таймер. З колоди береться наступне «сире» слово, після чого активний **режимний хендлер** будує `currentTask` (`generateTask`).
+3. **CORRECT / SKIP / GUESS_OPTION**: Обробка делегується `IGameModeHandler.handleAction`. Оновлюється `currentRoundStats` (у т.ч. `words[]` з `taskId` та `result`: `correct` | `skipped` | `guessed`). За потреби викликається наступне завдання. Якщо `timeUp === true`, перехід у `ROUND_SUMMARY`.
 4. **TIME_UP** (або таймер досягає 0): Зупинка таймера. Стан → `ROUND_SUMMARY`. Пояснювач ще може натиснути CORRECT/SKIP на останнє слово.
 5. **CONFIRM_ROUND**: Обчислюються очки. Оновлюється рахунок команди. Ротація пояснювача (`nextPlayerIndex`). Перевірка умови перемоги. Стан → `SCOREBOARD` або `GAME_OVER`.
 
@@ -413,12 +456,13 @@ isGameOver = isLastTeam && hasWinner
 ```typescript
 interface GameSyncState {
   gameState: GameState;
-  settings: GameSettings;
+  settings: GameSettings;       // Може містити gameMode?, targetLanguage?
   roomCode: string;
   players: Player[];
   teams: Team[];
   currentTeamIndex: number;
-  currentWord: string;
+  currentWord: string;          // Зазвичай = currentTask?.prompt ?? '' (сумісність)
+  currentTask: GameTask | null;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
@@ -651,10 +695,10 @@ switch (gameState) {
 ### Контексти
 
 **GameContext** (`context/GameContext.tsx`) — центральний стейт гри:
-- `useReducer` з `AppState` — все в одному об'єкті.
+- `useReducer` з `AppState` — все в одному об'єкті (`currentTask`, `currentWord`, `settings.gameMode` тощо).
 - `stateRef` — синхронний ref для доступу в callbacks.
-- **Online**: дії надсилаються через Socket.IO → сервер обробляє → `game:state-sync` → `dispatch`.
-- **Offline**: дії обробляються локально в `handleGameAction()`.
+- **Online**: дії надсилаються через Socket.IO → сервер обробляє → `game:state-sync` → `dispatch` (у т.ч. синхронізація `currentTask`).
+- **Offline**: дії обробляються локально в `handleGameAction()` (у т.ч. `GUESS_OPTION` для квізу).
 - **Session persistence**: `localStorage` зберігає стан для rejoin.
 - **Preferences**: тема, мова, звук зберігаються окремо в `localStorage`.
 
@@ -686,6 +730,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 В офлайн-режимі:
 - Вся ігрова логіка виконується **на клієнті** (в `handleGameAction` у GameContext).
 - Слова беруться зі статичних `MOCK_WORDS` (shared).
+- Режим `settings.gameMode` враховується при формуванні наступного `GameTask` (переклад, квіз з варіантами тощо).
 - Socket.IO не використовується.
 - Таймер працює локально через `setInterval` у компоненті.
 - Гравці додаються/видаляються локально.
@@ -699,7 +744,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 1. **JWT Auth Middleware** (`socketAuth.ts`): Перевіряє token з `handshake.auth`. Без токена — анонімне з'єднання.
 2. **Rate Limiting** (`rateLimit.ts`): Per-socket, per-event. `game:action` — 15/сек. `room:create` — 3/хв (prod). `room:join` — 5/хв.
 3. **Zod Validation** (`schemas.ts`): Всі socket payloads проходять через Zod-схеми.
-4. **Authorization**: Host-only дії (START_GAME, KICK_PLAYER і т.д.) перевіряються в `socketHandlers.ts`. Explainer-only дії (CORRECT, SKIP і т.д.) перевіряють `currentRoundStats.explainerId`.
+4. **Authorization**: Host-only дії (START_GAME, KICK_PLAYER і т.д.) перевіряються в `socketHandlers.ts`. Explainer-only дії (CORRECT, SKIP, TIME_UP тощо) перевіряють `currentRoundStats.explainerId`. Дія **`GUESS_OPTION`** (режим QUIZ) **не** обмежена пояснювачем — її може надіслати будь-який гравець у кімнаті.
 5. **XSS Protection**: Імена гравців та слова проходять через `.replace(/<[^>]*>/g, '')`.
 
 ### HTTP
@@ -910,8 +955,8 @@ Seed встановлює `isAdmin: true` для `mrdemianpahaday@gmail.com`.
 ### Ядро ігрової логіки
 | Файл | Що робить |
 |------|-----------|
-| `packages/shared/src/enums.ts` | GameState, Language, Category, AppTheme, SoundPreset |
-| `packages/shared/src/types.ts` | Player, Team, GameSettings, RoundStats, GameActionPayload |
+| `packages/shared/src/enums.ts` | GameState, Language, Category, AppTheme, SoundPreset, **GameMode** |
+| `packages/shared/src/types.ts` | Player, Team, GameSettings, **GameTask**, RoundStats, GameActionPayload |
 | `packages/shared/src/events.ts` | Socket.IO контракти, GameSyncState |
 | `packages/shared/src/constants.ts` | Дефолти, кольори команд, fallback слова |
 
@@ -919,7 +964,8 @@ Seed встановлює `isAdmin: true` для `mrdemianpahaday@gmail.com`.
 | Файл | Що робить |
 |------|-----------|
 | `packages/server/src/index.ts` | Entry point, з'єднання сервісів |
-| `packages/server/src/services/GameEngine.ts` | **Авторитетна ігрова логіка** (handleAction) |
+| `packages/server/src/services/GameEngine.ts` | **Авторитетна ігрова логіка** (handleAction, делегування `modes/`) |
+| `packages/server/src/modes/*` | Хендлери режимів гри (Стратегія), `ModeFactory` |
 | `packages/server/src/services/RoomManager.ts` | Кімнати, гравці, host migration |
 | `packages/server/src/services/WordService.ts` | Побудова колоди слів |
 | `packages/server/src/services/RedisRoomStore.ts` | Redis persistence |
@@ -936,7 +982,10 @@ Seed встановлює `isAdmin: true` для `mrdemianpahaday@gmail.com`.
 | `packages/client/src/constants.ts` | Переклади (UA/EN/DE), конфіг тем |
 | `packages/client/src/screens/MenuFlow.tsx` | Меню, профіль, магазин |
 | `packages/client/src/screens/LobbyFlow.tsx` | Лобі, налаштування |
-| `packages/client/src/screens/GameFlow.tsx` | Ігровий процес |
+| `packages/client/src/screens/GameFlow.tsx` | Ігровий процес (PlayingScreen — оболонка + режимний UI) |
+| `packages/client/src/screens/GameFlow/modes/*` | ClassicWordCard, ClassicActionFooter, QuizUI |
+| `packages/client/src/hooks/useHapticFeedback.ts` | Обгортка для `navigator.vibrate` |
+| `packages/client/src/utils/haptics.ts` | Патерни вібрації (correct, quiz, timeUp, …) |
 
 ### Конфігурація
 | Файл | Що робить |
@@ -962,8 +1011,8 @@ Seed встановлює `isAdmin: true` для `mrdemianpahaday@gmail.com`.
 ### Правила для ШІ-розробника
 
 1. **Не змінюй GameSyncState** без оновлення і клієнта, і сервера — вони тісно пов'язані.
-2. **Не додавай нових GameAction** без додавання їх в `validActions` Set у `schemas.ts` і обробки в `GameEngine.handleAction()`.
+2. **Не додавай нових GameAction** без додавання їх у `validActions` у `schemas.ts`, обробки в `GameEngine.handleAction()` і (за потреби) у **режимних хендлерах** `packages/server/src/modes/`.
 3. **Не додавай нових GameState** без оновлення `GameRouter` в `App.tsx` і відповідного screen-компонента.
-4. **Завжди перевіряй** host-only та explainer-only авторизацію в `socketHandlers.ts` при додаванні нових дій.
+4. **Завжди перевіряй** host-only та explainer-only авторизацію в `socketHandlers.ts` при додаванні нових дій (нагадування: `GUESS_OPTION` — для всіх гравців у квізі).
 5. **Shared пакет** — single source of truth для типів. Зміни тут вимагають `pnpm build:shared`.
 6. **Дивись CHANGELOG.md** перед внесенням змін — там логуються всі попередні зміни.

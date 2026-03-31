@@ -1,4 +1,4 @@
-import { Language, Category, SoundPreset, AppTheme } from './enums';
+import { Language, Category, SoundPreset, AppTheme, GameMode } from './enums';
 
 export interface Player {
   id: string;
@@ -22,6 +22,13 @@ export interface Team {
   nextPlayerIndex: number;
 }
 
+export interface GameTask {
+  id: string;
+  prompt: string;
+  answer?: string;
+  options?: string[];
+}
+
 export interface GameSettings {
   language: Language;
   roundTime: number;
@@ -35,12 +42,14 @@ export interface GameSettings {
   customWords?: string;
   customDeckCode?: string;
   selectedPackIds?: string[];
+  gameMode?: GameMode;
+  targetLanguage?: Language;
 }
 
 export interface RoundStats {
   correct: number;
   skipped: number;
-  words: { word: string; result: 'correct' | 'skipped' }[];
+  words: { word: string; taskId?: string; result: 'correct' | 'skipped' | 'guessed' }[];
   teamId: string;
   explainerName: string;
   explainerId?: string;
@@ -63,7 +72,8 @@ export type GameActionType =
   | 'TIME_UP'
   | 'CONFIRM_ROUND'
   | 'ADD_OFFLINE_PLAYER'
-  | 'REMOVE_OFFLINE_PLAYER';
+  | 'REMOVE_OFFLINE_PLAYER'
+  | 'GUESS_OPTION';
 
 export interface GameActionPayload {
   action: GameActionType;
