@@ -129,7 +129,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | Ім'я | Тип | Опис |
 |------|-----|------|
 | `ClientToServerEvents` | `interface` | Типізація подій клієнт → сервер: `room:create`, `room:join`, `room:leave`, `room:rejoin`, `game:action` |
-| `ServerToClientEvents` | `interface` | Події сервер → клієнт: `room:*`, `game:state-sync`, `game:notification`, `player:kicked` |
+| `ServerToClientEvents` | `interface` | Події сервер → клієнт: `room:*`, `game:state-sync`, `game:notification`, `player:kicked: { playerId }` |
 | `GameSyncState` | `interface` | Повний знімок кімнати: `currentWord`, **`currentTask: GameTask \| null`**, решта полів як у README |
 | `InterServerEvents` | `interface` | Порожній (зарезервовано для кластера) |
 | `SocketData` | `interface` | `userId?`, `playerId`, `playerName`, `roomCode` на об'єкті socket |
@@ -155,13 +155,13 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Експорт | Опис |
 |---------|------|
-| `config` | Об'єкт конфігурації з `process.env`: `port`, `nodeEnv`, `redis.url`, `jwt`, `cors.origin[]`, `adminApiKey`, `google.clientId`, `stripe.*`, `vapid.*` |
+| `config` | Об'єкт конфігурації з `process.env`: `port`, `nodeEnv`, **`serverInstanceId`** (`INSTANCE_ID` або випадковий UUID), **`roomActionRelayEnabled`** (`ROOM_ACTION_RELAY` не `0`/`false`/`no`), `redis.url`, `jwt`, `cors.origin[]`, `adminApiKey`, `google.clientId`, `stripe.*`, `vapid.*` |
 
 **Функції:** немає — лише побічний ефект `dotenv.config()` при імпорті.
 
 ### `index.ts` (entry point)
 
-**Відповідальність:** створення `express` app, підключення middleware (CORS, `express.raw` для Stripe webhook шляху, `express.json`), монтування роутів, `http.Server`, `Socket.IO` з типами з shared, ініціалізація `PrismaClient`, `WordService`, `RoomManager`, `RedisRoomStore`, `GameEngine`, Redis adapter, `socketAuthMiddleware`, обробка `connection` / `disconnect` / `room:rejoin`, graceful `SIGTERM`.
+**Відповідальність:** створення `express` app, підключення middleware (CORS, `express.raw` для Stripe webhook шляху, `express.json`), монтування роутів, `http.Server`, `Socket.IO` з типами з shared, ініціалізація `PrismaClient`, `WordService`, `RoomManager`, `RedisRoomStore`, `PerRoomQueue`, `RoomActionRelay`, `GameEngine`, Redis adapter, `socketAuthMiddleware`, обробка `connection` / `disconnect` / `room:rejoin`, graceful `SIGTERM`.
 
 **Локальні змінні / замикання:** `pendingDisconnects`, `RECONNECT_GRACE_MS`, колбеки `gameEngine.setTimerBroadcast`, `setNotificationBroadcast`.
 
@@ -188,6 +188,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Метод | Опис |
 |-------|------|
+| `persistNewGameSession` / `persistAbandonSession` / `persistRoundProgress` | `private async` — запис `GameSession` у Prisma з `await` та `console.warn` при помилці |
 | `constructor(roomManager, wordService)` | Зберігає посилання на сервіси |
 | `setTimerBroadcast(fn)` | Колбек `(room) => void` — викликається при тіку таймера (sync) |
 | `setNotificationBroadcast(fn)` | Колбек для `game:notification` |
@@ -278,23 +279,42 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |-------|------|
 | `connect(url)` | `async` — `ioredis`, ping |
 | `get isConnected` | getter |
-| `saveRoomState(roomCode, state)` | JSON у Redis, TTL 2 год |
+| `saveRoomState(roomCode, state, writerInstanceId?)` | JSON у Redis, TTL 2 год; опційно ключ writer `alias:room:writer:{roomCode}` |
 | `getRoomState(roomCode)` | `async` |
+| `getRoomWriter(roomCode)` | `async` — останній `INSTANCE_ID`, що зберіг кімнату |
 | `deleteRoom(roomCode)` | |
 | `roomExists(roomCode)` | `async` |
 | `setSocketRoom` / `getSocketRoom` / `removeSocket` | Мапінг socket ↔ кімната |
 | `disconnect()` | `async` — graceful |
 
-**Константи модуля:** `ROOM_TTL`, `ROOM_PREFIX`.
+**Константи модуля:** `ROOM_TTL`, `ROOM_PREFIX`, `ROOM_WRITER_PREFIX`.
+
+### `services/PerRoomQueue.ts`
+
+| Клас | Опис |
+|------|------|
+| `PerRoomQueue` | Черга на `roomCode`: серіалізує async-обробники (`room:join`, `room:leave`, `game:action`, `room:rejoin`), щоб мутації in-memory `Room` не перетинались між `await`. |
+
+### `services/RoomActionRelay.ts`
+
+| Клас / експорт | Опис |
+|----------------|------|
+| `RPC_CHANNEL_PREFIX` | Префікс каналу `alias:rpc:to:` |
+| `RoomActionRelay` | Підписка на `alias:rpc:to:{serverInstanceId}`; RPC: `gameAction`, `roomJoin`, `roomLeave`, `roomRejoin` (відповідь з `roomJoinOk` / `roomLeaveOk` / `roomRejoinOk`), `roomDisconnect` (без відповіді); `registerPending` / таймаут → `RELAY_TIMEOUT` |
 
 ### `handlers/socketHandlers.ts`
 
 | Функція | Параметри | Опис |
 |---------|-----------|------|
-| `registerSocketHandlers` | `io`, `socket`, `roomManager`, `gameEngine` | Реєструє всі `socket.on` |
-| `broadcastState` | `io`, `roomCode`, `roomManager` | `game:state-sync` + `persistRoom` |
+| `registerSocketHandlers` | `io`, `socket`, `roomManager`, `gameEngine`, `roomQueue`, `relayDeps?` (`redisStore`, `relay`) | Реєструє `socket.on`; `room:join` / `room:leave` / `room:rejoin` / `game:action` за потреби пересилаються на Redis writer |
 
-**Події всередині `registerSocketHandlers`:** `room:create`, `room:join`, `room:leave`, `game:action` з валідацією, перевірками host/explainer, kick → `player:kicked`. Дія **`GUESS_OPTION`** не входить у explainer-only множину — доступна будь-якому гравцеві в кімнаті (квіз).
+**Події всередині `registerSocketHandlers`:** `room:create`, `room:join`, `room:leave`, `room:rejoin` (`roomRejoinSchema`), `game:action`; тихі відмови замінені на `room:error` де доречно (`PLAYER_NOT_IN_ROOM`, `ROOM_NOT_FOUND`). Kick → `player:kicked` з `{ playerId }`. **`GUESS_OPTION`** — будь-який гравець у кімнаті (квіз).
+
+### `socket/disconnectFlow.ts`
+
+| Функція | Опис |
+|---------|------|
+| `wireGraceAfterMarkDisconnected` | Після `markSocketDisconnected`: `game:state-sync`, нотифікація міграції хоста, `scheduleGraceRemoval` → `finalizeGraceRemoval` |
 
 ### `validation/schemas.ts`
 

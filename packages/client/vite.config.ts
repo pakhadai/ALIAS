@@ -20,6 +20,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Resolve shared from source so dev/HMR works without a prior shared build.
+      // App code must still import via the package name: `from '@alias/shared'`.
       '@alias/shared': path.resolve(__dirname, '../shared/src/index.ts'),
     },
   },

@@ -56,4 +56,6 @@ export enum GameMode {
   TRANSLATION = 'TRANSLATION',
   SYNONYMS = 'SYNONYMS',
   QUIZ = 'QUIZ',
+  /** Skip ends the round immediately (stricter than classic). */
+  HARDCORE = 'HARDCORE',
 }

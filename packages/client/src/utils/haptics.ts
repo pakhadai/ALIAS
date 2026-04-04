@@ -35,4 +35,3 @@ export const HAPTIC = {
   quizCorrect: [40, 30, 40] as number[],
   quizWrong: [80] as number[],
 } as const;
-

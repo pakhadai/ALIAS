@@ -1,5 +1,37 @@
 import { Router, type IRouter } from 'express';
 import type { PrismaClient } from '@prisma/client';
+
+type StoreWordPackRow = {
+  id: string;
+  slug: string;
+  name: string;
+  language: string;
+  category: string;
+  difficulty: string;
+  price: number;
+  isFree: boolean;
+  isDefault: boolean;
+  wordCount: number;
+  description: string | null;
+};
+
+type StoreThemeRow = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  isFree: boolean;
+  config: unknown;
+};
+
+type StoreSoundPackRow = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  isFree: boolean;
+  config: unknown;
+};
 import { AuthService } from '../services/AuthService';
 
 const authService = new AuthService();
@@ -42,8 +74,17 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
       prisma.wordPack.findMany({
         orderBy: [{ language: 'asc' }, { category: 'asc' }],
         select: {
-          id: true, slug: true, name: true, language: true, category: true,
-          difficulty: true, price: true, isFree: true, isDefault: true, wordCount: true, description: true,
+          id: true,
+          slug: true,
+          name: true,
+          language: true,
+          category: true,
+          difficulty: true,
+          price: true,
+          isFree: true,
+          isDefault: true,
+          wordCount: true,
+          description: true,
         },
       }),
       prisma.theme.findMany({
@@ -57,9 +98,15 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
     ]);
 
     res.json({
-      wordPacks: wordPacks.map(p => ({ ...p, owned: p.isDefault || purchasedWordPackIds.has(p.id) })),
-      themes: themes.map(t => ({ ...t, owned: purchasedThemeIds.has(t.id) })),
-      soundPacks: soundPacks.map(s => ({ ...s, owned: purchasedSoundPackIds.has(s.id) })),
+      wordPacks: wordPacks.map((p: StoreWordPackRow) => ({
+        ...p,
+        owned: p.isDefault || purchasedWordPackIds.has(p.id),
+      })),
+      themes: themes.map((t: StoreThemeRow) => ({ ...t, owned: purchasedThemeIds.has(t.id) })),
+      soundPacks: soundPacks.map((s: StoreSoundPackRow) => ({
+        ...s,
+        owned: purchasedSoundPackIds.has(s.id),
+      })),
     });
   });
 

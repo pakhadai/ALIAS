@@ -1,4 +1,4 @@
-# Після push у main: оновлення коду на VPS, перезбірка Docker і застосування міграцій Prisma.
+# Після push у main: Quality Gate на GitHub → лише потім деплой на VPS (Docker + Prisma migrate).
 #
 # Потрібні GitHub Secrets (Settings → Secrets and variables → Actions):
 #   VPS_HOST              — IP або hostname сервера
@@ -31,7 +31,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Turbo already typechecks packages in parallel; lint/format/tests run alongside to save wall-clock time.
+      - name: Typecheck, lint, format, server tests (parallel)
+        run: |
+          set -euo pipefail
+          rc=0
+          pnpm typecheck & pid_tc=$!
+          pnpm lint & pid_lint=$!
+          pnpm format:check & pid_fmt=$!
+          pnpm test:server & pid_test=$!
+          wait $pid_tc || { echo "::error::typecheck failed"; rc=1; }
+          wait $pid_lint || { echo "::error::lint failed"; rc=1; }
+          wait $pid_fmt || { echo "::error::format:check failed"; rc=1; }
+          wait $pid_test || { echo "::error::test:server failed"; rc=1; }
+          exit $rc
+
   deploy:
+    name: Deploy to VPS
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: Prepare SSH key

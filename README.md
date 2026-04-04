@@ -444,12 +444,12 @@ isGameOver = isLastTeam && hasWinner
 | `room:created` | `{ roomCode, playerId }` | Кімнату створено |
 | `room:joined` | `{ roomCode, playerId }` | Приєднання успішне |
 | `room:rejoined` | `{ roomCode, playerId }` | Перепідключення успішне |
-| `room:error` | `{ message }` | Помилка |
+| `room:error` | `{ code, message }` | Помилка (`code` — стабільний ідентифікатор, див. `ROOM_ERROR_CODES` у shared) |
 | `room:player-joined` | `{ player: Player }` | Новий гравець у кімнаті |
 | `room:player-left` | `{ playerId }` | Гравець пішов |
 | `game:state-sync` | `GameSyncState` | Повний стан гри (після кожної дії) |
 | `game:notification` | `{ message, type }` | Нотифікація (deck reshuffled і т.д.) |
-| `player:kicked` | - | Вас видалили |
+| `player:kicked` | `{ playerId }` | Кік у кімнаті (усім у room); клієнт скидає сесію лише якщо `playerId` збігається з локальним |
 
 ### GameSyncState (повна синхронізація)
 
@@ -560,7 +560,7 @@ interface GameSyncState {
 
 | Метод | Шлях | Опис |
 |-------|------|------|
-| `GET` | `/health` | `{ status: "ok", timestamp }` |
+| `GET` | `/health` | `{ status: "ok", timestamp, instanceId, redis }` — `instanceId` з `INSTANCE_ID` або випадковий UUID; `redis` — чи підключений Redis |
 
 ---
 
@@ -667,6 +667,8 @@ Web Push підписки.
 1. **Room State Persistence** — стан кімнати зберігається в Redis з TTL 2 години. Ключі: `alias:room:{roomCode}`. Дозволяє відновити кімнату після рестарту сервера.
 2. **Socket-to-Room Mapping** — `alias:socket:{socketId}` → `{ roomCode, playerId }`. Для reconnection.
 3. **Socket.IO Redis Adapter** — PubSub для горизонтального масштабування (кілька Node.js інстансів можуть обслуговувати одну кімнату).
+4. **Room writer** — ключ `alias:room:writer:{roomCode}` зберігає `INSTANCE_ID` інстансу, який останнім зберіг знімок кімнати. Використовується для пересилання `game:action` на «власника» стану, якщо сокет потрапив на іншу ноду.
+5. **RoomActionRelay** — Redis pub/sub канали `alias:rpc:to:{INSTANCE_ID}`: якщо подія не на writer-ноді, вона пересилається туди — **`game:action`**, **`room:join`**, **`room:leave`**, **`room:rejoin`**; відповідь/помилка повертається клієнту (`room:error` з кодами `RELAY_UNAVAILABLE`, `RELAY_TIMEOUT`). **`roomDisconnect`** (без відповіді) — коли сокет відвалився на іншій ноді, а кімната живе на writer. Вимкнути relay: `ROOM_ACTION_RELAY=0` (або `false` / `no`).
 
 **Graceful degradation:** Якщо Redis недоступний — все працює, але без persistence між рестартами.
 
@@ -891,6 +893,8 @@ pnpm test:e2e:report  # відкрити звіт
 | `NODE_ENV` | Опційно | `development` / `production` |
 | `DATABASE_URL` | **Так** | PostgreSQL URL |
 | `REDIS_URL` | Опційно | Redis URL (default: `redis://localhost:6379`) |
+| `INSTANCE_ID` | Опційно | Стабільний ідентифікатор репліки при горизонтальному масштабуванні (показується в `/health`, пишеться як room writer у Redis) |
+| `ROOM_ACTION_RELAY` | Опційно | Крос-нодовий relay для `game:action` (default: увімкнено). Значення `0`, `false` або `no` — вимикає relay |
 | `JWT_SECRET` | **Так** | Секрет для JWT |
 | `CORS_ORIGIN` | Опційно | Дозволені origins (через кому) |
 | `GOOGLE_CLIENT_ID` | Опційно | Google OAuth client ID |

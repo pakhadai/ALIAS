@@ -97,7 +97,12 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       }
     }
 
-    const token = authService.createToken({ sub: user.id, type: 'google', email: user.email!, isAdmin: user.isAdmin });
+    const token = authService.createToken({
+      sub: user.id,
+      type: 'google',
+      email: user.email!,
+      isAdmin: user.isAdmin,
+    });
     res.json({ token, userId: user.id, email: user.email, isAdmin: user.isAdmin });
   });
 
@@ -105,15 +110,24 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
   router.patch('/profile', async (req, res) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
     const payload = authService.verifyToken(authHeader.slice(7));
-    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
 
     const { displayName, avatarId } = req.body as { displayName?: string; avatarId?: string };
     const data: Record<string, unknown> = {};
 
     if (displayName !== undefined) {
-      const name = String(displayName).replace(/<[^>]*>/g, '').trim().slice(0, 20);
+      const name = String(displayName)
+        .replace(/<[^>]*>/g, '')
+        .trim()
+        .slice(0, 20);
       if (name) data.displayName = name;
     }
     if (avatarId !== undefined) {
@@ -129,9 +143,15 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
   router.get('/lobby-settings', async (req, res) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
     const payload = authService.verifyToken(authHeader.slice(7));
-    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
@@ -142,12 +162,21 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
   router.put('/lobby-settings', async (req, res) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
     const payload = authService.verifyToken(authHeader.slice(7));
-    if (!payload) { res.status(401).json({ error: 'Invalid token' }); return; }
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
 
     const settings = req.body;
-    if (!settings || typeof settings !== 'object') { res.status(400).json({ error: 'Invalid settings' }); return; }
+    if (!settings || typeof settings !== 'object') {
+      res.status(400).json({ error: 'Invalid settings' });
+      return;
+    }
 
     await prisma.user.update({ where: { id: payload.sub }, data: { defaultSettings: settings } });
     res.json({ success: true });
@@ -210,4 +239,3 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
   return router;
 }
-

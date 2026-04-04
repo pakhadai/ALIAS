@@ -3,7 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { config } from '../config';
 
 export type TokenPayload = {
-  sub: string;   // userId (UUID)
+  sub: string; // userId (UUID)
   type: 'anonymous' | 'google';
   email?: string;
   isAdmin?: boolean;
@@ -35,7 +35,9 @@ export class AuthService {
   }
 
   /** Verify a Google ID token, return { googleId, email, name } or null */
-  async verifyGoogleToken(idToken: string): Promise<{ googleId: string; email: string; name: string } | null> {
+  async verifyGoogleToken(
+    idToken: string
+  ): Promise<{ googleId: string; email: string; name: string } | null> {
     if (!config.google.clientId) {
       console.error('[Auth] GOOGLE_CLIENT_ID is not set — set it in .env and restart the server');
       return null;
@@ -53,5 +55,4 @@ export class AuthService {
       return null;
     }
   }
-
 }

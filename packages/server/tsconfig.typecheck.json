@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@alias/shared": ["../shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "test", "prisma/seed.ts", "vitest.config.ts"]
+}

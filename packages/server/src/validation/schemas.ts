@@ -1,49 +1,76 @@
 import { z } from 'zod';
 import { Language, Category, SoundPreset, AppTheme, GameMode } from '@alias/shared';
-import type { GameActionPayload } from '@alias/shared';
+import type { GameActionPayload, GameSettingsUpdate } from '@alias/shared';
 
 // --- Socket event payloads ---
 
 export const roomCreateSchema = z.object({
-  playerName: z.string().min(1).max(20).transform(s => s.replace(/<[^>]*>/g, '')),
+  playerName: z
+    .string()
+    .min(1)
+    .max(20)
+    .transform((s) => s.replace(/<[^>]*>/g, '')),
   avatar: z.string().min(1).max(4),
   avatarId: z.string().max(3).optional().nullable(),
 });
 
 export const roomJoinSchema = z.object({
   roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
-  playerName: z.string().min(1).max(20).transform(s => s.replace(/<[^>]*>/g, '')),
+  playerName: z
+    .string()
+    .min(1)
+    .max(20)
+    .transform((s) => s.replace(/<[^>]*>/g, '')),
   avatar: z.string().min(1).max(4),
   avatarId: z.string().max(3).optional().nullable(),
 });
 
+export const roomRejoinSchema = z.object({
+  roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
+  playerId: z.string().uuid(),
+});
+
 // --- Game settings validation ---
 
-const gameSettingsPartialSchema = z.object({
-  language: z.nativeEnum(Language),
-  roundTime: z.number().int().min(10).max(300),
-  scoreToWin: z.number().int().min(5).max(100),
-  skipPenalty: z.boolean(),
-  categories: z.array(z.nativeEnum(Category)).min(1).max(10),
-  soundEnabled: z.boolean(),
-  soundPreset: z.nativeEnum(SoundPreset),
-  teamCount: z.number().int().min(2).max(8),
-  theme: z.nativeEnum(AppTheme),
-  customWords: z.string().max(5000).optional(),
-  customDeckCode: z.string().max(20).optional(),
-  selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
-  gameMode: z.nativeEnum(GameMode),
-  targetLanguage: z.nativeEnum(Language),
-}).partial();
+const gameSettingsPartialSchema = z
+  .object({
+    language: z.nativeEnum(Language),
+    roundTime: z.number().int().min(10).max(300),
+    scoreToWin: z.number().int().min(5).max(100),
+    skipPenalty: z.boolean(),
+    categories: z.array(z.nativeEnum(Category)).min(1).max(10),
+    soundEnabled: z.boolean(),
+    soundPreset: z.nativeEnum(SoundPreset),
+    teamCount: z.number().int().min(2).max(8),
+    theme: z.nativeEnum(AppTheme),
+    customWords: z.string().max(5000).optional(),
+    customDeckCode: z.string().max(20).optional(),
+    selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
+    gameMode: z.nativeEnum(GameMode),
+    targetLanguage: z.nativeEnum(Language),
+  })
+  .partial();
 
 // --- Game action validation ---
 
 const validActions = new Set([
-  'CORRECT', 'SKIP', 'START_GAME', 'START_DUEL', 'START_ROUND',
-  'START_PLAYING', 'NEXT_ROUND', 'RESET_GAME', 'REMATCH',
-  'GENERATE_TEAMS', 'PAUSE_GAME', 'TIME_UP', 'CONFIRM_ROUND',
-  'UPDATE_SETTINGS', 'KICK_PLAYER',
-  'ADD_OFFLINE_PLAYER', 'REMOVE_OFFLINE_PLAYER',
+  'CORRECT',
+  'SKIP',
+  'START_GAME',
+  'START_DUEL',
+  'START_ROUND',
+  'START_PLAYING',
+  'NEXT_ROUND',
+  'RESET_GAME',
+  'REMATCH',
+  'GENERATE_TEAMS',
+  'PAUSE_GAME',
+  'TIME_UP',
+  'CONFIRM_ROUND',
+  'UPDATE_SETTINGS',
+  'KICK_PLAYER',
+  'ADD_OFFLINE_PLAYER',
+  'REMOVE_OFFLINE_PLAYER',
   'GUESS_OPTION',
 ]);
 
@@ -70,7 +97,7 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
         console.warn('[Validation] Invalid settings:', result.error.issues);
         return null;
       }
-      return { action, data: result.data };
+      return { action, data: result.data as GameSettingsUpdate };
     }
     case 'KICK_PLAYER': {
       if (typeof obj.data !== 'string' || obj.data.length === 0 || obj.data.length > 100) {
@@ -85,15 +112,19 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
         return null;
       }
       const d = obj.data as Record<string, unknown>;
-      if (typeof d.selectedOption !== 'string' || d.selectedOption.length === 0 || d.selectedOption.length > 200) {
+      if (
+        typeof d.selectedOption !== 'string' ||
+        d.selectedOption.length === 0 ||
+        d.selectedOption.length > 200
+      ) {
         console.warn('[Validation] Invalid GUESS_OPTION selectedOption');
         return null;
       }
       return { action, data: { selectedOption: d.selectedOption } };
     }
     default:
-      // Actions that don't need data
-      return { action };
+      // Actions that don't need payload data on the wire (offline-only actions are rejected upstream).
+      return { action } as GameActionPayload;
   }
 }
 

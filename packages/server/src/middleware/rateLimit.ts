@@ -34,9 +34,9 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 // Rate limit configs per event type (relaxed in dev)
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
-  'game:action': { maxEvents: 15, windowMs: 1000 },      // 15/sec
-  'room:create': { maxEvents: isDev ? 30 : 3, windowMs: 60_000 },   // 3/min prod, 30/min dev
-  'room:join': { maxEvents: isDev ? 30 : 5, windowMs: 60_000 },     // 5/min prod, 30/min dev
+  'game:action': { maxEvents: 15, windowMs: 1000 }, // 15/sec
+  'room:create': { maxEvents: isDev ? 30 : 3, windowMs: 60_000 }, // 3/min prod, 30/min dev
+  'room:join': { maxEvents: isDev ? 30 : 5, windowMs: 60_000 }, // 5/min prod, 30/min dev
 };
 
 /**

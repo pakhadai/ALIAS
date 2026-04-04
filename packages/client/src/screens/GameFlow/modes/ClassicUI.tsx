@@ -50,7 +50,11 @@ export const ClassicWordCard: React.FC<ClassicWordCardProps> = ({
 /**
  * Explainer Correct / Skip controls (fixed footer).
  */
-export const ClassicActionFooter: React.FC<ClassicActionFooterProps> = ({ t, onCorrect, onSkip }) => (
+export const ClassicActionFooter: React.FC<ClassicActionFooterProps> = ({
+  t,
+  onCorrect,
+  onSkip,
+}) => (
   <footer
     className="w-full fixed bottom-0 left-0 z-20 flex"
     style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}

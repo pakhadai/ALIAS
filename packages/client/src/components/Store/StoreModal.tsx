@@ -1,8 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, ShoppingBag, BookOpen, Palette, Music, Check, Loader2, Lock, ExternalLink } from 'lucide-react';
+import {
+  X,
+  ShoppingBag,
+  BookOpen,
+  Palette,
+  Music,
+  Check,
+  Loader2,
+  Lock,
+  ExternalLink,
+} from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { LoginModal } from '../Auth/LoginModal';
-import { fetchStore, createCheckout, type StoreData, type WordPackItem, type ThemeItem, type SoundPackItem } from '../../services/api';
+import {
+  fetchStore,
+  createCheckout,
+  type StoreData,
+  type WordPackItem,
+  type ThemeItem,
+  type SoundPackItem,
+} from '../../services/api';
 
 interface StoreModalProps {
   onClose: () => void;
@@ -12,7 +29,11 @@ type TabId = 'packs' | 'themes' | 'sounds';
 
 const LANG_FLAGS: Record<string, string> = { UA: '🇺🇦', EN: '🇬🇧', DE: '🇩🇪' };
 const DIFF_LABELS: Record<string, string> = {
-  easy: 'Легко', medium: 'Середньо', hard: 'Важко', '18+': '18+', mixed: 'Змішано',
+  easy: 'Легко',
+  medium: 'Середньо',
+  hard: 'Важко',
+  '18+': '18+',
+  mixed: 'Змішано',
 };
 
 function formatPrice(cents: number): string {
@@ -21,7 +42,11 @@ function formatPrice(cents: number): string {
 }
 
 // ─── Word Pack Card ────────────────────────────────────────────────────
-function PackCard({ pack, onBuy, buying }: {
+function PackCard({
+  pack,
+  onBuy,
+  buying,
+}: {
   pack: WordPackItem;
   onBuy: (id: string) => void;
   buying: string | null;
@@ -32,16 +57,24 @@ function PackCard({ pack, onBuy, buying }: {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-lg">{LANG_FLAGS[pack.language] || '🌐'}</span>
-            <span className="font-semibold text-[color:var(--ui-fg)] text-sm">{pack.name.replace(/🇺🇦|🇬🇧|🇩🇪/g, '').trim()}</span>
+            <span className="font-semibold text-[color:var(--ui-fg)] text-sm">
+              {pack.name.replace(/🇺🇦|🇬🇧|🇩🇪/g, '').trim()}
+            </span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-[color:var(--ui-fg-muted)] uppercase tracking-wider">{pack.category}</span>
+            <span className="text-[10px] text-[color:var(--ui-fg-muted)] uppercase tracking-wider">
+              {pack.category}
+            </span>
             <span className="text-slate-600">·</span>
-            <span className="text-[10px] text-[color:var(--ui-fg-muted)]">{pack.wordCount} слів</span>
+            <span className="text-[10px] text-[color:var(--ui-fg-muted)]">
+              {pack.wordCount} слів
+            </span>
             {pack.difficulty !== 'mixed' && (
               <>
                 <span className="text-slate-600">·</span>
-                <span className="text-[10px] text-[color:var(--ui-fg-muted)]">{DIFF_LABELS[pack.difficulty] || pack.difficulty}</span>
+                <span className="text-[10px] text-[color:var(--ui-fg-muted)]">
+                  {DIFF_LABELS[pack.difficulty] || pack.difficulty}
+                </span>
               </>
             )}
           </div>
@@ -68,14 +101,20 @@ function PackCard({ pack, onBuy, buying }: {
 }
 
 // ─── Theme Card ─────────────────────────────────────────────────────────
-function ThemeCard({ theme, onBuy, buying }: {
+function ThemeCard({
+  theme,
+  onBuy,
+  buying,
+}: {
   theme: ThemeItem;
   onBuy: (id: string) => void;
   buying: string | null;
 }) {
   const cfg = theme.config as Record<string, string>;
   return (
-    <div className={`border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-[color:var(--ui-surface)]'}`}>
+    <div
+      className={`border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-[color:var(--ui-surface)]'}`}
+    >
       <div>
         <p className="font-semibold text-[color:var(--ui-fg)] text-sm">{theme.name}</p>
         <p className="text-[10px] text-[color:var(--ui-fg-muted)] mt-0.5">Тема оформлення</p>
@@ -91,7 +130,11 @@ function ThemeCard({ theme, onBuy, buying }: {
           disabled={buying !== null}
           className="shrink-0 h-8 px-3 rounded-full bg-[color:var(--ui-surface)] hover:bg-[color:var(--ui-surface-hover)] text-[color:var(--ui-fg)] text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
         >
-          {buying === theme.id ? <Loader2 size={12} className="animate-spin" /> : <Lock size={12} />}
+          {buying === theme.id ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            <Lock size={12} />
+          )}
           {theme.isFree ? 'Отримати' : formatPrice(theme.price)}
         </button>
       )}
@@ -100,7 +143,11 @@ function ThemeCard({ theme, onBuy, buying }: {
 }
 
 // ─── Sound Pack Card ────────────────────────────────────────────────────
-function SoundCard({ sp, onBuy, buying }: {
+function SoundCard({
+  sp,
+  onBuy,
+  buying,
+}: {
   sp: SoundPackItem;
   onBuy: (id: string) => void;
   buying: string | null;
@@ -141,7 +188,10 @@ export function StoreModal({ onClose }: StoreModalProps) {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [pendingBuyId, setPendingBuyId] = useState<{ itemType: 'wordPack' | 'theme' | 'soundPack'; id: string } | null>(null);
+  const [pendingBuyId, setPendingBuyId] = useState<{
+    itemType: 'wordPack' | 'theme' | 'soundPack';
+    id: string;
+  } | null>(null);
 
   const loadStore = useCallback(async () => {
     try {
@@ -153,7 +203,9 @@ export function StoreModal({ onClose }: StoreModalProps) {
     }
   }, []);
 
-  useEffect(() => { loadStore(); }, [loadStore]);
+  useEffect(() => {
+    loadStore();
+  }, [loadStore]);
 
   // After login, re-load store and proceed with pending purchase
   const handleLoginSuccess = useCallback(async () => {
@@ -165,23 +217,26 @@ export function StoreModal({ onClose }: StoreModalProps) {
     }
   }, [pendingBuyId, loadStore]);
 
-  const handleBuy = useCallback(async (itemType: 'wordPack' | 'theme' | 'soundPack', itemId: string) => {
-    if (!isAuthenticated) {
-      setPendingBuyId({ itemType, id: itemId });
-      setShowLogin(true);
-      return;
-    }
+  const handleBuy = useCallback(
+    async (itemType: 'wordPack' | 'theme' | 'soundPack', itemId: string) => {
+      if (!isAuthenticated) {
+        setPendingBuyId({ itemType, id: itemId });
+        setShowLogin(true);
+        return;
+      }
 
-    setBuying(itemId);
-    try {
-      const { checkoutUrl } = await createCheckout(itemType, itemId);
-      window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-    } catch (e) {
-      console.error('Checkout error:', e);
-    } finally {
-      setBuying(null);
-    }
-  }, [isAuthenticated]);
+      setBuying(itemId);
+      try {
+        const { checkoutUrl } = await createCheckout(itemType, itemId);
+        window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+      } catch (e) {
+        console.error('Checkout error:', e);
+      } finally {
+        setBuying(null);
+      }
+    },
+    [isAuthenticated]
+  );
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'packs', label: 'Словники', icon: <BookOpen size={15} /> },
@@ -191,7 +246,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
   // Group word packs by language
   const packsByLang: Record<string, WordPackItem[]> = {};
-  storeData?.wordPacks.forEach(p => {
+  storeData?.wordPacks.forEach((p) => {
     if (!packsByLang[p.language]) packsByLang[p.language] = [];
     packsByLang[p.language].push(p);
   });
@@ -208,7 +263,9 @@ export function StoreModal({ onClose }: StoreModalProps) {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-[color:var(--ui-fg)]">Магазин</h1>
-                <p className="text-xs text-[color:var(--ui-fg-muted)]">Додаткові словники, теми та звуки</p>
+                <p className="text-xs text-[color:var(--ui-fg-muted)]">
+                  Додаткові словники, теми та звуки
+                </p>
               </div>
             </div>
             <button
@@ -221,7 +278,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
           {/* Tabs */}
           <div className="flex gap-1 mt-4 p-1 bg-[color:var(--ui-surface)] rounded-xl">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -247,7 +304,12 @@ export function StoreModal({ onClose }: StoreModalProps) {
           ) : !storeData ? (
             <div className="text-center py-12 text-slate-400">
               <p className="text-sm">Не вдалося завантажити магазин</p>
-              <button onClick={loadStore} className="mt-3 text-indigo-400 text-xs hover:text-indigo-300">Спробувати знову</button>
+              <button
+                onClick={loadStore}
+                className="mt-3 text-indigo-400 text-xs hover:text-indigo-300"
+              >
+                Спробувати знову
+              </button>
             </div>
           ) : (
             <>
@@ -263,7 +325,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
                         </span>
                       </div>
                       <div className="space-y-2">
-                        {packs.map(p => (
+                        {packs.map((p) => (
                           <PackCard
                             key={p.id}
                             pack={p}
@@ -280,7 +342,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
               {/* Themes */}
               {activeTab === 'themes' && (
                 <div className="space-y-2">
-                  {storeData.themes.map(t => (
+                  {storeData.themes.map((t) => (
                     <ThemeCard
                       key={t.id}
                       theme={t}
@@ -294,7 +356,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
               {/* Sound Packs */}
               {activeTab === 'sounds' && (
                 <div className="space-y-2">
-                  {storeData.soundPacks.map(s => (
+                  {storeData.soundPacks.map((s) => (
                     <SoundCard
                       key={s.id}
                       sp={s}
@@ -319,7 +381,10 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
       {showLogin && (
         <LoginModal
-          onClose={() => { setShowLogin(false); setPendingBuyId(null); }}
+          onClose={() => {
+            setShowLogin(false);
+            setPendingBuyId(null);
+          }}
           onSuccess={handleLoginSuccess}
         />
       )}

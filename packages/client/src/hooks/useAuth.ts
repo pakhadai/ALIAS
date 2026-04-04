@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   fetchAnonymousToken,
   signInWithGoogle,
@@ -11,7 +11,14 @@ import {
 export type AuthState =
   | { status: 'loading' }
   | { status: 'anonymous'; userId: string; profile: UserProfile | null }
-  | { status: 'authenticated'; userId: string; email: string; provider: string; isAdmin: boolean; profile: UserProfile }
+  | {
+      status: 'authenticated';
+      userId: string;
+      email: string;
+      provider: string;
+      isAdmin: boolean;
+      profile: UserProfile;
+    }
   | { status: 'error'; message: string };
 
 export function useAuth() {
@@ -95,7 +102,7 @@ export function useAuth() {
   const refreshProfile = useCallback(async () => {
     try {
       const profile = await fetchProfile();
-      setAuthState(prev => {
+      setAuthState((prev) => {
         if (prev.status === 'anonymous') return { ...prev, profile };
         if (prev.status === 'authenticated') return { ...prev, profile };
         return prev;
@@ -107,8 +114,39 @@ export function useAuth() {
   }, []);
 
   const isAuthenticated = authState.status === 'authenticated';
-  const userId = authState.status !== 'loading' ? authState.userId : '';
-  const profile = authState.status === 'anonymous' ? authState.profile : authState.status === 'authenticated' ? authState.profile : null;
+  const userId =
+    authState.status === 'anonymous' || authState.status === 'authenticated'
+      ? authState.userId
+      : '';
+  const profile =
+    authState.status === 'anonymous'
+      ? authState.profile
+      : authState.status === 'authenticated'
+        ? authState.profile
+        : null;
 
-  return { authState, isAuthenticated, userId, profile, refreshProfile, loginWithGoogle, loginWithApple, logout, initialize };
+  return useMemo(
+    () => ({
+      authState,
+      isAuthenticated,
+      userId,
+      profile,
+      refreshProfile,
+      loginWithGoogle,
+      loginWithApple,
+      logout,
+      initialize,
+    }),
+    [
+      authState,
+      isAuthenticated,
+      userId,
+      profile,
+      refreshProfile,
+      loginWithGoogle,
+      loginWithApple,
+      logout,
+      initialize,
+    ]
+  );
 }

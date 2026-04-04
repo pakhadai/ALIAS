@@ -1,5 +1,6 @@
-import { Language, Category, SoundPreset, AppTheme, GameMode } from './enums';
+import type { Language, Category, SoundPreset, AppTheme, GameMode } from './enums';
 
+/** Player in a room (online or offline). */
 export interface Player {
   id: string;
   persistentId?: string;
@@ -46,6 +47,7 @@ export interface GameSettings {
   targetLanguage?: Language;
 }
 
+/** Per-round scoring and word history for the active team. */
 export interface RoundStats {
   correct: number;
   skipped: number;
@@ -53,41 +55,4 @@ export interface RoundStats {
   teamId: string;
   explainerName: string;
   explainerId?: string;
-}
-
-export type GameActionType =
-  | 'CORRECT'
-  | 'SKIP'
-  | 'START_GAME'
-  | 'START_DUEL'
-  | 'START_ROUND'
-  | 'START_PLAYING'
-  | 'NEXT_ROUND'
-  | 'RESET_GAME'
-  | 'REMATCH'
-  | 'UPDATE_SETTINGS'
-  | 'GENERATE_TEAMS'
-  | 'PAUSE_GAME'
-  | 'KICK_PLAYER'
-  | 'TIME_UP'
-  | 'CONFIRM_ROUND'
-  | 'ADD_OFFLINE_PLAYER'
-  | 'REMOVE_OFFLINE_PLAYER'
-  | 'GUESS_OPTION';
-
-export interface GameActionPayload {
-  action: GameActionType;
-  data?: any;
-}
-
-export type NetworkActionType =
-  | 'JOIN_REQUEST'
-  | 'SYNC_STATE'
-  | 'GAME_ACTION'
-  | 'KICK_PLAYER'
-  | 'KICKED';
-
-export interface NetworkMessage {
-  type: NetworkActionType;
-  payload: any;
 }

@@ -1,10 +1,11 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
   GameSyncState,
   Player,
+  RoomErrorPayload,
 } from '@alias/shared';
 import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
@@ -17,14 +18,16 @@ function normalizeBaseUrl(url: string): string {
 // Prefer same-origin by default so Socket.IO works behind nginx gateway/NPM without CORS/host mismatch.
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
-  (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3001');
+  (typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : 'http://localhost:3001');
 
 interface UseSocketConnectionOptions {
   onStateSync: (state: GameSyncState) => void;
   onPlayerJoined: (player: Player) => void;
   onPlayerLeft: (playerId: string) => void;
   onKicked: () => void;
-  onError: (message: string) => void;
+  onError: (error: RoomErrorPayload) => void;
   onNotification: (message: string, type: 'info' | 'error' | 'success') => void;
   onRejoined?: (roomCode: string, playerId: string) => void;
 }
@@ -32,6 +35,8 @@ interface UseSocketConnectionOptions {
 export function useSocketConnection(options: UseSocketConnectionOptions) {
   const socketRef = useRef<AppSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  /** True between emitting room:rejoin (after connect) and room:rejoined / room:error. */
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const [myPlayerId, setMyPlayerId] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const optionsRef = useRef(options);
@@ -51,19 +56,21 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
     socket.on('connect', () => {
       setIsConnected(true);
-      // Auto-rejoin if we have stored session data
       const storedRoom = localStorage.getItem(ROOM_CODE_KEY);
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (storedRoom && storedPlayer) {
+        setIsReconnecting(true);
         socket.emit('room:rejoin', { roomCode: storedRoom, playerId: storedPlayer });
       }
     });
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+      setIsReconnecting(false);
     });
 
     socket.on('room:rejoined', ({ roomCode: code, playerId }) => {
+      setIsReconnecting(false);
       myPlayerIdRef.current = playerId;
       setMyPlayerId(playerId);
       setRoomCode(code);
@@ -82,12 +89,15 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       optionsRef.current.onPlayerLeft(playerId);
     });
 
-    socket.on('player:kicked', () => {
-      optionsRef.current.onKicked();
+    socket.on('player:kicked', ({ playerId }) => {
+      if (playerId === myPlayerIdRef.current) {
+        optionsRef.current.onKicked();
+      }
     });
 
-    socket.on('room:error', ({ message }) => {
-      optionsRef.current.onError(message);
+    socket.on('room:error', (payload) => {
+      setIsReconnecting(false);
+      optionsRef.current.onError(payload);
     });
 
     socket.on('game:notification', ({ message, type }) => {
@@ -113,8 +123,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     const socket = socketRef.current;
     if (!socket) return;
 
-    // Clear any previous session data BEFORE connecting so the connect handler
-    // does not auto-send room:rejoin and interfere with the new room creation.
+    setIsReconnecting(false);
     localStorage.removeItem(ROOM_CODE_KEY);
     localStorage.removeItem(PLAYER_ID_KEY);
 
@@ -137,34 +146,43 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     }
   }, []);
 
-  const joinRoom = useCallback((code: string, playerName: string, avatar: string, avatarId?: string | null) => {
-    const socket = socketRef.current;
-    if (!socket) return;
+  const joinRoom = useCallback(
+    (code: string, playerName: string, avatar: string, avatarId?: string | null) => {
+      const socket = socketRef.current;
+      if (!socket) return;
 
-    // Clear previous session data so auto-rejoin does not fire for a different room.
-    localStorage.removeItem(ROOM_CODE_KEY);
-    localStorage.removeItem(PLAYER_ID_KEY);
+      setIsReconnecting(false);
+      localStorage.removeItem(ROOM_CODE_KEY);
+      localStorage.removeItem(PLAYER_ID_KEY);
 
-    const doEmit = () => {
-      socket.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
-        myPlayerIdRef.current = playerId;
-        setMyPlayerId(playerId);
-        setRoomCode(joinedCode);
-        localStorage.setItem(ROOM_CODE_KEY, joinedCode);
-        localStorage.setItem(PLAYER_ID_KEY, playerId);
-      });
-      socket.emit('room:join', { roomCode: code, playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
-    };
+      const doEmit = () => {
+        socket.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
+          myPlayerIdRef.current = playerId;
+          setMyPlayerId(playerId);
+          setRoomCode(joinedCode);
+          localStorage.setItem(ROOM_CODE_KEY, joinedCode);
+          localStorage.setItem(PLAYER_ID_KEY, playerId);
+        });
+        socket.emit('room:join', {
+          roomCode: code,
+          playerName,
+          avatar,
+          ...(avatarId != null ? { avatarId } : {}),
+        });
+      };
 
-    if (socket.connected) {
-      doEmit();
-    } else {
-      socket.connect();
-      socket.once('connect', doEmit);
-    }
-  }, []);
+      if (socket.connected) {
+        doEmit();
+      } else {
+        socket.connect();
+        socket.once('connect', doEmit);
+      }
+    },
+    []
+  );
 
   const leaveRoom = useCallback(() => {
+    setIsReconnecting(false);
     socketRef.current?.emit('room:leave');
     setRoomCode('');
     setMyPlayerId('');
@@ -173,20 +191,38 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     localStorage.removeItem(PLAYER_ID_KEY);
   }, []);
 
-  const sendGameAction = useCallback((payload: Parameters<ClientToServerEvents['game:action']>[0]) => {
-    socketRef.current?.emit('game:action', payload);
-  }, []);
+  const sendGameAction = useCallback(
+    (payload: Parameters<ClientToServerEvents['game:action']>[0]) => {
+      socketRef.current?.emit('game:action', payload);
+    },
+    []
+  );
 
-  return {
-    isConnected,
-    myPlayerId,
-    myPlayerIdRef,
-    roomCode,
-    connect,
-    disconnect,
-    createRoom,
-    joinRoom,
-    leaveRoom,
-    sendGameAction,
-  };
+  return useMemo(
+    () => ({
+      isConnected,
+      isReconnecting,
+      myPlayerId,
+      myPlayerIdRef,
+      roomCode,
+      connect,
+      disconnect,
+      createRoom,
+      joinRoom,
+      leaveRoom,
+      sendGameAction,
+    }),
+    [
+      isConnected,
+      isReconnecting,
+      myPlayerId,
+      roomCode,
+      connect,
+      disconnect,
+      createRoom,
+      joinRoom,
+      leaveRoom,
+      sendGameAction,
+    ]
+  );
 }

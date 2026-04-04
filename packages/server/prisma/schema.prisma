@@ -39,6 +39,9 @@ model WordPack {
   updatedAt   DateTime @updatedAt
   words       Word[]
   purchases   Purchase[]
+
+  // Store listing (orderBy language, category) + WordService pack filters
+  @@index([language, category])
 }
 
 model Word {
@@ -83,10 +86,14 @@ model Purchase {
   soundPack       SoundPack? @relation(fields: [soundPackId], references: [id])
   amount          Int
   paymentProvider String     // "stripe" | "liqpay"
-  status          String     @default("pending") // "pending" | "completed" | "refunded"
+  status          String     @default("pending") // "pending" | "completed" | "refunded" | "abandoned"
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
   createdAt       DateTime   @default(now())
 
   @@index([userId])
+  // Admin analytics/daily revenue: WHERE status = ? AND createdAt >= ?
+  @@index([status, createdAt])
 }
 
 model CustomDeck {
@@ -116,6 +123,8 @@ model GameSession {
 
   @@index([roomCode])
   @@index([status])
+  // Admin GET /analytics/daily — range on createdAt
+  @@index([createdAt])
 }
 
 model PushSubscription {

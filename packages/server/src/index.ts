@@ -7,11 +7,24 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { config } from './config';
 import { registerSocketHandlers } from './handlers/socketHandlers';
-import { scheduleGraceRemoval, cancelGraceRemoval } from './services/disconnectGrace';
+import { cancelGraceRemoval } from './services/disconnectGrace';
 import { RoomManager } from './services/RoomManager';
 import { GameEngine } from './services/GameEngine';
 import { WordService } from './services/WordService';
 import { RedisRoomStore } from './services/RedisRoomStore';
+import { RoomActionRelay } from './services/RoomActionRelay';
+import type {
+  GameActionRpcInbound,
+  RoomJoinRpcInbound,
+  RoomLeaveRpcInbound,
+  RoomRejoinRpcInbound,
+  RoomDisconnectRpcInbound,
+  RpcMessage,
+} from './services/RoomActionRelay';
+import { PerRoomQueue } from './services/PerRoomQueue';
+import { authorizeGameAction } from './game/authorizeGameAction';
+import { executeGameActionPipeline, broadcastRoomState } from './game/gameActionPipeline';
+import { wireGraceAfterMarkDisconnected } from './socket/disconnectFlow';
 import { socketAuthMiddleware } from './middleware/socketAuth';
 import { applyRateLimit } from './middleware/rateLimit';
 import { authLimiter, storeLimiter, pushLimiter } from './middleware/httpRateLimit';
@@ -27,6 +40,7 @@ import type {
   InterServerEvents,
   SocketData,
 } from '@alias/shared';
+import { roomError } from './utils/roomError';
 
 const app = express();
 // Behind reverse proxies (e.g. Nginx Proxy Manager) we rely on X-Forwarded-* headers
@@ -40,13 +54,20 @@ app.use(express.json());
 
 // Services (initialized early so routes can use prisma)
 const prisma = new PrismaClient();
+const redisStore = new RedisRoomStore();
+const roomActionRelay = new RoomActionRelay();
 
 // Routes
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    instanceId: config.serverInstanceId,
+    redis: redisStore.isConnected,
+  });
 });
 app.use('/api/auth', authLimiter, createAuthRoutes(prisma));
-app.use('/api/admin', createAdminRoutes(prisma));
+app.use('/api/admin', createAdminRoutes(prisma, redisStore));
 app.use('/api/store', storeLimiter, createStoreRoutes(prisma));
 app.use('/api/purchases', storeLimiter, createPurchaseRoutes(prisma));
 app.use('/api/custom-decks', createCustomDeckRoutes(prisma));
@@ -54,28 +75,30 @@ app.use('/api/push', pushLimiter, createPushRoutes(prisma));
 
 const httpServer = createServer(app);
 
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->(httpServer, {
-  cors: {
-    origin: config.cors.origin,
-    methods: ['GET', 'POST'],
-  },
-});
+const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
+  httpServer,
+  {
+    cors: {
+      origin: config.cors.origin,
+      methods: ['GET', 'POST'],
+    },
+  }
+);
 
 // Services
 const wordService = new WordService();
 const roomManager = new RoomManager();
-const redisStore = new RedisRoomStore();
+const roomQueue = new PerRoomQueue();
 const gameEngine = new GameEngine(roomManager, wordService);
 
 // Timer sync: re-broadcast room state every 10 s during active PLAYING
 // so client timers that drifted (browser tab throttle) get corrected.
 gameEngine.setTimerBroadcast((room) => {
-  io.to(room.code).emit('game:state-sync', roomManager.getSyncState(room));
+  void roomQueue.run(room.code, async () => {
+    const live = roomManager.getRoom(room.code);
+    if (!live) return;
+    io.to(room.code).emit('game:state-sync', roomManager.getSyncState(live));
+  });
 });
 
 // In-game notifications (e.g. deck reshuffled)
@@ -85,19 +108,242 @@ gameEngine.setNotificationBroadcast((room, message, type) => {
 
 const RECONNECT_GRACE_MS = 60_000;
 
+function handleRelayMessage(msg: RpcMessage): void {
+  if (msg.kind === 'reply') {
+    roomActionRelay.dispatchReply(msg);
+    return;
+  }
+  switch (msg.kind) {
+    case 'gameAction':
+      void handleInboundGameAction(msg);
+      break;
+    case 'roomJoin':
+      void handleInboundRoomJoin(msg);
+      break;
+    case 'roomLeave':
+      void handleInboundRoomLeave(msg);
+      break;
+    case 'roomRejoin':
+      void handleInboundRoomRejoin(msg);
+      break;
+    case 'roomDisconnect':
+      handleInboundRoomDisconnect(msg);
+      break;
+    default:
+      break;
+  }
+}
+
+async function handleInboundGameAction(msg: GameActionRpcInbound): Promise<void> {
+  void roomQueue.run(msg.roomCode, async () => {
+    let room = roomManager.getRoom(msg.roomCode);
+    if (!room) {
+      room = (await roomManager.restoreRoomFromRedis(msg.roomCode)) ?? undefined;
+    }
+    if (!room) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('ROOM_NOT_FOUND', 'Room not found on host'),
+      });
+      return;
+    }
+
+    const auth = authorizeGameAction(room, msg.payload, {
+      mode: 'relay',
+      playerId: msg.actorPlayerId,
+    });
+    if (!auth.ok) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: auth.error,
+      });
+      return;
+    }
+
+    try {
+      await executeGameActionPipeline(
+        io,
+        roomManager,
+        gameEngine,
+        room,
+        msg.roomCode,
+        msg.payload,
+        auth.actorPlayerId
+      );
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+      });
+    } catch (err) {
+      console.warn('[Relay] execute failed:', (err as Error).message);
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('INVALID_ACTION', 'Action failed on host instance'),
+      });
+    }
+  });
+}
+
+async function handleInboundRoomJoin(msg: RoomJoinRpcInbound): Promise<void> {
+  void roomQueue.run(msg.roomCode, async () => {
+    let room = roomManager.getRoom(msg.roomCode);
+    if (!room) {
+      room = (await roomManager.restoreRoomFromRedis(msg.roomCode)) ?? undefined;
+    }
+    if (!room) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('ROOM_NOT_FOUND', `Room ${msg.roomCode} not found`),
+      });
+      return;
+    }
+
+    const player = roomManager.addPlayer(
+      msg.roomCode,
+      msg.requestingSocketId,
+      msg.playerName,
+      msg.avatar,
+      msg.avatarId
+    );
+    if (!player) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('ROOM_FULL', 'Room is full'),
+      });
+      return;
+    }
+
+    io.to(msg.roomCode).emit('room:player-joined', { player });
+    broadcastRoomState(io, msg.roomCode, roomManager);
+    await roomActionRelay.publishReply(msg.replyToInstanceId, {
+      v: 1,
+      kind: 'reply',
+      requestId: msg.requestId,
+      roomJoinOk: { roomCode: msg.roomCode, player },
+    });
+  });
+}
+
+async function handleInboundRoomLeave(msg: RoomLeaveRpcInbound): Promise<void> {
+  void roomQueue.run(msg.roomCode, async () => {
+    const removedId = roomManager.removePlayer(msg.roomCode, msg.socketId);
+    if (!removedId) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('PLAYER_NOT_IN_ROOM', 'Not in room on host'),
+      });
+      return;
+    }
+    cancelGraceRemoval(removedId);
+    io.to(msg.roomCode).emit('room:player-left', { playerId: removedId });
+    broadcastRoomState(io, msg.roomCode, roomManager);
+    await roomActionRelay.publishReply(msg.replyToInstanceId, {
+      v: 1,
+      kind: 'reply',
+      requestId: msg.requestId,
+      roomLeaveOk: { roomCode: msg.roomCode },
+    });
+  });
+}
+
+async function handleInboundRoomRejoin(msg: RoomRejoinRpcInbound): Promise<void> {
+  void roomQueue.run(msg.roomCode, async () => {
+    let room = roomManager.getRoom(msg.roomCode);
+    if (!room) {
+      room = (await roomManager.restoreRoomFromRedis(msg.roomCode)) ?? undefined;
+    }
+    if (!room) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('ROOM_NOT_FOUND', 'Room not found'),
+      });
+      return;
+    }
+
+    cancelGraceRemoval(msg.playerId);
+
+    const applied = roomManager.applyRejoinSocket(
+      msg.roomCode,
+      msg.playerId,
+      msg.requestingSocketId
+    );
+    if (!applied) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('PLAYER_NOT_IN_ROOM', 'Player not found in room'),
+      });
+      return;
+    }
+
+    const live = roomManager.getRoom(msg.roomCode);
+    if (live) {
+      io.to(msg.roomCode).emit('game:state-sync', roomManager.getSyncState(live));
+    }
+    await roomActionRelay.publishReply(msg.replyToInstanceId, {
+      v: 1,
+      kind: 'reply',
+      requestId: msg.requestId,
+      roomRejoinOk: {
+        roomCode: msg.roomCode,
+        playerId: msg.playerId,
+        playerName: applied.playerName,
+      },
+    });
+  });
+}
+
+function handleInboundRoomDisconnect(msg: RoomDisconnectRpcInbound): void {
+  void roomQueue.run(msg.roomCode, async () => {
+    const graceInfo = roomManager.markSocketDisconnected(msg.socketId);
+    if (!graceInfo) return;
+    wireGraceAfterMarkDisconnected(io, roomManager, roomQueue, graceInfo, RECONNECT_GRACE_MS);
+  });
+}
+
 // Initialize Redis connection (room store + pub/sub adapter)
-redisStore.connect(config.redis.url)
-  .then(() => {
+redisStore
+  .connect(config.redis.url)
+  .then(async () => {
     roomManager.setRedisStore(redisStore);
 
-    // Socket.io Redis Adapter — enables horizontal scaling across multiple Node instances
+    try {
+      await roomActionRelay.connect(config.redis.url, handleRelayMessage);
+      console.log('[Redis] Room action relay subscribed');
+    } catch (err) {
+      console.warn('[Redis] Room action relay failed:', (err as Error).message);
+    }
+
+    // Redis adapter fans out Socket.io events across processes, but authoritative room state still
+    // lives in this process's RoomManager memory. Use sticky sessions (same client → same instance)
+    // or accept that only the instance that holds the room can serve its gameplay until you add
+    // distributed room ownership.
     try {
       const pubClient = new Redis(config.redis.url, { maxRetriesPerRequest: 3 });
       const subClient = pubClient.duplicate();
       io.adapter(createAdapter(pubClient, subClient));
       console.log('[Redis] Socket.io adapter configured');
     } catch (err) {
-      console.warn('[Redis] Adapter setup failed, running single-instance:', (err as Error).message);
+      console.warn(
+        '[Redis] Adapter setup failed, running single-instance:',
+        (err as Error).message
+      );
     }
   })
   .catch(() => {
@@ -105,7 +351,8 @@ redisStore.connect(config.redis.url)
   });
 
 // Initialize Prisma connection
-prisma.$connect()
+prisma
+  .$connect()
   .then(() => {
     console.log('[DB] PostgreSQL connected');
     wordService.setPrisma(prisma);
@@ -122,51 +369,9 @@ io.use(socketAuthMiddleware);
 io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
   applyRateLimit(socket);
-  registerSocketHandlers(io, socket, roomManager, gameEngine);
-
-  // Rejoin: player reconnects with stored roomCode + playerId
-  socket.on('room:rejoin', async ({ roomCode, playerId }: { roomCode: string; playerId: string }) => {
-    // Try in-memory first; fall back to Redis restore (handles server restarts)
-    let room = roomManager.getRoom(roomCode);
-    if (!room) {
-      room = await roomManager.restoreRoomFromRedis(roomCode) ?? undefined;
-    }
-    if (!room) {
-      socket.emit('room:error', { message: 'Room not found' });
-      return;
-    }
-
-    // Check if this playerId exists in the room
-    const player = room.players.find(p => p.id === playerId);
-    if (!player) {
-      socket.emit('room:error', { message: 'Player not found in room' });
-      return;
-    }
-
-    cancelGraceRemoval(playerId);
-
-    // Re-map socketId → playerId
-    // Remove old stale socket entries for this playerId
-    for (const [sid, pid] of room.socketToPlayer) {
-      if (pid === playerId) room.socketToPlayer.delete(sid);
-    }
-    room.socketToPlayer.set(socket.id, playerId);
-
-    // Update hostSocketId if this player was the host
-    if (room.hostPlayerId === playerId) {
-      room.hostSocketId = socket.id;
-    }
-
-    socket.join(roomCode);
-    socket.data.playerId = playerId;
-    socket.data.playerName = player.name;
-    socket.data.roomCode = roomCode;
-
-    roomManager.markPlayerReconnected(roomCode, playerId);
-
-    socket.emit('room:rejoined', { roomCode, playerId });
-    io.to(roomCode).emit('game:state-sync', roomManager.getSyncState(room));
-    console.log(`[Socket] Rejoined: ${socket.id} → room ${roomCode}`);
+  registerSocketHandlers(io, socket, roomManager, gameEngine, roomQueue, {
+    redisStore,
+    relay: roomActionRelay,
   });
 
   socket.on('disconnect', () => {
@@ -175,51 +380,43 @@ io.on('connection', (socket) => {
     const disconnectedSocketId = socket.id;
 
     if (roomCode && playerId) {
-      const graceInfo = roomManager.markSocketDisconnected(disconnectedSocketId);
-      if (graceInfo) {
-        const roomAfter = roomManager.getRoom(graceInfo.roomCode);
-        if (roomAfter) {
-          io.to(graceInfo.roomCode).emit('game:state-sync', roomManager.getSyncState(roomAfter));
-          if (graceInfo.wasHostMigration) {
-            io.to(graceInfo.roomCode).emit('game:notification', {
-              message: 'Host disconnected. New host assigned.',
-              type: 'info',
+      void roomQueue.run(roomCode, async () => {
+        const localRoom = roomManager.getRoom(roomCode);
+        if (localRoom) {
+          const graceInfo = roomManager.markSocketDisconnected(disconnectedSocketId);
+          if (!graceInfo) return;
+          wireGraceAfterMarkDisconnected(io, roomManager, roomQueue, graceInfo, RECONNECT_GRACE_MS);
+          return;
+        }
+
+        if (config.roomActionRelayEnabled && roomActionRelay.isReady() && redisStore.isConnected) {
+          const writer = await redisStore.getRoomWriter(roomCode);
+          if (writer && writer !== config.serverInstanceId) {
+            await roomActionRelay.publishRoomDisconnect(writer, {
+              roomCode,
+              socketId: disconnectedSocketId,
             });
           }
         }
-        scheduleGraceRemoval(graceInfo.playerId, RECONNECT_GRACE_MS, () => {
-          const result = roomManager.finalizeGraceRemoval(graceInfo.roomCode, graceInfo.playerId);
-          if (!result) return;
-          const room = roomManager.getRoom(result.roomCode);
-          if (!room) return;
-          if (result.removedPlayerId) {
-            io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
-          }
-          io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
-          if (result.wasMigration) {
-            io.to(result.roomCode).emit('game:notification', {
-              message: 'Host disconnected. New host assigned.',
-              type: 'info',
-            });
-          }
-        });
-      }
+      });
     } else {
       const result = roomManager.handleDisconnect(disconnectedSocketId);
       if (result) {
-        const room = roomManager.getRoom(result.roomCode);
-        if (room) {
-          if (result.removedPlayerId) {
-            io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+        void roomQueue.run(result.roomCode, async () => {
+          const room = roomManager.getRoom(result.roomCode);
+          if (room) {
+            if (result.removedPlayerId) {
+              io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+            }
+            io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
+            if (result.wasMigration) {
+              io.to(result.roomCode).emit('game:notification', {
+                message: 'Host disconnected. New host assigned.',
+                type: 'info',
+              });
+            }
           }
-          io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
-          if (result.wasMigration) {
-            io.to(result.roomCode).emit('game:notification', {
-              message: 'Host disconnected. New host assigned.',
-              type: 'info',
-            });
-          }
-        }
+        });
       }
     }
   });
@@ -227,12 +424,14 @@ io.on('connection', (socket) => {
 
 httpServer.listen(config.port, () => {
   console.log(`[Server] Alias server running on port ${config.port}`);
+  console.log(`[Server] Instance: ${config.serverInstanceId}`);
   console.log(`[Server] Environment: ${config.nodeEnv}`);
   console.log(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
+  await roomActionRelay.disconnect();
   await redisStore.disconnect();
   await prisma.$disconnect();
   process.exit(0);

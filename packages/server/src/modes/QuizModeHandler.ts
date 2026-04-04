@@ -36,7 +36,7 @@ export class QuizModeHandler implements IGameModeHandler {
   handleAction(
     action: GameActionPayload,
     currentTask: GameTask,
-    context: ActionContext,
+    context: ActionContext
   ): ActionResult {
     if (action.action !== 'GUESS_OPTION') {
       return { isCorrect: false, points: 0, nextWord: false, endTurn: false };
@@ -47,7 +47,7 @@ export class QuizModeHandler implements IGameModeHandler {
       return { isCorrect: false, points: 0, nextWord: false, endTurn: false };
     }
 
-    const selected = action.data?.selectedOption as string | undefined;
+    const selected = action.data.selectedOption;
     const isCorrect = !!selected && selected === currentTask.answer;
 
     if (isCorrect && context.senderId) {

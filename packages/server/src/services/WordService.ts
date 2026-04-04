@@ -41,10 +41,10 @@ export class WordService {
     const customWords = settings.categories
       .filter((cat) => cat === Category.CUSTOM && settings.customWords)
       .flatMap(() =>
-        settings.customWords!
-          .split(',')
+        settings
+          .customWords!.split(',')
           .map((w) => w.trim().replace(/<[^>]*>/g, ''))
-          .filter(Boolean),
+          .filter(Boolean)
       );
 
     const dbCategories = settings.categories.filter((cat) => cat !== Category.CUSTOM);
@@ -61,7 +61,7 @@ export class WordService {
           where: { pack: { id: { in: selectedPackIds } } },
           select: { text: true },
         });
-        dbWords = rows.map((r) => r.text);
+        dbWords = rows.map((r: { text: string }) => r.text);
       } else if (dbCategories.length > 0) {
         // Default: only use isDefault packs (free standard content available to all)
         const rows = await this.prisma.word.findMany({
@@ -74,15 +74,13 @@ export class WordService {
           },
           select: { text: true },
         });
-        dbWords = rows.map((r) => r.text);
+        dbWords = rows.map((r: { text: string }) => r.text);
       }
     }
 
     // Fallback to static MOCK_WORDS if DB is empty or unavailable
     if (dbWords.length === 0 && dbCategories.length > 0) {
-      dbWords = dbCategories.flatMap(
-        (cat) => MOCK_WORDS[settings.language][cat] || [],
-      );
+      dbWords = dbCategories.flatMap((cat) => MOCK_WORDS[settings.language][cat] || []);
     }
 
     const pool = [...dbWords, ...customWords];
@@ -90,9 +88,7 @@ export class WordService {
     // Final fallback chain: settings pool → GENERAL mock words → emergency hardcoded
     const generalFallback: string[] = MOCK_WORDS[settings.language]?.[Category.GENERAL] ?? [];
     const finalPool: string[] =
-      pool.length > 0
-        ? pool
-        : (generalFallback.length > 0 ? generalFallback : EMERGENCY_WORDS);
+      pool.length > 0 ? pool : generalFallback.length > 0 ? generalFallback : EMERGENCY_WORDS;
 
     return this.shuffleArray(finalPool);
   }
@@ -100,7 +96,7 @@ export class WordService {
   async nextWord(
     deck: string[],
     settings: GameSettings,
-    usedWords: string[] = [],
+    usedWords: string[] = []
   ): Promise<{ word: string; deck: string[]; usedWords: string[]; deckReshuffled: boolean }> {
     let currentDeck = [...deck];
     let deckReshuffled = false;

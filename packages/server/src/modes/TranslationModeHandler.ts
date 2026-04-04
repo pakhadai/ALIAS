@@ -19,7 +19,7 @@ export class TranslationModeHandler implements IGameModeHandler {
   handleAction(
     action: GameActionPayload,
     _currentTask: GameTask,
-    _context: ActionContext,
+    _context: ActionContext
   ): ActionResult {
     switch (action.action) {
       case 'CORRECT':

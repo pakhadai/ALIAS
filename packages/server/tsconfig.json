@@ -6,8 +6,7 @@
     "outDir": "./dist",
     "declaration": true,
     "sourceMap": true,
-    "noEmit": false,
-    "jsx": "preserve"
+    "noEmit": false
   },
   "include": ["src"]
 }

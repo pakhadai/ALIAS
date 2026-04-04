@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WordService } from '../WordService';
-import {
-  Language, Category, SoundPreset, AppTheme, MOCK_WORDS,
-} from '@alias/shared';
+import { Language, Category, SoundPreset, AppTheme, MOCK_WORDS } from '@alias/shared';
 import type { GameSettings } from '@alias/shared';
 
 const baseSettings: GameSettings = {
@@ -21,7 +19,9 @@ const baseSettings: GameSettings = {
 
 describe('buildDeck (no Prisma)', () => {
   let service: WordService;
-  beforeEach(() => { service = new WordService(); });
+  beforeEach(() => {
+    service = new WordService();
+  });
 
   it('returns words from MOCK_WORDS for UA GENERAL', async () => {
     const deck = await service.buildDeck(baseSettings);
@@ -31,14 +31,21 @@ describe('buildDeck (no Prisma)', () => {
   });
 
   it('returns words for EN FOOD', async () => {
-    const settings: GameSettings = { ...baseSettings, language: Language.EN, categories: [Category.FOOD] };
+    const settings: GameSettings = {
+      ...baseSettings,
+      language: Language.EN,
+      categories: [Category.FOOD],
+    };
     const deck = await service.buildDeck(settings);
     const expected = MOCK_WORDS[Language.EN][Category.FOOD]!;
     expect(new Set(deck)).toEqual(new Set(expected));
   });
 
   it('combines multiple categories', async () => {
-    const settings: GameSettings = { ...baseSettings, categories: [Category.GENERAL, Category.FOOD] };
+    const settings: GameSettings = {
+      ...baseSettings,
+      categories: [Category.GENERAL, Category.FOOD],
+    };
     const deck = await service.buildDeck(settings);
     const genWords = MOCK_WORDS[Language.UA][Category.GENERAL]!;
     const foodWords = MOCK_WORDS[Language.UA][Category.FOOD]!;
@@ -108,7 +115,7 @@ describe('buildDeck (no Prisma)', () => {
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('MyWord');
     const genWords = MOCK_WORDS[Language.UA][Category.GENERAL]!;
-    genWords.forEach(w => expect(deck).toContain(w));
+    genWords.forEach((w) => expect(deck).toContain(w));
   });
 
   it('falls back to GENERAL when no words found', async () => {
@@ -121,7 +128,7 @@ describe('buildDeck (no Prisma)', () => {
     const deck = await service.buildDeck(settings);
     // Should fallback to GENERAL words
     const genWords = MOCK_WORDS[Language.UA][Category.GENERAL]!;
-    expect(deck.some(w => genWords.includes(w))).toBe(true);
+    expect(deck.some((w) => genWords.includes(w))).toBe(true);
   });
 });
 
@@ -137,10 +144,7 @@ describe('buildDeck (with Prisma)', () => {
   it('uses DB words when available via isDefault filter', async () => {
     const mockPrisma = {
       word: {
-        findMany: vi.fn().mockResolvedValue([
-          { text: 'DBWord1' },
-          { text: 'DBWord2' },
-        ]),
+        findMany: vi.fn().mockResolvedValue([{ text: 'DBWord1' }, { text: 'DBWord2' }]),
       },
       customDeck: {
         findUnique: vi.fn().mockResolvedValue(null),
@@ -156,7 +160,7 @@ describe('buildDeck (with Prisma)', () => {
         where: expect.objectContaining({
           pack: expect.objectContaining({ isDefault: true }),
         }),
-      }),
+      })
     );
   });
 
@@ -188,7 +192,7 @@ describe('buildDeck (with Prisma)', () => {
     expect(mockPrisma.word.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { pack: { id: { in: ['pack-uuid-1'] } } },
-      }),
+      })
     );
   });
 
@@ -231,7 +235,9 @@ describe('buildDeck (with Prisma)', () => {
 
 describe('nextWord', () => {
   let service: WordService;
-  beforeEach(() => { service = new WordService(); });
+  beforeEach(() => {
+    service = new WordService();
+  });
 
   it('pops word from existing deck', async () => {
     const { word, deck } = await service.nextWord(['Apple', 'Banana', 'Cherry'], baseSettings);

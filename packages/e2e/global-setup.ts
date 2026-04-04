@@ -1,0 +1,57 @@
+import { execSync } from 'child_process';
+import * as net from 'net';
+import * as path from 'path';
+import { getRepoRoot, loadE2eEnvFile, resolveDatabaseUrl } from './test-env';
+
+function waitForPort(port: number, timeoutMs: number): Promise<void> {
+  const start = Date.now();
+  return new Promise((resolve, reject) => {
+    const tryOnce = () => {
+      const socket = net.createConnection({ port, host: '127.0.0.1' }, () => {
+        socket.end();
+        resolve();
+      });
+      socket.on('error', () => {
+        socket.destroy();
+        if (Date.now() - start > timeoutMs) {
+          reject(new Error(`Timed out waiting for 127.0.0.1:${port}`));
+        } else {
+          setTimeout(tryOnce, 400);
+        }
+      });
+    };
+    tryOnce();
+  });
+}
+
+/**
+ * Ensures Postgres + Redis (docker-compose.yml) and applies schema so the server can start.
+ * If Docker is unavailable, assumes services are already running.
+ */
+export default async function globalSetup(): Promise<void> {
+  const repoRoot = getRepoRoot();
+  const databaseUrl = resolveDatabaseUrl();
+
+  try {
+    execSync('docker compose up -d redis postgres', {
+      cwd: repoRoot,
+      stdio: 'inherit',
+    });
+  } catch {
+    console.warn(
+      '[e2e] docker compose up failed — using existing Postgres/Redis on localhost (if any)'
+    );
+  }
+
+  await waitForPort(6379, 10_000).catch(() => {
+    console.warn('[e2e] Redis port 6379 not ready within 10s — ensure redis is up (docker compose up -d redis)');
+  });
+  await waitForPort(5432, 90_000);
+
+  const serverDir = path.join(repoRoot, 'packages', 'server');
+  execSync('pnpm exec prisma db push', {
+    cwd: serverDir,
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+  });
+}

@@ -5,7 +5,9 @@ function normalizeBaseUrl(url: string): string {
 // Prefer same-origin by default. This avoids CORS surprises in local Docker/proxy setups.
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
-  (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3001');
+  (typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : 'http://localhost:3001');
 
 /** Storage keys */
 export const AUTH_TOKEN_KEY = 'alias_auth_token';
@@ -101,7 +103,9 @@ export async function fetchLobbySettings(): Promise<Record<string, unknown> | nu
   if (lobbySettingsCache && now - lobbySettingsCache.ts < LOBBY_CACHE_TTL_MS) {
     return lobbySettingsCache.data;
   }
-  const data = await apiFetch<{ settings: Record<string, unknown> | null }>('/api/auth/lobby-settings');
+  const data = await apiFetch<{ settings: Record<string, unknown> | null }>(
+    '/api/auth/lobby-settings'
+  );
   lobbySettingsCache = { data: data.settings, ts: now };
   return data.settings;
 }
@@ -142,7 +146,6 @@ export async function signInWithGoogle(idToken: string): Promise<AuthResponse> {
   return data;
 }
 
-
 /** Get current user profile */
 export async function fetchProfile(): Promise<UserProfile> {
   return apiFetch<UserProfile>('/api/auth/me');
@@ -154,7 +157,7 @@ export interface StoreItem {
   id: string;
   slug: string;
   name: string;
-  price: number;   // cents
+  price: number; // cents
   isFree: boolean;
   owned: boolean;
 }
@@ -195,7 +198,7 @@ export interface CheckoutResponse {
 
 export async function createCheckout(
   itemType: 'wordPack' | 'theme' | 'soundPack',
-  itemId: string,
+  itemId: string
 ): Promise<CheckoutResponse> {
   return apiFetch<CheckoutResponse>('/api/purchases/checkout', {
     method: 'POST',
@@ -213,7 +216,7 @@ export interface PaymentIntentResponse {
 /** Create a Stripe PaymentIntent for in-app quick pay (Apple Pay / Google Pay / card) */
 export async function createPaymentIntent(
   itemType: 'wordPack' | 'theme' | 'soundPack',
-  itemId: string,
+  itemId: string
 ): Promise<PaymentIntentResponse> {
   return apiFetch<PaymentIntentResponse>('/api/purchases/payment-intent', {
     method: 'POST',
@@ -224,7 +227,7 @@ export async function createPaymentIntent(
 /** Claim a free item — instantly marks it as owned (idempotent) */
 export async function claimFreeItem(
   itemType: 'wordPack' | 'theme' | 'soundPack',
-  itemId: string,
+  itemId: string
 ): Promise<void> {
   return apiFetch<void>('/api/purchases/claim', {
     method: 'POST',

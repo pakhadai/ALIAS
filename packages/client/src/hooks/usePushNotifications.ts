@@ -6,15 +6,16 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
 
 export type PushPermission = 'default' | 'granted' | 'denied' | 'unsupported';
 
 export function usePushNotifications() {
-  const supported = typeof Notification !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+  const supported =
+    typeof Notification !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
   const [permission, setPermission] = useState<PushPermission>(
-    supported ? (Notification.permission as PushPermission) : 'unsupported',
+    supported ? (Notification.permission as PushPermission) : 'unsupported'
   );
   const [loading, setLoading] = useState(false);
 

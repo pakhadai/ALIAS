@@ -3,6 +3,8 @@ import type { GameSyncState } from '@alias/shared';
 
 const ROOM_TTL = 7200; // 2 hours
 const ROOM_PREFIX = 'alias:room:';
+/** Last process that persisted room JSON — ops hint for multi-instance (sticky session debugging). */
+const ROOM_WRITER_PREFIX = 'alias:room:writer:';
 
 export class RedisRoomStore {
   private redis: Redis | null = null;
@@ -30,15 +32,23 @@ export class RedisRoomStore {
     return this.redis !== null && this.redis.status === 'ready';
   }
 
-  async saveRoomState(roomCode: string, state: GameSyncState): Promise<void> {
+  /**
+   * Persist snapshot + optional writer id (same TTL). Writer helps spot split-brain when LB
+   * sends players to different Node processes for the same room.
+   */
+  async saveRoomState(
+    roomCode: string,
+    state: GameSyncState,
+    writerInstanceId?: string
+  ): Promise<void> {
     if (!this.redis) return;
     try {
-      await this.redis.set(
-        `${ROOM_PREFIX}${roomCode}`,
-        JSON.stringify(state),
-        'EX',
-        ROOM_TTL,
-      );
+      const pipe = this.redis.pipeline();
+      pipe.set(`${ROOM_PREFIX}${roomCode}`, JSON.stringify(state), 'EX', ROOM_TTL);
+      if (writerInstanceId) {
+        pipe.set(`${ROOM_WRITER_PREFIX}${roomCode}`, writerInstanceId, 'EX', ROOM_TTL);
+      }
+      await pipe.exec();
     } catch {}
   }
 
@@ -52,10 +62,20 @@ export class RedisRoomStore {
     }
   }
 
+  /** Instance id that last persisted this room (see `saveRoomState` third arg). */
+  async getRoomWriter(roomCode: string): Promise<string | null> {
+    if (!this.redis) return null;
+    try {
+      return await this.redis.get(`${ROOM_WRITER_PREFIX}${roomCode}`);
+    } catch {
+      return null;
+    }
+  }
+
   async deleteRoom(roomCode: string): Promise<void> {
     if (!this.redis) return;
     try {
-      await this.redis.del(`${ROOM_PREFIX}${roomCode}`);
+      await this.redis.del(`${ROOM_PREFIX}${roomCode}`, `${ROOM_WRITER_PREFIX}${roomCode}`);
     } catch {}
   }
 
@@ -76,7 +96,7 @@ export class RedisRoomStore {
         `alias:socket:${socketId}`,
         JSON.stringify({ roomCode, playerId }),
         'EX',
-        ROOM_TTL,
+        ROOM_TTL
       );
     } catch {}
   }

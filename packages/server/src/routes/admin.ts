@@ -1,12 +1,32 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from 'express';
 import type { PrismaClient } from '@prisma/client';
+import type { RedisRoomStore } from '../services/RedisRoomStore';
+
+/** Row shape from `customDeck.findMany` with admin list select */
+type AdminCustomDeckListRow = {
+  id: string;
+  name: string;
+  accessCode: string | null;
+  status: string;
+  createdAt: Date;
+  userId: string;
+  words: unknown;
+};
+
+type TopPurchasedPackRow = {
+  wordPackId: string | null;
+  _count: { wordPackId: number };
+};
 import { config } from '../config';
 import { AuthService } from '../services/AuthService';
 import { broadcastPush } from './push';
 
 const authService = new AuthService();
 
-export function createAdminRoutes(prisma: PrismaClient): IRouter {
+export function createAdminRoutes(
+  prisma: PrismaClient,
+  redisStore: RedisRoomStore | null = null
+): IRouter {
   const router: IRouter = Router();
 
   // Admin auth: accept API key OR user JWT with isAdmin: true
@@ -36,9 +56,19 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     const packs = await prisma.wordPack.findMany({
       orderBy: [{ language: 'asc' }, { category: 'asc' }],
       select: {
-        id: true, slug: true, name: true, language: true, category: true,
-        difficulty: true, version: true, price: true, isFree: true,
-        wordCount: true, description: true, createdAt: true, updatedAt: true,
+        id: true,
+        slug: true,
+        name: true,
+        language: true,
+        category: true,
+        difficulty: true,
+        version: true,
+        price: true,
+        isFree: true,
+        wordCount: true,
+        description: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     res.json(packs);
@@ -96,7 +126,10 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
   router.delete('/packs/:packId/words/:wordId', async (req, res) => {
     const { packId, wordId } = req.params;
     const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
-    if (!pack) { res.status(404).json({ error: 'Pack not found' }); return; }
+    if (!pack) {
+      res.status(404).json({ error: 'Pack not found' });
+      return;
+    }
     await prisma.word.delete({ where: { id: wordId } });
     const count = await prisma.word.count({ where: { packId } });
     await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
@@ -118,10 +151,10 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const uniqueWords = [...new Set(words.map(w => w.trim()).filter(Boolean))];
+    const uniqueWords = [...new Set(words.map((w) => w.trim()).filter(Boolean))];
 
     const result = await prisma.word.createMany({
-      data: uniqueWords.map(text => ({ text, packId })),
+      data: uniqueWords.map((text) => ({ text, packId })),
       skipDuplicates: true,
     });
 
@@ -148,7 +181,11 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     const { name, price, isFree } = req.body as { name?: string; price?: number; isFree?: boolean };
     const theme = await prisma.theme.update({
       where: { id: req.params.id },
-      data: { ...(name !== undefined && { name }), ...(price !== undefined && { price }), ...(isFree !== undefined && { isFree }) },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(price !== undefined && { price }),
+        ...(isFree !== undefined && { isFree }),
+      },
     });
     res.json(theme);
   });
@@ -199,17 +236,23 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
   router.get('/custom-decks', async (_req, res) => {
     const decks = await prisma.customDeck.findMany({
       select: {
-        id: true, name: true, accessCode: true, status: true,
-        createdAt: true, userId: true,
+        id: true,
+        name: true,
+        accessCode: true,
+        status: true,
+        createdAt: true,
+        userId: true,
         words: true,
       },
       orderBy: { createdAt: 'desc' },
     });
-    res.json(decks.map((d) => ({
-      ...d,
-      wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
-      words: undefined,
-    })));
+    res.json(
+      decks.map((d: AdminCustomDeckListRow) => ({
+        ...d,
+        wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
+        words: undefined,
+      }))
+    );
   });
 
   /** PUT /api/admin/custom-decks/:id — update status (approve/reject) */
@@ -236,49 +279,45 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
 
   /** GET /api/admin/analytics — summary stats */
   router.get('/analytics', async (_req, res) => {
-    const [
-      totalSessions,
-      completedSessions,
-      totalPurchases,
-      revenueResult,
-      topPacks,
-    ] = await Promise.all([
-      prisma.gameSession.count(),
-      prisma.gameSession.count({ where: { status: 'completed' } }),
-      prisma.purchase.count({ where: { status: 'completed' } }),
-      prisma.purchase.aggregate({
-        where: { status: 'completed' },
-        _sum: { amount: true },
-      }),
-      prisma.purchase.groupBy({
-        by: ['wordPackId'],
-        where: { status: 'completed', wordPackId: { not: null } },
-        _count: { wordPackId: true },
-        orderBy: { _count: { wordPackId: 'desc' } },
-        take: 5,
-      }),
-    ]);
+    const [totalSessions, completedSessions, totalPurchases, revenueResult, topPacks] =
+      await Promise.all([
+        prisma.gameSession.count(),
+        prisma.gameSession.count({ where: { status: 'completed' } }),
+        prisma.purchase.count({ where: { status: 'completed' } }),
+        prisma.purchase.aggregate({
+          where: { status: 'completed' },
+          _sum: { amount: true },
+        }),
+        prisma.purchase.groupBy({
+          by: ['wordPackId'],
+          where: { status: 'completed', wordPackId: { not: null } },
+          _count: { wordPackId: true },
+          orderBy: { _count: { wordPackId: 'desc' } },
+          take: 5,
+        }),
+      ]);
 
-    const packIds = topPacks.map((p) => p.wordPackId!);
+    const packIds = topPacks.map((p: TopPurchasedPackRow) => p.wordPackId!);
     const packNames = await prisma.wordPack.findMany({
       where: { id: { in: packIds } },
       select: { id: true, name: true },
     });
-    const packMap = Object.fromEntries(packNames.map((p) => [p.id, p.name]));
+    const packMap = Object.fromEntries(
+      packNames.map((p: { id: string; name: string }) => [p.id, p.name])
+    );
 
     res.json({
       games: {
         total: totalSessions,
         completed: completedSessions,
-        completionRate: totalSessions > 0
-          ? Math.round((completedSessions / totalSessions) * 100)
-          : 0,
+        completionRate:
+          totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
       },
       revenue: {
         totalPurchases,
         totalCents: revenueResult._sum.amount ?? 0,
       },
-      topPacks: topPacks.map((p) => ({
+      topPacks: topPacks.map((p: TopPurchasedPackRow) => ({
         packId: p.wordPackId,
         name: packMap[p.wordPackId!] || 'Unknown',
         purchases: p._count.wordPackId,
@@ -338,6 +377,35 @@ export function createAdminRoutes(prisma: PrismaClient): IRouter {
     const count = await prisma.pushSubscription.count();
     await broadcastPush(prisma, { title, body, url });
     res.json({ ok: true, sent: count });
+  });
+
+  // ─── Infra / multi-instance debugging ───────────────────────────────
+
+  /**
+   * GET /api/admin/infra/room-redis?code=12345
+   * Whether a Redis snapshot exists, last writer INSTANCE_ID, minimal state summary.
+   */
+  router.get('/infra/room-redis', async (req, res) => {
+    const code = String(req.query.code ?? '').trim();
+    if (!/^\d{5}$/.test(code)) {
+      res.status(400).json({ error: 'Query code must be a 5-digit room code' });
+      return;
+    }
+    if (!redisStore?.isConnected) {
+      res.status(503).json({ error: 'Redis not connected' });
+      return;
+    }
+    const [snapshot, lastWriterInstanceId] = await Promise.all([
+      redisStore.getRoomState(code),
+      redisStore.getRoomWriter(code),
+    ]);
+    res.json({
+      roomCode: code,
+      hasSnapshot: snapshot !== null,
+      lastWriterInstanceId,
+      gameState: snapshot?.gameState ?? null,
+      playerCount: snapshot?.players?.length ?? 0,
+    });
   });
 
   return router;

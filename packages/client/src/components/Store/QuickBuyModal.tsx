@@ -1,12 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import { createPaymentIntent } from '../../services/api';
 import { AppTheme } from '../../types';
@@ -60,8 +54,12 @@ function PayForm({ amount, itemName, isDark, onSuccess, onClose }: PayFormProps)
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Item summary */}
-      <div className={`flex items-center justify-between px-4 py-3 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-        <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{itemName}</span>
+      <div
+        className={`flex items-center justify-between px-4 py-3 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+      >
+        <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          {itemName}
+        </span>
         <span className="text-[#D4AF6A] font-bold text-base">${(amount / 100).toFixed(2)}</span>
       </div>
 
@@ -69,29 +67,38 @@ function PayForm({ amount, itemName, isDark, onSuccess, onClose }: PayFormProps)
       <div className="rounded-2xl overflow-hidden">
         <PaymentElement
           options={{
-            layout: { type: 'accordion', defaultCollapsed: false, radios: false, spacedAccordionItems: false },
+            layout: {
+              type: 'accordion',
+              defaultCollapsed: false,
+              radios: false,
+              spacedAccordionItems: false,
+            },
             wallets: { applePay: 'auto', googlePay: 'auto' },
           }}
         />
       </div>
 
-      {error && (
-        <p className="text-red-400 text-[12px] text-center">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-[12px] text-center">{error}</p>}
 
       <button
         type="submit"
         disabled={paying || !stripe}
         className="w-full bg-[#D4AF6A] hover:bg-[#C9A55A] active:scale-[0.98] text-black font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {paying
-          ? <><Loader2 size={16} className="animate-spin" /> Обробка...</>
-          : <>Оплатити ${(amount / 100).toFixed(2)}</>}
+        {paying ? (
+          <>
+            <Loader2 size={16} className="animate-spin" /> Обробка...
+          </>
+        ) : (
+          <>Оплатити ${(amount / 100).toFixed(2)}</>
+        )}
       </button>
 
       <div className="flex items-center justify-center gap-2 opacity-40">
         <ShieldCheck size={13} />
-        <span className={`text-[10px] uppercase tracking-widest font-medium ${isDark ? 'text-white' : 'text-slate-600'}`}>
+        <span
+          className={`text-[10px] uppercase tracking-widest font-medium ${isDark ? 'text-white' : 'text-slate-600'}`}
+        >
           Захищено Stripe
         </span>
       </div>
@@ -109,7 +116,13 @@ interface QuickBuyModalProps {
   onSuccess: () => void;
 }
 
-export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: QuickBuyModalProps) {
+export function QuickBuyModal({
+  itemType,
+  itemId,
+  isDark,
+  onClose,
+  onSuccess,
+}: QuickBuyModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [amount, setAmount] = useState(0);
   const [itemName, setItemName] = useState('');
@@ -117,12 +130,12 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
 
   useEffect(() => {
     createPaymentIntent(itemType, itemId)
-      .then(data => {
+      .then((data) => {
         setClientSecret(data.clientSecret);
         setAmount(data.amount);
         setItemName(data.itemName);
       })
-      .catch(err => {
+      .catch((err) => {
         setLoadError(err?.message ?? 'Не вдалося ініціювати оплату');
       });
   }, []);
@@ -142,19 +155,25 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
     },
   };
 
-  const bgCard = isDark ? 'bg-[#161616] border border-white/10' : 'bg-white border border-slate-200';
+  const bgCard = isDark
+    ? 'bg-[#161616] border border-white/10'
+    : 'bg-white border border-slate-200';
 
   return (
     /* Backdrop */
     <div
       className="fixed inset-0 z-50 flex items-end justify-center"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className={`relative w-full max-w-sm ${bgCard} rounded-t-[2rem] px-6 pt-5 pb-8 z-10 shadow-2xl`}
-           style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}>
+      <div
+        className={`relative w-full max-w-sm ${bgCard} rounded-t-[2rem] px-6 pt-5 pb-8 z-10 shadow-2xl`}
+        style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+      >
         {/* Handle */}
         <div className="flex justify-center mb-5">
           <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-200'}`} />
@@ -162,7 +181,9 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className={`font-serif text-xl tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <h2
+            className={`font-serif text-xl tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}
+          >
             Швидка оплата
           </h2>
           <button
@@ -177,12 +198,17 @@ export function QuickBuyModal({ itemType, itemId, isDark, onClose, onSuccess }: 
         {loadError ? (
           <p className="text-red-400 text-[13px] text-center py-8">{loadError}</p>
         ) : !stripePromise ? (
-          <p className={`text-[12px] text-center py-8 opacity-40 ${isDark ? 'text-white' : 'text-slate-600'}`}>
+          <p
+            className={`text-[12px] text-center py-8 opacity-40 ${isDark ? 'text-white' : 'text-slate-600'}`}
+          >
             Платіжна система не налаштована
           </p>
         ) : !clientSecret ? (
           <div className="flex justify-center py-12">
-            <Loader2 size={24} className={`animate-spin ${isDark ? 'text-white/40' : 'text-slate-400'}`} />
+            <Loader2
+              size={24}
+              className={`animate-spin ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+            />
           </div>
         ) : (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>

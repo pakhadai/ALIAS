@@ -1,9 +1,13 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @config "../tailwind.config.ts";
 
 /* Keep Material Symbols baseline consistent */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 200,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 body {
@@ -34,5 +38,5 @@ body {
 
 /* Admin page accent color */
 :root {
-  --admin-gold: #D4AF6A;
+  --admin-gold: #d4af6a;
 }

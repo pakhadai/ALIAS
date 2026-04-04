@@ -2,4 +2,5 @@ export type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeH
 export { ClassicModeHandler } from './ClassicModeHandler';
 export { TranslationModeHandler } from './TranslationModeHandler';
 export { QuizModeHandler } from './QuizModeHandler';
-export { getHandler } from './ModeFactory';
+export { getHandler, registerGameMode } from './ModeFactory';
+export type { GameModeFactory } from './ModeFactory';

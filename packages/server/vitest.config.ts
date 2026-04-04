@@ -15,6 +15,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // Same pattern as Vite client: tests use shared source; production server uses dist via workspace package.
       '@alias/shared': path.resolve(__dirname, '../shared/src/index.ts'),
     },
   },

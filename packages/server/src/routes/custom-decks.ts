@@ -2,6 +2,16 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import multer from 'multer';
 import { parse } from 'csv-parse/sync';
 import type { PrismaClient } from '@prisma/client';
+
+type UserCustomDeckListRow = {
+  id: string;
+  name: string;
+  accessCode: string | null;
+  status: string;
+  branding: unknown | null;
+  createdAt: Date;
+  words: unknown;
+};
 import { AuthService } from '../services/AuthService';
 
 const authService = new AuthService();
@@ -30,7 +40,12 @@ function generateAccessCode(): string {
 function parseWordList(raw: string): string[] {
   return raw
     .split(/[\n,]+/)
-    .map((w) => w.trim().replace(/<[^>]*>/g, '').slice(0, 100))
+    .map((w) =>
+      w
+        .trim()
+        .replace(/<[^>]*>/g, '')
+        .slice(0, 100)
+    )
     .filter((w) => w.length > 0);
 }
 
@@ -65,7 +80,12 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
     }
 
     const sanitized = words
-      .map((w) => String(w).trim().replace(/<[^>]*>/g, '').slice(0, 100))
+      .map((w) =>
+        String(w)
+          .trim()
+          .replace(/<[^>]*>/g, '')
+          .slice(0, 100)
+      )
       .filter(Boolean)
       .slice(0, 2000); // max 2000 words
 
@@ -131,7 +151,12 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
     }
 
     const sanitized = words
-      .map((w) => String(w).replace(/<[^>]*>/g, '').trim().slice(0, 100))
+      .map((w) =>
+        String(w)
+          .replace(/<[^>]*>/g, '')
+          .trim()
+          .slice(0, 100)
+      )
       .filter(Boolean)
       .slice(0, 2000);
 
@@ -177,7 +202,7 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
     });
 
     // Return wordCount instead of full array for list view
-    const result = decks.map((d) => ({
+    const result = decks.map((d: UserCustomDeckListRow) => ({
       ...d,
       wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
       words: undefined,

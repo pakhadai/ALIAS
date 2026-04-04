@@ -1,12 +1,24 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
-  GameState, Language, Category, SoundPreset, AppTheme,
-  ROOM_CODE_LENGTH, TEAM_COLORS, MAX_PLAYERS,
+  GameState,
+  Language,
+  Category,
+  SoundPreset,
+  AppTheme,
+  ROOM_CODE_LENGTH,
+  TEAM_COLORS,
+  MAX_PLAYERS,
 } from '@alias/shared';
 import type {
-  Player, Team, GameSettings, GameTask, RoundStats, GameSyncState,
+  Player,
+  Team,
+  GameSettings,
+  GameTask,
+  RoundStats,
+  GameSyncState,
 } from '@alias/shared';
 import { RedisRoomStore } from './RedisRoomStore';
+import { config } from '../config';
 
 export interface Room {
   code: string;
@@ -57,35 +69,76 @@ const defaultRoundStats: RoundStats = {
 export class RoomManager {
   private rooms = new Map<string, Room>();
   private redisStore: RedisRoomStore | null = null;
+  /** Throttle cross-instance writer warnings (persistRoom is hot). */
+  private writerMismatchLoggedAt = new Map<string, number>();
 
   constructor() {
     // Clean up stale empty rooms every 30 minutes (rooms idle for 2+ hours)
-    setInterval(() => {
-      const cutoff = Date.now() - 2 * 60 * 60 * 1000;
-      for (const [code, room] of this.rooms) {
-        if (room.players.length === 0 && room.createdAt < cutoff) {
-          if (room.timerInterval) clearInterval(room.timerInterval);
-          this.rooms.delete(code);
-          this.redisStore?.deleteRoom(code).catch(() => {});
+    setInterval(
+      () => {
+        const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+        for (const [code, room] of this.rooms) {
+          if (room.players.length === 0 && room.createdAt < cutoff) {
+            if (room.timerInterval) clearInterval(room.timerInterval);
+            this.rooms.delete(code);
+            this.clearWriterMismatchThrottle(code);
+            this.redisStore?.deleteRoom(code).catch(() => {});
+          }
         }
-      }
-    }, 30 * 60 * 1000);
+      },
+      30 * 60 * 1000
+    );
   }
 
   setRedisStore(store: RedisRoomStore): void {
     this.redisStore = store;
   }
 
+  private clearWriterMismatchThrottle(roomCode: string): void {
+    this.writerMismatchLoggedAt.delete(roomCode);
+  }
+
   /** Persist current room state to Redis (fire-and-forget) */
   persistRoom(room: Room): void {
     if (!this.redisStore?.isConnected) return;
-    this.redisStore.saveRoomState(room.code, this.getSyncState(room)).catch(() => {});
+    const store = this.redisStore;
+    const code = room.code;
+    const state = this.getSyncState(room);
+    const selfId = config.serverInstanceId;
+
+    void (async () => {
+      try {
+        const writer = await store.getRoomWriter(code);
+        if (writer && writer !== selfId) {
+          const now = Date.now();
+          const last = this.writerMismatchLoggedAt.get(code) ?? 0;
+          if (now - last > 60_000) {
+            this.writerMismatchLoggedAt.set(code, now);
+            console.warn(
+              `[RoomManager] Redis writer ≠ this instance for room ${code}: redis=${writer} local=${selfId} — likely missing sticky sessions on the load balancer`
+            );
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      try {
+        await store.saveRoomState(code, state, selfId);
+      } catch {
+        /* ignore */
+      }
+    })();
   }
 
   /** Track socket-to-room mapping in Redis */
   private persistSocket(socketId: string, roomCode: string, playerId: string): void {
     if (!this.redisStore?.isConnected) return;
     this.redisStore.setSocketRoom(socketId, roomCode, playerId).catch(() => {});
+  }
+
+  /** After `room:rejoin`, mirror `addPlayer` — store socket mapping in Redis for recovery / ops. */
+  recordPlayerSocket(socketId: string, roomCode: string, playerId: string): void {
+    this.persistSocket(socketId, roomCode, playerId);
   }
 
   generateRoomCode(): string {
@@ -149,7 +202,7 @@ export class RoomManager {
     }));
     const room: Room = {
       code,
-      hostSocketId: '',       // unknown until host reconnects via room:rejoin
+      hostSocketId: '', // unknown until host reconnects via room:rejoin
       hostPlayerId: hostPlayer?.id ?? '',
       gameState: syncState.gameState,
       settings: syncState.settings,
@@ -161,12 +214,12 @@ export class RoomManager {
       currentTask: syncState.currentTask ?? null,
       currentRoundStats: syncState.currentRoundStats,
       timeLeft: syncState.timeLeft,
-      isPaused: true,         // always pause on restore — server timer was lost
+      isPaused: true, // always pause on restore — server timer was lost
       timerInterval: null,
       socketToPlayer: new Map(),
       roundsPlayed: 0,
       createdAt: Date.now(),
-      usedWords: [],          // can't restore from Redis; new deck will be built fresh
+      usedWords: [], // can't restore from Redis; new deck will be built fresh
     };
 
     this.rooms.set(code, room);
@@ -174,7 +227,13 @@ export class RoomManager {
     return room;
   }
 
-  addPlayer(roomCode: string, socketId: string, name: string, avatar: string, avatarId?: string | null): Player | null {
+  addPlayer(
+    roomCode: string,
+    socketId: string,
+    name: string,
+    avatar: string,
+    avatarId?: string | null
+  ): Player | null {
     const room = this.rooms.get(roomCode);
     if (!room) return null;
     if (room.players.length >= MAX_PLAYERS) return null;
@@ -235,7 +294,12 @@ export class RoomManager {
    * Handle socket disconnect with host migration.
    * Returns { roomCode, removedPlayerId?, newHostSocketId?, wasMigration } — roomCode завжди, якщо кімната ще існує.
    */
-  handleDisconnect(socketId: string): { roomCode: string; removedPlayerId?: string; newHostSocketId?: string; wasMigration?: boolean } | null {
+  handleDisconnect(socketId: string): {
+    roomCode: string;
+    removedPlayerId?: string;
+    newHostSocketId?: string;
+    wasMigration?: boolean;
+  } | null {
     for (const [code, room] of this.rooms) {
       if (!room.socketToPlayer.has(socketId)) continue;
 
@@ -246,6 +310,7 @@ export class RoomManager {
       if (room.players.length === 0) {
         if (room.timerInterval) clearInterval(room.timerInterval);
         this.rooms.delete(code);
+        this.clearWriterMismatchThrottle(code);
         if (this.redisStore?.isConnected) {
           this.redisStore.deleteRoom(code).catch(() => {});
         }
@@ -265,15 +330,15 @@ export class RoomManager {
         room.hostPlayerId = newHostPlayerId;
 
         // Update isHost flag on players
-        room.players = room.players.map(p => ({
+        room.players = room.players.map((p) => ({
           ...p,
           isHost: p.id === newHostPlayerId,
         }));
 
         // Update in teams too
-        room.teams = room.teams.map(team => ({
+        room.teams = room.teams.map((team) => ({
           ...team,
-          players: team.players.map(p => ({
+          players: team.players.map((p) => ({
             ...p,
             isHost: p.id === newHostPlayerId,
           })),
@@ -337,7 +402,10 @@ export class RoomManager {
   }
 
   /** After grace: remove player if they did not reconnect (no socket mapping). */
-  finalizeGraceRemoval(roomCode: string, playerId: string): {
+  finalizeGraceRemoval(
+    roomCode: string,
+    playerId: string
+  ): {
     roomCode: string;
     removedPlayerId?: string;
     newHostSocketId?: string;
@@ -374,6 +442,7 @@ export class RoomManager {
     if (room.players.length === 0) {
       if (room.timerInterval) clearInterval(room.timerInterval);
       this.rooms.delete(roomCode);
+      this.clearWriterMismatchThrottle(roomCode);
       if (this.redisStore?.isConnected) {
         this.redisStore.deleteRoom(roomCode).catch(() => {});
       }
@@ -410,6 +479,34 @@ export class RoomManager {
     this.persistRoom(room);
   }
 
+  /**
+   * Authoritative rejoin: update socket map and host socket on this instance.
+   * Caller must `socket.join`, set `socket.data`, and emit `room:rejoined`.
+   */
+  applyRejoinSocket(
+    roomCode: string,
+    playerId: string,
+    newSocketId: string
+  ): { playerName: string } | null {
+    const room = this.rooms.get(roomCode);
+    if (!room) return null;
+    const player = room.players.find((p) => p.id === playerId);
+    if (!player) return null;
+
+    for (const [sid, pid] of room.socketToPlayer) {
+      if (pid === playerId) room.socketToPlayer.delete(sid);
+    }
+    room.socketToPlayer.set(newSocketId, playerId);
+    this.persistSocket(newSocketId, roomCode, playerId);
+
+    if (room.hostPlayerId === playerId) {
+      room.hostSocketId = newSocketId;
+    }
+
+    this.markPlayerReconnected(roomCode, playerId);
+    return { playerName: player.name };
+  }
+
   /** Drop all socket mappings for a player (kick / cleanup). Does not remove the player from lists. */
   detachSocketsForPlayer(room: Room, playerId: string): void {
     for (const [sid, pid] of [...room.socketToPlayer.entries()]) {
@@ -423,13 +520,11 @@ export class RoomManager {
 
   private setPlayerConnectionFlag(room: Room, playerId: string, connected: boolean): void {
     room.players = room.players.map((p) =>
-      p.id === playerId ? { ...p, isConnected: connected } : p,
+      p.id === playerId ? { ...p, isConnected: connected } : p
     );
     room.teams = room.teams.map((team) => ({
       ...team,
-      players: team.players.map((p) =>
-        p.id === playerId ? { ...p, isConnected: connected } : p,
-      ),
+      players: team.players.map((p) => (p.id === playerId ? { ...p, isConnected: connected } : p)),
     }));
   }
 
@@ -463,6 +558,7 @@ export class RoomManager {
     const room = this.rooms.get(code);
     if (room?.timerInterval) clearInterval(room.timerInterval);
     this.rooms.delete(code);
+    this.clearWriterMismatchThrottle(code);
     if (this.redisStore?.isConnected) {
       this.redisStore.deleteRoom(code).catch(() => {});
     }

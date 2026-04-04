@@ -15,7 +15,7 @@ export class GameEngine {
 
   constructor(
     private roomManager: RoomManager,
-    private wordService: WordService,
+    private wordService: WordService
   ) {}
 
   /** Provide a callback that broadcasts current room state during active timer ticks */
@@ -25,13 +25,66 @@ export class GameEngine {
 
   /** Provide a callback that sends in-game notifications to all room clients */
   setNotificationBroadcast(
-    fn: (room: Room, message: string, type: 'info' | 'error' | 'success') => void,
+    fn: (room: Room, message: string, type: 'info' | 'error' | 'success') => void
   ): void {
     this.notificationBroadcast = fn;
   }
 
   setPrisma(prisma: PrismaClient) {
     this.prisma = prisma;
+  }
+
+  private async persistNewGameSession(room: Room): Promise<void> {
+    if (!this.prisma) return;
+    try {
+      const session = await this.prisma.gameSession.create({
+        data: {
+          roomCode: room.code,
+          hostPlayerId: room.hostPlayerId,
+          playerCount: room.players.length,
+          settings: room.settings as object,
+          status: 'active',
+        },
+      });
+      room.sessionId = session.id;
+    } catch (err) {
+      console.warn('[GameEngine] gameSession.create failed:', (err as Error).message);
+    }
+  }
+
+  private async persistAbandonSession(room: Room): Promise<void> {
+    const sid = room.sessionId;
+    if (!sid) return;
+    if (this.prisma) {
+      try {
+        await this.prisma.gameSession.update({
+          where: { id: sid },
+          data: { status: 'abandoned', completedAt: new Date() },
+        });
+      } catch (err) {
+        console.warn('[GameEngine] gameSession abandon failed:', (err as Error).message);
+      }
+    }
+    room.sessionId = undefined;
+  }
+
+  private async persistRoundProgress(
+    room: Room,
+    roundsPlayed: number,
+    isGameOver: boolean
+  ): Promise<void> {
+    if (!this.prisma || !room.sessionId) return;
+    try {
+      await this.prisma.gameSession.update({
+        where: { id: room.sessionId },
+        data: {
+          roundsPlayed,
+          ...(isGameOver ? { status: 'completed', completedAt: new Date() } : {}),
+        },
+      });
+    } catch (err) {
+      console.warn('[GameEngine] gameSession progress update failed:', (err as Error).message);
+    }
   }
 
   private getActiveHandler(room: Room): IGameModeHandler {
@@ -57,7 +110,11 @@ export class GameEngine {
             correct: room.currentRoundStats.correct + 1,
             words: [
               ...room.currentRoundStats.words,
-              { word: room.currentTask.prompt, taskId: room.currentTask.id, result: payload.action === 'GUESS_OPTION' ? 'guessed' : 'correct' },
+              {
+                word: room.currentTask.prompt,
+                taskId: room.currentTask.id,
+                result: payload.action === 'GUESS_OPTION' ? 'guessed' : 'correct',
+              },
             ],
           };
         } else if (payload.action === 'SKIP') {
@@ -131,8 +188,14 @@ export class GameEngine {
       case 'GENERATE_TEAMS': {
         const teamCount = Math.min(room.settings.teamCount, room.players.length);
         const teamNames = [
-          'Rockets', 'Ninjas', 'Cyberpunks', 'Champions',
-          'Kittens', 'Thunders', 'Stars', 'Titans',
+          'Rockets',
+          'Ninjas',
+          'Cyberpunks',
+          'Champions',
+          'Kittens',
+          'Thunders',
+          'Stars',
+          'Titans',
         ];
         const newTeams: Team[] = Array.from({ length: teamCount }, (_, i) => ({
           id: `team-${i}`,
@@ -154,19 +217,7 @@ export class GameEngine {
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.roundsPlayed = 0;
-        if (this.prisma) {
-          this.prisma.gameSession.create({
-            data: {
-              roomCode: room.code,
-              hostPlayerId: room.hostPlayerId,
-              playerCount: room.players.length,
-              settings: room.settings as object,
-              status: 'active',
-            },
-          }).then((session) => {
-            room.sessionId = session.id;
-          }).catch(() => { /* non-critical */ });
-        }
+        await this.persistNewGameSession(room);
         break;
       }
 
@@ -189,13 +240,7 @@ export class GameEngine {
 
       case 'RESET_GAME': {
         this.stopTimer(room);
-        if (this.prisma && room.sessionId) {
-          this.prisma.gameSession.update({
-            where: { id: room.sessionId },
-            data: { status: 'abandoned', completedAt: new Date() },
-          }).catch(() => {});
-          room.sessionId = undefined;
-        }
+        await this.persistAbandonSession(room);
         room.gameState = GameState.LOBBY;
         room.teams = [];
         room.currentTeamIndex = 0;
@@ -206,25 +251,17 @@ export class GameEngine {
         room.timeLeft = 0;
         room.isPaused = false;
         room.currentRoundStats = {
-          correct: 0, skipped: 0, words: [], teamId: '', explainerName: '',
+          correct: 0,
+          skipped: 0,
+          words: [],
+          teamId: '',
+          explainerName: '',
         };
         break;
       }
 
       case 'REMATCH': {
-        if (this.prisma) {
-          this.prisma.gameSession.create({
-            data: {
-              roomCode: room.code,
-              hostPlayerId: room.hostPlayerId,
-              playerCount: room.players.length,
-              settings: room.settings as object,
-              status: 'active',
-            },
-          }).then((session) => {
-            room.sessionId = session.id;
-          }).catch(() => {});
-        }
+        await this.persistNewGameSession(room);
         room.teams = room.teams.map((t) => ({
           ...t,
           score: 0,
@@ -268,7 +305,8 @@ export class GameEngine {
 
       case 'CONFIRM_ROUND': {
         const { currentRoundStats, teams, currentTeamIndex, settings } = room;
-        const rawPoints = currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+        const rawPoints =
+          currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
         const points = Math.max(0, rawPoints);
 
         const activeTeam = teams[currentTeamIndex];
@@ -279,7 +317,7 @@ export class GameEngine {
           if (t.id === currentRoundStats.teamId) {
             updated.score = Math.max(0, t.score + points);
             if (correctCount > 0) {
-              updated.players = t.players.map(p => ({
+              updated.players = t.players.map((p) => ({
                 ...p,
                 stats: {
                   ...p.stats,
@@ -300,15 +338,7 @@ export class GameEngine {
         const isGameOver = isLastTeam && hasWinner;
         room.gameState = isGameOver ? GameState.GAME_OVER : GameState.SCOREBOARD;
 
-        if (this.prisma && room.sessionId) {
-          this.prisma.gameSession.update({
-            where: { id: room.sessionId },
-            data: {
-              roundsPlayed: room.roundsPlayed,
-              ...(isGameOver ? { status: 'completed', completedAt: new Date() } : {}),
-            },
-          }).catch(() => { /* non-critical */ });
-        }
+        await this.persistRoundProgress(room, room.roundsPlayed, isGameOver);
         break;
       }
     }
@@ -325,7 +355,7 @@ export class GameEngine {
     const { word, deck, usedWords, deckReshuffled } = await this.wordService.nextWord(
       room.wordDeck,
       room.settings,
-      room.usedWords,
+      room.usedWords
     );
     room.wordDeck = deck;
     room.usedWords = usedWords;

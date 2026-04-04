@@ -1,10 +1,37 @@
-import type { GameSettings, GameTask, Player, Team, RoundStats, GameActionPayload } from './types';
+import type { GameActionPayload } from './actions';
+import type { GameSettings, GameTask, Player, Team, RoundStats } from './models';
 import type { GameState } from './enums';
+
+/** Stable codes for `room:error` — clients may branch on `code`; `message` stays human-readable. */
+export const ROOM_ERROR_CODES = [
+  'INVALID_PAYLOAD',
+  'ROOM_CREATE_FAILED',
+  'ROOM_NOT_FOUND',
+  'ROOM_FULL',
+  'INVALID_ACTION',
+  'NOT_HOST',
+  'NOT_EXPLAINER',
+  'PLAYER_NOT_IN_ROOM',
+  'RELAY_UNAVAILABLE',
+  'RELAY_TIMEOUT',
+] as const;
+
+export type RoomErrorCode = (typeof ROOM_ERROR_CODES)[number];
+
+export interface RoomErrorPayload {
+  code: RoomErrorCode;
+  message: string;
+}
 
 // Client -> Server events
 export interface ClientToServerEvents {
   'room:create': (data: { playerName: string; avatar: string; avatarId?: string | null }) => void;
-  'room:join': (data: { roomCode: string; playerName: string; avatar: string; avatarId?: string | null }) => void;
+  'room:join': (data: {
+    roomCode: string;
+    playerName: string;
+    avatar: string;
+    avatarId?: string | null;
+  }) => void;
   'room:leave': () => void;
   'room:rejoin': (data: { roomCode: string; playerId: string }) => void;
   'game:action': (payload: GameActionPayload) => void;
@@ -15,12 +42,13 @@ export interface ServerToClientEvents {
   'room:created': (data: { roomCode: string; playerId: string }) => void;
   'room:joined': (data: { roomCode: string; playerId: string }) => void;
   'room:rejoined': (data: { roomCode: string; playerId: string }) => void;
-  'room:error': (data: { message: string }) => void;
+  'room:error': (data: RoomErrorPayload) => void;
   'room:player-joined': (data: { player: Player }) => void;
   'room:player-left': (data: { playerId: string }) => void;
   'game:state-sync': (state: GameSyncState) => void;
   'game:notification': (data: { message: string; type: 'info' | 'error' | 'success' }) => void;
-  'player:kicked': () => void;
+  /** Emitted to the whole room so kicked clients work across Socket.IO nodes (adapter). */
+  'player:kicked': (data: { playerId: string }) => void;
 }
 
 // Full game state synced from server to clients
@@ -41,7 +69,7 @@ export interface GameSyncState {
 }
 
 // Inter-server events (for scaling)
-export interface InterServerEvents {}
+export type InterServerEvents = Record<string, never>;
 
 // Socket data attached to each connection
 export interface SocketData {

@@ -8,12 +8,32 @@
     "dev": "pnpm run --parallel dev:client dev:server",
     "build:client": "pnpm --filter @alias/client build",
     "build:server": "pnpm --filter @alias/server build",
-    "build": "pnpm run build:shared && pnpm --parallel --filter @alias/client --filter @alias/server run build",
+    "build": "turbo run build",
+    "build:pnpm": "pnpm run build:shared && pnpm --parallel --filter @alias/client --filter @alias/server run build",
     "build:shared": "pnpm --filter @alias/shared build",
+    "typecheck": "turbo run typecheck",
+    "typecheck:pnpm": "pnpm -r --filter @alias/shared --filter @alias/client --filter @alias/server run typecheck",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,json,css,mjs}\" \"eslint.config.mjs\" \"tsconfig.base.json\" \"turbo.json\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,json,css,mjs}\" \"eslint.config.mjs\" \"tsconfig.base.json\" \"turbo.json\"",
     "test:server": "pnpm --filter @alias/server test",
     "test:e2e": "pnpm --filter @alias/e2e run test",
+    "test:e2e:multiplayer": "pnpm --filter @alias/e2e run test -- tests/multiplayer.spec.ts --project=chromium",
     "test:e2e:ui": "pnpm --filter @alias/e2e run test:ui",
     "test:e2e:report": "pnpm --filter @alias/e2e run test:report"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.15.0",
+    "prettier": "^3.5.2",
+    "turbo": "^2.9.3",
+    "typescript": "~5.8.2",
+    "typescript-eslint": "^8.25.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

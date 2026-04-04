@@ -1,4 +1,5 @@
-# Build stage
+# syntax=docker/dockerfile:1.6
+# BuildKit cache for pnpm store speeds repeated builds (DOCKER_BUILDKIT=1, default in recent Docker).
 FROM node:20-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -13,8 +14,9 @@ COPY tsconfig.base.json ./
 COPY packages/shared/ packages/shared/
 COPY packages/server/ packages/server/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (cached store)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
 # Generate Prisma client
 RUN pnpm --filter @alias/server exec prisma generate
@@ -35,7 +37,8 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/server/package.json packages/server/
 COPY packages/server/prisma/ packages/server/prisma/
 
-RUN pnpm install --frozen-lockfile --prod
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prod --store-dir=/pnpm/store
 
 # Generate Prisma client in prod
 RUN pnpm --filter @alias/server exec prisma generate

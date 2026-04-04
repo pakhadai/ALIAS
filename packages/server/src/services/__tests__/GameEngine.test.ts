@@ -2,9 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GameEngine } from '../GameEngine';
 import { WordService } from '../WordService';
 import { RoomManager } from '../RoomManager';
-import {
-  GameState, Language, Category, SoundPreset, AppTheme, TEAM_COLORS,
-} from '@alias/shared';
+import { GameState, Language, Category, SoundPreset, AppTheme, TEAM_COLORS } from '@alias/shared';
 import type { Room } from '../RoomManager';
 import type { Player, Team, GameSettings } from '@alias/shared';
 
@@ -93,7 +91,7 @@ afterEach(() => {
 describe('GENERATE_TEAMS', () => {
   it('distributes all players across teams', async () => {
     const players = ['Alice', 'Bob', 'Charlie', 'Dave'].map((name, i) =>
-      makePlayer({ id: `p${i}`, name }),
+      makePlayer({ id: `p${i}`, name })
     );
     const room = makeRoom({ players, settings: { ...defaultSettings, teamCount: 2 } });
 
@@ -106,7 +104,10 @@ describe('GENERATE_TEAMS', () => {
   });
 
   it('caps team count at player count', async () => {
-    const room = makeRoom({ players: [makePlayer()], settings: { ...defaultSettings, teamCount: 4 } });
+    const room = makeRoom({
+      players: [makePlayer()],
+      settings: { ...defaultSettings, teamCount: 4 },
+    });
     await engine.handleAction(room, { action: 'GENERATE_TEAMS' });
     expect(room.teams).toHaveLength(1);
   });
@@ -115,7 +116,7 @@ describe('GENERATE_TEAMS', () => {
     const players = Array.from({ length: 3 }, (_, i) => makePlayer({ id: `p${i}`, name: `P${i}` }));
     const room = makeRoom({ players, settings: { ...defaultSettings, teamCount: 3 } });
     await engine.handleAction(room, { action: 'GENERATE_TEAMS' });
-    const hexes = room.teams.map(t => t.colorHex);
+    const hexes = room.teams.map((t) => t.colorHex);
     expect(new Set(hexes).size).toBe(3);
   });
 });
@@ -153,7 +154,10 @@ describe('START_ROUND', () => {
   });
 
   it('picks player at nextPlayerIndex', async () => {
-    const players = [makePlayer({ id: 'p0', name: 'Alice' }), makePlayer({ id: 'p1', name: 'Bob' })];
+    const players = [
+      makePlayer({ id: 'p0', name: 'Alice' }),
+      makePlayer({ id: 'p1', name: 'Bob' }),
+    ];
     const team = makeTeam({ players, nextPlayerIndex: 1 });
     const room = makeRoom({ teams: [team], currentTeamIndex: 0 });
     await engine.handleAction(room, { action: 'START_ROUND' });
@@ -165,7 +169,12 @@ describe('START_ROUND', () => {
 
 describe('START_PLAYING', () => {
   it('sets PLAYING state, resets time and fetches first word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Кіт', deck: ['Собака'], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Кіт',
+      deck: ['Собака'],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom();
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.gameState).toBe(GameState.PLAYING);
@@ -175,7 +184,12 @@ describe('START_PLAYING', () => {
   });
 
   it('starts a countdown timer', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Test', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Test',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 5 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timerInterval).not.toBeNull();
@@ -186,12 +200,23 @@ describe('START_PLAYING', () => {
 
 describe('CORRECT', () => {
   it('increments correct count and fetches next word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Next',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const currentTask = { id: 'task-cat', prompt: 'Кіт' };
     const room = makeRoom({
       currentWord: 'Кіт',
       currentTask,
-      currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 0,
+        skipped: 0,
+        words: [],
+        teamId: 't1',
+        explainerName: 'Alice',
+      },
     });
     await engine.handleAction(room, { action: 'CORRECT' });
     expect(room.currentRoundStats.correct).toBe(1);
@@ -207,12 +232,23 @@ describe('CORRECT', () => {
 
 describe('SKIP', () => {
   it('increments skipped count and fetches next word', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'Next', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Next',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const currentTask = { id: 'task-dog', prompt: 'Собака' };
     const room = makeRoom({
       currentWord: 'Собака',
       currentTask,
-      currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't1', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 0,
+        skipped: 0,
+        words: [],
+        teamId: 't1',
+        explainerName: 'Alice',
+      },
     });
     await engine.handleAction(room, { action: 'SKIP' });
     expect(room.currentRoundStats.skipped).toBe(1);
@@ -240,7 +276,12 @@ describe('PAUSE_GAME', () => {
 
 describe('TIME_UP', () => {
   it('stops timer and sets ROUND_SUMMARY', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom();
     await engine.handleAction(room, { action: 'START_PLAYING' });
     await engine.handleAction(room, { action: 'TIME_UP' });
@@ -259,7 +300,14 @@ describe('CONFIRM_ROUND', () => {
       teams: [team],
       currentTeamIndex: 0,
       roundsPlayed: 0,
-      currentRoundStats: { correct: 5, skipped: 1, words: [], teamId: 't0', explainerName: 'Alice', explainerId: 'explainer' },
+      currentRoundStats: {
+        correct: 5,
+        skipped: 1,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+        explainerId: 'explainer',
+      },
       settings: { ...defaultSettings, skipPenalty: true, scoreToWin: 30 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
@@ -275,7 +323,13 @@ describe('CONFIRM_ROUND', () => {
       teams: [team],
       currentTeamIndex: 0,
       roundsPlayed: 0,
-      currentRoundStats: { correct: 0, skipped: 10, words: [], teamId: 't0', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 0,
+        skipped: 10,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+      },
       settings: { ...defaultSettings, skipPenalty: true, scoreToWin: 30 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
@@ -288,7 +342,13 @@ describe('CONFIRM_ROUND', () => {
       teams: [team],
       currentTeamIndex: 0,
       roundsPlayed: 0,
-      currentRoundStats: { correct: 3, skipped: 5, words: [], teamId: 't0', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 3,
+        skipped: 5,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+      },
       settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
@@ -300,7 +360,13 @@ describe('CONFIRM_ROUND', () => {
     const room = makeRoom({
       teams: [team],
       currentTeamIndex: 0, // last team (only 1 team)
-      currentRoundStats: { correct: 5, skipped: 0, words: [], teamId: 't0', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 5,
+        skipped: 0,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+      },
       settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
@@ -309,14 +375,17 @@ describe('CONFIRM_ROUND', () => {
   });
 
   it('goes to SCOREBOARD not GAME_OVER when not the last team', async () => {
-    const teams = [
-      makeTeam({ id: 't0', score: 29 }),
-      makeTeam({ id: 't1', score: 0 }),
-    ];
+    const teams = [makeTeam({ id: 't0', score: 29 }), makeTeam({ id: 't1', score: 0 })];
     const room = makeRoom({
       teams,
       currentTeamIndex: 0, // not the last team
-      currentRoundStats: { correct: 5, skipped: 0, words: [], teamId: 't0', explainerName: 'Alice' },
+      currentRoundStats: {
+        correct: 5,
+        skipped: 0,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+      },
       settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
@@ -324,18 +393,29 @@ describe('CONFIRM_ROUND', () => {
   });
 
   it('updates guessed stats for non-explainer players', async () => {
-    const explainer = makePlayer({ id: 'explainer', name: 'Alice', stats: { explained: 0, guessed: 0 } });
+    const explainer = makePlayer({
+      id: 'explainer',
+      name: 'Alice',
+      stats: { explained: 0, guessed: 0 },
+    });
     const guesser = makePlayer({ id: 'guesser', name: 'Bob', stats: { explained: 0, guessed: 0 } });
     const team = makeTeam({ id: 't0', score: 0, players: [explainer, guesser] });
     const room = makeRoom({
       teams: [team],
       currentTeamIndex: 0,
-      currentRoundStats: { correct: 3, skipped: 0, words: [], teamId: 't0', explainerName: 'Alice', explainerId: 'explainer' },
+      currentRoundStats: {
+        correct: 3,
+        skipped: 0,
+        words: [],
+        teamId: 't0',
+        explainerName: 'Alice',
+        explainerId: 'explainer',
+      },
       settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 100 },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    const updatedExplainer = room.teams[0].players.find(p => p.id === 'explainer')!;
-    const updatedGuesser = room.teams[0].players.find(p => p.id === 'guesser')!;
+    const updatedExplainer = room.teams[0].players.find((p) => p.id === 'explainer')!;
+    const updatedGuesser = room.teams[0].players.find((p) => p.id === 'guesser')!;
     expect(updatedExplainer.stats.guessed).toBe(0);
     expect(updatedGuesser.stats.guessed).toBe(3);
   });
@@ -402,7 +482,12 @@ describe('NEXT_ROUND', () => {
 
 describe('RESET_GAME', () => {
   it('resets all game state to lobby defaults', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom({ gameState: GameState.PLAYING, currentWord: 'Test', timeLeft: 30 });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     await engine.handleAction(room, { action: 'RESET_GAME' });
@@ -448,8 +533,8 @@ describe('KICK_PLAYER', () => {
     const p2 = makePlayer({ id: 'p2', name: 'Bob' });
     const room = makeRoom({ players: [p1, p2] });
     await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p1' });
-    expect(room.players.find(p => p.id === 'p1')).toBeUndefined();
-    expect(room.players.find(p => p.id === 'p2')).toBeDefined();
+    expect(room.players.find((p) => p.id === 'p1')).toBeUndefined();
+    expect(room.players.find((p) => p.id === 'p2')).toBeDefined();
   });
 
   it('removes player from teams', async () => {
@@ -458,7 +543,7 @@ describe('KICK_PLAYER', () => {
     const team = makeTeam({ players: [p1, p2] });
     const room = makeRoom({ players: [p1, p2], teams: [team] });
     await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p1' });
-    expect(room.teams[0].players.find(p => p.id === 'p1')).toBeUndefined();
+    expect(room.teams[0].players.find((p) => p.id === 'p1')).toBeUndefined();
   });
 
   it('clamps nextPlayerIndex when kicked player was last', async () => {
@@ -475,7 +560,10 @@ describe('KICK_PLAYER', () => {
 describe('UPDATE_SETTINGS', () => {
   it('merges new settings into room', async () => {
     const room = makeRoom();
-    await engine.handleAction(room, { action: 'UPDATE_SETTINGS', data: { roundTime: 90, language: Language.EN } });
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { roundTime: 90, language: Language.EN },
+    });
     expect(room.settings.roundTime).toBe(90);
     expect(room.settings.language).toBe(Language.EN);
     expect(room.settings.scoreToWin).toBe(defaultSettings.scoreToWin);
@@ -486,7 +574,10 @@ describe('UPDATE_SETTINGS', () => {
 
 describe('START_DUEL', () => {
   it('creates one team per player and sets VS_SCREEN', async () => {
-    const players = [makePlayer({ id: 'p0', name: 'Alice' }), makePlayer({ id: 'p1', name: 'Bob' })];
+    const players = [
+      makePlayer({ id: 'p0', name: 'Alice' }),
+      makePlayer({ id: 'p1', name: 'Bob' }),
+    ];
     const room = makeRoom({ players });
     await engine.handleAction(room, { action: 'START_DUEL' });
     expect(room.teams).toHaveLength(2);
@@ -500,7 +591,12 @@ describe('START_DUEL', () => {
 
 describe('Timer', () => {
   it('decrements timeLeft every second, stops timer at 0, and sets timeUp (round ends on explainer action or TIME_UP)', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 3 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timeLeft).toBe(3);
@@ -514,7 +610,12 @@ describe('Timer', () => {
   });
 
   it('does not decrement while paused', async () => {
-    vi.spyOn(wordService, 'nextWord').mockResolvedValue({ word: 'X', deck: [], usedWords: [], deckReshuffled: false });
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
     const room = makeRoom({ settings: { ...defaultSettings, roundTime: 10 } });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     room.isPaused = true;

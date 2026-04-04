@@ -1,10 +1,23 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Upload, Trash2, Copy, Check, Loader2, FileText, ChevronRight } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Upload,
+  Trash2,
+  Copy,
+  Check,
+  Loader2,
+  FileText,
+  ChevronRight,
+} from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { LoginModal } from '../Auth/LoginModal';
 import {
-  fetchMyDecks, createCustomDeck, uploadCustomDeckFile,
-  deleteCustomDeck, type CustomDeckSummary,
+  fetchMyDecks,
+  createCustomDeck,
+  uploadCustomDeckFile,
+  deleteCustomDeck,
+  type CustomDeckSummary,
 } from '../../services/api';
 
 interface CustomDeckModalProps {
@@ -25,13 +38,21 @@ function CopyButton({ text }: { text: string }) {
   };
   return (
     <button onClick={copy} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-      {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} className="text-slate-400" />}
+      {copied ? (
+        <Check size={13} className="text-emerald-400" />
+      ) : (
+        <Copy size={13} className="text-slate-400" />
+      )}
     </button>
   );
 }
 
 // ─── Deck List Item ───────────────────────────────────────────────────────────
-function DeckItem({ deck, onDelete, onSelect }: {
+function DeckItem({
+  deck,
+  onDelete,
+  onSelect,
+}: {
   deck: CustomDeckSummary;
   onDelete: (id: string) => void;
   onSelect?: (code: string, name: string) => void;
@@ -45,7 +66,9 @@ function DeckItem({ deck, onDelete, onSelect }: {
     try {
       await deleteCustomDeck(deck.id);
       onDelete(deck.id);
-    } catch { /* ignore */ } finally {
+    } catch {
+      /* ignore */
+    } finally {
       setDeleting(false);
     }
   };
@@ -61,7 +84,9 @@ function DeckItem({ deck, onDelete, onSelect }: {
           <span className="text-[10px] text-slate-400">{deck.wordCount} слів</span>
           <span className="text-slate-600">·</span>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-indigo-400 font-mono font-bold">{deck.accessCode}</span>
+            <span className="text-[10px] text-indigo-400 font-mono font-bold">
+              {deck.accessCode}
+            </span>
             <CopyButton text={deck.accessCode} />
           </div>
           {deck.status !== 'approved' && (
@@ -72,9 +97,7 @@ function DeckItem({ deck, onDelete, onSelect }: {
           )}
         </div>
       </div>
-      {onSelect && (
-        <ChevronRight size={16} className="text-slate-500 shrink-0" />
-      )}
+      {onSelect && <ChevronRight size={16} className="text-slate-500 shrink-0" />}
       <button
         onClick={handleDelete}
         disabled={deleting}
@@ -94,13 +117,25 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const wordCount = wordsText.split(/[\n,]+/).map((w) => w.trim()).filter(Boolean).length;
+  const wordCount = wordsText
+    .split(/[\n,]+/)
+    .map((w) => w.trim())
+    .filter(Boolean).length;
 
   const handleSubmit = async () => {
     setError('');
-    const words = wordsText.split(/[\n,]+/).map((w) => w.trim()).filter(Boolean);
-    if (!name.trim()) { setError('Введіть назву'); return; }
-    if (words.length < 5) { setError('Мінімум 5 слів'); return; }
+    const words = wordsText
+      .split(/[\n,]+/)
+      .map((w) => w.trim())
+      .filter(Boolean);
+    if (!name.trim()) {
+      setError('Введіть назву');
+      return;
+    }
+    if (words.length < 5) {
+      setError('Мінімум 5 слів');
+      return;
+    }
     setSaving(true);
     try {
       const deck = await createCustomDeck({
@@ -119,7 +154,9 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">Назва словника</label>
+        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+          Назва словника
+        </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
@@ -144,11 +181,19 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
 
       <div>
         <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
-          Код доступу <span className="text-slate-500 normal-case">(необов'язково, авто-генерується)</span>
+          Код доступу{' '}
+          <span className="text-slate-500 normal-case">(необов'язково, авто-генерується)</span>
         </label>
         <input
           value={accessCode}
-          onChange={(e) => setAccessCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
+          onChange={(e) =>
+            setAccessCode(
+              e.target.value
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, '')
+                .slice(0, 8)
+            )
+          }
           placeholder="ABCD12"
           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono uppercase"
         />
@@ -186,8 +231,14 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
 
   const handleSubmit = async () => {
     setError('');
-    if (!file) { setError('Виберіть файл'); return; }
-    if (!name.trim()) { setError('Введіть назву'); return; }
+    if (!file) {
+      setError('Виберіть файл');
+      return;
+    }
+    if (!name.trim()) {
+      setError('Введіть назву');
+      return;
+    }
     setSaving(true);
     try {
       const deck = await uploadCustomDeckFile(file, name.trim());
@@ -202,7 +253,9 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">Назва словника</label>
+        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+          Назва словника
+        </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
@@ -213,9 +266,16 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
 
       <div>
         <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
-          Файл <span className="text-slate-500 normal-case">(.csv або .txt, одне слово на рядок)</span>
+          Файл{' '}
+          <span className="text-slate-500 normal-case">(.csv або .txt, одне слово на рядок)</span>
         </label>
-        <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFile} className="hidden" />
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,.txt"
+          onChange={handleFile}
+          className="hidden"
+        />
         <button
           onClick={() => fileRef.current?.click()}
           className="w-full h-24 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-indigo-500/50 hover:bg-white/3 transition-colors"
@@ -225,9 +285,7 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
             {file ? file.name : 'Натисніть для вибору файлу'}
           </span>
           {file && (
-            <span className="text-[10px] text-slate-500">
-              {(file.size / 1024).toFixed(1)} KB
-            </span>
+            <span className="text-[10px] text-slate-500">{(file.size / 1024).toFixed(1)} KB</span>
           )}
         </button>
       </div>
@@ -255,17 +313,24 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   const [showLogin, setShowLogin] = useState(false);
 
   const loadDecks = useCallback(async () => {
-    if (!isAuthenticated) { setLoading(false); return; }
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const data = await fetchMyDecks();
       setDecks(data);
-    } catch { /* ignore */ } finally {
+    } catch {
+      /* ignore */
+    } finally {
       setLoading(false);
     }
   }, [isAuthenticated]);
 
-  useEffect(() => { loadDecks(); }, [loadDecks]);
+  useEffect(() => {
+    loadDecks();
+  }, [loadDecks]);
 
   const handleCreated = (deck: CustomDeckSummary) => {
     setDecks((prev) => [deck, ...prev]);
@@ -306,10 +371,16 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               )}
               <div>
                 <h1 className="text-lg font-bold text-white">
-                  {view === 'list' ? 'Мої словники' : view === 'create' ? 'Новий словник' : 'Завантажити файл'}
+                  {view === 'list'
+                    ? 'Мої словники'
+                    : view === 'create'
+                      ? 'Новий словник'
+                      : 'Завантажити файл'}
                 </h1>
                 <p className="text-xs text-slate-400">
-                  {view === 'list' ? 'Власні набори слів для гри' : 'Введіть слова для свого словника'}
+                  {view === 'list'
+                    ? 'Власні набори слів для гри'
+                    : 'Введіть слова для свого словника'}
                 </p>
               </div>
             </div>
@@ -326,7 +397,10 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => {
-                  if (!isAuthenticated) { setShowLogin(true); return; }
+                  if (!isAuthenticated) {
+                    setShowLogin(true);
+                    return;
+                  }
                   setView('create');
                 }}
                 className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider transition-colors"
@@ -336,7 +410,10 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               </button>
               <button
                 onClick={() => {
-                  if (!isAuthenticated) { setShowLogin(true); return; }
+                  if (!isAuthenticated) {
+                    setShowLogin(true);
+                    return;
+                  }
                   setView('upload');
                 }}
                 className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-bold tracking-wider transition-colors"
@@ -400,10 +477,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
       </div>
 
       {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSuccess={handleLoginSuccess}
-        />
+        <LoginModal onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
       )}
     </>
   );

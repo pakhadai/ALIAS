@@ -27,11 +27,15 @@ export function usePlayerStats() {
     const s = get();
     s[key] = (s[key] as number) + by;
     s.lastPlayed = new Date().toISOString();
-    try { localStorage.setItem(STATS_KEY, JSON.stringify(s)); } catch {}
+    try {
+      localStorage.setItem(STATS_KEY, JSON.stringify(s));
+    } catch {}
   };
 
   const reset = () => {
-    try { localStorage.removeItem(STATS_KEY); } catch {}
+    try {
+      localStorage.removeItem(STATS_KEY);
+    } catch {}
   };
 
   return { get, increment, reset };

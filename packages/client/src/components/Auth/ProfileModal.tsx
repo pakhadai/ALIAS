@@ -15,7 +15,13 @@ function AvatarIcon() {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.2)" />
-      <path d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18" stroke="rgba(255,255,255,0.2)" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <path
+        d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -36,7 +42,9 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
 
   /* ── Load store (profile comes from context) ── */
   useEffect(() => {
-    fetchStore().then(setStoreData).catch(() => {});
+    fetchStore()
+      .then(setStoreData)
+      .catch(() => {});
   }, []);
 
   const handleClose = () => {
@@ -58,17 +66,28 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';
   const purchases = profile?.purchases ?? [];
   const profileDisplayName = profile?.displayName;
-  const displayName = profileDisplayName
-    ?? (isAnonymous ? 'Anonymous' : authState.status === 'authenticated' ? authState.email?.split('@')[0] : '');
+  const displayName =
+    profileDisplayName ??
+    (isAnonymous
+      ? 'Anonymous'
+      : authState.status === 'authenticated'
+        ? authState.email?.split('@')[0]
+        : '');
   const displaySub = isAnonymous
     ? 'Guest User'
-    : (authState.status === 'authenticated' ? authState.email : '');
-  const badgeLabel = isAnonymous ? 'FREE ACCOUNT' : authState.status === 'authenticated' ? authState.provider?.toUpperCase() : '';
+    : authState.status === 'authenticated'
+      ? authState.email
+      : '';
+  const badgeLabel = isAnonymous
+    ? 'FREE ACCOUNT'
+    : authState.status === 'authenticated'
+      ? authState.provider?.toUpperCase()
+      : '';
   const avatarId = profile?.avatarId ?? null;
 
   /* ── Benefits (shown to anonymous / no purchases) ── */
   const packCount = storeData?.wordPacks.length ?? 0;
-  const themeCount = (storeData?.themes.filter(t => !t.isFree) ?? []).length;
+  const themeCount = (storeData?.themes.filter((t) => !t.isFree) ?? []).length;
 
   const benefits: { emoji: string; label: string; sub: string }[] = [
     {
@@ -109,7 +128,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           ${isDark ? 'bg-[#1C1C1E]' : 'bg-white'} transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0' : 'translate-y-full'}`}
         style={{ maxHeight: '90vh' }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
         <div className="flex justify-end px-5 pt-5 pb-0">
@@ -127,21 +146,29 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             {avatarId != null ? (
               <AvatarDisplay avatarId={avatarId} size={76} />
             ) : (
-              <div className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-[#2C2C2E]' : 'bg-slate-100'} flex items-center justify-center`}>
+              <div
+                className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-[#2C2C2E]' : 'bg-slate-100'} flex items-center justify-center`}
+              >
                 <AvatarIcon />
               </div>
             )}
-            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2
+            <span
+              className="absolute -bottom-3 left-1/2 -translate-x-1/2
               bg-[#D4AF6A] text-[#1C1C1E] text-[7px] font-bold tracking-[0.18em]
-              uppercase px-3 py-[3px] rounded-full whitespace-nowrap shadow-md">
+              uppercase px-3 py-[3px] rounded-full whitespace-nowrap shadow-md"
+            >
               {badgeLabel}
             </span>
           </div>
 
-          <h2 className={`mt-6 font-serif text-[22px] tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <h2
+            className={`mt-6 font-serif text-[22px] tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}
+          >
             {displayName}
           </h2>
-          <p className={`text-[13px] font-sans mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+          <p
+            className={`text-[13px] font-sans mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-500'}`}
+          >
             {displaySub}
           </p>
         </div>
@@ -166,7 +193,9 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         {/* Purchases / benefits */}
         <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
-            <p className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+            <p
+              className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+            >
               {purchases.length > 0 ? 'My Purchases' : 'What you get'}
             </p>
           </div>
@@ -174,12 +203,19 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           {purchases.length > 0 ? (
             <div className="px-6 pb-2">
               {purchases.map((p) => (
-                <div key={p.id} className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}>
+                <div
+                  key={p.id}
+                  className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}
+                >
                   <div>
-                    <p className={`text-[14px] font-sans ${isDark ? 'text-white/80' : 'text-slate-800'}`}>
+                    <p
+                      className={`text-[14px] font-sans ${isDark ? 'text-white/80' : 'text-slate-800'}`}
+                    >
                       {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
                     </p>
-                    <p className={`text-[11px] font-sans mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                    <p
+                      className={`text-[11px] font-sans mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+                    >
                       {new Date(p.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -190,11 +226,24 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           ) : (
             <div className="px-6 pb-2">
               {benefits.map((item, i) => (
-                <div key={i} className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}>
-                  <span className="text-[20px] leading-none w-7 text-center shrink-0">{item.emoji}</span>
+                <div
+                  key={i}
+                  className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}
+                >
+                  <span className="text-[20px] leading-none w-7 text-center shrink-0">
+                    {item.emoji}
+                  </span>
                   <div className="min-w-0">
-                    <p className={`text-[13px] font-sans font-medium ${isDark ? 'text-white/80' : 'text-slate-800'}`}>{item.label}</p>
-                    <p className={`text-[11px] font-sans mt-0.5 leading-snug ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{item.sub}</p>
+                    <p
+                      className={`text-[13px] font-sans font-medium ${isDark ? 'text-white/80' : 'text-slate-800'}`}
+                    >
+                      {item.label}
+                    </p>
+                    <p
+                      className={`text-[11px] font-sans mt-0.5 leading-snug ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+                    >
+                      {item.sub}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -220,7 +269,10 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         )}
 
         {/* Logout */}
-        <div className="px-6 py-5" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
+        <div
+          className="px-6 py-5"
+          style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
+        >
           <button
             onClick={handleLogout}
             disabled={loggingOut}

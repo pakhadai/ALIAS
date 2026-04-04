@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface CardProps {
@@ -9,12 +8,20 @@ interface CardProps {
   style?: React.CSSProperties;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', noPadding = false, themeClass, style }) => {
+export const Card: React.FC<CardProps> = ({
+  children,
+  className = '',
+  noPadding = false,
+  themeClass,
+  style,
+}) => {
   // Removed hardcoded backdrop-blur-xl as it's often duplicated in theme configs
-  const bgStyle = themeClass || 'bg-[color:var(--ui-card)] border border-[color:var(--ui-border)] backdrop-blur-md';
-  
+  const bgStyle =
+    themeClass ||
+    'bg-[color:var(--ui-card)] border border-[color:var(--ui-border)] backdrop-blur-md';
+
   return (
-    <div 
+    <div
       className={`rounded-2xl shadow-2xl ${bgStyle} ${noPadding ? '' : 'p-6'} ${className}`}
       style={style}
     >

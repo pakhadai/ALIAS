@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.6
 # Build stage — must run from monorepo root context
 FROM node:20-alpine AS builder
 
@@ -13,8 +14,9 @@ COPY tsconfig.base.json ./
 COPY packages/shared/ packages/shared/
 COPY packages/client/ packages/client/
 
-# Install all workspace deps
-RUN pnpm install --frozen-lockfile
+# Install all workspace deps (cached store)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
 # Build-time env vars injected by docker-compose build args
 ARG VITE_SERVER_URL=http://localhost:3001

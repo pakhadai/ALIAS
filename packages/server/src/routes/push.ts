@@ -51,7 +51,10 @@ export function createPushRoutes(prisma: PrismaClient): IRouter {
   /** DELETE /api/push/unsubscribe — remove push subscription */
   router.delete('/unsubscribe', async (req, res) => {
     const { endpoint } = req.body as { endpoint?: string };
-    if (!endpoint) { res.status(400).json({ error: 'endpoint required' }); return; }
+    if (!endpoint) {
+      res.status(400).json({ error: 'endpoint required' });
+      return;
+    }
     await prisma.pushSubscription.deleteMany({ where: { endpoint } });
     res.json({ ok: true });
   });
@@ -62,7 +65,7 @@ export function createPushRoutes(prisma: PrismaClient): IRouter {
 /** Send a push notification to all subscriptions, silently remove dead ones */
 export async function broadcastPush(
   prisma: PrismaClient,
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string }
 ): Promise<void> {
   if (!config.vapid.publicKey || !config.vapid.privateKey) return;
 
@@ -70,17 +73,17 @@ export async function broadcastPush(
   const dead: string[] = [];
 
   await Promise.allSettled(
-    subs.map(async (sub) => {
+    subs.map(async (sub: { endpoint: string; p256dh: string; auth: string }) => {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          JSON.stringify(payload),
+          JSON.stringify(payload)
         );
       } catch (err: any) {
         // 410 Gone = subscription expired, clean up
         if (err.statusCode === 410 || err.statusCode === 404) dead.push(sub.endpoint);
       }
-    }),
+    })
   );
 
   if (dead.length > 0) {

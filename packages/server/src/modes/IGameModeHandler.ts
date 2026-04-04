@@ -18,6 +18,6 @@ export interface IGameModeHandler {
   handleAction(
     action: GameActionPayload,
     currentTask: GameTask,
-    context: ActionContext,
+    context: ActionContext
   ): ActionResult;
 }

@@ -1,15 +1,33 @@
 // Re-export shared types and enums
-export {
-  GameState, Language, Category, AppTheme, SoundPreset, GameMode,
-} from '@alias/shared';
+export { GameState, Language, Category, AppTheme, SoundPreset, GameMode } from '@alias/shared';
 
 export type {
-  Player, Team, GameSettings, GameTask, RoundStats,
-  GameActionPayload, NetworkMessage, GameActionType, NetworkActionType,
+  Player,
+  Team,
+  GameSettings,
+  GameTask,
+  RoundStats,
+  GameActionPayload,
+  NetworkMessage,
+  GameActionType,
+  NetworkActionType,
+  RoomErrorCode,
 } from '@alias/shared';
 
-import type { GameState, AppTheme } from '@alias/shared';
-import type { Player, Team, GameSettings, GameTask, RoundStats, GameActionPayload } from '@alias/shared';
+/** In-game UI sound keys (see `playSoundEffect` in utils/audio) */
+export type GameSoundId = 'correct' | 'skip' | 'start' | 'end' | 'tick' | 'win' | 'click';
+
+import type {
+  GameState,
+  AppTheme,
+  RoomErrorCode,
+  Player,
+  Team,
+  GameSettings,
+  GameTask,
+  RoundStats,
+  GameActionPayload,
+} from '@alias/shared';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -49,17 +67,20 @@ export interface AppState {
   isPaused: boolean;
   timeUp?: boolean;
   isConnected: boolean;
-  notification: { message: string, type: 'info' | 'error' | 'success' } | null;
+  notification: { message: string; type: 'info' | 'error' | 'success' } | null;
   connectionError: string | null;
+  connectionErrorCode: RoomErrorCode | null;
 }
 
 export interface GameContextType extends AppState {
+  /** From socket layer: room:rejoin in flight after connect. */
+  isReconnecting: boolean;
   currentTheme: ThemeConfig;
   setGameState: (state: GameState) => void;
   createNewRoom: () => void;
   handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => void;
   sendAction: (action: GameActionPayload) => void;
-  playSound: (soundId: string) => void;
+  playSound: (soundId: GameSoundId) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
   setSettings: (settings: GameSettings | ((prev: GameSettings) => GameSettings)) => void;
   startOfflineGame: () => void;
@@ -79,4 +100,3 @@ export interface GameContextType extends AppState {
   addOfflinePlayer: (name?: string, avatar?: string) => void;
   removeOfflinePlayer: (id: string) => void;
 }
-

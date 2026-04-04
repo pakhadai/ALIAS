@@ -28,7 +28,11 @@ function waitForEvent<T>(socket: AppSocket, event: string, timeout = 5000): Prom
   });
 }
 
-function waitForState(socket: AppSocket, predicate: (s: GameSyncState) => boolean, timeout = 10000): Promise<GameSyncState> {
+function waitForState(
+  socket: AppSocket,
+  predicate: (s: GameSyncState) => boolean,
+  timeout = 10000
+): Promise<GameSyncState> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Timeout waiting for game state')), timeout);
     const handler = (state: GameSyncState) => {
@@ -79,7 +83,10 @@ async function runTest() {
     console.log('\n2. Creating room...');
     const stateAfterCreate = waitForState(host, (s) => s.players.length >= 1);
     host.emit('room:create', { playerName: 'Host', avatar: '🎮' });
-    const created = await waitForEvent<{ roomCode: string; playerId: string }>(host, 'room:created');
+    const created = await waitForEvent<{ roomCode: string; playerId: string }>(
+      host,
+      'room:created'
+    );
     assert(!!created.roomCode, `Room created: ${created.roomCode}`);
     assert(!!created.playerId, `Host playerId: ${created.playerId}`);
 
@@ -90,7 +97,10 @@ async function runTest() {
     console.log('\n3. Player2 joining...');
     const stateAfterJoin = waitForState(host, (s) => s.players.length >= 2);
     player2.emit('room:join', { roomCode: created.roomCode, playerName: 'Player2', avatar: '🎲' });
-    const joined = await waitForEvent<{ roomCode: string; playerId: string }>(player2, 'room:joined');
+    const joined = await waitForEvent<{ roomCode: string; playerId: string }>(
+      player2,
+      'room:joined'
+    );
     assert(joined.roomCode === created.roomCode, 'Player2 joined same room');
 
     const stateJoin = await stateAfterJoin;
@@ -132,8 +142,9 @@ async function runTest() {
     console.log('\n8. Answering words...');
     const firstWord = statePlay.currentWord;
 
-    const stateAfterCorrect = waitForState(host, (s) =>
-      s.currentRoundStats.correct === 1 && s.currentWord !== firstWord
+    const stateAfterCorrect = waitForState(
+      host,
+      (s) => s.currentRoundStats.correct === 1 && s.currentWord !== firstWord
     );
     host.emit('game:action', { action: 'CORRECT' });
     const stateCorrect = await stateAfterCorrect;
@@ -141,8 +152,9 @@ async function runTest() {
     assert(stateCorrect.currentWord !== firstWord, 'Got new word after correct');
 
     const secondWord = stateCorrect.currentWord;
-    const stateAfterSkip = waitForState(host, (s) =>
-      s.currentRoundStats.skipped === 1 && s.currentWord !== secondWord
+    const stateAfterSkip = waitForState(
+      host,
+      (s) => s.currentRoundStats.skipped === 1 && s.currentWord !== secondWord
     );
     host.emit('game:action', { action: 'SKIP' });
     const stateSkip = await stateAfterSkip;

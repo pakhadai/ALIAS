@@ -150,10 +150,17 @@ describe('removePlayer', () => {
   it('removes player from teams and drops empty teams', () => {
     const room = rm.createRoom('s1');
     const p = rm.addPlayer(room.code, 's1', 'Alice', '🦊')!;
-    room.teams = [{
-      id: 't0', name: 'Rockets', score: 0, color: 'bg-indigo-500', colorHex: '#6366f1',
-      players: [p], nextPlayerIndex: 0,
-    }];
+    room.teams = [
+      {
+        id: 't0',
+        name: 'Rockets',
+        score: 0,
+        color: 'bg-indigo-500',
+        colorHex: '#6366f1',
+        players: [p],
+        nextPlayerIndex: 0,
+      },
+    ];
     rm.removePlayer(room.code, 's1');
     // Team becomes empty → filtered out entirely to prevent game-over hang
     expect(room.teams).toHaveLength(0);
@@ -163,10 +170,17 @@ describe('removePlayer', () => {
     const room = rm.createRoom('s1');
     const p1 = rm.addPlayer(room.code, 's1', 'A', '🦊')!;
     const p2 = rm.addPlayer(room.code, 's2', 'B', '🐺')!;
-    room.teams = [{
-      id: 't0', name: 'Rockets', score: 0, color: '', colorHex: '',
-      players: [p1, p2], nextPlayerIndex: 1,
-    }];
+    room.teams = [
+      {
+        id: 't0',
+        name: 'Rockets',
+        score: 0,
+        color: '',
+        colorHex: '',
+        players: [p1, p2],
+        nextPlayerIndex: 1,
+      },
+    ];
     rm.removePlayer(room.code, 's2');
     // nextPlayerIndex was 1, only 1 player left → should be 0
     expect(room.teams[0].nextPlayerIndex).toBe(0);
@@ -217,15 +231,22 @@ describe('handleDisconnect', () => {
     const room = rm.createRoom('socket-host');
     const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
     const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
-    room.teams = [{
-      id: 't0', name: 'T', score: 0, color: '', colorHex: '',
-      players: [host, guest], nextPlayerIndex: 0,
-    }];
+    room.teams = [
+      {
+        id: 't0',
+        name: 'T',
+        score: 0,
+        color: '',
+        colorHex: '',
+        players: [host, guest],
+        nextPlayerIndex: 0,
+      },
+    ];
 
     rm.handleDisconnect('socket-host');
 
     const teamPlayers = room.teams[0].players;
-    const newHost = teamPlayers.find(p => p.isHost);
+    const newHost = teamPlayers.find((p) => p.isHost);
     expect(newHost).toBeDefined();
     expect(newHost!.id).toBe(guest.id);
   });
