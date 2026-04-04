@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import * as net from 'net';
 import * as path from 'path';
-import { getRepoRoot, loadE2eEnvFile, resolveDatabaseUrl } from './test-env';
+import { getRepoRoot, resolveDatabaseUrl } from './test-env';
 
 function waitForPort(port: number, timeoutMs: number): Promise<void> {
   const start = Date.now();
@@ -44,7 +44,9 @@ export default async function globalSetup(): Promise<void> {
   }
 
   await waitForPort(6379, 10_000).catch(() => {
-    console.warn('[e2e] Redis port 6379 not ready within 10s — ensure redis is up (docker compose up -d redis)');
+    console.warn(
+      '[e2e] Redis port 6379 not ready within 10s — ensure redis is up (docker compose up -d redis)'
+    );
   });
   await waitForPort(5432, 90_000);
 

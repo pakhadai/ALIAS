@@ -13,7 +13,7 @@ const imReadyRe = /Я ГОТОВИЙ|I'M READY|ICH BIN BEREIT/i;
 
 test.describe.configure({ mode: 'serial' });
 
-test.beforeEach(({}, testInfo) => {
+test.beforeEach((_fixtures, testInfo) => {
   test.skip(
     testInfo.project.name === 'Mobile Chrome',
     'Multiplayer flows use two desktop contexts; skip mobile project.'
@@ -110,9 +110,15 @@ test.describe('Multiplayer (2 players)', () => {
 
       await guestPage.reload({ waitUntil: 'load' });
 
-      await expect(guestPage.getByText(HOST_NAME, { exact: true })).toBeVisible({ timeout: 45_000 });
-      await expect(guestPage.getByText(GUEST_NAME, { exact: true })).toBeVisible({ timeout: 45_000 });
-      await expect(guestPage.locator('span.text-4xl.font-serif').filter({ hasText: roomCode })).toBeVisible({
+      await expect(guestPage.getByText(HOST_NAME, { exact: true })).toBeVisible({
+        timeout: 45_000,
+      });
+      await expect(guestPage.getByText(GUEST_NAME, { exact: true })).toBeVisible({
+        timeout: 45_000,
+      });
+      await expect(
+        guestPage.locator('span.text-4xl.font-serif').filter({ hasText: roomCode })
+      ).toBeVisible({
         timeout: 15_000,
       });
 
