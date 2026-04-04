@@ -23,8 +23,7 @@ self.addEventListener('activate', (event) => {
 
 /** Google Fonts + Material Symbols (same as legacy sw.js). */
 registerRoute(
-  ({ url }) =>
-    url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com',
+  ({ url }) => url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com',
   new StaleWhileRevalidate({
     cacheName: 'alias-fonts',
     plugins: [new ExpirationPlugin({ maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 })],

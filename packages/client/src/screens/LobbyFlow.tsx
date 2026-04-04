@@ -281,7 +281,9 @@ export const LobbyScreen = () => {
                   <p className={`text-sm font-semibold leading-snug ${currentTheme.textMain}`}>
                     {settings.customDeckName || settings.customDeckCode}
                   </p>
-                  <p className={`text-[10px] font-mono mt-0.5 opacity-60 ${currentTheme.textSecondary}`}>
+                  <p
+                    className={`text-[10px] font-mono mt-0.5 opacity-60 ${currentTheme.textSecondary}`}
+                  >
                     {settings.customDeckCode}
                   </p>
                 </div>

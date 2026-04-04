@@ -13,9 +13,7 @@ export const SentryErrorFallback: React.FC<{
           !
         </div>
         <div className="space-y-2">
-          <h1 className="text-lg font-semibold tracking-tight text-white">
-            Щось пішло не так
-          </h1>
+          <h1 className="text-lg font-semibold tracking-tight text-white">Щось пішло не так</h1>
           <p className="text-sm text-white/60 leading-relaxed">
             Ми вже отримали звіт про проблему. Спробуйте перезавантажити сторінку — зазвичай це
             допомагає.

@@ -274,7 +274,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
-        dispatch({ type: 'SET_STATE', payload: { roomCode: room, gameState: GameState.ENTER_NAME } });
+        dispatch({
+          type: 'SET_STATE',
+          payload: { roomCode: room, gameState: GameState.ENTER_NAME },
+        });
         stripKeys.push('room');
       }
 

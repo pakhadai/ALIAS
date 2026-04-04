@@ -202,7 +202,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     pwaUpdateMessage: 'Доступна нова версія гри. Оновити зараз?',
     pwaUpdateReload: 'Оновити',
     pwaUpdateLater: 'Пізніше',
-    customDeckDeepLinkSuccess: 'Словник «{name}» підключено. Він буде використаний при створенні кімнати.',
+    customDeckDeepLinkSuccess:
+      'Словник «{name}» підключено. Він буде використаний при створенні кімнати.',
     customDeckDeepLinkError: 'Не вдалося знайти словник за посиланням.',
     shareDeckLinkCopied: 'Посилання скопійовано!',
     shareDeckLink: 'Поділитися',
@@ -396,7 +397,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     pwaUpdateMessage: 'Neue Version verfügbar. Jetzt aktualisieren?',
     pwaUpdateReload: 'Aktualisieren',
     pwaUpdateLater: 'Später',
-    customDeckDeepLinkSuccess: 'Kartensatz «{name}» wurde geladen und wird beim Erstellen eines Raums genutzt.',
+    customDeckDeepLinkSuccess:
+      'Kartensatz «{name}» wurde geladen und wird beim Erstellen eines Raums genutzt.',
     customDeckDeepLinkError: 'Kartensatz für diesen Link nicht gefunden.',
     shareDeckLinkCopied: 'Link kopiert!',
     shareDeckLink: 'Teilen',
