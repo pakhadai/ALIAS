@@ -9,8 +9,12 @@ import {
   Loader2,
   FileText,
   ChevronRight,
+  Share2,
 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
+import { useGame } from '../../context/GameContext';
+import { TRANSLATIONS } from '../../constants';
+import { buildDeckShareUrl } from '../../utils/deckShare';
 import { LoginModal } from '../Auth/LoginModal';
 import {
   fetchMyDecks,
@@ -58,6 +62,8 @@ function DeckItem({
   onSelect?: (code: string, name: string) => void;
 }) {
   const [deleting, setDeleting] = useState(false);
+  const { showNotification, settings } = useGame();
+  const t = TRANSLATIONS[settings.language];
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -73,6 +79,15 @@ function DeckItem({
     }
   };
 
+  const handleShareLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!deck.accessCode) return;
+    const url = buildDeckShareUrl(deck.accessCode);
+    void navigator.clipboard.writeText(url).then(() => {
+      showNotification(t.shareDeckLinkCopied, 'success');
+    });
+  };
+
   return (
     <div
       className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/8 transition-colors"
@@ -80,7 +95,7 @@ function DeckItem({
     >
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white text-sm truncate">{deck.name}</p>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-[10px] text-slate-400">{deck.wordCount} слів</span>
           <span className="text-slate-600">·</span>
           <div className="flex items-center gap-1">
@@ -89,6 +104,16 @@ function DeckItem({
             </span>
             <CopyButton text={deck.accessCode} />
           </div>
+          {deck.accessCode && (
+            <button
+              type="button"
+              onClick={handleShareLink}
+              className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors"
+            >
+              <Share2 size={12} className="shrink-0" />
+              {t.shareDeckLink}
+            </button>
+          )}
           {deck.status !== 'approved' && (
             <>
               <span className="text-slate-600">·</span>

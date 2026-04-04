@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { setupPwaRegister } from './pwa-client';
+import { initClientSentry, Sentry } from './sentry';
+import { SentryErrorFallback } from './components/SentryErrorFallback';
 
-// Register service worker for PWA + push notifications
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
+setupPwaRegister();
+initClientSentry();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,6 +17,12 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <Sentry.ErrorBoundary
+      fallback={({ error, resetError }) => (
+        <SentryErrorFallback error={error} resetError={resetError} />
+      )}
+    >
+      <App />
+    </Sentry.ErrorBoundary>
   </React.StrictMode>
 );

@@ -45,6 +45,7 @@ const gameSettingsPartialSchema = z
     theme: z.nativeEnum(AppTheme),
     customWords: z.string().max(5000).optional(),
     customDeckCode: z.string().max(20).optional(),
+    customDeckName: z.string().max(120).optional(),
     selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
     gameMode: z.nativeEnum(GameMode),
     targetLanguage: z.nativeEnum(Language),

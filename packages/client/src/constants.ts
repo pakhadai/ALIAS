@@ -199,6 +199,17 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     enableNotifications: 'Увімкнути',
     store: 'Магазин',
     myPacks: 'Мої паки',
+    pwaUpdateMessage: 'Доступна нова версія гри. Оновити зараз?',
+    pwaUpdateReload: 'Оновити',
+    pwaUpdateLater: 'Пізніше',
+    customDeckDeepLinkSuccess: 'Словник «{name}» підключено. Він буде використаний при створенні кімнати.',
+    customDeckDeepLinkError: 'Не вдалося знайти словник за посиланням.',
+    shareDeckLinkCopied: 'Посилання скопійовано!',
+    shareDeckLink: 'Поділитися',
+    customDeckLobbyLabel: 'Власний словник',
+    fullscreenUnavailableTitle: 'Повний екран',
+    fullscreenUnavailableBody:
+      'У Safari на iPhone сайти не можуть увімкнути справжній повноекран (немає такого API, на відміну від Chrome на комп’ютері). Щоб прибрати адресний рядок і панелі браузера, додайте гру на екран Домів: кнопка «Поділитися» (↑) → «На екран Домів», потім відкривайте з іконки.',
   },
   [Language.DE]: {
     slogan: 'Erkläre schnell, spiel brillant.',
@@ -382,6 +393,17 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     enableNotifications: 'Aktivieren',
     store: 'Shop',
     myPacks: 'Meine Packs',
+    pwaUpdateMessage: 'Neue Version verfügbar. Jetzt aktualisieren?',
+    pwaUpdateReload: 'Aktualisieren',
+    pwaUpdateLater: 'Später',
+    customDeckDeepLinkSuccess: 'Kartensatz «{name}» wurde geladen und wird beim Erstellen eines Raums genutzt.',
+    customDeckDeepLinkError: 'Kartensatz für diesen Link nicht gefunden.',
+    shareDeckLinkCopied: 'Link kopiert!',
+    shareDeckLink: 'Teilen',
+    customDeckLobbyLabel: 'Eigenes Deck',
+    fullscreenUnavailableTitle: 'Vollbild',
+    fullscreenUnavailableBody:
+      'Safari auf dem iPhone erlaubt Websites keinen programmatischen Vollbildmodus (kein Fullscreen-API wie am Desktop). Tippe auf Teilen (↑) → „Zum Home-Bildschirm“ und öffne das Spiel vom Icon — dann ohne Adressleiste.',
   },
   [Language.EN]: {
     slogan: 'Think fast, play bold.',
@@ -564,6 +586,17 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     enableNotifications: 'Enable',
     store: 'Store',
     myPacks: 'My Packs',
+    pwaUpdateMessage: 'A new version is available. Reload to update?',
+    pwaUpdateReload: 'Reload',
+    pwaUpdateLater: 'Later',
+    customDeckDeepLinkSuccess: 'Deck «{name}» loaded. It will be used when you create a room.',
+    customDeckDeepLinkError: 'Could not find a deck for this link.',
+    shareDeckLinkCopied: 'Link copied!',
+    shareDeckLink: 'Share',
+    customDeckLobbyLabel: 'Custom deck',
+    fullscreenUnavailableTitle: 'Fullscreen',
+    fullscreenUnavailableBody:
+      'iPhone Safari does not support true fullscreen for websites (no Fullscreen API like desktop Chrome). Tap Share (↑) → Add to Home Screen, then open the game from the icon to hide the address bar.',
   },
 };
 

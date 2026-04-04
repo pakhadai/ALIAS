@@ -12,6 +12,8 @@
   "dependencies": {
     "@alias/shared": "workspace:*",
     "@react-oauth/google": "^0.13.4",
+    "@sentry/react": "^10.47.0",
+    "@sentry/vite-plugin": "^5.1.1",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "lucide-react": "^0.563.0",
@@ -31,6 +33,13 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.8.2",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-core": "^7.4.0",
+    "workbox-expiration": "^7.4.0",
+    "workbox-precaching": "^7.4.0",
+    "workbox-routing": "^7.4.0",
+    "workbox-strategies": "^7.4.0",
+    "workbox-window": "^7.4.0"
   }
 }

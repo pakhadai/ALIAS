@@ -173,11 +173,11 @@ ALIAS/                          ← Корінь монорепо
 │   │
 │   ├── client/                 ← @alias/client — React PWA
 │   │   ├── public/
-│   │   │   ├── manifest.json   ← PWA маніфест
-│   │   │   ├── sw.js           ← Service Worker
-│   │   │   └── offline.html    ← Offline fallback
+│   │   │   └── offline.html    ← Offline fallback (іконки, favicon — тут)
+│   │   ├── vite.config.ts      ← VitePWA: manifest.webmanifest + injectManifest (src/sw.ts)
 │   │   ├── src/
-│   │   │   ├── index.tsx       ← React mount + SW реєстрація
+│   │   │   ├── sw.ts           ← Service Worker (Workbox precache + push)
+│   │   │   ├── index.tsx       ← React mount + PWA register
 │   │   │   ├── App.tsx         ← GoogleOAuth → Auth → Game → Router
 │   │   │   ├── context/
 │   │   │   │   ├── GameContext.tsx  ← Головний стейт-менеджер гри

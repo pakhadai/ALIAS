@@ -51,6 +51,7 @@ export { PRESET_AVATARS, AvatarDisplay };
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../utils/fullscreen';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -300,6 +301,7 @@ export const MenuScreen = () => {
   const [showRules, setShowRules] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const [storeThemes, setStoreThemes] = useState<ThemeItem[]>([]);
   const t = TRANSLATIONS[settings.language];
 
@@ -341,13 +343,15 @@ export const MenuScreen = () => {
     });
   };
 
-  const toggleFullScreen = () => {
-    const doc = document.documentElement as any;
-    const docEl = document as any;
-    if (!docEl.fullscreenElement) {
-      if (doc.requestFullscreen) doc.requestFullscreen();
-    } else {
-      if (docEl.exitFullscreen) docEl.exitFullscreen();
+  const handleFullscreenClick = async () => {
+    if (isStandaloneDisplay()) return;
+    const result = await toggleFullscreen();
+    if (result === 'unsupported') {
+      setShowFullscreenHint(true);
+      return;
+    }
+    if (result === 'error' && isAppleMobile()) {
+      setShowFullscreenHint(true);
     }
   };
 
@@ -376,13 +380,20 @@ export const MenuScreen = () => {
             menu_book
           </span>
         </button>
-        <button onClick={toggleFullScreen} className="transition-all active:scale-90 p-2">
-          <span
-            className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+        {!isStandaloneDisplay() && (
+          <button
+            type="button"
+            onClick={() => void handleFullscreenClick()}
+            className="transition-all active:scale-90 p-2"
+            aria-label="Fullscreen"
           >
-            fullscreen
-          </span>
-        </button>
+            <span
+              className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            >
+              fullscreen
+            </span>
+          </button>
+        )}
         <button
           onClick={toggleLanguage}
           className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${currentTheme.isDark ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}
@@ -458,6 +469,48 @@ export const MenuScreen = () => {
         t={t}
         currentTheme={currentTheme}
       />
+      {showFullscreenHint && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-black/60"
+          onClick={() => setShowFullscreenHint(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="fullscreen-hint-title"
+        >
+          <div
+            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-[2rem] md:rounded-[2rem] px-5 pt-5 pb-8"
+            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <p
+                id="fullscreen-hint-title"
+                className="text-white/90 text-sm font-sans font-semibold tracking-wide pr-4"
+              >
+                {t.fullscreenUnavailableTitle}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowFullscreenHint(false)}
+                className="text-white/40 hover:text-white/70 p-1 shrink-0"
+                aria-label={t.close}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-white/60 text-sm leading-relaxed font-sans mb-6">
+              {t.fullscreenUnavailableBody}
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowFullscreenHint(false)}
+              className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
+            >
+              {t.close}
+            </button>
+          </div>
+        </div>
+      )}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
       {/* Theme Picker Sheet */}

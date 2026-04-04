@@ -22,6 +22,7 @@ import { roomError } from '../utils/roomError';
 import { config } from '../config';
 import { authorizeGameAction } from '../game/authorizeGameAction';
 import { broadcastRoomState, executeGameActionPipeline } from '../game/gameActionPipeline';
+import { onSocket } from '../utils/socketSentry';
 type IO = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
@@ -46,7 +47,7 @@ export function registerSocketHandlers(
   roomQueue: PerRoomQueue,
   relayDeps: SocketRelayDeps | null = null
 ): void {
-  socket.on('room:create', (rawData) => {
+  onSocket(socket, 'room:create', (rawData) => {
     const data = validatePayload(roomCreateSchema, rawData);
     if (!data) {
       socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
@@ -77,7 +78,7 @@ export function registerSocketHandlers(
     broadcastRoomState(io, room.code, roomManager);
   });
 
-  socket.on('room:join', async (rawData) => {
+  onSocket(socket, 'room:join', async (rawData) => {
     const data = validatePayload(roomJoinSchema, rawData);
     if (!data) {
       socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
@@ -144,56 +145,54 @@ export function registerSocketHandlers(
     });
   });
 
-  socket.on('room:leave', () => {
+  onSocket(socket, 'room:leave', async () => {
     const { roomCode } = socket.data;
     if (!roomCode) {
       socket.emit('room:error', roomError('PLAYER_NOT_IN_ROOM', 'Not in a room'));
       return;
     }
 
-    void (async () => {
-      const selfId = config.serverInstanceId;
-      const writer = await getRoomWriterId(relayDeps, roomCode);
-      const useRelay =
-        writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
+    const selfId = config.serverInstanceId;
+    const writer = await getRoomWriterId(relayDeps, roomCode);
+    const useRelay =
+      writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
 
-      if (useRelay && relayDeps) {
-        const requestId = newRelayRequestId();
-        relayDeps.relay.registerPending(requestId, socket);
-        const published = await relayDeps.relay.publishRoomLeave(writer, {
-          roomCode,
-          socketId: socket.id,
-          replyToInstanceId: selfId,
-          requestId,
-        });
-        if (!published) {
-          relayDeps.relay.cancelPending(requestId);
-          socket.emit(
-            'room:error',
-            roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
-          );
-        }
-        return;
-      }
-
-      await roomQueue.run(roomCode, async () => {
-        const removedId = roomManager.removePlayer(roomCode, socket.id);
-        if (removedId) {
-          cancelGraceRemoval(removedId);
-        }
-        void socket.leave(roomCode);
-        delete socket.data.roomCode;
-        delete socket.data.playerId;
-        delete socket.data.playerName;
-        if (removedId) {
-          io.to(roomCode).emit('room:player-left', { playerId: removedId });
-          broadcastRoomState(io, roomCode, roomManager);
-        }
+    if (useRelay && relayDeps) {
+      const requestId = newRelayRequestId();
+      relayDeps.relay.registerPending(requestId, socket);
+      const published = await relayDeps.relay.publishRoomLeave(writer, {
+        roomCode,
+        socketId: socket.id,
+        replyToInstanceId: selfId,
+        requestId,
       });
-    })();
+      if (!published) {
+        relayDeps.relay.cancelPending(requestId);
+        socket.emit(
+          'room:error',
+          roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
+        );
+      }
+      return;
+    }
+
+    await roomQueue.run(roomCode, async () => {
+      const removedId = roomManager.removePlayer(roomCode, socket.id);
+      if (removedId) {
+        cancelGraceRemoval(removedId);
+      }
+      void socket.leave(roomCode);
+      delete socket.data.roomCode;
+      delete socket.data.playerId;
+      delete socket.data.playerName;
+      if (removedId) {
+        io.to(roomCode).emit('room:player-left', { playerId: removedId });
+        broadcastRoomState(io, roomCode, roomManager);
+      }
+    });
   });
 
-  socket.on('room:rejoin', async (rawData) => {
+  onSocket(socket, 'room:rejoin', async (rawData) => {
     const data = validatePayload(roomRejoinSchema, rawData);
     if (!data) {
       socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid rejoin data'));
@@ -256,7 +255,7 @@ export function registerSocketHandlers(
     });
   });
 
-  socket.on('game:action', async (rawPayload) => {
+  onSocket(socket, 'game:action', async (rawPayload) => {
     const { roomCode } = socket.data;
     if (!roomCode) {
       socket.emit('room:error', roomError('PLAYER_NOT_IN_ROOM', 'Join a room first'));

@@ -3,8 +3,9 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GameProvider, useGame } from './context/GameContext';
 import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
-import { PageTransition, ErrorBoundary } from './components/Shared';
+import { PageTransition } from './components/Shared';
 import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
+import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import {
   MenuScreen,
   EnterNameScreen,
@@ -136,6 +137,7 @@ const AppContent = () => {
       className={`min-h-screen w-full ${currentTheme.bg} ${baseTextColor} font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-500`}
     >
       <ConnectionStatusBanner />
+      <PwaUpdateBanner />
       <GameRouter />
     </div>
   );
@@ -143,15 +145,13 @@ const AppContent = () => {
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary>
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <AuthProvider>
-          <GameProvider>
-            <AppContent />
-          </GameProvider>
-        </AuthProvider>
-      </GoogleOAuthProvider>
-    </ErrorBoundary>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <GameProvider>
+          <AppContent />
+        </GameProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 };
 

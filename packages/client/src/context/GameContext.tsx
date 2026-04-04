@@ -33,7 +33,7 @@ import {
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
-import { fetchLobbySettings, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
+import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
 
 function buildOfflineTask(
@@ -219,20 +219,68 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
-  // Handle URL parameters on mount (room join, Stripe redirects)
+  // Handle URL parameters on mount (room join, custom deck deep link, Stripe redirects)
   useEffect(() => {
     if (stateRef.current.gameState !== GameState.MENU) return;
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
     const purchase = params.get('purchase');
-    if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
-      dispatch({ type: 'SET_STATE', payload: { roomCode: room, gameState: GameState.ENTER_NAME } });
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (purchase === 'success' || purchase === 'cancelled') {
+    const deckParam = params.get('deck');
+
+    const stripSearchParams = (keys: string[]) => {
+      const u = new URL(window.location.href);
+      keys.forEach((k) => u.searchParams.delete(k));
+      const qs = u.searchParams.toString();
+      window.history.replaceState({}, '', qs ? `${u.pathname}?${qs}` : u.pathname);
+    };
+
+    if (purchase === 'success' || purchase === 'cancelled') {
       dispatch({ type: 'SET_STATE', payload: { gameState: GameState.STORE } });
-      // Keep URL as-is — StoreScreen will read it and clear
+      return;
     }
-  }, []);
+
+    void (async () => {
+      const stripKeys: string[] = [];
+      if (deckParam != null && deckParam.trim() !== '') {
+        const code = deckParam
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 20);
+        if (code.length >= 4) {
+          try {
+            const deck = await fetchDeckByCode(code);
+            const lang = stateRef.current.settings.language;
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                settings: {
+                  ...stateRef.current.settings,
+                  customDeckCode: deck.accessCode ?? code,
+                  customDeckName: deck.name,
+                },
+              },
+            });
+            showNotification(
+              TRANSLATIONS[lang].customDeckDeepLinkSuccess.replace('{name}', deck.name),
+              'success'
+            );
+          } catch {
+            const lang = stateRef.current.settings.language;
+            showNotification(TRANSLATIONS[lang].customDeckDeepLinkError, 'error');
+          }
+        }
+        stripKeys.push('deck');
+      }
+
+      if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
+        dispatch({ type: 'SET_STATE', payload: { roomCode: room, gameState: GameState.ENTER_NAME } });
+        stripKeys.push('room');
+      }
+
+      if (stripKeys.length > 0) stripSearchParams(stripKeys);
+    })();
+  }, [showNotification]);
 
   // Save host session to localStorage — omit timeLeft from deps so timer sync does not write every tick.
   useEffect(() => {

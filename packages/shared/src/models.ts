@@ -42,6 +42,8 @@ export interface GameSettings {
   theme: AppTheme;
   customWords?: string;
   customDeckCode?: string;
+  /** Display name for UI (from API / deep link); optional on server. */
+  customDeckName?: string;
   selectedPackIds?: string[];
   gameMode?: GameMode;
   targetLanguage?: Language;

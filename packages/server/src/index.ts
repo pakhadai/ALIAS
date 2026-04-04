@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -41,8 +42,10 @@ import type {
   SocketData,
 } from '@alias/shared';
 import { roomError } from './utils/roomError';
+import { initServerSentry, registerExpressSentryErrorHandler } from './sentry/bootstrap';
 
 const app = express();
+initServerSentry(app, config.nodeEnv);
 // Behind reverse proxies (e.g. Nginx Proxy Manager) we rely on X-Forwarded-* headers
 // for correct client IP handling (e.g. express-rate-limit).
 app.set('trust proxy', config.trustProxyHops);
@@ -73,6 +76,8 @@ app.use('/api/purchases', storeLimiter, createPurchaseRoutes(prisma));
 app.use('/api/custom-decks', createCustomDeckRoutes(prisma));
 app.use('/api/push', pushLimiter, createPushRoutes(prisma));
 
+registerExpressSentryErrorHandler(app);
+
 const httpServer = createServer(app);
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
@@ -84,6 +89,12 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
     },
   }
 );
+
+io.engine.on('connection_error', (err) => {
+  if (Sentry.isInitialized()) {
+    Sentry.captureException(err, { tags: { source: 'socket.io-engine' } });
+  }
+});
 
 // Services
 const wordService = new WordService();
@@ -180,6 +191,9 @@ async function handleInboundGameAction(msg: GameActionRpcInbound): Promise<void>
         requestId: msg.requestId,
       });
     } catch (err) {
+      if (Sentry.isInitialized()) {
+        Sentry.captureException(err, { tags: { source: 'relay-game-action' } });
+      }
       console.warn('[Relay] execute failed:', (err as Error).message);
       await roomActionRelay.publishReply(msg.replyToInstanceId, {
         v: 1,

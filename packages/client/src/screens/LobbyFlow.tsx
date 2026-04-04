@@ -265,6 +265,28 @@ export const LobbyScreen = () => {
                 <Copy size={18} className={currentTheme.iconColor} />
               </button>
 
+              {settings.customDeckCode && (
+                <div
+                  className={`mt-1 mx-auto max-w-xs rounded-2xl border px-4 py-3 text-left ${
+                    currentTheme.isDark
+                      ? 'border-indigo-400/35 bg-indigo-500/10'
+                      : 'border-indigo-300 bg-indigo-50'
+                  }`}
+                >
+                  <p
+                    className={`text-[8px] uppercase tracking-[0.25em] font-bold mb-1 ${currentTheme.textSecondary}`}
+                  >
+                    {t.customDeckLobbyLabel}
+                  </p>
+                  <p className={`text-sm font-semibold leading-snug ${currentTheme.textMain}`}>
+                    {settings.customDeckName || settings.customDeckCode}
+                  </p>
+                  <p className={`text-[10px] font-mono mt-0.5 opacity-60 ${currentTheme.textSecondary}`}>
+                    {settings.customDeckCode}
+                  </p>
+                </div>
+              )}
+
               {!isHost && (
                 <div className="flex flex-wrap justify-center gap-2 pt-2">
                   <span
@@ -313,6 +335,18 @@ export const LobbyScreen = () => {
                   >
                     📚 {categoriesPreview || '—'}
                   </span>
+                  {settings.customDeckCode && (
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${
+                        currentTheme.isDark
+                          ? 'border-indigo-400/40 text-indigo-200/90 bg-indigo-500/10'
+                          : 'border-indigo-200 text-indigo-800 bg-indigo-50'
+                      }`}
+                      title={settings.customDeckName || settings.customDeckCode}
+                    >
+                      📖 {settings.customDeckName || settings.customDeckCode}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -642,6 +676,22 @@ export const SettingsScreen = () => {
       return;
     const newSettings = { ...settings, [key]: value };
     sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
+  };
+
+  const clearCustomDeck = () => {
+    if (!isHost) return;
+    sendAction({
+      action: 'UPDATE_SETTINGS',
+      data: { ...settings, customDeckCode: undefined, customDeckName: undefined },
+    });
+  };
+
+  const applyCustomDeck = (code: string, name: string) => {
+    if (!isHost) return;
+    sendAction({
+      action: 'UPDATE_SETTINGS',
+      data: { ...settings, customDeckCode: code, customDeckName: name },
+    });
   };
 
   const setHapticsPref = (next: boolean) => {
@@ -1088,15 +1138,24 @@ export const SettingsScreen = () => {
             Власний словник
           </p>
           {settings.customDeckCode ? (
-            <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/10">
-              <div className="flex items-center gap-2">
-                <FileText size={14} className="text-indigo-400" />
-                <span className="text-sm text-white font-mono">{settings.customDeckCode}</span>
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/10">
+              <div className="flex items-start gap-2 min-w-0">
+                <FileText size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white leading-tight truncate">
+                    {settings.customDeckName || settings.customDeckCode}
+                  </p>
+                  <p className="text-[10px] text-indigo-300/80 font-mono mt-0.5">
+                    {settings.customDeckCode}
+                  </p>
+                </div>
               </div>
               {isHost && (
                 <button
-                  onClick={() => updateSetting('customDeckCode', undefined)}
-                  className="text-slate-400 hover:text-white transition-colors p-1"
+                  type="button"
+                  onClick={clearCustomDeck}
+                  className="text-slate-400 hover:text-white transition-colors p-1 shrink-0"
+                  aria-label={t.close}
                 >
                   <X size={14} />
                 </button>
@@ -1131,8 +1190,8 @@ export const SettingsScreen = () => {
       {showCustomDeckPicker && (
         <CustomDeckModal
           onClose={() => setShowCustomDeckPicker(false)}
-          onSelectDeck={(code) => {
-            updateSetting('customDeckCode', code);
+          onSelectDeck={(code, name) => {
+            applyCustomDeck(code, name);
             setShowCustomDeckPicker(false);
           }}
         />
