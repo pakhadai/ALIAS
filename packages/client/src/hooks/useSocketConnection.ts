@@ -11,6 +11,22 @@ import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
+/** JWT is read once in `io()` options at mount — after Google login it must be refreshed before handshake. */
+function applyHandshakeAuth(socket: AppSocket): void {
+  const token = getAuthToken();
+  socket.auth = token ? { token } : {};
+}
+
+/**
+ * Next `connect()` must send fresh auth. If already connected, disconnect first (handshake is fixed per connection).
+ */
+function prepareSocketForRoomHandshake(socket: AppSocket): void {
+  applyHandshakeAuth(socket);
+  if (socket.connected) {
+    socket.disconnect();
+  }
+}
+
 function normalizeBaseUrl(url: string): string {
   return url.replace(/\/+$/, '');
 }
@@ -112,7 +128,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   }, []);
 
   const connect = useCallback(() => {
-    socketRef.current?.connect();
+    const s = socketRef.current;
+    if (!s) return;
+    applyHandshakeAuth(s);
+    s.connect();
   }, []);
 
   const disconnect = useCallback(() => {
@@ -138,12 +157,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       socket.emit('room:create', { playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
     };
 
-    if (socket.connected) {
-      doEmit();
-    } else {
-      socket.connect();
-      socket.once('connect', doEmit);
-    }
+    prepareSocketForRoomHandshake(socket);
+    socket.once('connect', doEmit);
+    socket.connect();
   }, []);
 
   const joinRoom = useCallback(
@@ -171,12 +187,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       };
 
-      if (socket.connected) {
-        doEmit();
-      } else {
-        socket.connect();
-        socket.once('connect', doEmit);
-      }
+      prepareSocketForRoomHandshake(socket);
+      socket.once('connect', doEmit);
+      socket.connect();
     },
     []
   );

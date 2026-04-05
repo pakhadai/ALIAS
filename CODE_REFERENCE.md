@@ -284,10 +284,11 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `getRoomWriter(roomCode)` | `async` — останній `INSTANCE_ID`, що зберіг кімнату |
 | `deleteRoom(roomCode)` | |
 | `roomExists(roomCode)` | `async` |
-| `setSocketRoom` / `getSocketRoom` / `removeSocket` | Мапінг socket ↔ кімната |
+| `setSocketRoom` / `getSocketRoom` / `removeSocket` | Мапінг socket ↔ кімната (`alias:socket:{id}`) |
+| `getLiveStats()` | `async` — SCAN: кімнати `alias:room:*` без `alias:room:writer:*`; кількість ключів `alias:socket:*` |
 | `disconnect()` | `async` — graceful |
 
-**Константи модуля:** `ROOM_TTL`, `ROOM_PREFIX`, `ROOM_WRITER_PREFIX`.
+**Константи модуля:** `ROOM_TTL`, `ROOM_PREFIX`, `ROOM_WRITER_PREFIX`, `SOCKET_KEY_PREFIX`.
 
 ### `services/PerRoomQueue.ts`
 
@@ -356,10 +357,21 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | Метод | Шлях | Handler логіка (коротко) |
 |-------|------|---------------------------|
 | POST | `/anonymous` | upsert User за `deviceId`, JWT |
-| POST | `/google` | Google login, merge purchases з anonymous |
+| POST | `/google` | Google login; merge purchases/customDecks + **stats** з anonymous за `deviceId` |
+| POST | `/player-stats/delta` | Prisma `increment` лічильників + `statsLastPlayedAt` |
+| POST | `/player-stats/merge-local` | Імпорт легасі-лічильників на акаунт |
 | PATCH | `/profile` | `displayName`, `avatarId` |
 | GET/PUT | `/lobby-settings` | JSON `defaultSettings` у User |
-| GET | `/me` | Профіль + purchases |
+| GET | `/me` | Профіль + purchases + **`playerStats`** |
+
+**Допоміжно:** `playerStatsJson()` — мапінг колонок User у camelCase для API.
+
+### `utils/playerStats.ts`
+
+| Функція | Опис |
+|---------|------|
+| `parseNonNegInt` | Валідація невід’ємного int для delta/merge |
+| `maxDate` | Дві дати → новіша |
 
 ### `routes/store.ts`
 
@@ -408,9 +420,9 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 ### `routes/admin.ts`
 
-**Внутрішня функція:** `adminAuth` — `x-admin-key` або JWT з `isAdmin`.
+**Внутрішня функція:** `adminAuth` (async) — `x-admin-key` якщо збігається з `config.adminApiKey`, **або** Bearer JWT → `verifyToken` → **`prisma.user.findUnique` з `isAdmin: true`** (права з БД, не лише claim у токені).
 
-**Фабрика:** `createAdminRoutes(prisma)` — CRUD для packs, words, themes, sound-packs, custom-decks (модерація), `GET /analytics`, `GET /analytics/daily`, `POST /push/broadcast`.
+**Фабрика:** `createAdminRoutes(prisma, redisStore?)` — CRUD для packs, words, themes, sound-packs, custom-decks (модерація), `GET /analytics`, `GET /analytics/daily`, **`GET /live`** (Redis через `redisStore.getLiveStats()`), `POST /push/broadcast`.
 
 ---
 
@@ -492,14 +504,14 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 |---------|------|
 | `useSocketConnection(options)` | Повертає `{ isConnected, myPlayerId, myPlayerIdRef, roomCode, connect, disconnect, createRoom, joinRoom, leaveRoom, sendGameAction }` |
 
-**Внутрішня логіка:** `io(SERVER_URL)`, listeners, `localStorage` `ROOM_CODE_KEY` / `PLAYER_ID_KEY`, auto `room:rejoin` на connect.
+**Внутрішня логіка:** `io(SERVER_URL)`, listeners, `localStorage` `ROOM_CODE_KEY` / `PLAYER_ID_KEY`, auto `room:rejoin` на connect. Перед `connect` / `room:create` / `room:join` оновлюється **`socket.auth`** з `getAuthToken()`; при вже активному з’єднанні перед `room:create`/`join` виконується `disconnect` для коректного handshake після зміни JWT (наприклад після Google login).
 
 ### `hooks/useAuth.ts`
 
 | Експорт | Опис |
 |---------|------|
 | `AuthState` | Discriminated union статусів авторизації |
-| `useAuth()` | `initialize`, `loginWithGoogle`, `loginWithApple` (заглушка), `logout`, `refreshProfile`, похідні `isAuthenticated`, `userId`, `profile` |
+| `useAuth()` | `initialize`, `loginWithGoogle`, `loginWithApple` (заглушка), `logout`, `refreshProfile`, похідні `isAuthenticated`, `userId`, `profile`; після успішного `fetchProfile` — **`hydratePlayerStats`** (sync + міграція легасі) |
 
 ### `hooks/useAudio.ts`
 
@@ -531,8 +543,13 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 | Експорт | Опис |
 |---------|------|
-| `PlayerStats` | Інтерфейс локальної статистики |
-| `usePlayerStats()` | `get()`, `increment(key, by?)`, `reset()` — `localStorage` ключ `alias_player_stats_v1` |
+| `PlayerStats` | Інтерфейс лічильників + `lastPlayed` (ISO) |
+| `syncPlayerStatsFromProfile(profile)` | Оновлює серверний baseline після `fetchProfile` |
+| `migrateLegacyPlayerStatsOnce()` | Одноразовий `merge-local` + очищення `alias_player_stats_v1` / прапорець міграції |
+| `flushPlayerStats()` | Негайний flush pending-дельт на API |
+| `usePlayerStats()` | `get()` (baseline + pending), `increment`, `reset`, **`flush`**; debounce flush; підписка на оновлення для ре-рендеру |
+
+Дані зберігаються на сервері (`User` + `POST .../delta`); легасі localStorage імпортується при завантаженні профілю.
 
 ### `hooks/usePushNotifications.ts`
 
@@ -558,7 +575,8 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `fetchLobbySettings` / `invalidateLobbySettingsCache` / `saveLobbySettings` | Кеш 30 с |
 | `fetchAnonymousToken` | POST anonymous |
 | `signInWithGoogle` | POST google |
-| `fetchProfile` | GET me |
+| `fetchProfile` | GET me (включно з `playerStats`) |
+| `postPlayerStatsDelta` / `mergeLocalPlayerStats` | Синхронізація статистики з БД |
 | `fetchStore` | GET store |
 | `createCheckout` | Stripe checkout URL |
 | `createPaymentIntent` | Stripe PI |
@@ -566,7 +584,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 | `fetchMyDecks` / `createCustomDeck` / `uploadCustomDeckFile` / `fetchDeckByCode` / `deleteCustomDeck` | Custom decks |
 | `fetchVapidPublicKey` / `savePushSubscription` / `removePushSubscription` | Push |
 
-**Інтерфейси:** `AuthResponse`, `UserProfile`, `StoreItem`, `WordPackItem`, `ThemeItem`, `SoundPackItem`, `StoreData`, `CheckoutResponse`, `PaymentIntentResponse`, `CustomDeckSummary`, `CustomDeckDetail`.
+**Інтерфейси:** `AuthResponse`, `UserProfile` (+ `playerStats` / `PlayerStatsPayload`), `StoreItem`, `WordPackItem`, `ThemeItem`, `SoundPackItem`, `StoreData`, `CheckoutResponse`, `PaymentIntentResponse`, `CustomDeckSummary`, `CustomDeckDetail`.
 
 ### `utils/audio.ts`
 
@@ -674,7 +692,7 @@ Dev: `tsx`, `vitest`, `socket.io-client`, типи для Node/Express тощо.
 
 ### `screens/AdminPanel.tsx`
 
-**Експорт:** `AdminPanel()` — повна адмін-UI: packs, themes, analytics, custom decks, push (використовує `fetch` з admin key / JWT).
+**Експорт:** `AdminPanel()` — повна адмін-UI: packs, themes, analytics, **live Redis** (poll `GET /api/admin/live` кожні 15 с на вкладці stats), custom decks, push (використовує `fetch` з admin key / JWT).
 
 ---
 

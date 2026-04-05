@@ -5,6 +5,7 @@ const ROOM_TTL = 7200; // 2 hours
 const ROOM_PREFIX = 'alias:room:';
 /** Last process that persisted room JSON — ops hint for multi-instance (sticky session debugging). */
 const ROOM_WRITER_PREFIX = 'alias:room:writer:';
+const SOCKET_KEY_PREFIX = 'alias:socket:';
 
 export class RedisRoomStore {
   private redis: Redis | null = null;
@@ -93,7 +94,7 @@ export class RedisRoomStore {
     if (!this.redis) return;
     try {
       await this.redis.set(
-        `alias:socket:${socketId}`,
+        `${SOCKET_KEY_PREFIX}${socketId}`,
         JSON.stringify({ roomCode, playerId }),
         'EX',
         ROOM_TTL
@@ -104,7 +105,7 @@ export class RedisRoomStore {
   async getSocketRoom(socketId: string): Promise<{ roomCode: string; playerId: string } | null> {
     if (!this.redis) return null;
     try {
-      const data = await this.redis.get(`alias:socket:${socketId}`);
+      const data = await this.redis.get(`${SOCKET_KEY_PREFIX}${socketId}`);
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
@@ -114,8 +115,57 @@ export class RedisRoomStore {
   async removeSocket(socketId: string): Promise<void> {
     if (!this.redis) return;
     try {
-      await this.redis.del(`alias:socket:${socketId}`);
+      await this.redis.del(`${SOCKET_KEY_PREFIX}${socketId}`);
     } catch {}
+  }
+
+  /**
+   * Admin metrics: SCAN room state keys (exclude writer markers) and socket binding keys.
+   */
+  async getLiveStats(): Promise<{
+    activeRooms: number;
+    playersOnline: number;
+    redisConnected: boolean;
+  }> {
+    if (!this.redis || !this.isConnected) {
+      return { activeRooms: 0, playersOnline: 0, redisConnected: false };
+    }
+    try {
+      let activeRooms = 0;
+      let cursor = '0';
+      do {
+        const [next, keys] = await this.redis.scan(
+          cursor,
+          'MATCH',
+          `${ROOM_PREFIX}*`,
+          'COUNT',
+          200
+        );
+        cursor = next;
+        for (const key of keys) {
+          if (key.startsWith(ROOM_WRITER_PREFIX)) continue;
+          activeRooms++;
+        }
+      } while (cursor !== '0');
+
+      let playersOnline = 0;
+      cursor = '0';
+      do {
+        const [next, keys] = await this.redis.scan(
+          cursor,
+          'MATCH',
+          `${SOCKET_KEY_PREFIX}*`,
+          'COUNT',
+          200
+        );
+        cursor = next;
+        playersOnline += keys.length;
+      } while (cursor !== '0');
+
+      return { activeRooms, playersOnline, redisConnected: true };
+    } catch {
+      return { activeRooms: 0, playersOnline: 0, redisConnected: false };
+    }
   }
 
   async disconnect(): Promise<void> {

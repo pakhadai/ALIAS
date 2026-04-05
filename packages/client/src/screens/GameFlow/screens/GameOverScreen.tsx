@@ -22,8 +22,9 @@ export const GameOverScreen = () => {
     if (!statsTrackedRef.current) {
       statsTrackedRef.current = true;
       gameStats.increment('gamesPlayed');
+      void gameStats.flush();
     }
-  }, []);
+  }, [gameStats]);
 
   // Collect top guessers across all teams
   const allPlayers = teams.flatMap((team) =>

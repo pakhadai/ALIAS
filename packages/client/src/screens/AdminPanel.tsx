@@ -14,6 +14,13 @@ interface DailyStats {
   revenue: number;
 }
 
+interface AdminLiveStats {
+  activeRooms: number;
+  playersOnline: number;
+  redisConnected: boolean;
+  asOf: string;
+}
+
 interface CustomDeckRow {
   id: string;
   name: string;
@@ -129,6 +136,7 @@ export function AdminPanel() {
   // Stats
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [daily, setDaily] = useState<DailyStats[]>([]);
+  const [liveStats, setLiveStats] = useState<AdminLiveStats | null>(null);
 
   // Decks
   const [decks, setDecks] = useState<CustomDeckRow[]>([]);
@@ -198,6 +206,27 @@ export function AdminPanel() {
   useEffect(() => {
     if (apiKey) load(apiKey, tab);
   }, [apiKey, tab, load]);
+
+  /** Redis live metrics — poll every 15s while Stats tab is open */
+  useEffect(() => {
+    if (!apiKey || tab !== 'stats') return;
+    let cancelled = false;
+    const fetchLive = () => {
+      adminFetch<AdminLiveStats>('/api/admin/live', apiKey)
+        .then((data) => {
+          if (!cancelled) setLiveStats(data);
+        })
+        .catch(() => {
+          if (!cancelled) setLiveStats(null);
+        });
+    };
+    fetchLive();
+    const id = window.setInterval(fetchLive, 15_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [apiKey, tab]);
 
   // Load words when pack selected
   useEffect(() => {
@@ -502,6 +531,30 @@ export function AdminPanel() {
                 label="Дохід"
                 value={`$${(analytics.revenue.totalCents / 100).toFixed(2)}`}
               />
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                Live (Redis) · оновлення кожні 15 с
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard
+                  label="Активних кімнат"
+                  value={liveStats?.activeRooms ?? '—'}
+                  sub={
+                    liveStats
+                      ? liveStats.redisConnected
+                        ? `Станом на ${new Date(liveStats.asOf).toLocaleTimeString('uk-UA')}`
+                        : 'Redis недоступний'
+                      : 'Завантаження…'
+                  }
+                />
+                <StatCard
+                  label="Гравців онлайн"
+                  value={liveStats?.playersOnline ?? '—'}
+                  sub="Ключі alias:socket:*"
+                />
+              </div>
             </div>
 
             {/* Completion bar */}

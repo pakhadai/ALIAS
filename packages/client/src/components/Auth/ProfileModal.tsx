@@ -5,6 +5,9 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { fetchStore, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
+import { GameState } from '../../types';
+import { TRANSLATIONS } from '../../constants';
+import { usePlayerStats } from '../../hooks/usePlayerStats';
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -28,7 +31,9 @@ function AvatarIcon() {
 
 export function ProfileModal({ onClose }: ProfileModalProps) {
   const { authState, profile, isAuthenticated, loginWithGoogle, logout } = useAuthContext();
-  const { currentTheme } = useGame();
+  const { currentTheme, settings, setGameState } = useGame();
+  const t = TRANSLATIONS[settings.language];
+  const { get: getStats } = usePlayerStats();
   const isDark = currentTheme.isDark;
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
@@ -84,6 +89,22 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
       ? authState.provider?.toUpperCase()
       : '';
   const avatarId = profile?.avatarId ?? null;
+
+  const stats = getStats();
+  const statsAccuracy =
+    stats.wordsGuessed + stats.wordsSkipped > 0
+      ? Math.round((stats.wordsGuessed / (stats.wordsGuessed + stats.wordsSkipped)) * 100)
+      : 0;
+  const statsSummaryLine = t.profileStatsSummary
+    .replace('{0}', String(stats.gamesPlayed))
+    .replace('{1}', String(stats.wordsGuessed))
+    .replace('{2}', String(stats.wordsSkipped))
+    .replace('{3}', String(statsAccuracy));
+
+  const openDetailedStats = () => {
+    onClose();
+    requestAnimationFrame(() => setGameState(GameState.PLAYER_STATS));
+  };
 
   /* ── Benefits (shown to anonymous / no purchases) ── */
   const packCount = storeData?.wordPacks.length ?? 0;
@@ -171,6 +192,20 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           >
             {displaySub}
           </p>
+
+          <p
+            className={`text-center text-[11px] font-sans leading-relaxed mt-3 px-1 ${isDark ? 'text-white/55' : 'text-slate-600'}`}
+          >
+            {statsSummaryLine}
+          </p>
+
+          <button
+            type="button"
+            onClick={openDetailedStats}
+            className={`mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] ${isDark ? 'text-[#D4AF6A] hover:text-[#e8cf8f]' : 'text-amber-700 hover:text-amber-800'} transition-colors`}
+          >
+            {t.profileStatsDetailLink}
+          </button>
         </div>
 
         {/* Google Sign-In (only for anonymous) */}

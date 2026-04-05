@@ -7,6 +7,15 @@ import {
   clearAuthToken,
   type UserProfile,
 } from '../services/api';
+import {
+  migrateLegacyPlayerStatsOnce,
+  syncPlayerStatsFromProfile,
+} from './usePlayerStats';
+
+async function hydratePlayerStats(profile: UserProfile) {
+  syncPlayerStatsFromProfile(profile);
+  await migrateLegacyPlayerStatsOnce();
+}
 
 export type AuthState =
   | { status: 'loading' }
@@ -30,6 +39,7 @@ export function useAuth() {
     if (existingToken) {
       try {
         const profile = await fetchProfile();
+        await hydratePlayerStats(profile);
         if (profile.authProvider === 'anonymous') {
           setAuthState({ status: 'anonymous', userId: profile.id, profile });
         } else {
@@ -53,6 +63,7 @@ export function useAuth() {
     try {
       const { userId } = await fetchAnonymousToken();
       const profile = await fetchProfile();
+      await hydratePlayerStats(profile);
       setAuthState({ status: 'anonymous', userId, profile });
     } catch (e) {
       // Offline or server down — still allow app to load
@@ -68,6 +79,7 @@ export function useAuth() {
     try {
       const { userId, email } = await signInWithGoogle(idToken);
       const profile = await fetchProfile();
+      await hydratePlayerStats(profile);
       setAuthState({
         status: 'authenticated',
         userId,
@@ -92,6 +104,7 @@ export function useAuth() {
     try {
       const { userId } = await fetchAnonymousToken();
       const profile = await fetchProfile();
+      await hydratePlayerStats(profile);
       setAuthState({ status: 'anonymous', userId, profile });
     } catch {
       setAuthState({ status: 'anonymous', userId: '', profile: null });
@@ -102,6 +115,7 @@ export function useAuth() {
   const refreshProfile = useCallback(async () => {
     try {
       const profile = await fetchProfile();
+      await hydratePlayerStats(profile);
       setAuthState((prev) => {
         if (prev.status === 'anonymous') return { ...prev, profile };
         if (prev.status === 'authenticated') return { ...prev, profile };

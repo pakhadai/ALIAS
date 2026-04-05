@@ -64,6 +64,14 @@ export interface AuthResponse {
   email?: string;
 }
 
+/** Mirrors server-backed counters (+ lastPlayed ISO string). */
+export interface PlayerStatsPayload {
+  gamesPlayed: number;
+  wordsGuessed: number;
+  wordsSkipped: number;
+  lastPlayed: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string | null;
@@ -80,6 +88,7 @@ export interface UserProfile {
     soundPackId: string | null;
     createdAt: string;
   }[];
+  playerStats: PlayerStatsPayload;
 }
 
 /** Update display name and/or avatar preset */
@@ -149,6 +158,35 @@ export async function signInWithGoogle(idToken: string): Promise<AuthResponse> {
 /** Get current user profile */
 export async function fetchProfile(): Promise<UserProfile> {
   return apiFetch<UserProfile>('/api/auth/me');
+}
+
+/** Atomic increment of player stats (requires JWT). */
+export async function postPlayerStatsDelta(delta: {
+  gamesPlayed?: number;
+  wordsGuessed?: number;
+  wordsSkipped?: number;
+}): Promise<PlayerStatsPayload> {
+  const res = await apiFetch<{ playerStats: PlayerStatsPayload }>('/api/auth/player-stats/delta', {
+    method: 'POST',
+    body: JSON.stringify({
+      gamesPlayed: delta.gamesPlayed ?? 0,
+      wordsGuessed: delta.wordsGuessed ?? 0,
+      wordsSkipped: delta.wordsSkipped ?? 0,
+    }),
+  });
+  return res.playerStats;
+}
+
+/** Import legacy localStorage totals into the server profile (requires JWT). */
+export async function mergeLocalPlayerStats(legacy: PlayerStatsPayload): Promise<PlayerStatsPayload> {
+  const res = await apiFetch<{ playerStats: PlayerStatsPayload }>(
+    '/api/auth/player-stats/merge-local',
+    {
+      method: 'POST',
+      body: JSON.stringify(legacy),
+    }
+  );
+  return res.playerStats;
 }
 
 // ─── Store API ─────────────────────────────────────────────────────────

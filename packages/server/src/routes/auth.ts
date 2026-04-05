@@ -1,9 +1,23 @@
 import { Router, type IRouter } from 'express';
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { AuthService } from '../services/AuthService';
-import type { TokenPayload } from '../services/AuthService';
+import { maxDate, parseNonNegInt } from '../utils/playerStats';
 
 const authService = new AuthService();
+
+function playerStatsJson(u: {
+  statsGamesPlayed: number;
+  statsWordsGuessed: number;
+  statsWordsSkipped: number;
+  statsLastPlayedAt: Date | null;
+}) {
+  return {
+    gamesPlayed: u.statsGamesPlayed,
+    wordsGuessed: u.statsWordsGuessed,
+    wordsSkipped: u.statsWordsSkipped,
+    lastPlayed: u.statsLastPlayedAt ? u.statsLastPlayedAt.toISOString() : '',
+  };
+}
 
 export function createAuthRoutes(prisma: PrismaClient): IRouter {
   const router: IRouter = Router();
@@ -82,18 +96,41 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       });
     }
 
-    // Merge anonymous purchases if deviceId provided
+    // Merge anonymous purchases + player stats if deviceId provided
     if (deviceId) {
       const anonUser = await prisma.user.findUnique({ where: { anonymousId: deviceId } });
       if (anonUser && anonUser.id !== user.id) {
-        await prisma.purchase.updateMany({
-          where: { userId: anonUser.id },
-          data: { userId: user.id },
-        });
-        await prisma.customDeck.updateMany({
-          where: { userId: anonUser.id },
-          data: { userId: user.id },
-        });
+        const mergedLast = maxDate(user.statsLastPlayedAt, anonUser.statsLastPlayedAt);
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: user.id },
+            data: {
+              statsGamesPlayed: { increment: anonUser.statsGamesPlayed },
+              statsWordsGuessed: { increment: anonUser.statsWordsGuessed },
+              statsWordsSkipped: { increment: anonUser.statsWordsSkipped },
+              ...(mergedLast ? { statsLastPlayedAt: mergedLast } : {}),
+            },
+          }),
+          prisma.user.update({
+            where: { id: anonUser.id },
+            data: {
+              statsGamesPlayed: 0,
+              statsWordsGuessed: 0,
+              statsWordsSkipped: 0,
+              statsLastPlayedAt: null,
+            },
+          }),
+          prisma.purchase.updateMany({
+            where: { userId: anonUser.id },
+            data: { userId: user.id },
+          }),
+          prisma.customDeck.updateMany({
+            where: { userId: anonUser.id },
+            data: { userId: user.id },
+          }),
+        ]);
+        const refreshed = await prisma.user.findUnique({ where: { id: user.id } });
+        if (refreshed) user = refreshed;
       }
     }
 
@@ -182,6 +219,112 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     res.json({ success: true });
   });
 
+  // ─── Player stats (server-backed) ─────────────────────────────────────
+
+  /**
+   * POST /api/auth/player-stats/delta
+   * Atomic increments for the authenticated user.
+   */
+  router.post('/player-stats/delta', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+
+    const body = req.body as Record<string, unknown>;
+    const dGames = parseNonNegInt(body.gamesPlayed) ?? 0;
+    const dGuess = parseNonNegInt(body.wordsGuessed) ?? 0;
+    const dSkip = parseNonNegInt(body.wordsSkipped) ?? 0;
+    if (dGames === 0 && dGuess === 0 && dSkip === 0) {
+      res.status(400).json({ error: 'At least one positive delta is required' });
+      return;
+    }
+
+    const now = new Date();
+    const updated = await prisma.user.update({
+      where: { id: payload.sub },
+      data: {
+        statsGamesPlayed: { increment: dGames },
+        statsWordsGuessed: { increment: dGuess },
+        statsWordsSkipped: { increment: dSkip },
+        statsLastPlayedAt: now,
+      },
+    });
+
+    res.json({ playerStats: playerStatsJson(updated) });
+  });
+
+  /**
+   * POST /api/auth/player-stats/merge-local
+   * One-time style import of legacy localStorage totals (adds to server counters).
+   */
+  router.post('/player-stats/merge-local', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+
+    const body = req.body as Record<string, unknown>;
+    const addGames = parseNonNegInt(body.gamesPlayed) ?? 0;
+    const addGuess = parseNonNegInt(body.wordsGuessed) ?? 0;
+    const addSkip = parseNonNegInt(body.wordsSkipped) ?? 0;
+
+    let legacyDate: Date | null = null;
+    if (typeof body.lastPlayed === 'string' && body.lastPlayed.length > 0) {
+      const d = new Date(body.lastPlayed);
+      if (!Number.isNaN(d.getTime())) legacyDate = d;
+    }
+
+    const current = await prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!current) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const hasTotals = addGames > 0 || addGuess > 0 || addSkip > 0;
+
+    if (!hasTotals) {
+      if (
+        legacyDate &&
+        (!current.statsLastPlayedAt || legacyDate.getTime() > current.statsLastPlayedAt.getTime())
+      ) {
+        const updated = await prisma.user.update({
+          where: { id: payload.sub },
+          data: { statsLastPlayedAt: legacyDate },
+        });
+        res.json({ playerStats: playerStatsJson(updated) });
+        return;
+      }
+      res.json({ playerStats: playerStatsJson(current) });
+      return;
+    }
+
+    const mergedLast =
+      maxDate(maxDate(current.statsLastPlayedAt, legacyDate), new Date()) ?? new Date();
+
+    const data: Prisma.UserUpdateInput = {
+      statsLastPlayedAt: mergedLast,
+    };
+    if (addGames > 0) data.statsGamesPlayed = { increment: addGames };
+    if (addGuess > 0) data.statsWordsGuessed = { increment: addGuess };
+    if (addSkip > 0) data.statsWordsSkipped = { increment: addSkip };
+
+    const updated = await prisma.user.update({ where: { id: payload.sub }, data });
+    res.json({ playerStats: playerStatsJson(updated) });
+  });
+
   // ─── Me ───────────────────────────────────────────────────────────────
 
   /**
@@ -234,6 +377,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       isAdmin: user.isAdmin,
       createdAt: user.createdAt,
       purchases: user.purchases,
+      playerStats: playerStatsJson(user),
     });
   });
 

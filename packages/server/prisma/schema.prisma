@@ -15,6 +15,10 @@ model User {
   displayName     String?                      // custom in-game name
   avatarId        String?                      // preset avatar index "0"–"19"
   defaultSettings Json?                        // saved GameSettings for lobby
+  statsGamesPlayed   Int      @default(0)
+  statsWordsGuessed  Int      @default(0)
+  statsWordsSkipped  Int      @default(0)
+  statsLastPlayedAt  DateTime?
   isAdmin         Boolean  @default(false)
   createdAt       DateTime @default(now())
   purchases           Purchase[]

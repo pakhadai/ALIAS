@@ -499,8 +499,10 @@ interface GameSyncState {
 | Метод | Шлях | Опис |
 |-------|------|------|
 | `POST` | `/api/auth/anonymous` | Створити анонімного юзера. Body: `{ deviceId }`. Повертає JWT. |
-| `POST` | `/api/auth/google` | Google OAuth. Body: `{ idToken, deviceId? }`. Мерджить анонімні покупки. |
-| `GET` | `/api/auth/me` | Профіль поточного юзера (purchases, profile). Потрібен Bearer token. |
+| `POST` | `/api/auth/google` | Google OAuth. Body: `{ idToken, deviceId? }`. Мерджить анонімні покупки, колоди та **агреговану статистику** з пристрою. |
+| `GET` | `/api/auth/me` | Профіль + `purchases` + **`playerStats`** (ігри, вгадано, пропущено, `lastPlayed`). Bearer token. |
+| `POST` | `/api/auth/player-stats/delta` | Атомарні інкременти лічильників. Body: `{ gamesPlayed?, wordsGuessed?, wordsSkipped? }` (≥0). |
+| `POST` | `/api/auth/player-stats/merge-local` | Одноразовий імпорт легасі-об’єкта з клієнта (сума до профілю). |
 | `PATCH` | `/api/auth/profile` | Оновити displayName / avatarId. |
 | `GET` | `/api/auth/lobby-settings` | Отримати збережені налаштування лобі. |
 | `PUT` | `/api/auth/lobby-settings` | Зберегти налаштування лобі як дефолтні. |
@@ -541,10 +543,11 @@ interface GameSyncState {
 
 ### Admin
 
-Потрібен `x-admin-key` header або JWT з `isAdmin: true`.
+Потрібен **`x-admin-key`** (якщо налаштований `ADMIN_API_KEY`) **або** Bearer JWT користувача, у якого в **базі** `User.isAdmin === true` (лише поле в JWT недостатньо).
 
 | Метод | Шлях | Опис |
 |-------|------|------|
+| `GET` | `/api/admin/live` | Live-метрики Redis: активні кімнати (ключі `alias:room:*` без writer), «гравці онлайн» (кількість `alias:socket:*`). |
 | `GET` | `/api/admin/packs` | Всі пакети слів |
 | `POST` | `/api/admin/packs` | Створити пакет |
 | `POST` | `/api/admin/packs/:id/words` | Додати слова (bulk) |
@@ -580,7 +583,9 @@ interface GameSyncState {
 | `displayName` | String? | Ігрове ім'я |
 | `avatarId` | String? | Індекс аватара (0-19) |
 | `defaultSettings` | Json? | Збережені налаштування лобі |
-| `isAdmin` | Boolean | Адмін-доступ |
+| `statsGamesPlayed` / `statsWordsGuessed` / `statsWordsSkipped` | Int | Агрегована статистика на акаунті |
+| `statsLastPlayedAt` | DateTime? | Час останньої зафіксованої активності в іграх |
+| `isAdmin` | Boolean | Адмін-доступ (перевіряється в БД для `/api/admin/*`) |
 
 ### WordPack
 Набір слів певної мови та категорії.
@@ -752,7 +757,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 ### HTTP
 
 1. **express-rate-limit**: auth — 20/хв, store — 60/хв, push — 10/хв.
-2. **Admin auth**: API key (`x-admin-key`) або JWT з `isAdmin: true`.
+2. **Admin auth**: `x-admin-key` (якщо заданий ключ) або JWT користувача з **`isAdmin` у БД** (Prisma), не лише в payload токена.
 3. **CORS**: Налаштований список origins.
 
 ---
@@ -897,7 +902,7 @@ pnpm test:e2e:report  # відкрити звіт
 | `ROOM_ACTION_RELAY` | Опційно | Крос-нодовий relay для `game:action` (default: увімкнено). Значення `0`, `false` або `no` — вимикає relay |
 | `JWT_SECRET` | **Так** | Секрет для JWT |
 | `CORS_ORIGIN` | Опційно | Дозволені origins (через кому) |
-| `GOOGLE_CLIENT_ID` | Опційно | Google OAuth client ID |
+| `GOOGLE_CLIENT_ID` | Опційно | Google OAuth client ID (у Cloud Console додайте **Authorized JavaScript origins** для кожного продакшен-URL і для dev, напр. `http://localhost:5173`) |
 | `STRIPE_SECRET_KEY` | Опційно | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Опційно | Stripe webhook secret |
 | `STRIPE_SUCCESS_URL` | Опційно | URL перенаправлення після оплати |

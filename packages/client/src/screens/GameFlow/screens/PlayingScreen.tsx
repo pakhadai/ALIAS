@@ -40,6 +40,11 @@ export const PlayingScreen = () => {
   >([]);
   const actionProcessingRef = useRef(false);
   const playerStats = usePlayerStats();
+  useEffect(() => {
+    return () => {
+      void playerStats.flush();
+    };
+  }, [playerStats]);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const activeTeam = teams[currentTeamIndex];
   const modeSetting = settings.gameMode ?? GameMode.CLASSIC;

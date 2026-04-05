@@ -29,26 +29,49 @@ export function createAdminRoutes(
 ): IRouter {
   const router: IRouter = Router();
 
-  // Admin auth: accept API key OR user JWT with isAdmin: true
-  function adminAuth(req: Request, res: Response, next: NextFunction): void {
-    // API key fallback (for CLI / direct API access)
-    if (req.headers['x-admin-key'] === config.adminApiKey) {
-      next();
-      return;
-    }
-    // JWT-based admin access
-    const auth = req.headers.authorization;
-    if (auth?.startsWith('Bearer ')) {
-      const payload = authService.verifyToken(auth.slice(7));
-      if (payload?.isAdmin) {
+  // Admin auth: API key OR JWT whose user has isAdmin in DB (not JWT claim alone)
+  async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (config.adminApiKey && req.headers['x-admin-key'] === config.adminApiKey) {
         next();
         return;
       }
+      const auth = req.headers.authorization;
+      if (!auth?.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const payload = authService.verifyToken(auth.slice(7));
+      if (!payload?.sub) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { isAdmin: true },
+      });
+      if (user?.isAdmin) {
+        next();
+        return;
+      }
+      res.status(401).json({ error: 'Unauthorized' });
+    } catch (err) {
+      next(err);
     }
-    res.status(401).json({ error: 'Unauthorized' });
   }
 
   router.use(adminAuth);
+
+  /** GET /api/admin/live — Redis: active room keys + socket bindings */
+  router.get('/live', async (_req, res) => {
+    const asOf = new Date().toISOString();
+    if (!redisStore) {
+      res.json({ activeRooms: 0, playersOnline: 0, redisConnected: false, asOf });
+      return;
+    }
+    const stats = await redisStore.getLiveStats();
+    res.json({ ...stats, asOf });
+  });
   // ─── WordPacks ──────────────────────────────────────────────────────
 
   /** GET /api/admin/packs — list all packs */

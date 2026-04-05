@@ -30,6 +30,30 @@
 
 ---
 
+## [2026-04-05] — Статистика гравця в БД, адмін live (Redis), захист адмінки через Prisma, сокет/JWT sync, PWA meta
+
+### Added
+- **Prisma / User:** поля агрегованої статистики `statsGamesPlayed`, `statsWordsGuessed`, `statsWordsSkipped`, `statsLastPlayedAt`; міграція `20260405120000_user_player_stats`.
+- **Auth API:** `POST /api/auth/player-stats/delta` (атомарні інкременти), `POST /api/auth/player-stats/merge-local` (імпорт легасі з localStorage); у відповіді `GET /api/auth/me` додано `playerStats`; при Google-логіні з `deviceId` — мердж **статистики** з анонімного користувача на цільовий (разом з покупками/колодами).
+- **Утиліта сервера:** `packages/server/src/utils/playerStats.ts` — `parseNonNegInt`, `maxDate`.
+- **Admin API:** `GET /api/admin/live` — з Redis: кількість ключів кімнат (`alias:room:*` без `alias:room:writer:*`) та прив’язок сокетів (`alias:socket:*`); у відповіді `asOf`, `redisConnected`.
+- **RedisRoomStore:** `getLiveStats()`; префікс ключів сокетів `SOCKET_KEY_PREFIX`.
+- **Клієнт:** `postPlayerStatsDelta`, `mergeLocalPlayerStats`, `PlayerStatsPayload` у `api.ts`; переписаний `usePlayerStats` (pending + flush на сервер, debounce, міграція `alias_player_stats_v1` → сервер, `syncPlayerStatsFromProfile`, `flushPlayerStats`); `useAuth` викликає гідратацію/міграцію після профілю.
+- **UI (статистика та логін):** компактна статистика та «Детальна статистика» в `ProfileModal`; `PlayerStatsScreen` з перекладами, банером для гостя + `LoginModal`; оновлені тексти `LoginModal` і ключі в `TRANSLATIONS` (UA/DE/EN); `index.html` / `admin.html` — meta `mobile-web-app-capable`.
+- **AdminPanel:** блок Live (Redis), опитування `GET /api/admin/live` кожні 15 с на вкладці «Статистика».
+
+### Changed
+- **adminAuth:** доступ за JWT лише після перевірки **`user.isAdmin` у БД** (Prisma); заголовок `x-admin-key` як і раніше для CLI (якщо заданий `ADMIN_API_KEY`).
+- **useSocketConnection:** перед `connect` / `room:create` / `room:join` синхронізація `socket.auth` з поточним JWT і при потребі reconnect, щоб після Google-логіну handshake не йшов зі старим токеном.
+
+### Fixed
+- Перша спроба створити лобі після входу через Google могла розходитись з актуальним JWT на Socket.IO handshake.
+
+### Docs
+- Оновлено `README.md`, `CODE_REFERENCE.md` (ендпоінти, User, адмін, хуки).
+
+---
+
 ## [2026-03-31] — Режими гри (GameMode), GameTask, патерн Стратегія на сервері та модульний UI гри
 
 ### Added
