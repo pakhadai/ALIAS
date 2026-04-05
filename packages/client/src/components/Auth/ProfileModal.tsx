@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2 } from 'lucide-react';
+import { X, Check, Loader2, Shield } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -106,6 +106,14 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     requestAnimationFrame(() => setGameState(GameState.PLAYER_STATS));
   };
 
+  const showAdminEntry =
+    authState.status === 'authenticated' &&
+    (authState.isAdmin || (profile?.isAdmin ?? false));
+
+  const openAdminPanel = () => {
+    window.open('/admin', '_blank', 'noopener,noreferrer');
+  };
+
   /* ── Benefits (shown to anonymous / no purchases) ── */
   const packCount = storeData?.wordPacks.length ?? 0;
   const themeCount = (storeData?.themes.filter((t) => !t.isFree) ?? []).length;
@@ -206,6 +214,22 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           >
             {t.profileStatsDetailLink}
           </button>
+
+          {showAdminEntry && (
+            <button
+              type="button"
+              onClick={openAdminPanel}
+              className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
+                ${
+                  isDark
+                    ? 'bg-indigo-600/90 text-white hover:bg-indigo-500 border border-indigo-400/35'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-700/20'
+                }`}
+            >
+              <Shield size={16} strokeWidth={2.25} aria-hidden />
+              {t.profileAdminPanel}
+            </button>
+          )}
         </div>
 
         {/* Google Sign-In (only for anonymous) */}
@@ -288,20 +312,6 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
 
         {/* Divider */}
         <div className={`h-px ${isDark ? 'bg-white/[0.07]' : 'bg-slate-200'}`} />
-
-        {/* Admin Panel link — only for admins */}
-        {authState.status === 'authenticated' && authState.isAdmin && (
-          <div className="px-6 pb-2">
-            <button
-              onClick={() => window.open('/admin', '_blank')}
-              className="w-full text-center text-indigo-400 font-sans font-bold
-                text-[10px] tracking-[0.3em] uppercase py-3
-                hover:opacity-70 active:scale-[0.98] transition-all"
-            >
-              ⚙ ADMIN PANEL
-            </button>
-          </div>
-        )}
 
         {/* Logout */}
         <div

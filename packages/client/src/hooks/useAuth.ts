@@ -115,7 +115,9 @@ export function useAuth() {
       await hydratePlayerStats(profile);
       setAuthState((prev) => {
         if (prev.status === 'anonymous') return { ...prev, profile };
-        if (prev.status === 'authenticated') return { ...prev, profile };
+        if (prev.status === 'authenticated') {
+          return { ...prev, profile, isAdmin: profile.isAdmin ?? false };
+        }
         return prev;
       });
       return profile;

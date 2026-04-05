@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { getApiBaseUrl } from '../services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,7 @@ interface ThemeRow {
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+const API_BASE = getApiBaseUrl();
 
 async function adminFetch<T>(path: string, token: string, opts?: RequestInit): Promise<T> {
   const isJwt = token.includes('.');

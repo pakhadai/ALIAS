@@ -2,12 +2,16 @@ function normalizeBaseUrl(url: string): string {
   return url.replace(/\/+$/, '');
 }
 
+/** Same-origin when `VITE_SERVER_URL` unset — matches admin SPA, sockets, and production reverse proxy. */
+export function getApiBaseUrl(): string {
+  const fromEnv = import.meta.env.VITE_SERVER_URL;
+  if (fromEnv) return normalizeBaseUrl(String(fromEnv));
+  if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+  return 'http://localhost:3001';
+}
+
 // Prefer same-origin by default. This avoids CORS surprises in local Docker/proxy setups.
-const SERVER_URL =
-  (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
-  (typeof window !== 'undefined' && window.location?.origin
-    ? window.location.origin
-    : 'http://localhost:3001');
+const SERVER_URL = getApiBaseUrl();
 
 /** Storage keys */
 export const AUTH_TOKEN_KEY = 'alias_auth_token';
