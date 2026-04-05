@@ -2580,7 +2580,11 @@ export const PlayerStatsScreen = () => {
   const t = TRANSLATIONS[settings.language];
 
   const dateLocale =
-    settings.language === Language.UA ? 'uk-UA' : settings.language === Language.DE ? 'de-DE' : 'en-US';
+    settings.language === Language.UA
+      ? 'uk-UA'
+      : settings.language === Language.DE
+        ? 'de-DE'
+        : 'en-US';
 
   const accuracy =
     stats.wordsGuessed + stats.wordsSkipped > 0
@@ -2644,8 +2648,7 @@ export const PlayerStatsScreen = () => {
             <p
               className={`text-center text-[11px] pt-4 ${isDark ? 'text-white/20' : 'text-slate-400'}`}
             >
-              {t.statsLastPlayedPrefix}{' '}
-              {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
+              {t.statsLastPlayedPrefix} {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
             </p>
           )}
 
@@ -2675,10 +2678,7 @@ export const PlayerStatsScreen = () => {
       </div>
 
       {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSuccess={() => setShowLogin(false)}
-        />
+        <LoginModal onClose={() => setShowLogin(false)} onSuccess={() => setShowLogin(false)} />
       )}
     </div>
   );

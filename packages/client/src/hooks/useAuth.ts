@@ -7,10 +7,7 @@ import {
   clearAuthToken,
   type UserProfile,
 } from '../services/api';
-import {
-  migrateLegacyPlayerStatsOnce,
-  syncPlayerStatsFromProfile,
-} from './usePlayerStats';
+import { migrateLegacyPlayerStatsOnce, syncPlayerStatsFromProfile } from './usePlayerStats';
 
 async function hydratePlayerStats(profile: UserProfile) {
   syncPlayerStatsFromProfile(profile);
@@ -65,7 +62,7 @@ export function useAuth() {
       const profile = await fetchProfile();
       await hydratePlayerStats(profile);
       setAuthState({ status: 'anonymous', userId, profile });
-    } catch (e) {
+    } catch (_e) {
       // Offline or server down — still allow app to load
       setAuthState({ status: 'anonymous', userId: '', profile: null });
     }

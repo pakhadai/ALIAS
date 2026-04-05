@@ -224,8 +224,10 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     statsGuestBannerCta: 'Увійти',
     loginTitle: 'Увійдіть в акаунт',
     loginSubtitleShopping: 'Для покупок і збереження прогресу',
-    loginSubtitleStats: 'Зберігайте історію ігор і статистику в акаунті та синхронізуйте їх між пристроями.',
-    loginAnonymousNote: 'Грати можна без реєстрації — авторизація потрібна для покупок і збереження статистики в хмарі',
+    loginSubtitleStats:
+      'Зберігайте історію ігор і статистику в акаунті та синхронізуйте їх між пристроями.',
+    loginAnonymousNote:
+      'Грати можна без реєстрації — авторизація потрібна для покупок і збереження статистики в хмарі',
     loginGoogleLoading: 'Вхід через Google...',
     loginApple: 'Увійти з Apple',
     loginAppleLoading: 'Вхід через Apple...',
@@ -656,7 +658,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     statsGuestBannerCta: 'Sign in',
     loginTitle: 'Sign in',
     loginSubtitleShopping: 'For purchases and saved progress',
-    loginSubtitleStats: 'Keep your game history and statistics in your account and sync across devices.',
+    loginSubtitleStats:
+      'Keep your game history and statistics in your account and sync across devices.',
     loginAnonymousNote:
       'You can play without signing in — sign in is for purchases and cloud-backed statistics',
     loginGoogleLoading: 'Signing in with Google...',

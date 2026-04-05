@@ -81,8 +81,7 @@ export async function migrateLegacyPlayerStatsOnce(): Promise<void> {
     lastPlayed: typeof parsed.lastPlayed === 'string' ? parsed.lastPlayed : '',
   };
 
-  const hasTotals =
-    legacy.gamesPlayed > 0 || legacy.wordsGuessed > 0 || legacy.wordsSkipped > 0;
+  const hasTotals = legacy.gamesPlayed > 0 || legacy.wordsGuessed > 0 || legacy.wordsSkipped > 0;
   const hasLast = legacy.lastPlayed.length > 0;
   if (!hasTotals && !hasLast) {
     try {
@@ -151,9 +150,7 @@ function mergedView(): PlayerStats {
     gamesPlayed: serverBaseline.gamesPlayed + pending.gamesPlayed,
     wordsGuessed: serverBaseline.wordsGuessed + pending.wordsGuessed,
     wordsSkipped: serverBaseline.wordsSkipped + pending.wordsSkipped,
-    lastPlayed: hasPendingDeltas()
-      ? new Date().toISOString()
-      : serverBaseline.lastPlayed,
+    lastPlayed: hasPendingDeltas() ? new Date().toISOString() : serverBaseline.lastPlayed,
   };
 }
 

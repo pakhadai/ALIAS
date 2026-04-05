@@ -178,7 +178,9 @@ export async function postPlayerStatsDelta(delta: {
 }
 
 /** Import legacy localStorage totals into the server profile (requires JWT). */
-export async function mergeLocalPlayerStats(legacy: PlayerStatsPayload): Promise<PlayerStatsPayload> {
+export async function mergeLocalPlayerStats(
+  legacy: PlayerStatsPayload
+): Promise<PlayerStatsPayload> {
   const res = await apiFetch<{ playerStats: PlayerStatsPayload }>(
     '/api/auth/player-stats/merge-local',
     {

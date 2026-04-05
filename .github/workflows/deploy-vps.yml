@@ -51,6 +51,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Prisma Client must exist before `tsc` (postinstall runs prisma generate; explicit step if cache skipped).
+      - name: Prisma generate
+        run: pnpm --filter @alias/server exec prisma generate
+
       # Turbo already typechecks packages in parallel; lint/format/tests run alongside to save wall-clock time.
       - name: Typecheck, lint, format, server tests (parallel)
         run: |
