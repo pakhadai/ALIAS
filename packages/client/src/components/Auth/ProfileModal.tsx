@@ -107,8 +107,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   };
 
   const showAdminEntry =
-    authState.status === 'authenticated' &&
-    (authState.isAdmin || (profile?.isAdmin ?? false));
+    authState.status === 'authenticated' && (authState.isAdmin || (profile?.isAdmin ?? false));
 
   const openAdminPanel = () => {
     window.open('/admin', '_blank', 'noopener,noreferrer');
