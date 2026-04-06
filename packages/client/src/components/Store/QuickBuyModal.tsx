@@ -3,6 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import { createPaymentIntent } from '../../services/api';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
@@ -73,7 +74,7 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
       <button
         type="submit"
         disabled={paying || !stripe}
-        className="w-full bg-(--ui-accent) hover:opacity-95 active:scale-[0.98] text-(--ui-accent-contrast) font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) active:scale-[0.98] text-(--ui-accent-contrast) font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {paying ? (
           <>
@@ -149,25 +150,20 @@ export function QuickBuyModal({
     },
   };
 
-  const bgCard = 'bg-(--ui-card) border border-(--ui-border)';
+  const sheetOpen = !isClosing;
 
   return (
-    /* Backdrop */
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) requestClose();
-      }}
+      className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+      onClick={requestClose}
+      role="presentation"
     >
       <div
-        className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl"
-        onClick={requestClose}
-      />
-
-      {/* Sheet */}
-      <div
-        className={`relative w-full max-w-sm ${bgCard} rounded-t-4xl px-6 pt-5 pb-8 z-10 shadow-2xl ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
+        className={bottomSheetPanelClass(sheetOpen, 'px-6 pt-5 pb-8')}
         style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Handle */}
         <div className="flex justify-center mb-5">

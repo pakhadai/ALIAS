@@ -720,29 +720,57 @@ switch (gameState) {
 
 | Тема | Опис | Free |
 |------|------|------|
-| `PREMIUM_DARK` (Deep Steel) | Глибока сталь (default) | Так |
+| `PREMIUM_DARK` (Midnight Ruby) | OLED «шоколадно-чорний» фон, перлинний текст, рубінові акценти (default) | Так |
 | `CYBERPUNK` (Earthy Dark) | Темна “земляна” | Так* |
-| `FOREST` (Midnight Navy) | Нічний navy | Так* |
-| `SLEEK` (Dark Ruby) | Темний ruby | Так* |
+| `FOREST` (Luminous Aero) | Світла «киснева» палітра, індиго / ціан / корал | Так* |
+| `SLEEK` (Dark Ruby) | Окремий винний / ruby варіант (преміум) | Так* |
 | `VOID_LUXE` (Void Luxe) | OLED black, холодний синій + теплий акцент | Так* |
 | `QUANTUM_ECLIPSE` (Quantum Eclipse) | OLED-чорний, фіолетовий + ціан + неоновий помаранч | Так* |
+
+`PREMIUM_LIGHT` — застарілий ідентифікатор теми; у клієнті він зіставлений з тією ж палітрою, що й `PREMIUM_DARK`, і **не** показується окремо у виборі (`UI_THEME_IDS` його фільтрує).
 
 Кожна тема визначає: `bg`, `card`, `textMain`, `textSecondary`, `textAccent`, `button`, `fonts`, `borderRadius`, `progressBar`, `iconColor`.
 
 CSS custom properties встановлюються динамічно: `--font-heading`, `--font-body`, `--theme-radius`.
 
-\* Для гостей (неавторизованих) теми, окрім `DEEP_STEEL`, показуються як **locked** і пропонують логін для розблокування (вибір доступний після авторизації).
+\* Для гостей (неавторизованих) теми, окрім **`PREMIUM_DARK`** (дефолтна безкоштовна), показуються як **locked** і пропонують логін для розблокування (вибір доступний після авторизації).
 
 Додатково клієнт встановлює **семантичні UI-токени** (theme-aware), які варто використовувати в компонентах замість хардкоду `text-white/bg-white`:
 
-- `--ui-bg`, `--ui-fg`, `--ui-fg-muted`, `--ui-fg-subtle`
-- `--ui-border`, `--ui-divider`, `--ui-surface`, `--ui-surface-hover`, `--ui-card`, `--ui-elevated`
-- `--ui-accent`, `--ui-accent-contrast`, `--ui-accent-soft`, `--ui-accent-alt`, `--ui-accent-warm`, `--ui-accent-warm-soft`
-- `--ui-danger`, `--ui-success`, `--ui-warning`
+- **Фон і поверхні:** `--ui-bg`, `--ui-surface`, `--ui-elevated`, `--ui-surface-hover`, `--ui-card`
+- **Текст:** `--ui-fg`, `--ui-fg-muted`, `--ui-fg-subtle`, `--ui-fg-disabled`
+- **Рамки:** `--ui-border`, `--ui-border-subtle`, `--ui-divider`
+- **Акцент:** `--ui-accent`, `--ui-accent-contrast`, `--ui-accent-hover`, `--ui-accent-pressed`, `--ui-accent-muted`, `--ui-accent-ring`, `--ui-accent-soft`, `--ui-accent-alt`, `--ui-accent-warm`, `--ui-accent-warm-soft`
+- **Статуси:** `--ui-danger`, `--ui-success`, `--ui-warning`
 
-Розширені токени (`--ui-elevated`, тощо) для старих тем **автоматично виводяться** з базових полів; повний набір задається в `THEME_CONFIG.tokens` (наприклад **Void Luxe** або **Quantum Eclipse**).
+Частина змінних для тем без явних значень **обчислюється** у `GameContext` (наприклад змішування `accent` з `surface` / білим / чорним). Повний явний набір задається в `ThemeConfig.tokens` у `THEME_CONFIG` (див. **Midnight Ruby** нижче та теми на кшталт **Void Luxe** / **Quantum Eclipse**).
 
-Джерело: `packages/client/src/context/GameContext.tsx`.
+Джерело: `packages/client/src/context/GameContext.tsx`, конфіг: `packages/client/src/constants.ts`, типи токенів: `packages/client/src/types.ts`.
+
+#### Палітра за замовчуванням: Midnight Ruby (`PREMIUM_DARK`)
+
+Орієнтовна відповідність HEX → роль → CSS-змінна (як у продакшен-темі):
+
+| HEX | Роль | Змінна |
+|-----|------|--------|
+| `#0A0809` | Найглибший фон екрану | `--ui-bg` |
+| `#141012` | Картки, панелі, базові контейнери | `--ui-surface` |
+| `#1F181C` | Підняті поверхні (модалки, меню) | `--ui-elevated` |
+| `#281E23` | Hover для інтерактивних карток / рядків | `--ui-surface-hover` |
+| `#2A2025` | Делікатні розділювачі | `--ui-border-subtle`, `--ui-divider` |
+| `#382A31` | Звичайні рамки, контури інпутів | `--ui-border` |
+| `#F4EFF1` | Основний текст | `--ui-fg` |
+| `#B5A8AE` | Вторинний текст | `--ui-fg-muted` |
+| `#82757B` | Підписи, плейсхолдери | `--ui-fg-subtle` |
+| `#594F54` | Disabled | `--ui-fg-disabled` |
+| `#E11D48` | Primary акцент | `--ui-accent` |
+| `#F43F5E` | Hover primary | `--ui-accent-hover` |
+| `#BE123C` | Натиснутий стан | `--ui-accent-pressed` |
+| `#3D1520` | Тлі бейджів / soft-кнопок | `--ui-accent-muted` |
+| `#F43F5E66` | Focus ring (рубін з ~40% альфою) | `--ui-accent-ring` |
+| `#34D399` | Успіх | `--ui-success` |
+| `#FBBF24` | Попередження | `--ui-warning` |
+| `#FF5252` | Небезпека (відділена від рубінового акценту) | `--ui-danger` |
 
 **Переклади** (`constants.ts` → `TRANSLATIONS`): об'єкт з ключами `UA`, `EN`, `DE`. ~150 ключів на мову.
 

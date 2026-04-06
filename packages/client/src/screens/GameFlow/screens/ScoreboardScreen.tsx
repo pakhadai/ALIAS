@@ -148,7 +148,7 @@ export const ScoreboardScreen = () => {
         {isHost ? (
           <button
             onClick={handleNextRound}
-            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95"
+            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed)"
           >
             <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
               {t.nextRound}

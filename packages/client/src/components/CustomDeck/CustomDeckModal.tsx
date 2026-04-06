@@ -16,6 +16,7 @@ import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
 import { buildDeckShareUrl } from '../../utils/deckShare';
 import { LoginModal } from '../Auth/LoginModal';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -237,7 +238,7 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
       <button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full h-11 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+        className="w-full h-11 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
         Створити словник
@@ -332,7 +333,7 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
       <button
         onClick={handleSubmit}
         disabled={saving || !file}
-        className="w-full h-11 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+        className="w-full h-11 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
         Завантажити
@@ -348,10 +349,15 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setSheetOpen(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const requestClose = () => {
-    setIsClosing(true);
+    setSheetOpen(false);
     setTimeout(() => onClose(), 280);
   };
 
@@ -396,12 +402,21 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   return (
     <>
       <div
-        className={`fixed inset-0 z-50 flex flex-col bg-(--ui-bg) overflow-hidden ${
-          isClosing ? 'animate-fade-out' : 'animate-fade-in'
-        }`}
+        className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+        onClick={requestClose}
+        role="presentation"
       >
-        {/* Header */}
-        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-(--ui-border)">
+        <div
+          className={bottomSheetPanelClass(sheetOpen, 'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!')}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex justify-center pt-2 pb-1 shrink-0">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+          </div>
+          {/* Header */}
+          <div className="shrink-0 px-5 pt-3 pb-4 border-b border-(--ui-border)">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {view !== 'list' ? (
@@ -450,7 +465,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('create');
                 }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
               >
                 <Plus size={13} />
                 Створити
@@ -472,8 +487,8 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
           )}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+          {/* Content */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
           {view === 'list' && (
             <>
               {!isAuthenticated ? (
@@ -481,7 +496,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   <p className="text-(--ui-fg-muted) text-sm">Увійдіть, щоб створювати словники</p>
                   <button
                     onClick={() => setShowLogin(true)}
-                    className="h-9 px-5 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
+                    className="h-9 px-5 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
                   >
                     Увійти
                   </button>
@@ -518,10 +533,11 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
-          <p className="text-center text-(--ui-fg-muted) text-[10px]">
-            Поділіться кодом доступу з іншими гравцями
-          </p>
+          <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
+            <p className="text-center text-(--ui-fg-muted) text-[10px]">
+              Поділіться кодом доступу з іншими гравцями
+            </p>
+          </div>
         </div>
       </div>
 

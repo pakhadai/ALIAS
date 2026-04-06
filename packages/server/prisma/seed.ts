@@ -3115,13 +3115,13 @@ const packs: PackDef[] = [
 const themes = [
   {
     slug: 'premium-dark',
-    name: 'Premium Dark',
+    name: 'Midnight Ruby',
     isFree: true,
     price: 0,
     config: {
       id: 'PREMIUM_DARK',
-      description: 'Elegant dark with gold accents',
-      preview: { bg: '#1A1A1A', accent: '#F3E5AB' },
+      description: 'OLED chocolate-black with pearl text and ruby accents',
+      preview: { bg: '#0A0809', accent: '#E11D48' },
       fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
     },
   },
@@ -3151,14 +3151,14 @@ const themes = [
   },
   {
     slug: 'forest',
-    name: 'Forest',
+    name: 'Luminous Aero',
     isFree: false,
     price: 99,
     config: {
       id: 'FOREST',
-      description: 'Deep nature vibes with Merriweather',
-      preview: { bg: '#1F2920', accent: '#4DB6AC' },
-      fonts: { heading: "'Merriweather', serif", body: "'Inter', sans-serif" },
+      description: 'Cool white surfaces with indigo, cyan and coral accents',
+      preview: { bg: '#FAFCFF', accent: '#6366F1' },
+      fonts: { heading: "'Inter', sans-serif", body: "'Inter', sans-serif" },
     },
   },
   {

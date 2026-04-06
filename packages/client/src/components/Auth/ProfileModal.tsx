@@ -81,11 +81,12 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     const init = ensureGoogleInitialized({
       clientId,
       locale,
+      colorScheme: currentTheme.isDark ? 'dark' : 'light',
       onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
     });
     if (!init.ok) return;
     promptGoogleSignIn();
-  }, [handleGoogleSuccess, locale]);
+  }, [currentTheme.isDark, handleGoogleSuccess, locale]);
 
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';
   const purchases = profile?.purchases ?? [];
@@ -224,7 +225,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           <button
             type="button"
             onClick={openDetailedStats}
-            className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:opacity-85 transition-colors"
+            className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:text-(--ui-accent-hover) transition-colors"
           >
             {t.profileStatsDetailLink}
           </button>
@@ -234,7 +235,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               type="button"
               onClick={openAdminPanel}
               className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
-                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 border border-(--ui-border)'}`}
+                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) border border-(--ui-border)'}`}
             >
               <Shield size={16} strokeWidth={2.25} aria-hidden />
               {t.profileAdminPanel}

@@ -453,7 +453,7 @@ export function AdminPanel() {
           {authError && <p className="text-(--ui-danger) text-sm text-center">{authError}</p>}
           <button
             type="submit"
-            className="w-full bg-(--ui-accent) text-(--ui-accent-contrast) font-bold py-3 rounded-xl transition-colors hover:opacity-95"
+            className="w-full bg-(--ui-accent) text-(--ui-accent-contrast) font-bold py-3 rounded-xl transition-colors hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed)"
           >
             Увійти
           </button>
@@ -698,7 +698,7 @@ export function AdminPanel() {
                     }
                   }}
                   disabled={broadcastLoading || !broadcastForm.title || !broadcastForm.body}
-                  className="px-5 py-2.5 rounded-xl bg-(--ui-accent) text-(--ui-accent-contrast) font-bold text-[11px] uppercase tracking-widest transition-all hover:opacity-95 disabled:opacity-40"
+                  className="px-5 py-2.5 rounded-xl bg-(--ui-accent) text-(--ui-accent-contrast) font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) disabled:opacity-40"
                 >
                   {broadcastLoading ? '...' : 'Розіслати всім'}
                 </button>

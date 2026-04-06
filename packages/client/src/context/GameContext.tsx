@@ -1105,7 +1105,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return allowed ? THEME_CONFIG[themeId] : fallback;
   }, [state.settings.general.theme]);
 
-  // Hard-reset unknown themes to default (Deep Steel)
+  // Hard-reset unknown themes to default (Midnight Ruby / PREMIUM_DARK)
   useEffect(() => {
     const themeId = state.settings.general.theme;
     const allowed = Object.prototype.hasOwnProperty.call(THEME_CONFIG, themeId);
@@ -1137,17 +1137,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty('--ui-accent', tokens.accent);
       r.style.setProperty('--ui-fg', tokens.fg);
 
-      // Midnight Navy requests muted derived from accent with opacity.
       r.style.setProperty(
         '--ui-fg-muted',
-        `color-mix(in_srgb, ${tokens.fgMuted} 70%, transparent)`
+        tokens.fgMutedOpaque
+          ? tokens.fgMuted
+          : `color-mix(in_srgb, ${tokens.fgMuted} 70%, transparent)`
       );
 
-      const hoverAccent = tokens.accentSoft ?? tokens.accent;
-      r.style.setProperty(
-        '--ui-surface-hover',
-        `color-mix(in_srgb, ${tokens.surface} 88%, ${hoverAccent} 12%)`
-      );
+      if (tokens.surfaceHoverColor) {
+        r.style.setProperty('--ui-surface-hover', tokens.surfaceHoverColor);
+      } else {
+        const hoverAccent = tokens.accentSoft ?? tokens.accent;
+        r.style.setProperty(
+          '--ui-surface-hover',
+          `color-mix(in_srgb, ${tokens.surface} 88%, ${hoverAccent} 12%)`
+        );
+      }
 
       const elevatedBase =
         tokens.elevated ?? `color-mix(in_srgb, ${tokens.surface} 72%, ${tokens.bg} 28%)`;
@@ -1160,9 +1165,34 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       r.style.setProperty('--ui-divider', tokens.divider ?? tokens.border);
       r.style.setProperty(
-        '--ui-accent-soft',
-        tokens.accentSoft ?? `color-mix(in_srgb, ${tokens.accent} 58%, ${tokens.surface} 42%)`
+        '--ui-border-subtle',
+        tokens.borderSubtle ??
+          `color-mix(in_srgb, ${tokens.border} 62%, ${tokens.bg} 38%)`
       );
+
+      const accentSoftComputed =
+        tokens.accentSoft ??
+        (tokens.accentMuted
+          ? tokens.accentMuted
+          : `color-mix(in_srgb, ${tokens.accent} 58%, ${tokens.surface} 42%)`);
+      r.style.setProperty('--ui-accent-soft', accentSoftComputed);
+      r.style.setProperty('--ui-accent-muted', tokens.accentMuted ?? accentSoftComputed);
+      r.style.setProperty(
+        '--ui-accent-hover',
+        tokens.accentHover ??
+          `color-mix(in_srgb, ${tokens.accent} 88%, #ffffff 12%)`
+      );
+      r.style.setProperty(
+        '--ui-accent-pressed',
+        tokens.accentPressed ??
+          `color-mix(in_srgb, ${tokens.accent} 82%, #000000 18%)`
+      );
+      r.style.setProperty(
+        '--ui-accent-ring',
+        tokens.accentRing ??
+          `color-mix(in_srgb, ${tokens.accent} 40%, transparent)`
+      );
+
       r.style.setProperty(
         '--ui-accent-alt',
         tokens.accentAlt ?? `color-mix(in_srgb, ${tokens.accent} 65%, ${tokens.fg} 35%)`
@@ -1178,17 +1208,53 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty(
         '--ui-fg-subtle',
         tokens.fgSubtle
-          ? `color-mix(in_srgb, ${tokens.fgSubtle} 78%, transparent)`
+          ? tokens.fgSubtleOpaque
+            ? tokens.fgSubtle
+            : `color-mix(in_srgb, ${tokens.fgSubtle} 78%, transparent)`
           : `color-mix(in_srgb, ${tokens.fgMuted} 55%, transparent)`
+      );
+      r.style.setProperty(
+        '--ui-fg-disabled',
+        tokens.fgDisabled ??
+          `color-mix(in_srgb, ${tokens.fgMuted} 45%, transparent)`
       );
       r.style.setProperty('--ui-accent-contrast', bestTextOnColor(tokens.accent));
     }
 
-    // Status colors (theme-consistent, derived from accent to avoid hardcoded palettes)
     const accent = (tokens?.accent ?? currentTheme.preview?.accent ?? '#4A5C6A').trim();
-    r.style.setProperty('--ui-danger', `color-mix(in_srgb, ${accent} 10%, #FF3B3B 90%)`);
-    r.style.setProperty('--ui-success', `color-mix(in_srgb, ${accent} 10%, #22C55E 90%)`);
-    r.style.setProperty('--ui-warning', `color-mix(in_srgb, ${accent} 10%, #F59E0B 90%)`);
+    if (tokens?.success) {
+      r.style.setProperty('--ui-success', tokens.success);
+    } else {
+      r.style.setProperty('--ui-success', `color-mix(in_srgb, ${accent} 10%, #22C55E 90%)`);
+    }
+    if (tokens?.warning) {
+      r.style.setProperty('--ui-warning', tokens.warning);
+    } else {
+      r.style.setProperty('--ui-warning', `color-mix(in_srgb, ${accent} 10%, #F59E0B 90%)`);
+    }
+    if (tokens?.danger) {
+      r.style.setProperty('--ui-danger', tokens.danger);
+    } else {
+      r.style.setProperty('--ui-danger', `color-mix(in_srgb, ${accent} 10%, #FF3B3B 90%)`);
+    }
+
+    // Browser / PWA chrome (address bar, Android nav) — must track *app* theme, not only OS.
+    const themeColor = tokens?.bg ?? currentTheme.preview?.bg ?? '#1A1A1A';
+    const setMetaContent = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('name', name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+    setMetaContent('theme-color', themeColor);
+    // iOS standalone: pair with page bg so status area doesn’t stay “stuck” on first paint.
+    setMetaContent(
+      'apple-mobile-web-app-status-bar-style',
+      currentTheme.isDark ? 'black-translucent' : 'default'
+    );
   }, [currentTheme]);
 
   // Sync <html lang> with app language setting
@@ -1281,32 +1347,53 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!sanitizedName) {
           const lang = stateRef.current.settings.general.language;
           showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Name is required', 'error');
-          return;
+          return false;
         }
         if (!safeAvatar) {
           const lang = stateRef.current.settings.general.language;
           showNotification(TRANSLATIONS[lang].chooseAvatar ?? 'Choose an avatar', 'error');
-          return;
+          return false;
         }
-        let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
+        let playerData: { persistentId?: string; name?: string; avatar?: string } = {};
+        try {
+          const raw = localStorage.getItem('alias_player');
+          if (raw) {
+            const parsed = JSON.parse(raw) as unknown;
+            if (parsed && typeof parsed === 'object') {
+              playerData = parsed as { persistentId?: string; name?: string; avatar?: string };
+            }
+          }
+        } catch {
+          playerData = {};
+        }
         if (!playerData.persistentId) {
           playerData.persistentId = crypto.randomUUID();
         }
         playerData.name = sanitizedName;
         playerData.avatar = safeAvatar;
-        localStorage.setItem('alias_player', JSON.stringify(playerData));
+        try {
+          localStorage.setItem('alias_player', JSON.stringify(playerData));
+        } catch {
+          const lang = stateRef.current.settings.general.language;
+          showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Storage error', 'error');
+          return false;
+        }
+
+        const avatarIdForServer =
+          avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
 
         if (stateRef.current.gameMode === 'ONLINE') {
-          // Server-based online mode
           if (stateRef.current.isHost) {
-            socketApi.createRoom(sanitizedName, safeAvatar, avatarId);
-            dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+            socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
           } else {
-            socketApi.joinRoom(stateRef.current.roomCode, sanitizedName, safeAvatar, avatarId);
-            dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+            socketApi.joinRoom(
+              stateRef.current.roomCode,
+              sanitizedName,
+              safeAvatar,
+              avatarIdForServer
+            );
           }
         } else {
-          // Offline mode: local player management
           dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
           dispatch({
             type: 'UPDATE_PLAYERS',
@@ -1314,7 +1401,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ...stateRef.current.players.filter((p) => p.id !== id),
               {
                 id,
-                persistentId: playerData.persistentId,
+                persistentId: playerData.persistentId ?? crypto.randomUUID(),
                 name: sanitizedName,
                 avatar: safeAvatar,
                 ...(avatarId != null ? { avatarId } : {}),
@@ -1324,6 +1411,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ],
           });
         }
+        return true;
       },
       sendAction,
       playSound,

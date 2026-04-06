@@ -65,6 +65,25 @@ export interface ThemeConfig {
     accentWarmSoft?: string;
     /** Tertiary text (captions, disabled, placeholders). */
     fgSubtle?: string;
+    /** Delicate separators; maps to `--ui-border-subtle`. */
+    borderSubtle?: string;
+    /** Verbatim `--ui-surface-hover` (skips accent tint mix). */
+    surfaceHoverColor?: string;
+    /** When true, `--ui-fg-muted` uses `fgMuted` without transparency mix. */
+    fgMutedOpaque?: boolean;
+    /** When true with `fgSubtle`, `--ui-fg-subtle` is solid. */
+    fgSubtleOpaque?: boolean;
+    /** Disabled / lowest-contrast text. */
+    fgDisabled?: string;
+    accentHover?: string;
+    accentPressed?: string;
+    /** Solid-ish accent-tinted surfaces (badges, soft fills). */
+    accentMuted?: string;
+    /** Focus ring color (may include alpha, e.g. `#RRGGBBAA`). */
+    accentRing?: string;
+    success?: string;
+    warning?: string;
+    danger?: string;
   };
   fonts: { heading: string; body: string };
   borderRadius: string;
@@ -118,7 +137,8 @@ export interface GameContextType extends AppState {
   currentTheme: ThemeConfig;
   setGameState: (state: GameState) => void;
   createNewRoom: () => void;
-  handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => void;
+  /** Returns false if validation/local storage failed (caller must not navigate to lobby). */
+  handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => boolean;
   sendAction: (action: GameActionPayload) => void;
   playSound: (soundId: GameSoundId) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;

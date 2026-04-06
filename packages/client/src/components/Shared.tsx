@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, ErrorInfo } from 'react';
 import { X, Star } from 'lucide-react';
 import { Button } from './Button';
-import { ThemeConfig, AppTheme } from '../types';
+import { ThemeConfig } from '../types';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -52,6 +52,40 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
     return this.props.children;
   }
+}
+
+/**
+ * Bottom sheet overlay (same motion as guest ProfileModal): blur dim + panel slides from bottom.
+ * @param visible When false, backdrop clears and panel moves off-screen (close animation).
+ * @param zIndexClass e.g. z-50, z-600 for stacking above game UI.
+ * @param position fixed (default) or absolute for in-screen overlays (e.g. pause).
+ */
+export function bottomSheetBackdropClass(
+  visible: boolean,
+  zIndexClass = 'z-50',
+  position: 'fixed' | 'absolute' = 'fixed'
+): string {
+  return [
+    position === 'fixed' ? 'fixed' : 'absolute',
+    'inset-0 flex flex-col justify-end transition-all duration-300',
+    zIndexClass,
+    visible
+      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in'
+      : 'bg-transparent',
+  ].join(' ');
+}
+
+/** Panel shell: rounded top, translate + pop-in when `open` is true. */
+export function bottomSheetPanelClass(open: boolean, extraClassName = ''): string {
+  return [
+    'relative z-10 w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl overflow-hidden',
+    'bg-(--ui-card) border border-(--ui-border) shadow-2xl',
+    'transition-transform duration-300 ease-out',
+    open ? 'translate-y-0 animate-pop-in' : 'translate-y-full',
+    extraClassName,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -107,27 +141,52 @@ export const ToastNotification: React.FC<{
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const styles = {
-    info: 'border-[color:var(--ui-border)] bg-[color:var(--ui-card)] text-[color:var(--ui-fg)] shadow-2xl',
-    error:
-      'border-[color:color-mix(in_srgb,var(--ui-danger)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-danger)_12%,transparent)] text-[color:var(--ui-fg)]',
-    success:
-      'border-[color:color-mix(in_srgb,var(--ui-success)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-success)_12%,transparent)] text-[color:var(--ui-fg)]',
+  /** Opaque, theme-aware shells (no mix with transparent — works on light & OLED dark). */
+  const shell: Record<'info' | 'error' | 'success', string> = {
+    info: [
+      'border-[color:color-mix(in_srgb,var(--ui-border)_85%,var(--ui-fg)_15%)]',
+      'bg-[color:var(--ui-elevated)]',
+      'shadow-[0_12px_40px_color-mix(in_srgb,var(--ui-fg)_12%,transparent)]',
+    ].join(' '),
+    error: [
+      'border-[color:color-mix(in_srgb,var(--ui-danger)_55%,var(--ui-border)_45%)]',
+      'bg-[color:color-mix(in_srgb,var(--ui-danger)_20%,var(--ui-elevated)_80%)]',
+      'shadow-[0_12px_36px_color-mix(in_srgb,var(--ui-danger)_22%,transparent)]',
+    ].join(' '),
+    success: [
+      'border-[color:color-mix(in_srgb,var(--ui-success)_55%,var(--ui-border)_45%)]',
+      'bg-[color:color-mix(in_srgb,var(--ui-success)_20%,var(--ui-elevated)_80%)]',
+      'shadow-[0_12px_36px_color-mix(in_srgb,var(--ui-success)_22%,transparent)]',
+    ].join(' '),
   };
+
+  const messageClass =
+    type === 'error'
+      ? 'text-[color:color-mix(in_srgb,var(--ui-danger)_25%,var(--ui-fg)_75%)]'
+      : type === 'success'
+        ? 'text-[color:color-mix(in_srgb,var(--ui-success)_18%,var(--ui-fg)_82%)]'
+        : 'text-(--ui-fg)';
 
   return (
     <div className="fixed top-0 left-0 right-0 z-1000 flex justify-center pt-4 px-4 pointer-events-none">
-      <div className="pointer-events-auto w-[90%] max-w-sm animate-slide-up">
+      <div className="pointer-events-auto w-[min(92vw,28rem)] animate-slide-up">
         <div
-          className={`${styles[type]} border rounded-4xl px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-(--ui-border)`}
+          className={`${shell[type]} flex items-start gap-3 rounded-3xl border-2 px-5 py-4 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
         >
-          <div className="flex-1 text-center">
-            <p className="text-[10px] font-sans font-bold uppercase tracking-[0.4em] leading-relaxed">
+          <div className="min-w-0 flex-1 text-center">
+            <p
+              className={`text-sm font-sans font-semibold leading-snug tracking-wide ${messageClass}`}
+            >
               {message}
             </p>
           </div>
-          <button onClick={onClose} className="opacity-30 hover:opacity-100 transition-opacity">
-            <X size={16} />
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-lg p-1 text-(--ui-fg-muted) opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
+            aria-label="Close"
+          >
+            <X size={18} strokeWidth={2.25} />
           </button>
         </div>
       </div>
@@ -178,30 +237,41 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   if (!shouldRender) return null;
 
-  const cardClass = theme?.card || 'bg-(--ui-card)';
   const textMain = theme?.textMain || 'text-(--ui-fg)';
   const textSecondary = theme?.textSecondary || 'text-(--ui-fg-muted)';
+  const sheetOpen = !isClosing;
 
   return (
     <div
-      className={`fixed inset-0 z-600 flex items-center justify-center p-8 bg-[color-mix(in_srgb,var(--ui-bg)_70%,transparent)] backdrop-blur-lg ${
-        isClosing ? 'animate-fade-out' : 'animate-fade-in'
-      }`}
+      className={bottomSheetBackdropClass(sheetOpen, 'z-600')}
+      onClick={onCancel}
+      role="presentation"
     >
       <div
-        className={`${cardClass} border border-(--ui-border) rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center ${
-          isClosing ? 'animate-pop-out' : 'animate-pop-in'
-        }`}
+        className={bottomSheetPanelClass(sheetOpen, 'p-8 text-center')}
+        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+        onClick={(e) => e.stopPropagation()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-desc"
       >
-        <h3 className={`text-4xl font-serif ${textMain} mb-6 tracking-wide leading-tight`}>
+        <div className="flex justify-center pt-1 pb-3">
+          <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+        </div>
+        <h3
+          id="confirm-modal-title"
+          className={`text-2xl md:text-3xl font-serif ${textMain} mb-4 tracking-wide leading-tight`}
+        >
           {title}
         </h3>
         <p
-          className={`${textSecondary} mb-12 text-sm font-sans leading-relaxed tracking-wider font-light`}
+          id="confirm-modal-desc"
+          className={`${textSecondary} mb-8 text-sm font-sans leading-relaxed tracking-wide font-light px-1`}
         >
           {message}
         </p>
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           <Button variant={isDanger ? 'danger' : 'primary'} fullWidth size="xl" onClick={onConfirm}>
             {confirmText || (isDanger ? 'Yes, Exit' : 'Confirm')}
           </Button>

@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, LogIn, Loader2 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
 import { Language } from '../../types';
 import { ensureGoogleInitialized, promptGoogleSignIn } from '../../utils/googleIdentity';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -22,10 +23,21 @@ type GoogleIdCredentialResponse = { credential?: string };
 
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
-  const { settings } = useGame();
+  const { settings, currentTheme } = useGame();
   const t = TRANSLATIONS[settings.general.language];
+  const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState<'google' | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 280);
+  };
 
   const locale = useMemo(
     () => googleLocale(settings.general.language),
@@ -39,7 +51,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     try {
       await loginWithGoogle(credentialResponse.credential);
       onSuccess?.();
-      onClose();
+      handleClose();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -59,6 +71,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     const init = ensureGoogleInitialized({
       clientId,
       locale,
+      colorScheme: currentTheme.isDark ? 'dark' : 'light',
       onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
     });
     if (!init.ok) {
@@ -71,15 +84,29 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
       setLoading(null);
       setError(t.loginGoogleFailed);
     }
-  }, [handleGoogleSuccess, locale, t.loginGoogleFailed]);
+  }, [currentTheme.isDark, handleGoogleSuccess, locale, t.loginGoogleFailed]);
+
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl p-4 animate-fade-in">
-      <div className="relative w-full max-w-sm rounded-2xl bg-(--ui-card) border border-(--ui-border) p-6 shadow-2xl animate-pop-in">
+    <div
+      className={bottomSheetBackdropClass(visible, 'z-50')}
+      onClick={handleClose}
+      role="presentation"
+    >
+      <div
+        className={bottomSheetPanelClass(visible, 'p-6')}
+        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         {/* Close */}
+        <div className="flex justify-center pt-0 pb-2">
+          <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+        </div>
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg transition-colors text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface)"
+          onClick={handleClose}
+          className="absolute top-5 right-5 p-1 rounded-lg transition-colors text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface)"
         >
           <X size={20} />
         </button>
@@ -149,7 +176,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         {/* Divider */}
         <div className="mt-5 pt-4 border-t border-(--ui-border)">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full text-sm transition-colors text-(--ui-fg-muted) hover:text-(--ui-fg)"
           >
             {t.loginContinueWithout}

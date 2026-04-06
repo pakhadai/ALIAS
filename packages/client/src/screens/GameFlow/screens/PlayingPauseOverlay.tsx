@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import type { ThemeConfig } from '../../../types';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../../../components/Shared';
 
 export type PlayingPauseOverlayProps = {
   currentTheme: ThemeConfig;
@@ -11,10 +12,11 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
   t,
 }: PlayingPauseOverlayProps) {
   return (
-    <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl flex items-center justify-center z-50 animate-fade-in">
-      <div
-        className={`${currentTheme.card} border border-(--ui-border) rounded-[3rem] p-16 shadow-2xl text-center animate-pop-in`}
-      >
+    <div className={bottomSheetBackdropClass(true, 'z-50', 'absolute')}>
+      <div className={`${bottomSheetPanelClass(true, 'px-8 py-12 text-center')}`}>
+        <div className="flex justify-center mb-2">
+          <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+        </div>
         <span className="material-symbols-outlined text-(--ui-accent) text-6xl mb-4 block">
           pause_circle
         </span>

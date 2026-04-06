@@ -6,6 +6,9 @@ type GoogleId = {
     callback: (res: GoogleIdCredentialResponse) => void;
     auto_select?: boolean;
     locale?: string;
+    /** One Tap / account picker — avoids light “card” on dark sites when set to `dark`. */
+    color_scheme?: 'light' | 'dark' | string;
+    use_fedcm_for_button?: boolean;
   }) => void;
   prompt: (cb?: (notification: any) => void) => void;
 };
@@ -28,17 +31,22 @@ export function ensureGoogleInitialized(params: {
   clientId: string;
   locale: string;
   onCredential: (res: GoogleIdCredentialResponse) => void;
+  /** Match app theme so Google’s prompt isn’t a bright sheet on dark UI. */
+  colorScheme?: 'light' | 'dark';
 }): GooglePromptResult {
   const googleId = getGoogleId();
   if (!googleId) return { ok: false, reason: 'unavailable' };
 
-  const key = `${params.clientId}::${params.locale}`;
+  const scheme = params.colorScheme ?? 'dark';
+  const key = `${params.clientId}::${params.locale}::${scheme}`;
   if (initializedKey !== key) {
     googleId.initialize({
       client_id: params.clientId,
       callback: params.onCredential,
       auto_select: false,
       locale: params.locale,
+      color_scheme: scheme,
+      use_fedcm_for_button: false,
     });
     initializedKey = key;
   }

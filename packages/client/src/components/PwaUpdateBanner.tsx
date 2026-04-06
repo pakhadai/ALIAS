@@ -27,7 +27,7 @@ export const PwaUpdateBanner: React.FC = () => {
         <button
           type="button"
           onClick={() => applyPwaUpdate()}
-          className="shrink-0 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 transition-opacity"
+          className="shrink-0 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) transition-colors"
         >
           {t.pwaUpdateReload}
         </button>

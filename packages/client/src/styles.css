@@ -30,6 +30,13 @@ body {
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Lato', sans-serif;
   --theme-radius: 9999px;
+  /* First paint before React applies THEME_CONFIG tokens (default PREMIUM_DARK ≈ Midnight Ruby) */
+  --ui-bg: #0a0809;
+  --ui-fg: #f4eff1;
+  --ui-accent: #e11d48;
+  --ui-accent-hover: #f43f5e;
+  --ui-accent-pressed: #be123c;
+  --ui-accent-ring: #f43f5e66;
 }
 .font-serif {
   font-family: var(--font-heading) !important;

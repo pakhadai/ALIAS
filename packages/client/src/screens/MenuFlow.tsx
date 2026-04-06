@@ -19,10 +19,15 @@ import {
   ChevronRight,
   ShieldCheck,
   WifiOff,
+  Maximize,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Logo } from '../components/Shared';
+import {
+  Logo,
+  bottomSheetBackdropClass,
+  bottomSheetPanelClass,
+} from '../components/Shared';
 import { ProfileModal } from '../components/Auth/ProfileModal';
 import { LoginModal } from '../components/Auth/LoginModal';
 import { AppSettingsModal } from '../components/Settings/AppSettingsModal';
@@ -70,17 +75,21 @@ const generateUUID = () => {
 const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];
 
-const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any) => {
+const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) => {
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
   const [visible, setVisible] = useState(false);
   const shouldRender = isOpen || isClosing;
 
   useEffect(() => {
-    if (isOpen) {
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
+    if (!isOpen) {
+      setVisible(false);
+      return;
     }
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
+    return () => cancelAnimationFrame(id);
   }, [isOpen]);
 
   if (!shouldRender) return null;
@@ -312,43 +321,22 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex ${isGuest ? 'items-end justify-center' : 'items-center justify-center'} transition-all duration-300 ${
-        isGuest
-          ? visible
-            ? 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-in'
-            : 'bg-transparent'
-          : isClosing
-            ? 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-out'
-            : 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-in'
-      }`}
+      className={`${bottomSheetBackdropClass(visible, 'z-100')}`}
       onClick={handleClose}
       role="presentation"
     >
       <div
-        className={`relative w-full max-w-md flex flex-col ${currentTheme.card} ${
-          isGuest
-            ? `rounded-t-4xl border border-(--ui-border) transition-transform duration-300 ease-out ${
-                visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'
-              }`
-            : isClosing
-              ? 'animate-pop-out'
-              : 'animate-pop-in'
-        }`}
-        style={{ maxHeight: isGuest ? '90dvh' : '100dvh' }}
+        className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col min-h-0')}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={t.rulesTitle}
       >
-        {isGuest && (
-          <div className="flex justify-center pt-2 pb-0">
-            <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
-          </div>
-        )}
+        <div className="flex justify-center pt-2 pb-0 shrink-0">
+          <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
+        </div>
         {/* Header */}
-        <div
-          className={`shrink-0 px-7 ${isGuest ? 'pt-2' : 'pt-10'} pb-3 flex items-center justify-between`}
-        >
+        <div className="shrink-0 px-7 pt-2 pb-3 flex items-center justify-between">
           <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
           <button
             onClick={handleClose}
@@ -376,7 +364,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
 
         {/* Footer */}
         <div className="shrink-0 px-8 pb-8 pt-4">
@@ -449,7 +437,21 @@ export const MenuScreen = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
+  const [fullscreenHintVisible, setFullscreenHintVisible] = useState(false);
   const t = TRANSLATIONS[settings.general.language];
+
+  useEffect(() => {
+    if (showFullscreenHint) {
+      const r = requestAnimationFrame(() => setFullscreenHintVisible(true));
+      return () => cancelAnimationFrame(r);
+    }
+    setFullscreenHintVisible(false);
+  }, [showFullscreenHint]);
+
+  const closeFullscreenHint = () => {
+    setFullscreenHintVisible(false);
+    setTimeout(() => setShowFullscreenHint(false), 280);
+  };
 
   // After sign-in inside the modal → close it and go to ProfileScreen
   useEffect(() => {
@@ -479,46 +481,45 @@ export const MenuScreen = () => {
     }
   };
 
+  const menuHeaderIconBtn =
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90';
+  const menuHeaderIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
+
   return (
     <div
       className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
     >
       <header
-        className="relative z-10 w-full px-6 md:px-8 pb-4 flex justify-end items-center gap-6 shrink-0"
+        className="relative z-10 w-full px-6 md:px-8 pb-4 flex justify-end items-center gap-2 sm:gap-3 shrink-0"
         style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
       >
-        <button onClick={handleProfileClick} className="transition-all active:scale-90 p-2">
-          <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
+        <button type="button" onClick={handleProfileClick} className={menuHeaderIconBtn} aria-label="Profile">
+          <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
         </button>
         <button
+          type="button"
           onClick={() => setShowAppSettings(true)}
-          className="transition-all active:scale-90 p-2"
+          className={menuHeaderIconBtn}
           aria-label="Settings"
         >
-          <Settings
-            size={22}
-            className={`${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`}
-          />
+          <Settings size={22} className={menuHeaderIcon} strokeWidth={1.75} />
         </button>
-        <button onClick={() => setShowRules(true)} className="transition-all active:scale-90 p-2">
-          <span
-            className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            menu_book
-          </span>
+        <button
+          type="button"
+          onClick={() => setShowRules(true)}
+          className={menuHeaderIconBtn}
+          aria-label={t.rulesTitle}
+        >
+          <BookOpen size={22} className={menuHeaderIcon} strokeWidth={1.75} />
         </button>
         {!isStandaloneDisplay() && (
           <button
             type="button"
             onClick={() => void handleFullscreenClick()}
-            className="transition-all active:scale-90 p-2"
+            className={menuHeaderIconBtn}
             aria-label="Fullscreen"
           >
-            <span
-              className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-            >
-              fullscreen
-            </span>
+            <Maximize size={22} className={menuHeaderIcon} strokeWidth={1.75} />
           </button>
         )}
       </header>
@@ -588,21 +589,23 @@ export const MenuScreen = () => {
         t={t}
         currentTheme={currentTheme}
         settings={settings}
-        isGuest={!isAuthenticated}
       />
       {showFullscreenHint && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in"
-          onClick={() => setShowFullscreenHint(false)}
+          className={bottomSheetBackdropClass(fullscreenHintVisible, 'z-50')}
+          onClick={closeFullscreenHint}
           role="dialog"
           aria-modal="true"
           aria-labelledby="fullscreen-hint-title"
         >
           <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-(--ui-card) border border-(--ui-border) rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8 animate-pop-in"
+            className={bottomSheetPanelClass(fullscreenHintVisible, 'px-5 pt-5 pb-8')}
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="flex justify-center pb-3">
+              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+            </div>
             <div className="flex justify-between items-start mb-4">
               <p
                 id="fullscreen-hint-title"
@@ -612,7 +615,7 @@ export const MenuScreen = () => {
               </p>
               <button
                 type="button"
-                onClick={() => setShowFullscreenHint(false)}
+                onClick={closeFullscreenHint}
                 className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
                 aria-label={t.close}
               >
@@ -624,7 +627,7 @@ export const MenuScreen = () => {
             </p>
             <button
               type="button"
-              onClick={() => setShowFullscreenHint(false)}
+              onClick={closeFullscreenHint}
               className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
             >
               {t.close}
@@ -655,9 +658,9 @@ export const EnterNameScreen = () => {
     if (authState.status === 'authenticated' && profile?.displayName) {
       const avatarEmoji =
         profile.avatarId != null
-          ? (PRESET_AVATARS[parseInt(profile.avatarId)]?.emoji ?? AVATARS[0])
+          ? (PRESET_AVATARS[parseInt(profile.avatarId, 10)]?.emoji ?? AVATARS[0])
           : AVATARS[0];
-      handleJoin(stableId.current, profile.displayName, avatarEmoji, profile.avatarId);
+      if (!handleJoin(stableId.current, profile.displayName, avatarEmoji, profile.avatarId)) return;
       setGameState(GameState.LOBBY);
       return;
     }
@@ -669,7 +672,7 @@ export const EnterNameScreen = () => {
   const handleSubmit = () => {
     const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);
     if (sanitized.trim()) {
-      handleJoin(stableId.current, sanitized.trim(), avatar);
+      if (!handleJoin(stableId.current, sanitized.trim(), avatar)) return;
       setGameState(GameState.LOBBY);
     }
   };

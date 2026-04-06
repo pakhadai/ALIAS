@@ -30,6 +30,14 @@
 
 ---
 
+## [2026-04-06] — Midnight Ruby (default theme), розширені `--ui-*` та документація
+
+### Changed
+- **Тема за замовчуванням `PREMIUM_DARK`:** палітра **Midnight Ruby** (OLED-фон `#0A0809`, перлинний текст, рубіновий акцент `#E11D48`, окремі семантичні success / warning / danger). Файли: `packages/client/src/constants.ts`, `packages/client/src/styles.css`.
+- **UI-токени:** додано та виставляються з `THEME_CONFIG.tokens` (або за замовчуванням змішуються): `--ui-border-subtle`, `--ui-fg-disabled`, `--ui-accent-hover`, `--ui-accent-pressed`, `--ui-accent-muted`, `--ui-accent-ring`; primary-кнопки та focus ring використовують ці змінні. Файли: `packages/client/src/context/GameContext.tsx`, `packages/client/src/types.ts`, `packages/client/src/components/Button.tsx` та суміжні CTA в модалках / екранах.
+- **Документація:** `README.md` — оновлено таблицю тем, повний перелік семантичних змінних, таблиця HEX ↔ Midnight Ruby; виправлено примітку про locked-теми для гостей (`PREMIUM_DARK` замість застарілого `DEEP_STEEL`).
+- **Seed (каталог магазину):** запис `premium-dark` узгоджено з назвою/описом/preview Midnight Ruby. Файл: `packages/server/prisma/seed.ts`.
+
 ## [2026-04-06] — 0.5.2: bottom sheets, live help, pack language, rejoin guard
 
 ### Changed

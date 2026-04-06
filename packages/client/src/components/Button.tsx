@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--ui-accent) focus-visible:ring-offset-(--ui-bg)';
+    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--ui-accent-ring) focus-visible:ring-offset-(--ui-bg)';
 
   // Strict theme integration
   const getVariantStyle = () => {
@@ -42,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
       case 'ghost':
         return 'bg-transparent text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)';
       default:
-        return 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95';
+        return 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed)';
     }
   };
 

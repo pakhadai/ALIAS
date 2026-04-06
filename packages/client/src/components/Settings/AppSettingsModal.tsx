@@ -49,38 +49,42 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
       role="presentation"
     >
       <div
-        className={`relative w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl overflow-hidden
-          bg-(--ui-card) border border-(--ui-border) px-5 pt-5 pb-8 transition-transform duration-300 ease-out
+        className={`relative w-full max-w-sm md:max-w-md mx-auto flex max-h-[90dvh] flex-col overflow-hidden rounded-t-4xl
+          bg-(--ui-card) border border-(--ui-border) transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
-        style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))', maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="app-settings-title"
       >
-        <div className="flex justify-center pt-1 pb-2">
-          <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-        </div>
-        <div className="flex justify-between items-center mb-5">
-          <div className="flex items-center gap-2">
-            <SettingsIcon size={16} className={currentTheme.iconColor} />
-            <p
-              id="app-settings-title"
-              className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase ${currentTheme.textSecondary}`}
-            >
-              {t.settings}
-            </p>
+        <div className="shrink-0 px-5 pt-5">
+          <div className="flex justify-center pt-1 pb-2">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
           </div>
-          <button
-            onClick={handleClose}
-            className={`p-1 opacity-50 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
-            aria-label={t.close}
-          >
-            <X size={16} />
-          </button>
+          <div className="flex justify-between items-center mb-5">
+            <div className="flex items-center gap-2">
+              <SettingsIcon size={16} className={currentTheme.iconColor} />
+              <p
+                id="app-settings-title"
+                className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase ${currentTheme.textSecondary}`}
+              >
+                {t.settings}
+              </p>
+            </div>
+            <button
+              onClick={handleClose}
+              className={`p-1 opacity-50 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+              aria-label={t.close}
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-7">
+        <div
+          className="min-h-0 flex-1 space-y-7 overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pb-8 [-webkit-overflow-scrolling:touch]"
+          style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+        >
           {/* General */}
           <div className="space-y-3">
             <p className={sectionLabel}>{t.cat_general ?? 'General'}</p>

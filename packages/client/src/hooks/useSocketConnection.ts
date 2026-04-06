@@ -170,12 +170,28 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         localStorage.setItem(ROOM_CODE_KEY, code);
         localStorage.setItem(PLAYER_ID_KEY, playerId);
       });
-      socket.emit('room:create', { playerName, avatar, ...(avatarId != null ? { avatarId } : {}) });
+      const payload = {
+        playerName,
+        avatar,
+        ...(avatarId != null && String(avatarId).trim() !== ''
+          ? { avatarId: String(avatarId).slice(0, 3) }
+          : {}),
+      };
+      socket.emit('room:create', payload);
     };
 
     prepareSocketForRoomHandshake(socket);
-    socket.once('connect', doEmit);
-    socket.connect();
+
+    const onConnect = () => {
+      socket.off('connect', onConnect);
+      doEmit();
+    };
+    socket.on('connect', onConnect);
+    if (socket.connected) {
+      onConnect();
+    } else {
+      socket.connect();
+    }
   }, []);
 
   const joinRoom = useCallback(
@@ -201,13 +217,24 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           roomCode: code,
           playerName,
           avatar,
-          ...(avatarId != null ? { avatarId } : {}),
+          ...(avatarId != null && String(avatarId).trim() !== ''
+            ? { avatarId: String(avatarId).slice(0, 3) }
+            : {}),
         });
       };
 
       prepareSocketForRoomHandshake(socket);
-      socket.once('connect', doEmit);
-      socket.connect();
+
+      const onConnect = () => {
+        socket.off('connect', onConnect);
+        doEmit();
+      };
+      socket.on('connect', onConnect);
+      if (socket.connected) {
+        onConnect();
+      } else {
+        socket.connect();
+      }
     },
     []
   );

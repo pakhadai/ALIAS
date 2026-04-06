@@ -13,7 +13,11 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Button } from '../components/Button';
-import { ConfirmationModal } from '../components/Shared';
+import {
+  ConfirmationModal,
+  bottomSheetBackdropClass,
+  bottomSheetPanelClass,
+} from '../components/Shared';
 import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameSettings, GameMode } from '../types';
 import { useGame } from '../context/GameContext';
@@ -64,7 +68,9 @@ export const LobbyScreen = () => {
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [addPlayerSheetOpen, setAddPlayerSheetOpen] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [qrSheetOpen, setQrSheetOpen] = useState(false);
   const [kickTarget, setKickTarget] = useState<{ id: string; name: string } | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(AVATARS[0]);
@@ -76,6 +82,32 @@ export const LobbyScreen = () => {
       QRCode.toDataURL(joinUrl, { margin: 1 }).then(setQrCodeData).catch(console.error);
     }
   }, [joinUrl, gameMode, roomCode]);
+
+  useEffect(() => {
+    if (showQrModal && qrCodeData) {
+      const r = requestAnimationFrame(() => setQrSheetOpen(true));
+      return () => cancelAnimationFrame(r);
+    }
+    setQrSheetOpen(false);
+  }, [showQrModal, qrCodeData]);
+
+  useEffect(() => {
+    if (showAddPlayer) {
+      const r = requestAnimationFrame(() => setAddPlayerSheetOpen(true));
+      return () => cancelAnimationFrame(r);
+    }
+    setAddPlayerSheetOpen(false);
+  }, [showAddPlayer]);
+
+  const closeQrModal = () => {
+    setQrSheetOpen(false);
+    setTimeout(() => setShowQrModal(false), 280);
+  };
+
+  const closeAddPlayerModal = () => {
+    setAddPlayerSheetOpen(false);
+    setTimeout(() => setShowAddPlayer(false), 280);
+  };
 
   const canCreateTeams = players.length >= 2;
   const categoriesPreview = useMemo(() => {
@@ -128,21 +160,27 @@ export const LobbyScreen = () => {
 
         {showQrModal && qrCodeData && (
           <div
-            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in"
-            onClick={() => setShowQrModal(false)}
+            className={bottomSheetBackdropClass(qrSheetOpen, 'z-120')}
+            onClick={closeQrModal}
+            role="presentation"
           >
             <div
-              className="flex flex-col items-center gap-6 max-w-[min(92vw,420px)]"
+              className={bottomSheetPanelClass(qrSheetOpen, 'p-6 flex flex-col items-center gap-5')}
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
             >
-              <div className="bg-(--ui-card) p-8 rounded-2xl shadow-2xl ring-1 ring-(--ui-border) animate-pop-in w-full flex justify-center">
+              <div className="flex justify-center w-full">
+                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              </div>
+              <div className="bg-(--ui-surface) p-6 rounded-2xl border border-(--ui-border) w-full flex justify-center">
                 <img
                   src={qrCodeData}
                   alt="QR"
                   className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl"
                 />
               </div>
-              <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-4">
+              <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-2">
                 {t.scanToJoin ?? 'Відскануйте для приєднання'}
               </p>
             </div>
@@ -432,16 +470,27 @@ export const LobbyScreen = () => {
 
             {/* Add Player Modal */}
             {showAddPlayer && (
-              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in">
+              <div
+                className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
+                onClick={closeAddPlayerModal}
+                role="presentation"
+              >
                 <div
-                  className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} animate-pop-in`}
+                  className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
                 >
                   <button
-                    onClick={() => setShowAddPlayer(false)}
-                    className="absolute top-8 right-8 opacity-40 hover:opacity-100 transition-opacity"
+                    type="button"
+                    onClick={closeAddPlayerModal}
+                    className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
                   >
                     <X size={24} className={currentTheme.iconColor} />
                   </button>
+                  <div className="flex justify-center mb-4">
+                    <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                  </div>
                   <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
                     {t.addPlayerTitle}
                   </h2>
@@ -474,7 +523,7 @@ export const LobbyScreen = () => {
                         const name = newPlayerName.trim();
                         if (name) {
                           addOfflinePlayer(name, newPlayerAvatar);
-                          setShowAddPlayer(false);
+                          closeAddPlayerModal();
                         }
                       }}
                       disabled={!newPlayerName.trim()}

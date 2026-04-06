@@ -28,7 +28,7 @@ export const SentryErrorFallback: React.FC<{
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) px-6 py-3 text-xs font-bold uppercase tracking-widest hover:opacity-95 transition-opacity"
+            className="rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) transition-colors"
           >
             Перезавантажити
           </button>
