@@ -16,6 +16,17 @@ function normalizeIp(input: string): ipaddr.IPv4 | ipaddr.IPv6 | null {
   }
 }
 
+function isPrivateLike(ip: ipaddr.IPv4 | ipaddr.IPv6): boolean {
+  const r = ip.range();
+  return (
+    r === 'private' ||
+    r === 'loopback' ||
+    r === 'linkLocal' ||
+    r === 'uniqueLocal' ||
+    r === 'carrierGradeNat'
+  );
+}
+
 function matchesAllowed(ip: ipaddr.IPv4 | ipaddr.IPv6, rule: string): boolean {
   const trimmed = rule.trim();
   if (!trimmed) return false;
@@ -36,7 +47,14 @@ function matchesAllowed(ip: ipaddr.IPv4 | ipaddr.IPv6, rule: string): boolean {
 function getClientIp(req: Request): ipaddr.IPv4 | ipaddr.IPv6 | null {
   // We rely on Express `trust proxy` to make `req.ip` reflect the real client IP behind Nginx.
   // If trust proxy is misconfigured, req.ip may be the proxy/container IP.
-  return normalizeIp(String(req.ip ?? ''));
+  const direct = normalizeIp(String(req.ip ?? ''));
+  const xff = String(req.headers['x-forwarded-for'] ?? '').trim();
+  const firstFromXff = xff ? xff.split(',')[0]?.trim() : '';
+  const fromXff = firstFromXff ? normalizeIp(firstFromXff) : null;
+
+  // Safety: only fall back to XFF if req.ip looks like an internal proxy address.
+  if (direct && isPrivateLike(direct) && fromXff) return fromXff;
+  return direct ?? fromXff;
 }
 
 export function ipWhitelist(allowedIps: string[]) {

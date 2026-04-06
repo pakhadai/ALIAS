@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Check, Loader2, Shield } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { fetchStore, type StoreData } from '../../services/api';
@@ -62,10 +61,31 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     handleClose();
   };
 
-  const handleGoogleSuccess = async (cred: { credential?: string }) => {
+  type GoogleIdCredentialResponse = { credential?: string };
+
+  const locale = useMemo(() => {
+    if (settings.general.language === 'DE') return 'de';
+    if (settings.general.language === 'EN') return 'en';
+    return 'uk';
+  }, [settings.general.language]);
+
+  const handleGoogleSuccess = async (cred: GoogleIdCredentialResponse) => {
     if (!cred.credential) return;
     await loginWithGoogle(cred.credential);
   };
+
+  const handleGoogleClick = useCallback(() => {
+    const googleId = (window as any)?.google?.accounts?.id ?? null;
+    const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    if (!googleId || !clientId) return;
+    googleId.initialize({
+      client_id: clientId,
+      callback: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
+      auto_select: false,
+      locale,
+    });
+    googleId.prompt();
+  }, [handleGoogleSuccess, locale]);
 
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';
   const purchases = profile?.purchases ?? [];
@@ -219,14 +239,37 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         {/* Google Sign-In (only for anonymous) */}
         {isAnonymous && (
           <div className="px-6 pb-6 flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => {}}
-              shape="pill"
-              size="large"
-              text="signin_with"
-              width={320}
-            />
+            <button
+              type="button"
+              onClick={handleGoogleClick}
+              className="w-full max-w-[320px] h-11 rounded-2xl bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)
+                text-(--ui-fg) font-sans font-semibold text-sm flex items-center justify-center gap-3 transition-all active:scale-[0.99]"
+            >
+              <span
+                aria-hidden
+                className="h-6 w-6 rounded-md bg-(--ui-card) border border-(--ui-border) flex items-center justify-center"
+              >
+                <svg width="14" height="14" viewBox="0 0 48 48" fill="none">
+                  <path
+                    fill="#FFC107"
+                    d="M43.611 20.083H42V20H24v8h11.303C33.656 32.657 29.146 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.566 6.053 29.529 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.65-.389-3.917z"
+                  />
+                  <path
+                    fill="#FF3D00"
+                    d="M6.306 14.691 12.87 19.51C14.654 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.566 6.053 29.529 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+                  />
+                  <path
+                    fill="#4CAF50"
+                    d="M24 44c5.422 0 10.36-2.005 14.073-5.273l-6.497-5.5C29.533 34.723 26.86 36 24 36c-5.125 0-9.622-3.317-11.285-7.946l-6.514 5.02C9.522 39.556 16.227 44 24 44z"
+                  />
+                  <path
+                    fill="#1976D2"
+                    d="M43.611 20.083H42V20H24v8h11.303c-.792 2.258-2.348 4.158-4.427 5.227l.003-.002 6.497 5.5C36.922 39.1 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+                  />
+                </svg>
+              </span>
+              <span>{t.loginGoogle}</span>
+            </button>
           </div>
         )}
 

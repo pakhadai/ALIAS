@@ -278,6 +278,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
       'Зберігайте історію ігор і статистику в акаунті та синхронізуйте їх між пристроями.',
     loginAnonymousNote:
       'Грати можна без реєстрації — авторизація потрібна для покупок і збереження статистики в хмарі',
+    loginGoogle: 'Увійти через Google',
     loginGoogleLoading: 'Вхід через Google...',
     loginContinueWithout: 'Продовжити без входу',
     loginGoogleFailed: 'Помилка входу через Google',
@@ -542,6 +543,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
       'Speichere Spielverlauf und Statistik in deinem Konto und synchronisiere sie zwischen Geräten.',
     loginAnonymousNote:
       'Spielen geht ohne Registrierung — für Käufe und Cloud-Statistik ist eine Anmeldung nötig',
+    loginGoogle: 'Mit Google anmelden',
     loginGoogleLoading: 'Google-Anmeldung...',
     loginContinueWithout: 'Ohne Anmeldung fortfahren',
     loginGoogleFailed: 'Google-Anmeldung fehlgeschlagen',
@@ -802,6 +804,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
       'Keep your game history and statistics in your account and sync across devices.',
     loginAnonymousNote:
       'You can play without signing in — sign in is for purchases and cloud-backed statistics',
+    loginGoogle: 'Continue with Google',
     loginGoogleLoading: 'Signing in with Google...',
     loginContinueWithout: 'Continue without signing in',
     loginGoogleFailed: 'Google sign-in failed',
