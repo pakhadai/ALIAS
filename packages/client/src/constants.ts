@@ -1055,8 +1055,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
           'OLED-чорний, квантовий фіолетовий, кібер-ціан і неоновий помаранч для акцентів.',
       },
       [Language.DE]: {
-        description:
-          'OLED-Schwarz mit violetten, Cyan- und Neonorange-Akzenten.',
+        description: 'OLED-Schwarz mit violetten, Cyan- und Neonorange-Akzenten.',
       },
     },
     isFree: false,
