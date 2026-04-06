@@ -39,6 +39,9 @@
 - **Lobby packs:** вибір мови для паків більше **не змінює мову UI** — впливає лише на доступні паки/слова (фільтр за мовою). Файл: `packages/client/src/screens/LobbyFlow.tsx`.
 - **Stability:** додано валідацію `localStorage` ключів `roomCode/playerId` перед auto-rejoin, щоб прибрати випадкові `INVALID_PAYLOAD` (“Invalid data”) при створенні/вході в лоббі. Файли: `packages/client/src/hooks/useSocketConnection.ts`, `packages/client/src/context/GameContext.tsx`.
 
+### Security
+- **Admin access:** адмін-API тепер вимагає **VPN IP whitelist + email whitelist + `user.isAdmin=true`** (з JWT). Доступ через `x-admin-key` прибрано. Файли: `packages/server/src/middleware/ipWhitelist.ts`, `packages/server/src/routes/admin.ts`, `packages/server/src/config.ts`, `.env*.example`.
+
 ## [2026-04-06] — 0.5.1: Google-only auth, locked themes toast, early room validation
 
 ### Changed

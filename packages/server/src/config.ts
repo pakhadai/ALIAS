@@ -5,6 +5,14 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const instanceFromEnv = process.env.INSTANCE_ID?.trim();
 
+function parseCsvList(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -37,7 +45,23 @@ export const config = {
       .split(',')
       .map((o) => o.trim()),
   },
-  adminApiKey: process.env.ADMIN_API_KEY || 'dev-admin-key',
+  /**
+   * Admin access email whitelist.
+   *
+   * - Comma-separated list of emails, e.g. `owner@example.com,admin@example.com`
+   * - In production, if empty/unset, admin routes will be locked (misconfiguration).
+   * - In development, if empty/unset, any authenticated (non-anonymous) user is allowed.
+   */
+  adminAllowedEmails: parseCsvList(process.env.ADMIN_ALLOWED_EMAILS).map((e) => e.toLowerCase()),
+  /**
+   * Optional IP whitelist for admin routes (VPN / WireGuard).
+   *
+   * - Comma-separated IPs or CIDR ranges, e.g. `127.0.0.1,::1,10.8.0.0/24`
+   * - When empty/unset, the check is disabled (so local dev doesn't break).
+   *
+   * WireGuard hint: if your WG interface is `wg0` with `10.8.0.1/24`, allow `10.8.0.0/24`.
+   */
+  adminAllowedIps: parseCsvList(process.env.ADMIN_ALLOWED_IPS),
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
   },

@@ -18,6 +18,7 @@ type TopPurchasedPackRow = {
   _count: { wordPackId: number };
 };
 import { config } from '../config';
+import { ipWhitelist } from '../middleware/ipWhitelist';
 import { AuthService } from '../services/AuthService';
 import { broadcastPush } from './push';
 
@@ -29,13 +30,14 @@ export function createAdminRoutes(
 ): IRouter {
   const router: IRouter = Router();
 
-  // Admin auth: API key OR JWT whose user has isAdmin in DB (not JWT claim alone)
+  // Optional VPN/WireGuard IP whitelist for admin routes. Configure `ADMIN_ALLOWED_IPS` as
+  // a comma-separated list of IPs/CIDR ranges (e.g. `10.8.0.0/24`). When unset/empty, this
+  // check is disabled for local development.
+  router.use(ipWhitelist(config.adminAllowedIps));
+
+  // Admin auth: only authenticated user whose email is whitelisted.
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      if (config.adminApiKey && req.headers['x-admin-key'] === config.adminApiKey) {
-        next();
-        return;
-      }
       const auth = req.headers.authorization;
       if (!auth?.startsWith('Bearer ')) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -46,15 +48,34 @@ export function createAdminRoutes(
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
+      if (payload.type === 'anonymous') {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const user = await prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { isAdmin: true },
+        select: { email: true, isAdmin: true },
       });
-      if (user?.isAdmin) {
+      const email = user?.email?.toLowerCase() ?? null;
+
+      // Strict in production: if ADMIN_ALLOWED_EMAILS is not set, lock admin routes.
+      if (config.nodeEnv === 'production' && config.adminAllowedEmails.length === 0) {
+        res.status(403).json({ error: 'Admin access is not configured.' });
+        return;
+      }
+
+      // Dev convenience: allow any authenticated (non-anonymous) user if whitelist is empty.
+      if (config.nodeEnv !== 'production' && config.adminAllowedEmails.length === 0) {
         next();
         return;
       }
-      res.status(401).json({ error: 'Unauthorized' });
+
+      if (email && config.adminAllowedEmails.includes(email) && user?.isAdmin) {
+        next();
+        return;
+      }
+
+      res.status(403).json({ error: 'Access denied.' });
     } catch (err) {
       next(err);
     }

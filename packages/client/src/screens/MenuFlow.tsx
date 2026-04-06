@@ -74,7 +74,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
   const [visible, setVisible] = useState(false);
-  if (!isOpen && !isClosing) return null;
+  const shouldRender = isOpen || isClosing;
 
   useEffect(() => {
     if (isOpen) {
@@ -82,6 +82,8 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
       return () => cancelAnimationFrame(raf);
     }
   }, [isOpen]);
+
+  if (!shouldRender) return null;
 
   const handleClose = () => {
     setIsClosing(true);
