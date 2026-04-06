@@ -67,7 +67,7 @@ const generateUUID = () => {
 };
 
 // Internal Rules Modal Component
-const TABS = ['rules', 'logic', 'modes', 'settings'] as const;
+const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];
 
 const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any) => {
@@ -94,10 +94,11 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
   };
 
   const tabLabels: Record<TabId, string> = {
-    rules: t.infoRules,
-    logic: t.infoLogic,
-    modes: t.infoModes,
-    settings: t.infoSettings,
+    rules: t.helpSectionRules,
+    faq: t.helpSectionFaq,
+    privacy: t.helpSectionPrivacy,
+    impressum: t.helpSectionImpressum,
+    agb: t.helpSectionAgb,
   };
 
   const modeCards: {
@@ -115,71 +116,36 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
 
   const activeMode = settings?.mode?.gameMode as GameMode | undefined;
 
-  const renderRules = () => (
-    <div className="space-y-5">
-      {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
-        (rule: string, i: number) => (
-          <div key={i} className="flex gap-4 items-start">
-            <span
-              className={`font-serif text-lg opacity-20 shrink-0 w-5 text-right ${currentTheme.textMain}`}
-            >
-              {i + 1}
-            </span>
-            <p
-              className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-            >
-              {rule}
-            </p>
-          </div>
-        )
-      )}
-    </div>
-  );
+  const sectionTitle = `text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`;
+  const cardBase = 'rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4';
 
-  const renderLogic = () => (
-    <div className="space-y-6">
-      <div>
-        <p
-          className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-        >
-          {t.infoTurns}
-        </p>
-      </div>
-      <div>
-        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoExplainer}</h4>
-        <p
-          className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-        >
-          {t.infoExplainerDesc}
-        </p>
-      </div>
-      <div>
-        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.info1v1}</h4>
-        <p
-          className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-        >
-          {t.info1v1Desc}
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderModes = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h4 className={`text-sm font-bold ${currentTheme.textMain}`}>{t.infoOnline}</h4>
-        <p className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
-          {t.infoOnlineDesc}
-        </p>
+  const renderGameRules = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpRulesQuickTitle}</p>
+        <div className="mt-3 space-y-3">
+          {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
+            (rule: string, i: number) => (
+              <div key={i} className="flex gap-4 items-start">
+                <span
+                  className={`font-serif text-lg opacity-20 shrink-0 w-5 text-right ${currentTheme.textMain}`}
+                >
+                  {i + 1}
+                </span>
+                <p
+                  className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
+                >
+                  {rule}
+                </p>
+              </div>
+            )
+          )}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <p
-          className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-        >
-          {t.gameMode}
-        </p>
-        <div className="grid gap-3">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpRulesModesTitle}</p>
+        <div className="mt-3 grid gap-3">
           {modeCards.map((m) => {
             const isActive = activeMode === m.id;
             return (
@@ -210,112 +176,136 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
         </div>
       </div>
 
-      <div className="space-y-2">
-        <h4 className={`text-sm font-bold ${currentTheme.textMain}`}>{t.infoOffline}</h4>
-        <p className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
-          {t.infoOfflineDesc}
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderSettings = () => (
-    <div className="space-y-4">
-      <div className="grid gap-3">
-        <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-          <p
-            className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-          >
-            {t.gameMode}
-          </p>
-          <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-            {modeCards.find((m) => m.id === activeMode)?.title ?? activeMode ?? '—'}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-            <p
-              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-            >
-              {t.roundTime}
-            </p>
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpRulesCurrentSettingsTitle}</p>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+            <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.mode?.classicRoundTime ?? '—'}s
             </p>
           </div>
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-            <p
-              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-            >
-              {t.scoreToWin}
-            </p>
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+            <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.scoreToWin ?? '—'}
             </p>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-            <p
-              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-            >
-              {t.skipPenalty}
-            </p>
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+            <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.skipPenalty ? t.enabled : t.disabled}
             </p>
           </div>
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-            <p
-              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-            >
-              {t.teams}
-            </p>
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+            <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.teamCount ?? '—'}
             </p>
           </div>
         </div>
-
         {activeMode === GameMode.IMPOSTER && (
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
-            <p
-              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
-            >
-              {t.gameModeImposter}
-            </p>
+          <div className="mt-3 rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+            <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.mode?.imposterDiscussionTime ?? '—'}s
-            </p>
-            <p className={`mt-1 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
-              {t.imposterDiscussionTime}
             </p>
           </div>
         )}
       </div>
+    </div>
+  );
 
-      {isGuest && (
-        <div className="rounded-3xl border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_10%,transparent)] px-5 py-4">
-          <p
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.18em] ${currentTheme.textMain}`}
-          >
-            {t.statsGuestBannerCta}
-          </p>
-          <p className={`mt-1 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
-            {t.statsGuestBannerBody}
+  const renderFaq = () => (
+    <div className="space-y-4">
+      {[
+        { q: t.helpFaqQ1, a: t.helpFaqA1 },
+        { q: t.helpFaqQ2, a: t.helpFaqA2 },
+        { q: t.helpFaqQ3, a: t.helpFaqA3 },
+        { q: t.helpFaqQ4, a: t.helpFaqA4 },
+      ].map((item, idx) => (
+        <div key={idx} className={cardBase}>
+          <p className={`text-sm font-bold ${currentTheme.textMain}`}>{item.q}</p>
+          <p className={`mt-1.5 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+            {item.a}
           </p>
         </div>
-      )}
+      ))}
+    </div>
+  );
+
+  const renderPrivacy = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpPrivacyTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpPrivacyIntro}
+        </p>
+        <ul className="mt-3 space-y-2">
+          {[t.helpPrivacyP1, t.helpPrivacyP2, t.helpPrivacyP3, t.helpPrivacyP4].map(
+            (line: string, i: number) => (
+              <li
+                key={i}
+                className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+              >
+                <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
+                {line}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderImpressum = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpImpressumTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpImpressumBody}
+        </p>
+        <div className="mt-3 rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <p className={`${sectionTitle} opacity-60`}>{t.helpImpressumHost}</p>
+          <p className={`mt-1 text-sm font-mono ${currentTheme.textMain}`}>
+            {typeof window !== 'undefined' ? window.location.host : '—'}
+          </p>
+        </div>
+        <p className={`mt-3 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+          {t.helpImpressumRepoHint}
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderAgb = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpAgbTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpAgbIntro}
+        </p>
+        <ul className="mt-3 space-y-2">
+          {[t.helpAgbP1, t.helpAgbP2, t.helpAgbP3, t.helpAgbP4].map((line: string, i: number) => (
+            <li
+              key={i}
+              className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+            >
+              <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
+              {line}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 
   const tabContent: Record<TabId, () => React.ReactNode> = {
-    rules: renderRules,
-    logic: renderLogic,
-    modes: renderModes,
-    settings: renderSettings,
+    rules: renderGameRules,
+    faq: renderFaq,
+    privacy: renderPrivacy,
+    impressum: renderImpressum,
+    agb: renderAgb,
   };
 
   return (
@@ -349,13 +339,13 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
         aria-label={t.rulesTitle}
       >
         {isGuest && (
-          <div className="flex justify-center pt-3 pb-1">
+          <div className="flex justify-center pt-2 pb-0">
             <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
           </div>
         )}
         {/* Header */}
         <div
-          className={`shrink-0 px-8 ${isGuest ? 'pt-4' : 'pt-10'} pb-4 flex items-center justify-between`}
+          className={`shrink-0 px-7 ${isGuest ? 'pt-2' : 'pt-10'} pb-3 flex items-center justify-between`}
         >
           <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
           <button
@@ -367,7 +357,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
         </div>
 
         {/* Tabs */}
-        <div className="shrink-0 px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="shrink-0 px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
           {TABS.map((tab) => (
             <button
               key={tab}
