@@ -105,7 +105,7 @@ export function ImposterScreen() {
             disabled={!canReveal}
             onClick={() => setIsFlipped(true)}
             className={[
-              'w-full rounded-3xl border border-white/10 p-8 text-center transition',
+              'w-full rounded-3xl border border-(--ui-border) p-8 text-center transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform',
               isFlipped
                 ? revealIsImposter
                   ? isDark
@@ -115,6 +115,14 @@ export function ImposterScreen() {
                 : 'bg-(--ui-surface) hover:bg-(--ui-surface-hover)',
               !canReveal ? 'opacity-60' : '',
             ].join(' ')}
+            style={
+              isFlipped
+                ? {
+                    boxShadow:
+                      '0 24px 70px -40px color-mix(in_srgb,var(--ui-accent)_38%,transparent)',
+                  }
+                : undefined
+            }
           >
             {!isFlipped ? (
               <div className="space-y-2">
@@ -122,12 +130,12 @@ export function ImposterScreen() {
                 <div className="text-sm opacity-70">Не показуй іншим</div>
               </div>
             ) : revealIsImposter ? (
-              <div className="space-y-2">
+              <div className="space-y-2 animate-reveal-in">
                 <div className="text-2xl font-semibold">Ти — Імпостер!</div>
                 <div className="text-sm opacity-80">Спробуй не видати себе</div>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 animate-reveal-in">
                 <div className="text-sm opacity-70">Секретне слово</div>
                 <div className="text-3xl font-extrabold">{secretWord ?? '...'}</div>
               </div>

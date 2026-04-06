@@ -187,7 +187,7 @@ function gameReducer(state: AppState, action: Action): AppState {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 function restoreSession(init: AppState): AppState {
-  // Always restore user preferences (theme, language, sound) regardless of active session
+  // Always restore user preferences (theme, sound) regardless of active session
   try {
     const rawPrefs = localStorage.getItem(PREFS_KEY);
     if (rawPrefs) {
@@ -197,9 +197,11 @@ function restoreSession(init: AppState): AppState {
         prefs && typeof prefs === 'object' && 'general' in prefs
           ? (prefs.general as Partial<GameSettings['general']>)
           : (prefs as Partial<GameSettings['general']>);
+      // Lobby-synced: language. Device-only: theme/sound.
+      const { language: _omitLanguage, ...prefsGeneral } = generalFromPrefs ?? {};
       init = {
         ...init,
-        settings: { ...init.settings, general: { ...init.settings.general, ...generalFromPrefs } },
+        settings: { ...init.settings, general: { ...init.settings.general, ...prefsGeneral } },
       };
     }
   } catch {}
@@ -224,7 +226,11 @@ function restoreSession(init: AppState): AppState {
       settings: {
         ...init.settings,
         ...(saved.settings?.general
-          ? { general: { ...init.settings.general, ...saved.settings.general } }
+          ? (() => {
+              const { theme, soundEnabled, soundPreset, ...syncedGeneral } =
+                (saved.settings.general as Partial<GameSettings['general']>) ?? {};
+              return { general: { ...init.settings.general, ...syncedGeneral } };
+            })()
           : {}),
         ...(saved.settings?.mode
           ? { mode: { ...init.settings.mode, ...saved.settings.mode } }
@@ -947,9 +953,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const keepClientNav =
         CLIENT_NAV_STATES.has(currentClientState) && syncState.gameState === GameState.LOBBY;
 
-      // Налаштування кімнати (theme, language, sound) — хост керує ними через UPDATE_SETTINGS.
-      // Синхронізуємо з сервером, щоб зміни хоста застосовувались у всіх.
-      const settings = { ...syncState.settings };
+      // Game settings sync from server, but keep device-only preferences local.
+      // Personal prefs: theme/sound should NOT be controlled by lobby settings.
+      const settings = {
+        ...syncState.settings,
+        general: {
+          ...syncState.settings.general,
+          theme: stateRef.current.settings.general.theme,
+          soundEnabled: stateRef.current.settings.general.soundEnabled,
+          soundPreset: stateRef.current.settings.general.soundPreset,
+        },
+      };
 
       // Критично: isHost має оновлюватися з сервера при кожному sync (наприклад після міграції хоста)
       const myId = socketApi.myPlayerIdRef.current ?? stateRef.current.myPlayerId;
@@ -1128,14 +1142,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     document.documentElement.lang = lang;
   }, [state.settings.general.language]);
 
-  // Persist user preferences (theme, language, sound) across sessions
+  // Persist user preferences (theme, sound) across sessions
   useEffect(() => {
     try {
       localStorage.setItem(
         PREFS_KEY,
         JSON.stringify({
           theme: state.settings.general.theme,
-          language: state.settings.general.language,
           soundEnabled: state.settings.general.soundEnabled,
           soundPreset: state.settings.general.soundPreset,
         })
@@ -1143,7 +1156,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {}
   }, [
     state.settings.general.theme,
-    state.settings.general.language,
     state.settings.general.soundEnabled,
     state.settings.general.soundPreset,
   ]);
@@ -1185,7 +1197,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             ...roomSettings.general,
                             // Keep personal prefs from device
                             theme: stateRef.current.settings.general.theme,
-                            language: stateRef.current.settings.general.language,
                             soundEnabled: stateRef.current.settings.general.soundEnabled,
                             soundPreset: stateRef.current.settings.general.soundPreset,
                           },
@@ -1261,6 +1272,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             payload: { settings: { ...stateRef.current.settings, ...newSettings } },
           });
         }
+      },
+      setPreferences: (patch: Partial<GameSettings['general']>) => {
+        dispatch({
+          type: 'SET_STATE',
+          payload: {
+            settings: {
+              ...stateRef.current.settings,
+              general: { ...stateRef.current.settings.general, ...patch },
+            },
+          },
+        });
       },
       startOfflineGame: () => {
         dispatch({

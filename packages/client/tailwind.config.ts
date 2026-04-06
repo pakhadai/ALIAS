@@ -47,6 +47,7 @@ export default {
         'vs-from-left': 'vsFromLeft 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'vs-from-right': 'vsFromRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'vs-scale-in': 'vsScaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'reveal-in': 'revealIn 0.35s ease-out forwards',
       },
       keyframes: {
         float: {
@@ -103,6 +104,18 @@ export default {
         vsScaleIn: {
           '0%': { opacity: '0', transform: 'scale(0) rotate(-20deg)' },
           '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
+        },
+        revealIn: {
+          '0%': {
+            opacity: '0',
+            transform: 'scale(0.98)',
+            filter: 'blur(2px)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'scale(1)',
+            filter: 'blur(0px)',
+          },
         },
       },
       boxShadow: {

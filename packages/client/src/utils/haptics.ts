@@ -6,7 +6,7 @@ function isVibrationSupported(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 }
 
-function isHapticsEnabled(): boolean {
+export function getHapticsEnabled(): boolean {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
     if (!raw) return true; // default on
@@ -17,9 +17,19 @@ function isHapticsEnabled(): boolean {
   }
 }
 
+export function setHapticsEnabled(next: boolean): void {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    const prefs = raw ? JSON.parse(raw) : {};
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...prefs, hapticsEnabled: next }));
+  } catch {
+    // ignore
+  }
+}
+
 export function vibrate(pattern: VibratePattern): void {
   if (!isVibrationSupported()) return;
-  if (!isHapticsEnabled()) return;
+  if (!getHapticsEnabled()) return;
   try {
     navigator.vibrate(pattern);
   } catch {

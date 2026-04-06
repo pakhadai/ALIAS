@@ -154,16 +154,40 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText,
   cancelText,
 }) => {
-  if (!isOpen) return null;
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+      return;
+    }
+    if (!shouldRender) return;
+    setIsClosing(true);
+    const t = setTimeout(() => {
+      setShouldRender(false);
+      setIsClosing(false);
+    }, 280);
+    return () => clearTimeout(t);
+  }, [isOpen, shouldRender]);
+
+  if (!shouldRender) return null;
 
   const cardClass = theme?.card || 'bg-(--ui-card)';
   const textMain = theme?.textMain || 'text-(--ui-fg)';
   const textSecondary = theme?.textSecondary || 'text-(--ui-fg-muted)';
 
   return (
-    <div className="fixed inset-0 z-600 flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg animate-fade-in">
+    <div
+      className={`fixed inset-0 z-600 flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg ${
+        isClosing ? 'animate-fade-out' : 'animate-fade-in'
+      }`}
+    >
       <div
-        className={`${cardClass} border border-(--ui-border) rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center animate-pop-in`}
+        className={`${cardClass} border border-(--ui-border) rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center ${
+          isClosing ? 'animate-pop-out' : 'animate-pop-in'
+        }`}
       >
         <h3 className={`text-4xl font-serif ${textMain} mb-6 tracking-wide leading-tight`}>
           {title}
@@ -174,7 +198,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           {message}
         </p>
         <div className="flex flex-col gap-5">
-          <Button variant={isDanger ? 'danger' : 'primary'} fullWidth size="xl" onClick={onConfirm}>
+          <Button
+            variant={isDanger ? 'danger' : 'primary'}
+            fullWidth
+            size="xl"
+            onClick={onConfirm}
+          >
             {confirmText || (isDanger ? 'Yes, Exit' : 'Confirm')}
           </Button>
           <Button variant="ghost" fullWidth onClick={onCancel} size="lg">

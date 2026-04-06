@@ -127,6 +127,7 @@ export function QuickBuyModal({
   const [amount, setAmount] = useState(0);
   const [itemName, setItemName] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     createPaymentIntent(itemType, itemId)
@@ -140,9 +141,14 @@ export function QuickBuyModal({
       });
   }, []);
 
+  const requestClose = () => {
+    setIsClosing(true);
+    setTimeout(() => onClose(), 280);
+  };
+
   const handleSuccess = () => {
     onSuccess();
-    onClose();
+    requestClose();
   };
 
   // Stripe Element appearance
@@ -155,23 +161,21 @@ export function QuickBuyModal({
     },
   };
 
-  const bgCard = isDark
-    ? 'bg-[#161616] border border-white/10'
-    : 'bg-white border border-slate-200';
+  const bgCard = 'bg-(--ui-card) border border-(--ui-border)';
 
   return (
     /* Backdrop */
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className={`fixed inset-0 z-50 flex items-end justify-center ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) requestClose();
       }}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={requestClose} />
 
       {/* Sheet */}
       <div
-        className={`relative w-full max-w-sm ${bgCard} rounded-t-[2rem] px-6 pt-5 pb-8 z-10 shadow-2xl`}
+        className={`relative w-full max-w-sm ${bgCard} rounded-t-4xl px-6 pt-5 pb-8 z-10 shadow-2xl ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
         style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
       >
         {/* Handle */}
@@ -187,8 +191,8 @@ export function QuickBuyModal({
             Швидка оплата
           </h2>
           <button
-            onClick={onClose}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/[0.08] hover:bg-white/[0.15]' : 'bg-slate-100 hover:bg-slate-200'}`}
+            onClick={requestClose}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/8 hover:bg-white/15' : 'bg-slate-100 hover:bg-slate-200'}`}
           >
             <X size={16} className={isDark ? 'text-white/70' : 'text-slate-500'} />
           </button>
@@ -217,7 +221,7 @@ export function QuickBuyModal({
               itemName={itemName}
               isDark={isDark}
               onSuccess={handleSuccess}
-              onClose={onClose}
+              onClose={requestClose}
             />
           </Elements>
         )}

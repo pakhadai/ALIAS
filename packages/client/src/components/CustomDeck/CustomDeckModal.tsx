@@ -41,11 +41,14 @@ function CopyButton({ text }: { text: string }) {
     });
   };
   return (
-    <button onClick={copy} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+    <button
+      onClick={copy}
+      className="p-1.5 rounded-lg hover:bg-(--ui-surface-hover) transition-all duration-200 ease-out active:scale-95"
+    >
       {copied ? (
         <Check size={13} className="text-emerald-400" />
       ) : (
-        <Copy size={13} className="text-slate-400" />
+        <Copy size={13} className="text-(--ui-fg-muted)" />
       )}
     </button>
   );
@@ -90,14 +93,14 @@ function DeckItem({
 
   return (
     <div
-      className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/8 transition-colors"
+      className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:bg-(--ui-surface-hover) transition-all duration-200 ease-out active:scale-95 will-change-transform"
       onClick={() => onSelect?.(deck.accessCode, deck.name)}
     >
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-white text-sm truncate">{deck.name}</p>
+        <p className="font-semibold text-(--ui-fg) text-sm truncate">{deck.name}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="text-[10px] text-slate-400">{deck.wordCount} слів</span>
-          <span className="text-slate-600">·</span>
+          <span className="text-[10px] text-(--ui-fg-muted)">{deck.wordCount} слів</span>
+          <span className="text-(--ui-fg-muted)/60">·</span>
           <div className="flex items-center gap-1">
             <span className="text-[10px] text-indigo-400 font-mono font-bold">
               {deck.accessCode}
@@ -116,7 +119,7 @@ function DeckItem({
           )}
           {deck.status !== 'approved' && (
             <>
-              <span className="text-slate-600">·</span>
+              <span className="text-(--ui-fg-muted)/60">·</span>
               <span className="text-[10px] text-amber-400">{deck.status}</span>
             </>
           )}
@@ -126,7 +129,7 @@ function DeckItem({
       <button
         onClick={handleDelete}
         disabled={deleting}
-        className="shrink-0 p-2 rounded-xl hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors disabled:opacity-50"
+        className="shrink-0 p-2 rounded-xl hover:bg-red-500/20 text-(--ui-fg-muted) hover:text-red-400 transition-all duration-200 ease-out active:scale-95 disabled:opacity-50"
       >
         {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
       </button>
@@ -336,6 +339,12 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = () => {
+    setIsClosing(true);
+    setTimeout(() => onClose(), 280);
+  };
 
   const loadDecks = useCallback(async () => {
     if (!isAuthenticated) {
@@ -368,7 +377,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
 
   const handleSelect = (code: string, deckName: string) => {
     onSelectDeck?.(code, deckName);
-    onClose();
+    requestClose();
   };
 
   const handleLoginSuccess = useCallback(async () => {
@@ -377,9 +386,13 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden">
+      <div
+        className={`fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden ${
+          isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        }`}
+      >
         {/* Header */}
-        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-white/10">
+        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {view !== 'list' ? (
@@ -410,7 +423,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               </div>
             </div>
             <button
-              onClick={onClose}
+              onClick={requestClose}
               className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X size={20} />
@@ -494,7 +507,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-white/5">
+        <div className="shrink-0 px-5 py-3 border-t border-white/5">
           <p className="text-center text-slate-500 text-[10px]">
             Поділіться кодом доступу з іншими гравцями
           </p>

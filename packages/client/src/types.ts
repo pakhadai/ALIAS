@@ -97,6 +97,8 @@ export interface GameContextType extends AppState {
   playSound: (soundId: GameSoundId) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
   setSettings: (settings: GameSettings | ((prev: GameSettings) => GameSettings)) => void;
+  /** Update device-only preferences without syncing to server. */
+  setPreferences: (patch: Partial<GameSettings['general']>) => void;
   startOfflineGame: () => void;
   handleCorrect: () => void;
   handleSkip: () => void;

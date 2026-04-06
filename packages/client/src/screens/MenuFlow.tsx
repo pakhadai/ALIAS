@@ -25,6 +25,7 @@ import { Card } from '../components/Card';
 import { Logo } from '../components/Shared';
 import { ProfileModal } from '../components/Auth/ProfileModal';
 import { LoginModal } from '../components/Auth/LoginModal';
+import { AppSettingsModal } from '../components/Settings/AppSettingsModal';
 import { GameState, Language, AppTheme, Category } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
@@ -301,7 +302,7 @@ export const MenuScreen = () => {
   const { isAuthenticated } = useAuthContext();
   const [showRules, setShowRules] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const [storeThemes, setStoreThemes] = useState<ThemeItem[]>([]);
   const t = TRANSLATIONS[settings.general.language];
@@ -335,12 +336,11 @@ export const MenuScreen = () => {
   };
 
   const toggleLanguage = () => {
-    setSettings((prev: any) => {
-      let nextLang;
-      if (prev.language === Language.UA) nextLang = Language.DE;
-      else if (prev.language === Language.DE) nextLang = Language.EN;
-      else nextLang = Language.UA;
-      return { ...prev, language: nextLang };
+    setSettings((prev) => {
+      const cur = prev.general.language;
+      const nextLang =
+        cur === Language.UA ? Language.DE : cur === Language.DE ? Language.EN : Language.UA;
+      return { ...prev, general: { ...prev.general, language: nextLang } };
     });
   };
 
@@ -365,14 +365,14 @@ export const MenuScreen = () => {
           <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
         </button>
         <button
-          onClick={() => setShowThemePicker(true)}
+          onClick={() => setShowAppSettings(true)}
           className="transition-all active:scale-90 p-2"
+          aria-label="Settings"
         >
-          <span
-            className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            palette
-          </span>
+          <Settings
+            size={22}
+            className={`${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`}
+          />
         </button>
         <button onClick={() => setShowRules(true)} className="transition-all active:scale-90 p-2">
           <span
@@ -512,97 +512,12 @@ export const MenuScreen = () => {
       )}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
-      {/* Theme Picker Sheet */}
-      {showThemePicker && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-black/60 transition-all"
-          onClick={() => setShowThemePicker(false)}
-        >
-          <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
-            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-5">
-              <p className="text-white/30 text-[9px] font-sans font-bold tracking-[0.28em] uppercase">
-                Appearance
-              </p>
-              <button
-                onClick={() => setShowThemePicker(false)}
-                className="text-white/30 hover:text-white/60 p-1"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
-              {(Object.keys(THEME_CONFIG) as AppTheme[]).map((themeId) => {
-                const theme = THEME_CONFIG[themeId];
-                const isActive = settings.general.theme === themeId;
-                const owned = isThemeOwned(themeId);
-                return (
-                  <button
-                    key={theme.id}
-                    onClick={() => {
-                      if (!owned) {
-                        setShowThemePicker(false);
-                        setGameState(GameState.STORE);
-                        return;
-                      }
-                      setSettings((prev: any) => ({
-                        ...prev,
-                        general: { ...prev.general, theme: themeId },
-                      }));
-                      setShowThemePicker(false);
-                    }}
-                    className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden
-                      ${isActive ? 'ring-2 ring-offset-2 ring-offset-[#1C1C1E]' : ''}`}
-                    style={{
-                      background: theme.preview.bg,
-                      ...(isActive
-                        ? ({ '--tw-ring-color': theme.preview.accent } as React.CSSProperties)
-                        : {}),
-                    }}
-                  >
-                    <div
-                      className="w-5 h-5 rounded-full mb-1"
-                      style={{ background: theme.preview.accent }}
-                    />
-                    <span
-                      className="text-[13px] font-bold leading-tight"
-                      style={{
-                        color: theme.isDark ? '#fff' : '#111',
-                        fontFamily: theme.fonts.heading,
-                      }}
-                    >
-                      {theme.name}
-                    </span>
-                    <span
-                      className="text-[10px] opacity-50 leading-snug"
-                      style={{ color: theme.isDark ? '#fff' : '#111' }}
-                    >
-                      {theme.description}
-                    </span>
-                    {!owned && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 rounded-full px-2 py-0.5">
-                        <Lock size={9} className="text-white/80" />
-                        <span className="text-[9px] text-white/80 font-bold">$0.99</span>
-                      </div>
-                    )}
-                    {isActive && owned && (
-                      <div
-                        className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-                        style={{ background: theme.preview.accent }}
-                      >
-                        <Check size={10} className="text-white" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      <AppSettingsModal
+        isOpen={showAppSettings}
+        onClose={() => setShowAppSettings(false)}
+        isThemeOwned={isThemeOwned}
+        onGoStore={() => setGameState(GameState.STORE)}
+      />
     </div>
   );
 };
@@ -796,7 +711,7 @@ export const ProfileScreen = () => {
   const hasCustomPacks =
     profile?.purchases?.some((p) => p.wordPack?.slug === 'feature-custom-packs') ?? false;
 
-  const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all active:scale-[0.98] ${
+  const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
     isDark
       ? 'bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
       : 'bg-(--ui-card) border border-(--ui-border) hover:bg-(--ui-surface-hover) shadow-sm'
@@ -1197,7 +1112,9 @@ export const LobbySettingsScreen = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await saveLobbySettings(local as any);
+      const { theme, soundEnabled, soundPreset, ...syncedGeneral } = (local as any).general ?? {};
+      const syncedOnly = { ...(local as any), general: syncedGeneral };
+      await saveLobbySettings(syncedOnly as any);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {}
