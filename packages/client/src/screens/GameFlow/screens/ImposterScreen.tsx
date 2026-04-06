@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { GameMode } from '@alias/shared';
 import { useGame } from '../../../context/GameContext';
 import { Button } from '../../../components/Button';
 

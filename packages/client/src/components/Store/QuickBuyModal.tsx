@@ -3,7 +3,6 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import { createPaymentIntent } from '../../services/api';
-import { AppTheme } from '../../types';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
@@ -15,10 +14,9 @@ interface PayFormProps {
   itemName: string;
   isDark: boolean;
   onSuccess: () => void;
-  onClose: () => void;
 }
 
-function PayForm({ amount, itemName, isDark, onSuccess, onClose }: PayFormProps) {
+function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [paying, setPaying] = useState(false);
@@ -46,10 +44,6 @@ function PayForm({ amount, itemName, isDark, onSuccess, onClose }: PayFormProps)
       onSuccess();
     }
   };
-
-  const inputBg = isDark
-    ? 'bg-[#111] border-white/10 text-white'
-    : 'bg-slate-50 border-slate-200 text-slate-900';
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -139,7 +133,7 @@ export function QuickBuyModal({
       .catch((err) => {
         setLoadError(err?.message ?? 'Не вдалося ініціювати оплату');
       });
-  }, []);
+  }, [itemId, itemType]);
 
   const requestClose = () => {
     setIsClosing(true);
@@ -221,7 +215,6 @@ export function QuickBuyModal({
               itemName={itemName}
               isDark={isDark}
               onSuccess={handleSuccess}
-              onClose={requestClose}
             />
           </Elements>
         )}

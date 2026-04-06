@@ -6,7 +6,6 @@ import {
   Plus,
   Minus,
   FileText,
-  PackageOpen,
   Copy,
   Loader2,
   Timer,
@@ -17,17 +16,11 @@ import {
 import { Button } from '../components/Button';
 import { ConfirmationModal } from '../components/Shared';
 import { CustomDeckModal } from '../components/CustomDeck/CustomDeckModal';
-import {
-  GameState,
-  Language,
-  Category,
-  GameSettings,
-  GameMode,
-} from '../types';
+import { GameState, Language, Category, GameSettings, GameMode } from '../types';
 import { useGame } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
 import { fetchStore, type WordPackItem } from '../services/api';
-import { TRANSLATIONS, THEME_CONFIG } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import QRCode from 'qrcode';
 import { AVATARS } from '../context/GameContext';
 import { AvatarDisplay } from '../components/AvatarDisplay';
@@ -68,7 +61,6 @@ export const LobbyScreen = () => {
     showNotification,
   } = useGame();
   const general = settings.general;
-  const modeSettings = settings.mode;
   const t = TRANSLATIONS[general.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -765,7 +757,9 @@ export const SettingsScreen = () => {
             }`}
           >
             <div className="space-y-2">
-              <h3 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}>
+              <h3
+                className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
+              >
                 {t.gameMode ?? 'Режим гри'}
               </h3>
               <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
@@ -820,7 +814,13 @@ export const SettingsScreen = () => {
                           ? (t.gameModeHintImposter as string | undefined)
                           : (t.gameModeHintClassic as string | undefined);
               if (!hint) return null;
-              return <p className={`text-[10px] leading-relaxed opacity-50 ${currentTheme.textSecondary}`}>{hint}</p>;
+              return (
+                <p
+                  className={`text-[10px] leading-relaxed opacity-50 ${currentTheme.textSecondary}`}
+                >
+                  {hint}
+                </p>
+              );
             })()}
           </div>
 
@@ -831,14 +831,18 @@ export const SettingsScreen = () => {
             }`}
           >
             <div className="space-y-2">
-              <h3 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}>
+              <h3
+                className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
+              >
                 {t.content ?? 'Словник'}
               </h3>
               <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
             </div>
 
             <div className="space-y-3">
-              <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+              <p
+                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+              >
                 {t.language}
               </p>
               <div className="flex gap-2">
@@ -862,7 +866,9 @@ export const SettingsScreen = () => {
 
             {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
               <div className="space-y-2">
-                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                <p
+                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                >
                   {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                 </p>
                 <div className="flex gap-2">
@@ -887,7 +893,9 @@ export const SettingsScreen = () => {
             )}
 
             <div className="space-y-3">
-              <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+              <p
+                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+              >
                 {t.categories}
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -919,7 +927,9 @@ export const SettingsScreen = () => {
 
             {settings.general.categories.includes(Category.CUSTOM) && (
               <div className="space-y-3">
-                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                <p
+                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                >
                   {t.customWords}
                 </p>
                 <textarea
@@ -935,14 +945,18 @@ export const SettingsScreen = () => {
             {ownedPacks.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                  <p
+                    className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                  >
                     {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                   </p>
                   {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
                     <button
                       onClick={() => isHost && updateGeneral('selectedPackIds', [])}
                       className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${
-                        isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'
+                        isDark
+                          ? 'text-white/30 hover:text-white/60'
+                          : 'text-slate-400 hover:text-slate-600'
                       } ${!isHost ? 'pointer-events-none' : ''}`}
                     >
                       Скинути
@@ -967,7 +981,9 @@ export const SettingsScreen = () => {
                       >
                         {isSelected && <Check size={10} />}
                         <span>{pack.name}</span>
-                        <span className={`font-normal ${isSelected ? 'text-[#D4AF6A]/60' : 'opacity-40'}`}>
+                        <span
+                          className={`font-normal ${isSelected ? 'text-[#D4AF6A]/60' : 'opacity-40'}`}
+                        >
                           {pack.wordCount}
                         </span>
                       </button>
@@ -983,7 +999,9 @@ export const SettingsScreen = () => {
             )}
 
             <div className="space-y-3">
-              <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+              <p
+                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+              >
                 {t.customDeckLobbyLabel ?? 'Власний словник'}
               </p>
               {settings.general.customDeckCode ? (
@@ -1014,7 +1032,7 @@ export const SettingsScreen = () => {
                 <button
                   onClick={() => isHost && setShowCustomDeckPicker(true)}
                   disabled={!isHost}
-                    className="w-full p-3 rounded-xl border border-dashed border-white/10 text-slate-500 hover:text-white hover:border-indigo-500/40 transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
+                  className="w-full p-3 rounded-xl border border-dashed border-white/10 text-slate-500 hover:text-white hover:border-indigo-500/40 transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
                 >
                   <FileText size={14} />
                   <span className="text-xs">Вибрати зі своїх словників…</span>
@@ -1030,7 +1048,9 @@ export const SettingsScreen = () => {
             }`}
           >
             <div className="space-y-2">
-              <h3 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}>
+              <h3
+                className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
+              >
                 {t.rules ?? 'Правила'}
               </h3>
               <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
@@ -1042,7 +1062,9 @@ export const SettingsScreen = () => {
                 return (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                      <p
+                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                      >
                         {t.imposterDiscussionTime ?? 'Час обговорення'}
                       </p>
                       <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
@@ -1077,7 +1099,9 @@ export const SettingsScreen = () => {
               return (
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                    <p
+                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    >
                       {t.roundTime}
                     </p>
                     <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
@@ -1101,10 +1125,14 @@ export const SettingsScreen = () => {
 
             <div className="space-y-4">
               <div className="flex justify-between">
-                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                <p
+                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                >
                   {t.scoreToWin}
                 </p>
-                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>{settings.general.scoreToWin}</span>
+                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                  {settings.general.scoreToWin}
+                </span>
               </div>
               <input
                 type="range"
@@ -1121,10 +1149,14 @@ export const SettingsScreen = () => {
 
             <div className="space-y-4">
               <div className="flex justify-between">
-                <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+                <p
+                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                >
                   {t.teamCount}
                 </p>
-                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>{settings.general.teamCount}</span>
+                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                  {settings.general.teamCount}
+                </span>
               </div>
               <input
                 type="range"
@@ -1140,7 +1172,9 @@ export const SettingsScreen = () => {
             </div>
 
             <div className="space-y-4">
-              <p className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}>
+              <p
+                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+              >
                 {t.skipPenalty}
               </p>
               <button
@@ -1156,7 +1190,9 @@ export const SettingsScreen = () => {
                 <span className={currentTheme.textMain}>
                   {settings.general.skipPenalty ? t.enabled : t.disabled}
                 </span>
-                <div className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-yellow-500' : isDark ? 'bg-white/20' : 'bg-slate-300'}`}>
+                <div
+                  className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-yellow-500' : isDark ? 'bg-white/20' : 'bg-slate-300'}`}
+                >
                   <div
                     className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${
                       settings.general.skipPenalty ? 'right-0.5' : 'left-0.5'

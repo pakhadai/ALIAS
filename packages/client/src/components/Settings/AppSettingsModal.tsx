@@ -39,11 +39,16 @@ export function AppSettingsModal({ isOpen, onClose, isThemeOwned, onGoStore }: P
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-2">
             <SettingsIcon size={16} className={currentTheme.iconColor} />
-            <p className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase ${currentTheme.textSecondary}`}>
+            <p
+              className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase ${currentTheme.textSecondary}`}
+            >
               Settings
             </p>
           </div>
-          <button onClick={onClose} className={`p-1 opacity-50 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}>
+          <button
+            onClick={onClose}
+            className={`p-1 opacity-50 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+          >
             <X size={16} />
           </button>
         </div>
@@ -79,7 +84,10 @@ export function AppSettingsModal({ isOpen, onClose, isThemeOwned, onGoStore }: P
                         : {}),
                     }}
                   >
-                    <div className="w-5 h-5 rounded-full mb-1" style={{ background: theme.preview.accent }} />
+                    <div
+                      className="w-5 h-5 rounded-full mb-1"
+                      style={{ background: theme.preview.accent }}
+                    />
                     <span
                       className="text-[13px] font-bold leading-tight"
                       style={{
@@ -126,7 +134,11 @@ export function AppSettingsModal({ isOpen, onClose, isThemeOwned, onGoStore }: P
                 type="button"
                 onClick={() => setPreferences({ soundEnabled: !settings.general.soundEnabled })}
                 className={`w-12 h-6 rounded-full transition-all relative ${
-                  settings.general.soundEnabled ? 'bg-yellow-500' : isDark ? 'bg-white/20' : 'bg-slate-300'
+                  settings.general.soundEnabled
+                    ? 'bg-yellow-500'
+                    : isDark
+                      ? 'bg-white/20'
+                      : 'bg-slate-300'
                 }`}
                 aria-pressed={settings.general.soundEnabled}
               >
@@ -188,7 +200,9 @@ export function AppSettingsModal({ isOpen, onClose, isThemeOwned, onGoStore }: P
                 />
               </button>
             </div>
-            <p className={`text-[10px] leading-relaxed ${isDark ? 'text-white/25' : 'text-slate-400'}`}>
+            <p
+              className={`text-[10px] leading-relaxed ${isDark ? 'text-white/25' : 'text-slate-400'}`}
+            >
               Vibration is stored on this device and won&apos;t affect the lobby rules.
             </p>
           </div>
@@ -197,4 +211,3 @@ export function AppSettingsModal({ isOpen, onClose, isThemeOwned, onGoStore }: P
     </div>
   );
 }
-
