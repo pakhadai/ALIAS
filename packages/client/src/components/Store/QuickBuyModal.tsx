@@ -48,9 +48,7 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Item summary */}
-      <div
-        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border)"
-      >
+      <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border)">
         <span className="text-sm font-semibold text-(--ui-fg)">{itemName}</span>
         <span className="text-(--ui-accent) font-bold text-base">${(amount / 100).toFixed(2)}</span>
       </div>
@@ -88,9 +86,7 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
 
       <div className="flex items-center justify-center gap-2 opacity-40">
         <ShieldCheck size={13} />
-        <span
-          className="text-[10px] uppercase tracking-widest font-medium text-(--ui-fg-muted)"
-        >
+        <span className="text-[10px] uppercase tracking-widest font-medium text-(--ui-fg-muted)">
           Захищено Stripe
         </span>
       </div>
@@ -180,11 +176,7 @@ export function QuickBuyModal({
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2
-            className="font-serif text-xl tracking-wide text-(--ui-fg)"
-          >
-            Швидка оплата
-          </h2>
+          <h2 className="font-serif text-xl tracking-wide text-(--ui-fg)">Швидка оплата</h2>
           <button
             onClick={requestClose}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
@@ -197,9 +189,7 @@ export function QuickBuyModal({
         {loadError ? (
           <p className="text-(--ui-danger) text-[13px] text-center py-8">{loadError}</p>
         ) : !stripePromise ? (
-          <p
-            className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)"
-          >
+          <p className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)">
             Платіжна система не налаштована
           </p>
         ) : !clientSecret ? (

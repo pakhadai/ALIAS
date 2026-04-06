@@ -642,10 +642,7 @@ export function AdminPanel() {
                         <span className="text-(--ui-fg) text-sm font-medium w-40 truncate">
                           {p.name}
                         </span>
-                        <Bar
-                          pct={Math.round((p.purchases / max) * 100)}
-                          color="bg-(--ui-accent)"
-                        />
+                        <Bar pct={Math.round((p.purchases / max) * 100)} color="bg-(--ui-accent)" />
                         <span className="text-(--ui-accent) font-bold text-xs w-16 text-right">
                           {p.purchases} купівель
                         </span>
@@ -708,7 +705,9 @@ export function AdminPanel() {
                 {broadcastResult && (
                   <span
                     className={`text-[12px] ${
-                      broadcastResult.startsWith('Помилка') ? 'text-(--ui-danger)' : 'text-(--ui-success)'
+                      broadcastResult.startsWith('Помилка')
+                        ? 'text-(--ui-danger)'
+                        : 'text-(--ui-success)'
                     }`}
                   >
                     {broadcastResult}
@@ -743,7 +742,9 @@ export function AdminPanel() {
                       {deck.accessCode && (
                         <span>
                           Код:{' '}
-                          <span className="text-(--ui-fg) opacity-70 font-mono">{deck.accessCode}</span>
+                          <span className="text-(--ui-fg) opacity-70 font-mono">
+                            {deck.accessCode}
+                          </span>
                         </span>
                       )}
                       <span>{new Date(deck.createdAt).toLocaleDateString('uk')}</span>
@@ -1171,7 +1172,9 @@ export function AdminPanel() {
                         Безкоштовна
                       </label>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-(--ui-fg-muted) opacity-80">Ціна (центи):</span>
+                        <span className="text-xs text-(--ui-fg-muted) opacity-80">
+                          Ціна (центи):
+                        </span>
                         <input
                           className={inp + ' w-28'}
                           type="number"

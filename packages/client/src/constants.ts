@@ -698,8 +698,7 @@ export const THEME_CONFIG = {
     textSecondary: 'text-(--ui-fg-muted) font-sans',
     textAccent: 'text-(--ui-accent) font-sans',
     textGradient: 'text-(--ui-fg) font-serif',
-    button:
-      'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
+    button: 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
     iconColor: 'text-(--ui-fg)',
     progressBar: 'bg-(--ui-accent)',
   },
@@ -727,8 +726,7 @@ export const THEME_CONFIG = {
     textSecondary: 'text-(--ui-fg-muted) font-sans',
     textAccent: 'text-(--ui-accent) font-sans',
     textGradient: 'text-(--ui-fg) font-serif',
-    button:
-      'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
+    button: 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
     iconColor: 'text-(--ui-fg)',
     progressBar: 'bg-(--ui-accent)',
   },
@@ -755,8 +753,7 @@ export const THEME_CONFIG = {
     textSecondary: 'text-(--ui-fg-muted) font-sans',
     textAccent: 'text-(--ui-accent) font-sans',
     textGradient: 'text-(--ui-fg) font-serif',
-    button:
-      'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
+    button: 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
     iconColor: 'text-(--ui-fg)',
     progressBar: 'bg-(--ui-accent)',
   },
@@ -783,8 +780,7 @@ export const THEME_CONFIG = {
     textSecondary: 'text-(--ui-fg-muted) font-sans',
     textAccent: 'text-(--ui-accent) font-sans',
     textGradient: 'text-(--ui-fg) font-serif',
-    button:
-      'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
+    button: 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
     iconColor: 'text-(--ui-fg)',
     progressBar: 'bg-(--ui-accent)',
   },
@@ -811,8 +807,7 @@ export const THEME_CONFIG = {
     textSecondary: 'text-(--ui-fg-muted) font-sans',
     textAccent: 'text-(--ui-accent) font-sans',
     textGradient: 'text-(--ui-fg) font-serif',
-    button:
-      'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
+    button: 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 font-sans shadow-lg',
     iconColor: 'text-(--ui-fg)',
     progressBar: 'bg-(--ui-accent)',
   },

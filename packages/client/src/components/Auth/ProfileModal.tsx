@@ -173,9 +173,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             {avatarId != null ? (
               <AvatarDisplay avatarId={avatarId} size={76} />
             ) : (
-              <div
-                className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center"
-              >
+              <div className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center">
                 <AvatarIcon />
               </div>
             )}
@@ -188,20 +186,12 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             </span>
           </div>
 
-          <h2
-            className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)"
-          >
+          <h2 className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)">
             {displayName}
           </h2>
-          <p
-            className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)"
-          >
-            {displaySub}
-          </p>
+          <p className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)">{displaySub}</p>
 
-          <p
-            className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)"
-          >
+          <p className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)">
             {statsSummaryLine}
           </p>
 
@@ -218,9 +208,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               type="button"
               onClick={openAdminPanel}
               className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
-                ${
-                  'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 border border-(--ui-border)'
-                }`}
+                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 border border-(--ui-border)'}`}
             >
               <Shield size={16} strokeWidth={2.25} aria-hidden />
               {t.profileAdminPanel}
@@ -248,9 +236,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         {/* Purchases / benefits */}
         <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
-            <p
-              className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)"
-            >
+            <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
               {purchases.length > 0 ? 'My Purchases' : 'What you get'}
             </p>
           </div>
@@ -263,14 +249,10 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                   className="flex items-center justify-between py-3 border-b border-(--ui-border)"
                 >
                   <div>
-                    <p
-                      className="text-[14px] font-sans text-(--ui-fg)"
-                    >
+                    <p className="text-[14px] font-sans text-(--ui-fg)">
                       {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
                     </p>
-                    <p
-                      className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)"
-                    >
+                    <p className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -289,14 +271,8 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                     {item.emoji}
                   </span>
                   <div className="min-w-0">
-                    <p
-                      className="text-[13px] font-sans font-medium text-(--ui-fg)"
-                    >
-                      {item.label}
-                    </p>
-                    <p
-                      className="text-[11px] font-sans mt-0.5 leading-snug text-(--ui-fg-muted)"
-                    >
+                    <p className="text-[13px] font-sans font-medium text-(--ui-fg)">{item.label}</p>
+                    <p className="text-[11px] font-sans mt-0.5 leading-snug text-(--ui-fg-muted)">
                       {item.sub}
                     </p>
                   </div>

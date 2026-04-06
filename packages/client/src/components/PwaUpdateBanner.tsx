@@ -22,9 +22,7 @@ export const PwaUpdateBanner: React.FC = () => {
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
       role="status"
     >
-      <div
-        className="pointer-events-auto flex max-w-lg w-full items-center gap-3 rounded-2xl px-4 py-3 shadow-2xl border border-(--ui-border) bg-(--ui-card) text-(--ui-fg) backdrop-blur-md"
-      >
+      <div className="pointer-events-auto flex max-w-lg w-full items-center gap-3 rounded-2xl px-4 py-3 shadow-2xl border border-(--ui-border) bg-(--ui-card) text-(--ui-fg) backdrop-blur-md">
         <p className="flex-1 text-xs font-sans leading-snug">{t.pwaUpdateMessage}</p>
         <button
           type="button"

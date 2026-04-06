@@ -287,11 +287,15 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ theme }) => {
   return (
     <div className="flex flex-col items-center w-full">
-      <h1 className={`font-serif font-normal text-7xl tracking-[0.25em] text-center mb-4 animate-pop-in ${theme.textMain}`}>
+      <h1
+        className={`font-serif font-normal text-7xl tracking-[0.25em] text-center mb-4 animate-pop-in ${theme.textMain}`}
+      >
         ALIAS
       </h1>
       <div className="h-px w-16 bg-(--ui-border) mb-6"></div>
-      <p className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${theme.textSecondary}`}>
+      <p
+        className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${theme.textSecondary}`}
+      >
         Premium Collection
       </p>
     </div>

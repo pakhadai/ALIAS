@@ -109,9 +109,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         {/* Google */}
         <div className="mb-3">
           {loading === 'google' ? (
-            <div
-              className="flex items-center justify-center gap-2 h-11 rounded-xl bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg-muted)"
-            >
+            <div className="flex items-center justify-center gap-2 h-11 rounded-xl bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg-muted)">
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">{t.loginGoogleLoading}</span>
             </div>

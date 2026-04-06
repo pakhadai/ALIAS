@@ -499,10 +499,7 @@ export const MenuScreen = () => {
       )}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
-      <AppSettingsModal
-        isOpen={showAppSettings}
-        onClose={() => setShowAppSettings(false)}
-      />
+      <AppSettingsModal isOpen={showAppSettings} onClose={() => setShowAppSettings(false)} />
     </div>
   );
 };
@@ -873,9 +870,7 @@ export const ProfileSettingsScreen = () => {
     'w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)';
 
   return (
-    <div
-      className="flex flex-col min-h-screen items-center bg-(--ui-bg)"
-    >
+    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
           <button
@@ -903,9 +898,7 @@ export const ProfileSettingsScreen = () => {
 
           {/* Avatar picker */}
           <div className="space-y-2">
-            <p
-              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-            >
+            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
               Виберіть аватарку
             </p>
             <div className="grid grid-cols-6 gap-2 max-w-xs mx-auto">
@@ -935,9 +928,7 @@ export const ProfileSettingsScreen = () => {
 
           {/* Display name */}
           <div className="space-y-2">
-            <label
-              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-            >
+            <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
               Ім'я в грі
             </label>
             <input
@@ -946,33 +937,23 @@ export const ProfileSettingsScreen = () => {
               placeholder="Твоє ім'я..."
               className={inputCls}
             />
-            <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
-              {name.length}/20
-            </p>
+            <p className="text-[10px] text-(--ui-fg-muted) opacity-70">{name.length}/20</p>
           </div>
 
           {/* Account info */}
-          <div
-            className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-3"
-          >
-            <p
-              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-            >
+          <div className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-3">
+            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
               Акаунт
             </p>
             {email && (
               <div className="flex justify-between items-center">
-                <span className="text-[12px] text-(--ui-fg-muted)">
-                  Email
-                </span>
+                <span className="text-[12px] text-(--ui-fg-muted)">Email</span>
                 <span className={`text-[12px] font-medium ${currentTheme.textMain}`}>{email}</span>
               </div>
             )}
             {provider && (
               <div className="flex justify-between items-center">
-                <span className="text-[12px] text-(--ui-fg-muted)">
-                  Провайдер
-                </span>
+                <span className="text-[12px] text-(--ui-fg-muted)">Провайдер</span>
                 <ProviderBadge provider={provider} />
               </div>
             )}
@@ -980,20 +961,14 @@ export const ProfileSettingsScreen = () => {
 
           {/* Push notifications + Install app */}
           {(pushSupported || canInstall) && (
-            <div
-              className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-4"
-            >
-              <p
-                className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-              >
+            <div className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-4">
+              <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
                 Сповіщення і застосунок
               </p>
 
               {pushSupported && (
                 <div className="flex justify-between items-center">
-                  <span className="text-[12px] text-(--ui-fg)">
-                    Push-сповіщення
-                  </span>
+                  <span className="text-[12px] text-(--ui-fg)">Push-сповіщення</span>
                   {pushPermission === 'granted' ? (
                     <button
                       onClick={pushUnsubscribe}
@@ -1003,9 +978,7 @@ export const ProfileSettingsScreen = () => {
                       {pushLoading ? '...' : '✓ Увімкнено'}
                     </button>
                   ) : pushPermission === 'denied' ? (
-                    <span className="text-[11px] text-(--ui-fg-muted)">
-                      Заблоковано
-                    </span>
+                    <span className="text-[11px] text-(--ui-fg-muted)">Заблоковано</span>
                   ) : (
                     <button
                       onClick={pushSubscribe}
@@ -1021,14 +994,10 @@ export const ProfileSettingsScreen = () => {
               {canInstall && (
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span
-                      className="material-symbols-outlined text-[18px]! text-(--ui-fg-muted) opacity-80"
-                    >
+                    <span className="material-symbols-outlined text-[18px]! text-(--ui-fg-muted) opacity-80">
                       install_mobile
                     </span>
-                    <span className="text-[12px] text-(--ui-fg)">
-                      На головний екран
-                    </span>
+                    <span className="text-[12px] text-(--ui-fg)">На головний екран</span>
                   </div>
                   <button
                     onClick={install}
@@ -1131,9 +1100,7 @@ export const LobbySettingsScreen = () => {
     }`;
 
   return (
-    <div
-      className="flex flex-col min-h-screen items-center bg-(--ui-bg)"
-    >
+    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center justify-between px-6 md:px-8 pt-12 pb-4">
           <div className="flex items-center gap-3">
@@ -1210,7 +1177,9 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Рахунок для перемоги</p>
-                <span className="text-(--ui-accent) font-bold text-sm">{local.general.scoreToWin}</span>
+                <span className="text-(--ui-accent) font-bold text-sm">
+                  {local.general.scoreToWin}
+                </span>
               </div>
               <input
                 type="range"
@@ -1417,9 +1386,7 @@ export const MyWordPacksScreen = () => {
   // Locked state
   if (!isUnlocked)
     return (
-      <div
-        className="flex flex-col h-screen items-center bg-(--ui-bg)"
-      >
+      <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
             <button
@@ -1434,18 +1401,14 @@ export const MyWordPacksScreen = () => {
           </header>
 
           <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
-            <div
-              className="w-20 h-20 rounded-full bg-(--ui-surface) flex items-center justify-center border border-(--ui-border)"
-            >
+            <div className="w-20 h-20 rounded-full bg-(--ui-surface) flex items-center justify-center border border-(--ui-border)">
               <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
             </div>
             <div>
               <h3 className={`font-serif text-2xl mb-2 ${currentTheme.textMain}`}>
                 Функція заблокована
               </h3>
-              <p
-                className="text-sm leading-relaxed text-(--ui-fg-muted) opacity-80"
-              >
+              <p className="text-sm leading-relaxed text-(--ui-fg-muted) opacity-80">
                 Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}
                 Розблокуйте цю функцію в Магазині.
               </p>
@@ -1465,9 +1428,7 @@ export const MyWordPacksScreen = () => {
   // Create view
   if (view === 'create')
     return (
-      <div
-        className="flex flex-col h-screen items-center bg-(--ui-bg)"
-      >
+      <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
             <button
@@ -1489,9 +1450,7 @@ export const MyWordPacksScreen = () => {
             style={{ scrollbarWidth: 'none' }}
           >
             <div className="space-y-2">
-              <label
-                className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-              >
+              <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
                 Назва паку
               </label>
               <input
@@ -1504,9 +1463,7 @@ export const MyWordPacksScreen = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
-                >
+                <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
                   Слова
                   <span
                     className={`ml-2 font-normal normal-case tracking-normal text-[10px] opacity-60`}
@@ -1541,7 +1498,9 @@ export const MyWordPacksScreen = () => {
               </p>
             </div>
 
-            {createError && <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>}
+            {createError && (
+              <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>
+            )}
           </div>
 
           <div
@@ -2214,14 +2173,10 @@ export const StoreScreen = () => {
                     <div className="flex justify-between items-start z-10">
                       <div className="max-w-[60%]">
                         <div className="flex items-center gap-2 mb-2">
-                          <span
-                            className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)"
-                          >
+                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)">
                             {LANG_LABEL[pack.language] ?? pack.language}
                           </span>
-                          <span
-                            className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)"
-                          >
+                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)">
                             {pack.difficulty.toUpperCase()}
                           </span>
                         </div>
@@ -2344,9 +2299,7 @@ export const StoreScreen = () => {
                             </span>
                           )}
                           {isBuiltIn && (
-                            <span
-                              className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border)"
-                            >
+                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border)">
                               БАЗОВА
                             </span>
                           )}
@@ -2420,9 +2373,7 @@ export const StoreScreen = () => {
         >
           <div className="flex items-center justify-center gap-1.5">
             <ShieldCheck size={12} className="text-(--ui-fg-muted) opacity-70" />
-            <p
-              className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-70"
-            >
+            <p className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-70">
               Оплата через Stripe · Безпечно
             </p>
           </div>
@@ -2508,11 +2459,7 @@ export const PlayerStatsScreen = () => {
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{row.icon}</span>
-                <span
-                  className="text-[13px] font-medium text-(--ui-fg)"
-                >
-                  {row.label}
-                </span>
+                <span className="text-[13px] font-medium text-(--ui-fg)">{row.label}</span>
               </div>
               <span className={`text-xl font-bold font-serif ${currentTheme.textMain}`}>
                 {row.value}
@@ -2521,20 +2468,14 @@ export const PlayerStatsScreen = () => {
           ))}
 
           {stats.lastPlayed && (
-            <p
-              className="text-center text-[11px] pt-4 text-(--ui-fg-muted) opacity-70"
-            >
+            <p className="text-center text-[11px] pt-4 text-(--ui-fg-muted) opacity-70">
               {t.statsLastPlayedPrefix} {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
             </p>
           )}
 
           {!isAuthenticated && (
-            <div
-              className="mt-6 rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]"
-            >
-              <p
-                className="text-[13px] leading-relaxed font-sans text-(--ui-fg)"
-              >
+            <div className="mt-6 rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
+              <p className="text-[13px] leading-relaxed font-sans text-(--ui-fg)">
                 {t.statsGuestBannerBody}
               </p>
               <button

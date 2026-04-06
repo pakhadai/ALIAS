@@ -44,7 +44,9 @@ export const GameOverScreen = () => {
       if (!ctx) return null;
 
       const tokens = currentTheme.tokens;
-      const bg = (tokens?.bg || getComputedStyle(document.documentElement).getPropertyValue('--ui-bg'))
+      const bg = (
+        tokens?.bg || getComputedStyle(document.documentElement).getPropertyValue('--ui-bg')
+      )
         .trim()
         .replace(/^$/, '#000');
       const surface = (
@@ -54,12 +56,13 @@ export const GameOverScreen = () => {
         .trim()
         .replace(/^$/, '#111');
       const accent = (
-        tokens?.accent ||
-        getComputedStyle(document.documentElement).getPropertyValue('--ui-accent')
+        tokens?.accent || getComputedStyle(document.documentElement).getPropertyValue('--ui-accent')
       )
         .trim()
         .replace(/^$/, '#777');
-      const fg = (tokens?.fg || getComputedStyle(document.documentElement).getPropertyValue('--ui-fg'))
+      const fg = (
+        tokens?.fg || getComputedStyle(document.documentElement).getPropertyValue('--ui-fg')
+      )
         .trim()
         .replace(/^$/, '#fff');
 

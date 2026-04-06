@@ -238,9 +238,7 @@ export const LobbyScreen = () => {
               </div>
 
               {settings.general.customDeckCode && (
-                <div
-                  className="mt-1 mx-auto max-w-xs rounded-2xl border border-(--ui-border) bg-(--ui-surface) px-4 py-3 text-left"
-                >
+                <div className="mt-1 mx-auto max-w-xs rounded-2xl border border-(--ui-border) bg-(--ui-surface) px-4 py-3 text-left">
                   <p
                     className={`text-[8px] uppercase tracking-[0.25em] font-bold mb-1 ${currentTheme.textSecondary}`}
                   >
@@ -318,9 +316,7 @@ export const LobbyScreen = () => {
                   </span>
                   {settings.general.customDeckCode && (
                     <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${
-                        'border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)'
-                      }`}
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${'border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)'}`}
                       title={settings.general.customDeckName || settings.general.customDeckCode}
                     >
                       <span className="inline-flex items-center gap-1.5">
@@ -731,9 +727,7 @@ export const SettingsScreen = () => {
 
         <div className="w-full space-y-6 pb-32">
           {/* BLOCK 1: Game Mode */}
-          <div
-            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-5"
-          >
+          <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-5">
             <div className="space-y-2">
               <h3
                 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
@@ -801,9 +795,7 @@ export const SettingsScreen = () => {
           </div>
 
           {/* BLOCK 2: Content */}
-          <div
-            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6"
-          >
+          <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6">
             <div className="space-y-2">
               <h3
                 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
@@ -1004,9 +996,7 @@ export const SettingsScreen = () => {
           </div>
 
           {/* BLOCK 3: Rules (dynamic) */}
-          <div
-            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6"
-          >
+          <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6">
             <div className="space-y-2">
               <h3
                 className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}

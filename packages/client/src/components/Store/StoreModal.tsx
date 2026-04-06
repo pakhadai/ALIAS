@@ -66,9 +66,7 @@ function PackCard({
               {pack.category}
             </span>
             <span className="text-(--ui-fg-muted)">·</span>
-            <span className="text-[10px] text-(--ui-fg-muted)">
-              {pack.wordCount} слів
-            </span>
+            <span className="text-[10px] text-(--ui-fg-muted)">{pack.wordCount} слів</span>
             {pack.difficulty !== 'mixed' && (
               <>
                 <span className="text-(--ui-fg-muted)">·</span>

@@ -35,9 +35,7 @@ export const ScoreboardScreen = () => {
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
           <div className="absolute top-4 flex flex-col items-center z-0 opacity-40">
             <span className="material-symbols-outlined mb-1 text-(--ui-accent)">emoji_events</span>
-            <span
-              className="text-[10px] tracking-[0.2em] uppercase font-bold text-(--ui-accent)"
-            >
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-(--ui-accent)">
               {t.goal}: {goal}
             </span>
           </div>
@@ -122,7 +120,8 @@ export const ScoreboardScreen = () => {
                         className="h-full rounded-full transition-all duration-1000 ease-out"
                         style={{
                           backgroundColor:
-                            team.colorHex || 'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
+                            team.colorHex ||
+                            'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
                           width: mounted ? `${progress}%` : '0%',
                         }}
                       ></div>
@@ -142,9 +141,7 @@ export const ScoreboardScreen = () => {
       </main>
 
       {/* Footer Button */}
-      <footer
-        className="fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent"
-      >
+      <footer className="fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent">
         {isHost ? (
           <button
             onClick={handleNextRound}

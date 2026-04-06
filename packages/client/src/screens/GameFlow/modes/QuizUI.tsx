@@ -63,9 +63,7 @@ export const QuizUI: React.FC<QuizUIProps> = ({
 
   return (
     <div className="w-full max-w-sm flex flex-col gap-8 items-center pb-28">
-      <div
-        className="w-full min-h-[140px] flex items-center justify-center p-8 rounded-4xl border border-(--ui-border) bg-(--ui-surface) shadow-2xl"
-      >
+      <div className="w-full min-h-[140px] flex items-center justify-center p-8 rounded-4xl border border-(--ui-border) bg-(--ui-surface) shadow-2xl">
         <h2
           className={`${currentTheme.textMain} font-sans font-black text-3xl sm:text-4xl text-center leading-tight tracking-tight wrap-break-word w-full`}
         >
