@@ -594,14 +594,26 @@ export const EnterNameScreen = () => {
 };
 
 export const JoinInputScreen = () => {
-  const { setGameState, settings, currentTheme, setRoomCode } = useGame();
+  const { setGameState, settings, currentTheme, setRoomCode, checkRoomExists, showNotification } =
+    useGame();
   const [code, setCode] = useState('');
+  const [checking, setChecking] = useState(false);
   const t = TRANSLATIONS[settings.general.language];
 
-  const handleJoinRoom = () => {
-    if (code.length === ROOM_CODE_LENGTH) {
+  const handleJoinRoom = async () => {
+    if (code.length !== ROOM_CODE_LENGTH) return;
+    if (checking) return;
+    setChecking(true);
+    try {
+      const exists = await checkRoomExists(code);
+      if (!exists) {
+        showNotification(t.roomNotFound.replace('{0}', code), 'error');
+        return;
+      }
       setRoomCode(code);
       setGameState(GameState.ENTER_NAME);
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -648,9 +660,16 @@ export const JoinInputScreen = () => {
             fullWidth
             size="xl"
             onClick={handleJoinRoom}
-            disabled={code.length !== ROOM_CODE_LENGTH}
+            disabled={code.length !== ROOM_CODE_LENGTH || checking}
           >
-            {t.enter}
+            {checking ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <Loader2 size={18} className="animate-spin" />
+                <span>{t.connecting}</span>
+              </span>
+            ) : (
+              t.enter
+            )}
           </Button>
           <button
             onClick={() => setGameState(GameState.MENU)}

@@ -12,6 +12,7 @@ import type { RedisRoomStore } from '../services/RedisRoomStore';
 import { newRelayRequestId, type RoomActionRelay } from '../services/RoomActionRelay';
 import {
   roomCreateSchema,
+  roomExistsSchema,
   roomJoinSchema,
   roomRejoinSchema,
   validatePayload,
@@ -47,6 +48,32 @@ export function registerSocketHandlers(
   roomQueue: PerRoomQueue,
   relayDeps: SocketRelayDeps | null = null
 ): void {
+  onSocket(socket, 'room:exists', async (...args) => {
+    const rawData = args[0] as unknown;
+    const ack =
+      typeof args[1] === 'function' ? (args[1] as (res: { exists: boolean }) => void) : null;
+
+    const data = validatePayload(roomExistsSchema, rawData);
+    if (!data) {
+      ack?.({ exists: false });
+      return;
+    }
+
+    const writer = await getRoomWriterId(relayDeps, data.roomCode);
+    if (writer) {
+      ack?.({ exists: true });
+      return;
+    }
+
+    await roomQueue.run(data.roomCode, async () => {
+      let room = roomManager.getRoom(data.roomCode);
+      if (!room) {
+        room = (await roomManager.restoreRoomFromRedis(data.roomCode)) ?? undefined;
+      }
+      ack?.({ exists: Boolean(room) });
+    });
+  });
+
   onSocket(socket, 'room:create', (rawData) => {
     const data = validatePayload(roomCreateSchema, rawData);
     if (!data) {

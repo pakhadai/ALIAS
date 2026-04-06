@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'lucide-react';
 import { AppTheme, SoundPreset } from '../../types';
-import { THEME_CONFIG } from '../../constants';
+import { THEME_CONFIG, TRANSLATIONS } from '../../constants';
 import { useGame } from '../../context/GameContext';
 import { getHapticsEnabled, setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
-import { LoginModal } from '../Auth/LoginModal';
 
 type Props = {
   isOpen: boolean;
@@ -13,11 +12,11 @@ type Props = {
 };
 
 export function AppSettingsModal({ isOpen, onClose }: Props) {
-  const { settings, currentTheme, setPreferences } = useGame();
+  const { settings, currentTheme, setPreferences, showNotification } = useGame();
   const { isAuthenticated } = useAuthContext();
   const isDark = currentTheme.isDark;
   const [haptics, setHaptics] = useState<boolean>(() => getHapticsEnabled());
-  const [showLogin, setShowLogin] = useState(false);
+  const t = TRANSLATIONS[settings.general.language];
 
   const themes = useMemo(
     () => [AppTheme.PREMIUM_DARK, AppTheme.CYBERPUNK, AppTheme.FOREST, AppTheme.SLEEK],
@@ -73,7 +72,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                       key={theme.id}
                       onClick={() => {
                         if (locked) {
-                          setShowLogin(true);
+                          showNotification(t.themeLockedAuthRequired, 'info');
                           return;
                         }
                         setPreferences({ theme: themeId });
@@ -113,11 +112,11 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                           <div className="flex items-center gap-2 text-(--ui-fg)">
                             <Lock size={12} />
                             <span className="text-[10px] font-bold uppercase tracking-wider">
-                              Увійдіть в акаунт
+                              {t.statsGuestBannerCta}
                             </span>
                           </div>
                           <span className="text-[10px] text-(--ui-fg-muted) text-center leading-snug">
-                            щоб розблокувати тему
+                            {t.themeLockedAuthRequired}
                           </span>
                         </div>
                       )}
@@ -215,10 +214,6 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
           </div>
         </div>
       </div>
-
-      {showLogin && (
-        <LoginModal onClose={() => setShowLogin(false)} onSuccess={() => setShowLogin(false)} />
-      )}
     </>
   );
 }

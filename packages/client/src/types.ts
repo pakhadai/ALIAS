@@ -105,6 +105,8 @@ export interface GameContextType extends AppState {
   sendAction: (action: GameActionPayload) => void;
   playSound: (soundId: GameSoundId) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;
+  /** Checks if an online room code exists (before entering name). */
+  checkRoomExists: (roomCode: string) => Promise<boolean>;
   setSettings: (settings: GameSettings | ((prev: GameSettings) => GameSettings)) => void;
   /** Update device-only preferences without syncing to server. */
   setPreferences: (patch: Partial<GameSettings['general']>) => void;

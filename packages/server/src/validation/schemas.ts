@@ -30,6 +30,10 @@ export const roomRejoinSchema = z.object({
   playerId: z.string().uuid(),
 });
 
+export const roomExistsSchema = z.object({
+  roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
+});
+
 // --- Game settings validation ---
 
 const generalSettingsPartialSchema = z

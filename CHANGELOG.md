@@ -30,6 +30,14 @@
 
 ---
 
+## [2026-04-06] — 0.5.1: Google-only auth, locked themes toast, early room validation
+
+### Changed
+- **Release:** bump app/package versions to **0.5.1** (client/server/shared + client `version.json`).
+- **Auth:** залишено лише Google Sign-In (Apple прибрано з UI та хуків). Файли: `packages/client/src/components/Auth/LoginModal.tsx`, `packages/client/src/hooks/useAuth.ts`, `packages/client/src/context/AuthContext.tsx`.
+- **Themes:** для гостей преміум-теми видимі, але “locked”; клік показує тост **«Доступно лише після авторизації»**. Файли: `packages/client/src/components/Settings/AppSettingsModal.tsx`, `packages/client/src/constants.ts`.
+- **Join flow:** перевірка існування кімнати відбувається на екрані вводу коду (до вводу імені) через `room:exists` Socket.IO ack. Файли: `packages/client/src/screens/MenuFlow.tsx`, `packages/client/src/hooks/useSocketConnection.ts`, `packages/server/src/handlers/socketHandlers.ts`, `packages/shared/src/events.ts`.
+
 ## [2026-04-06] — UI polish: WCAG contrast, unified theme palette, Imposter mode card, admin/profile readability
 
 ### Changed

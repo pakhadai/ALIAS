@@ -90,11 +90,6 @@ export function useAuth() {
     }
   }, []);
 
-  /** Apple Sign In — бекенд поки не підтримує. Кидає помилку, щоб LoginModal її показав. */
-  const loginWithApple = useCallback(async (_idToken: string, _email?: string) => {
-    throw new Error('Apple Sign In ще не налаштовано. Використовуйте Google.');
-  }, []);
-
   const logout = useCallback(async () => {
     clearAuthToken();
     // Revert to anonymous
@@ -146,7 +141,6 @@ export function useAuth() {
       profile,
       refreshProfile,
       loginWithGoogle,
-      loginWithApple,
       logout,
       initialize,
     }),
@@ -157,7 +151,6 @@ export function useAuth() {
       profile,
       refreshProfile,
       loginWithGoogle,
-      loginWithApple,
       logout,
       initialize,
     ]

@@ -10,8 +10,6 @@ interface AuthContextType {
   /** Refresh profile after update — call after updateProfile/save */
   refreshProfile: () => Promise<import('../services/api').UserProfile | null>;
   loginWithGoogle: (idToken: string) => Promise<void>;
-  /** Apple Sign In — поки не реалізовано на бекенді, показує помилку */
-  loginWithApple: (idToken: string, email?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 

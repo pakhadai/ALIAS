@@ -1282,6 +1282,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sendAction,
       playSound,
       showNotification,
+      checkRoomExists: (code: string) => socketApi.checkRoomExists(code),
       setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => {
         const newSettings = typeof s === 'function' ? s(stateRef.current.settings) : s;
         // If we're online and host, propagate settings to server so other clients sync

@@ -1,7 +1,7 @@
 {
   "name": "@alias/server",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "tsx watch src/index.ts",

@@ -26,6 +26,11 @@ export interface RoomErrorPayload {
 // Client -> Server events
 export interface ClientToServerEvents {
   'room:create': (data: { playerName: string; avatar: string; avatarId?: string | null }) => void;
+  /**
+   * Lightweight room existence check used by the join-code screen.
+   * Uses Socket.IO ack to avoid adding a separate REST endpoint.
+   */
+  'room:exists': (data: { roomCode: string }, cb: (res: { exists: boolean }) => void) => void;
   'room:join': (data: {
     roomCode: string;
     playerName: string;

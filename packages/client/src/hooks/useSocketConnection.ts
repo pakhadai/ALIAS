@@ -199,6 +199,31 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     []
   );
 
+  const checkRoomExists = useCallback((code: string): Promise<boolean> => {
+    const socket = socketRef.current;
+    if (!socket) return Promise.resolve(false);
+
+    return new Promise<boolean>((resolve) => {
+      const emitCheck = () => {
+        socket.emit('room:exists', { roomCode: code }, (res) => {
+          resolve(Boolean(res?.exists));
+          // This check is used before joining a room; keep the socket clean/idle.
+          if (socket.connected) socket.disconnect();
+        });
+      };
+
+      // If already connected, just emit. Otherwise connect for a single roundtrip.
+      if (socket.connected) {
+        emitCheck();
+        return;
+      }
+
+      prepareSocketForRoomHandshake(socket);
+      socket.once('connect', emitCheck);
+      socket.connect();
+    });
+  }, []);
+
   const leaveRoom = useCallback(() => {
     setIsReconnecting(false);
     socketRef.current?.emit('room:leave');
@@ -227,6 +252,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       disconnect,
       createRoom,
       joinRoom,
+      checkRoomExists,
       leaveRoom,
       sendGameAction,
     }),
@@ -239,6 +265,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       disconnect,
       createRoom,
       joinRoom,
+      checkRoomExists,
       leaveRoom,
       sendGameAction,
     ]

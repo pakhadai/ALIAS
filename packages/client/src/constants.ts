@@ -223,6 +223,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     statsGuestBannerBody:
       'Увійдіть в акаунт, щоб зберегти свою статистику назавжди та синхронізувати між пристроями.',
     statsGuestBannerCta: 'Увійти',
+    themeLockedAuthRequired: 'Доступно лише після авторизації',
     loginTitle: 'Увійдіть в акаунт',
     loginSubtitleShopping: 'Для покупок і збереження прогресу',
     loginSubtitleStats:
@@ -230,11 +231,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginAnonymousNote:
       'Грати можна без реєстрації — авторизація потрібна для покупок і збереження статистики в хмарі',
     loginGoogleLoading: 'Вхід через Google...',
-    loginApple: 'Увійти з Apple',
-    loginAppleLoading: 'Вхід через Apple...',
     loginContinueWithout: 'Продовжити без входу',
     loginGoogleFailed: 'Помилка входу через Google',
-    loginAppleUnavailable: 'Вхід через Apple недоступний',
   },
   [Language.DE]: {
     slogan: 'Erkläre schnell, spiel brillant.',
@@ -442,6 +440,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     statsGuestBannerBody:
       'Melde dich an, um deine Statistik dauerhaft zu speichern und geräteübergreifend zu synchronisieren.',
     statsGuestBannerCta: 'Anmelden',
+    themeLockedAuthRequired: 'Nur nach Anmeldung verfügbar',
     loginTitle: 'Anmelden',
     loginSubtitleShopping: 'Für Käufe und gespeicherten Fortschritt',
     loginSubtitleStats:
@@ -449,11 +448,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginAnonymousNote:
       'Spielen geht ohne Registrierung — für Käufe und Cloud-Statistik ist eine Anmeldung nötig',
     loginGoogleLoading: 'Google-Anmeldung...',
-    loginApple: 'Mit Apple anmelden',
-    loginAppleLoading: 'Apple-Anmeldung...',
     loginContinueWithout: 'Ohne Anmeldung fortfahren',
     loginGoogleFailed: 'Google-Anmeldung fehlgeschlagen',
-    loginAppleUnavailable: 'Apple-Anmeldung nicht verfügbar',
   },
   [Language.EN]: {
     slogan: 'Think fast, play bold.',
@@ -659,6 +655,7 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     statsGuestBannerBody:
       'Sign in to keep your statistics forever and sync them across your devices.',
     statsGuestBannerCta: 'Sign in',
+    themeLockedAuthRequired: 'Available only after sign-in',
     loginTitle: 'Sign in',
     loginSubtitleShopping: 'For purchases and saved progress',
     loginSubtitleStats:
@@ -666,11 +663,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginAnonymousNote:
       'You can play without signing in — sign in is for purchases and cloud-backed statistics',
     loginGoogleLoading: 'Signing in with Google...',
-    loginApple: 'Sign in with Apple',
-    loginAppleLoading: 'Signing in with Apple...',
     loginContinueWithout: 'Continue without signing in',
     loginGoogleFailed: 'Google sign-in failed',
-    loginAppleUnavailable: 'Apple Sign In is not available',
   },
 };
 
