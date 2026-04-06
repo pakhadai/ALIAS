@@ -65,7 +65,9 @@ export const LobbyScreen = () => {
     leaveRoom,
     showNotification,
   } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const general = settings.general;
+  const modeSettings = settings.mode;
+  const t = TRANSLATIONS[general.language];
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -84,7 +86,7 @@ export const LobbyScreen = () => {
 
   const canCreateTeams = players.length >= 2;
   const categoriesPreview = useMemo(() => {
-    const cats = settings.categories ?? [];
+    const cats = general.categories ?? [];
     const names = cats
       .map((cat) => {
         const key = `cat_${String(cat).toLowerCase()}` as keyof typeof t;
@@ -93,7 +95,7 @@ export const LobbyScreen = () => {
       .slice(0, 2);
     const rest = Math.max(0, cats.length - names.length);
     return rest > 0 ? `${names.join(', ')} +${rest}` : names.join(', ');
-  }, [settings.categories, t]);
+  }, [general.categories, t]);
 
   const copyRoomCode = async () => {
     try {
@@ -142,7 +144,7 @@ export const LobbyScreen = () => {
 
         {showQrModal && qrCodeData && (
           <div
-            className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowQrModal(false)}
           >
             <div
@@ -156,7 +158,7 @@ export const LobbyScreen = () => {
                   className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl"
                 />
               </div>
-              <p className="text-[color:var(--ui-fg)] text-[10px] uppercase tracking-[0.5em] font-bold text-center px-4">
+              <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-4">
                 {t.scanToJoin ?? 'Відскануйте для приєднання'}
               </p>
             </div>
@@ -254,8 +256,8 @@ export const LobbyScreen = () => {
                 onClick={copyRoomCode}
                 className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-150 ease-out active:scale-95 ${
                   currentTheme.isDark
-                    ? 'bg-white/5 border border-white/10 hover:bg-white/10'
-                    : 'bg-white border border-slate-200 hover:bg-slate-50'
+                    ? 'bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
+                    : 'bg-(--ui-card) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
                 }`}
                 title={t.copyRoomCodeTitle ?? 'Скопіювати код'}
               >
@@ -265,7 +267,7 @@ export const LobbyScreen = () => {
                 <Copy size={18} className={currentTheme.iconColor} />
               </button>
 
-              {settings.customDeckCode && (
+              {settings.general.customDeckCode && (
                 <div
                   className={`mt-1 mx-auto max-w-xs rounded-2xl border px-4 py-3 text-left ${
                     currentTheme.isDark
@@ -279,12 +281,12 @@ export const LobbyScreen = () => {
                     {t.customDeckLobbyLabel}
                   </p>
                   <p className={`text-sm font-semibold leading-snug ${currentTheme.textMain}`}>
-                    {settings.customDeckName || settings.customDeckCode}
+                    {settings.general.customDeckName || settings.general.customDeckCode}
                   </p>
                   <p
                     className={`text-[10px] font-mono mt-0.5 opacity-60 ${currentTheme.textSecondary}`}
                   >
-                    {settings.customDeckCode}
+                    {settings.general.customDeckCode}
                   </p>
                 </div>
               )}
@@ -294,59 +296,59 @@ export const LobbyScreen = () => {
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                       currentTheme.isDark
-                        ? 'border-white/10 text-white/50'
-                        : 'border-slate-200 text-slate-500'
+                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
+                        : 'border-(--ui-border) text-(--ui-fg-muted)'
                     }`}
                   >
-                    ⏱ {settings.roundTime}s
+                    ⏱ {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 0}s
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                       currentTheme.isDark
-                        ? 'border-white/10 text-white/50'
-                        : 'border-slate-200 text-slate-500'
+                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
+                        : 'border-(--ui-border) text-(--ui-fg-muted)'
                     }`}
                   >
-                    🏆 {settings.scoreToWin} {t.pts}
+                    🏆 {settings.general.scoreToWin} {t.pts}
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                       currentTheme.isDark
-                        ? 'border-white/10 text-white/50'
-                        : 'border-slate-200 text-slate-500'
+                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
+                        : 'border-(--ui-border) text-(--ui-fg-muted)'
                     }`}
                   >
                     🎮{' '}
-                    {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.CLASSIC &&
+                    {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.CLASSIC &&
                       (t.gameModeClassic ?? 'Classic')}
-                    {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION &&
+                    {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION &&
                       (t.gameModeTranslation ?? 'Translation')}
-                    {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.SYNONYMS &&
+                    {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.SYNONYMS &&
                       (t.gameModeSynonyms ?? 'Synonyms')}
-                    {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ &&
+                    {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ &&
                       (t.gameModeQuiz ?? 'Quiz')}
-                    {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.HARDCORE &&
+                    {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.HARDCORE &&
                       (t.gameModeHardcore ?? 'Hardcore')}
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                       currentTheme.isDark
-                        ? 'border-white/10 text-white/50'
-                        : 'border-slate-200 text-slate-500'
+                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
+                        : 'border-(--ui-border) text-(--ui-fg-muted)'
                     }`}
                   >
                     📚 {categoriesPreview || '—'}
                   </span>
-                  {settings.customDeckCode && (
+                  {settings.general.customDeckCode && (
                     <span
                       className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${
                         currentTheme.isDark
                           ? 'border-indigo-400/40 text-indigo-200/90 bg-indigo-500/10'
                           : 'border-indigo-200 text-indigo-800 bg-indigo-50'
                       }`}
-                      title={settings.customDeckName || settings.customDeckCode}
+                      title={settings.general.customDeckName || settings.general.customDeckCode}
                     >
-                      📖 {settings.customDeckName || settings.customDeckCode}
+                      📖 {settings.general.customDeckName || settings.general.customDeckCode}
                     </span>
                   )}
                 </div>
@@ -366,8 +368,8 @@ export const LobbyScreen = () => {
                     key={p.id}
                     className={`flex items-center p-4 rounded-2xl border transition-opacity ${
                       currentTheme.isDark
-                        ? 'bg-white/5 border-white/5'
-                        : 'bg-white border-slate-100'
+                        ? 'bg-(--ui-surface) border-(--ui-border)'
+                        : 'bg-(--ui-card) border-(--ui-border)'
                     } ${!online ? 'opacity-75 border-amber-500/35' : ''}`}
                   >
                     {p.avatarId != null ? (
@@ -433,7 +435,7 @@ export const LobbyScreen = () => {
                   setNewPlayerAvatar(AVATARS[(players.length + 1) % AVATARS.length]);
                   setShowAddPlayer(true);
                 }}
-                className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${currentTheme.isDark ? 'border-white/10 hover:border-white/30 text-white/30 hover:text-white/60' : 'border-slate-300 hover:border-slate-400 text-slate-400 hover:text-slate-600'}`}
+                className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${currentTheme.isDark ? 'border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-(--ui-border)' : 'border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-(--ui-border)'}`}
               >
                 <Plus size={18} />
                 <span className="text-[10px] uppercase tracking-widest font-bold">
@@ -444,7 +446,7 @@ export const LobbyScreen = () => {
 
             {/* Add Player Modal */}
             {showAddPlayer && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
                 <div
                   className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} animate-pop-in`}
                 >
@@ -465,14 +467,14 @@ export const LobbyScreen = () => {
                         setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
                       }
                       placeholder={t.namePlaceholder}
-                      className={`w-full ${currentTheme.isDark ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+                      className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
                     />
                     <div className="grid grid-cols-6 gap-2">
                       {AVATARS.slice(0, 12).map((a) => (
                         <button
                           key={a}
                           onClick={() => setNewPlayerAvatar(a)}
-                          className={`text-2xl p-2 rounded-xl transition-all ${newPlayerAvatar === a ? 'bg-champagne-gold/20 scale-110 shadow-lg' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
+                          className={`text-2xl p-2 rounded-xl transition-all ${newPlayerAvatar === a ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg' : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'}`}
                         >
                           {a}
                         </button>
@@ -539,7 +541,7 @@ export const LobbyScreen = () => {
 
 export const TeamSetupScreen = () => {
   const { teams, settings, currentTheme, sendAction, setGameState, isHost, gameMode } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   // Check that all teams have at least one player
   const allTeamsHavePlayers = teams.every((team) => team.players.length > 0);
@@ -647,7 +649,7 @@ export const TeamSetupScreen = () => {
 export const SettingsScreen = () => {
   const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
   const { isAuthenticated } = useAuthContext();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
   const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
   const isDark = currentTheme.isDark;
@@ -668,7 +670,10 @@ export const SettingsScreen = () => {
       .catch(() => {});
   }, []);
 
-  const updateSetting = (key: keyof GameSettings, value: any) => {
+  const updateGeneral = <K extends keyof GameSettings['general']>(
+    key: K,
+    value: GameSettings['general'][K]
+  ) => {
     if (!isHost) return;
     if (
       gameState !== GameState.LOBBY &&
@@ -676,15 +681,25 @@ export const SettingsScreen = () => {
       gameState !== GameState.SETTINGS
     )
       return;
-    const newSettings = { ...settings, [key]: value };
-    sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
+    sendAction({ action: 'UPDATE_SETTINGS', data: { general: { [key]: value } } });
+  };
+
+  const updateMode = (patch: Partial<GameSettings['mode']>) => {
+    if (!isHost) return;
+    if (
+      gameState !== GameState.LOBBY &&
+      gameState !== GameState.MENU &&
+      gameState !== GameState.SETTINGS
+    )
+      return;
+    sendAction({ action: 'UPDATE_SETTINGS', data: { mode: patch as any } });
   };
 
   const clearCustomDeck = () => {
     if (!isHost) return;
     sendAction({
       action: 'UPDATE_SETTINGS',
-      data: { ...settings, customDeckCode: undefined, customDeckName: undefined },
+      data: { general: { customDeckCode: undefined, customDeckName: undefined } },
     });
   };
 
@@ -692,7 +707,7 @@ export const SettingsScreen = () => {
     if (!isHost) return;
     sendAction({
       action: 'UPDATE_SETTINGS',
-      data: { ...settings, customDeckCode: code, customDeckName: name },
+      data: { general: { customDeckCode: code, customDeckName: name } },
     });
   };
 
@@ -707,11 +722,11 @@ export const SettingsScreen = () => {
 
   const togglePack = (packId: string) => {
     if (!isHost) return;
-    const current = settings.selectedPackIds ?? [];
+    const current = settings.general.selectedPackIds ?? [];
     const next = current.includes(packId)
       ? current.filter((id) => id !== packId)
       : [...current, packId];
-    updateSetting('selectedPackIds', next);
+    updateGeneral('selectedPackIds', next);
   };
 
   const categoriesList = [
@@ -744,6 +759,14 @@ export const SettingsScreen = () => {
         </header>
 
         <div className="w-full space-y-10 pb-32">
+          <div className="space-y-2">
+            <h3
+              className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
+            >
+              {t.generalSettings ?? 'Загальні налаштування'}
+            </h3>
+            <div className="h-px w-full bg-white/10" />
+          </div>
           <div className="space-y-4">
             <p
               className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
@@ -754,101 +777,13 @@ export const SettingsScreen = () => {
               {[Language.UA, Language.DE, Language.EN].map((l) => (
                 <button
                   key={l}
-                  onClick={() => updateSetting('language', l)}
-                  className={`flex-1 py-3 rounded-xl border transition-all ${settings.language === l ? 'bg-champagne-gold text-black border-champagne-gold' : isDark ? 'bg-white/5 border-white/5 text-white/40' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
+                  onClick={() => updateGeneral('language', l)}
+                  className={`flex-1 py-3 rounded-xl border transition-all ${settings.general.language === l ? 'bg-champagne-gold text-black border-champagne-gold' : isDark ? 'bg-white/5 border-white/5 text-white/40' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
                 >
                   {l}
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <p
-              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-            >
-              {t.gameMode ?? 'Режим гри'}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  [GameMode.CLASSIC, t.gameModeClassic ?? 'Classic'],
-                  [GameMode.TRANSLATION, t.gameModeTranslation ?? 'Translation'],
-                  [GameMode.SYNONYMS, t.gameModeSynonyms ?? 'Synonyms'],
-                  [GameMode.QUIZ, t.gameModeQuiz ?? 'Quiz'],
-                  [GameMode.HARDCORE, t.gameModeHardcore ?? 'Hardcore'],
-                ] as const
-              ).map(([mode, label]) => {
-                const active = (settings.gameMode ?? GameMode.CLASSIC) === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => updateSetting('gameMode', mode)}
-                    className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all leading-tight ${
-                      active
-                        ? 'bg-champagne-gold text-black border-champagne-gold'
-                        : isDark
-                          ? 'bg-white/5 border-white/5 text-white/50 hover:text-white/80'
-                          : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-            {(() => {
-              const m = settings.gameMode ?? GameMode.CLASSIC;
-              const hint =
-                m === GameMode.TRANSLATION
-                  ? (t.gameModeHintTranslation ??
-                    'У колоді використовуйте формат «Слово|Переклад» (кастомні слова або свій словник).')
-                  : m === GameMode.QUIZ
-                    ? (t.gameModeHintQuiz ??
-                      'Усі обирають варіант на екрані; перша правильна відповідь дає бал команді.')
-                    : m === GameMode.SYNONYMS
-                      ? (t.gameModeHintSynonyms ??
-                        'Поки що як класика — окрема колода синонімів з’явиться пізніше.')
-                      : m === GameMode.HARDCORE
-                        ? (t.gameModeHintHardcore as string | undefined)
-                        : (t.gameModeHintClassic as string | undefined);
-              if (!hint) return null;
-              return (
-                <p
-                  className={`text-[10px] leading-relaxed opacity-50 ${currentTheme.textSecondary}`}
-                >
-                  {hint}
-                </p>
-              );
-            })()}
-            {(settings.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
-              <div className="space-y-2 pt-1">
-                <p
-                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                >
-                  {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
-                </p>
-                <div className="flex gap-2">
-                  {[Language.UA, Language.DE, Language.EN].map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => updateSetting('targetLanguage', l)}
-                      className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all ${
-                        (settings.targetLanguage ?? Language.EN) === l
-                          ? `border-yellow-500 bg-yellow-500/15 ${isDark ? 'text-yellow-400' : 'text-amber-900'}`
-                          : isDark
-                            ? 'bg-white/5 border-white/5 text-white/40'
-                            : 'bg-slate-100 border-slate-200 text-slate-400'
-                      }`}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -862,37 +797,17 @@ export const SettingsScreen = () => {
                 (themeId) => (
                   <button
                     key={themeId}
-                    onClick={() => updateSetting('theme', themeId)}
-                    className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.theme === themeId ? 'border-yellow-500 bg-yellow-500/10' : isDark ? 'border-white/5 bg-white/5 opacity-40' : 'border-slate-200 bg-slate-50 opacity-60'}`}
+                    onClick={() => updateGeneral('theme', themeId)}
+                    className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.general.theme === themeId ? 'border-yellow-500 bg-yellow-500/10' : isDark ? 'border-white/5 bg-white/5 opacity-40' : 'border-slate-200 bg-slate-50 opacity-60'}`}
                   >
                     <span className={currentTheme.textMain}>{THEME_CONFIG[themeId].name}</span>
-                    {settings.theme === themeId && <Check size={16} className="text-yellow-500" />}
+                    {settings.general.theme === themeId && (
+                      <Check size={16} className="text-yellow-500" />
+                    )}
                   </button>
                 )
               )}
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <p
-                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-              >
-                {t.roundTime}
-              </p>
-              <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                {settings.roundTime}s
-              </span>
-            </div>
-            <input
-              type="range"
-              min="30"
-              max="180"
-              step="10"
-              value={settings.roundTime}
-              onChange={(e) => updateSetting('roundTime', parseInt(e.target.value))}
-              className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
-            />
           </div>
 
           <div className="space-y-4">
@@ -908,12 +823,12 @@ export const SettingsScreen = () => {
                   <button
                     key={cat}
                     onClick={() => {
-                      const newCats = settings.categories.includes(cat)
-                        ? settings.categories.filter((c) => c !== cat)
-                        : [...settings.categories, cat];
-                      if (newCats.length > 0) updateSetting('categories', newCats);
+                      const newCats = settings.general.categories.includes(cat)
+                        ? settings.general.categories.filter((c) => c !== cat)
+                        : [...settings.general.categories, cat];
+                      if (newCats.length > 0) updateGeneral('categories', newCats);
                     }}
-                    className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : isDark ? 'border-white/5 bg-white/5 text-white/40' : 'border-slate-200 bg-slate-50 text-slate-400'}`}
+                    className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all ${settings.general.categories.includes(cat) ? 'border-yellow-500 bg-yellow-500 text-black' : isDark ? 'border-white/5 bg-white/5 text-white/40' : 'border-slate-200 bg-slate-50 text-slate-400'}`}
                   >
                     {t[catKey] || cat}
                   </button>
@@ -922,7 +837,7 @@ export const SettingsScreen = () => {
             </div>
           </div>
 
-          {settings.categories.includes(Category.CUSTOM) && (
+          {settings.general.categories.includes(Category.CUSTOM) && (
             <div className="space-y-4">
               <p
                 className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
@@ -930,8 +845,8 @@ export const SettingsScreen = () => {
                 {t.customWords}
               </p>
               <textarea
-                value={settings.customWords || ''}
-                onChange={(e) => updateSetting('customWords', e.target.value)}
+                value={settings.general.customWords || ''}
+                onChange={(e) => updateGeneral('customWords', e.target.value)}
                 placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
                 className={`w-full h-24 p-4 rounded-xl border resize-none ${currentTheme.bg} ${currentTheme.textMain} border-white/10 focus:border-yellow-500 outline-none`}
               />
@@ -947,9 +862,9 @@ export const SettingsScreen = () => {
                 >
                   {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                 </p>
-                {(settings.selectedPackIds?.length ?? 0) > 0 && (
+                {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
                   <button
-                    onClick={() => isHost && updateSetting('selectedPackIds', [])}
+                    onClick={() => isHost && updateGeneral('selectedPackIds', [])}
                     className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'} ${!isHost ? 'pointer-events-none' : ''}`}
                   >
                     Скинути
@@ -958,7 +873,7 @@ export const SettingsScreen = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {ownedPacks.map((pack) => {
-                  const isSelected = (settings.selectedPackIds ?? []).includes(pack.id);
+                  const isSelected = (settings.general.selectedPackIds ?? []).includes(pack.id);
                   return (
                     <button
                       key={pack.id}
@@ -983,7 +898,7 @@ export const SettingsScreen = () => {
                   );
                 })}
               </div>
-              {(settings.selectedPackIds?.length ?? 0) === 0 && (
+              {(settings.general.selectedPackIds?.length ?? 0) === 0 && (
                 <p className={`text-[10px] ${isDark ? 'text-white/25' : 'text-slate-400'}`}>
                   Не вибрано — використовуються стандартні слова
                 </p>
@@ -999,7 +914,7 @@ export const SettingsScreen = () => {
                 {t.scoreToWin}
               </p>
               <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                {settings.scoreToWin}
+                {settings.general.scoreToWin}
               </span>
             </div>
             <input
@@ -1007,8 +922,8 @@ export const SettingsScreen = () => {
               min="10"
               max="100"
               step="5"
-              value={settings.scoreToWin}
-              onChange={(e) => updateSetting('scoreToWin', parseInt(e.target.value))}
+              value={settings.general.scoreToWin}
+              onChange={(e) => updateGeneral('scoreToWin', parseInt(e.target.value))}
               className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
             />
           </div>
@@ -1021,7 +936,7 @@ export const SettingsScreen = () => {
                 {t.teamCount}
               </p>
               <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                {settings.teamCount}
+                {settings.general.teamCount}
               </span>
             </div>
             <input
@@ -1029,8 +944,8 @@ export const SettingsScreen = () => {
               min="2"
               max="10"
               step="1"
-              value={settings.teamCount}
-              onChange={(e) => updateSetting('teamCount', parseInt(e.target.value))}
+              value={settings.general.teamCount}
+              onChange={(e) => updateGeneral('teamCount', parseInt(e.target.value))}
               className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
             />
           </div>
@@ -1042,17 +957,17 @@ export const SettingsScreen = () => {
               {t.skipPenalty}
             </p>
             <button
-              onClick={() => updateSetting('skipPenalty', !settings.skipPenalty)}
-              className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.skipPenalty ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
+              onClick={() => updateGeneral('skipPenalty', !settings.general.skipPenalty)}
+              className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.general.skipPenalty ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
             >
               <span className={currentTheme.textMain}>
-                {settings.skipPenalty ? t.enabled : t.disabled}
+                {settings.general.skipPenalty ? t.enabled : t.disabled}
               </span>
               <div
-                className={`w-12 h-6 rounded-full transition-all relative ${settings.skipPenalty ? 'bg-yellow-500' : 'bg-white/20'}`}
+                className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-yellow-500' : 'bg-white/20'}`}
               >
                 <div
-                  className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
+                  className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
                 />
               </div>
             </button>
@@ -1065,23 +980,23 @@ export const SettingsScreen = () => {
               {t.sound}
             </p>
             <button
-              onClick={() => updateSetting('soundEnabled', !settings.soundEnabled)}
-              className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.soundEnabled ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
+              onClick={() => updateGeneral('soundEnabled', !settings.general.soundEnabled)}
+              className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${settings.general.soundEnabled ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/5 bg-white/5 opacity-40'}`}
             >
               <span className={currentTheme.textMain}>
-                {settings.soundEnabled ? t.enabled : t.disabled}
+                {settings.general.soundEnabled ? t.enabled : t.disabled}
               </span>
               <div
-                className={`w-12 h-6 rounded-full transition-all relative ${settings.soundEnabled ? 'bg-yellow-500' : 'bg-white/20'}`}
+                className={`w-12 h-6 rounded-full transition-all relative ${settings.general.soundEnabled ? 'bg-yellow-500' : 'bg-white/20'}`}
               >
                 <div
-                  className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.soundEnabled ? 'right-0.5' : 'left-0.5'}`}
+                  className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${settings.general.soundEnabled ? 'right-0.5' : 'left-0.5'}`}
                 />
               </div>
             </button>
           </div>
 
-          {settings.soundEnabled && (
+          {settings.general.soundEnabled && (
             <div className="space-y-4">
               <p
                 className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
@@ -1092,8 +1007,8 @@ export const SettingsScreen = () => {
                 {[SoundPreset.FUN, SoundPreset.MINIMAL, SoundPreset.EIGHT_BIT].map((preset) => (
                   <button
                     key={preset}
-                    onClick={() => updateSetting('soundPreset', preset)}
-                    className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${settings.soundPreset === preset ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
+                    onClick={() => updateGeneral('soundPreset', preset)}
+                    className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${settings.general.soundPreset === preset ? 'border-yellow-500 bg-yellow-500 text-black' : 'border-white/5 bg-white/5 text-white/40'}`}
                   >
                     {preset.replace('_', ' ')}
                   </button>
@@ -1139,16 +1054,16 @@ export const SettingsScreen = () => {
           >
             Власний словник
           </p>
-          {settings.customDeckCode ? (
+          {settings.general.customDeckCode ? (
             <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/10">
               <div className="flex items-start gap-2 min-w-0">
                 <FileText size={14} className="text-indigo-400 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight truncate">
-                    {settings.customDeckName || settings.customDeckCode}
+                    {settings.general.customDeckName || settings.general.customDeckCode}
                   </p>
                   <p className="text-[10px] text-indigo-300/80 font-mono mt-0.5">
-                    {settings.customDeckCode}
+                    {settings.general.customDeckCode}
                   </p>
                 </div>
               </div>
@@ -1174,9 +1089,179 @@ export const SettingsScreen = () => {
             </button>
           )}
         </div>
+
+        {/* ── Mode settings (dynamic) ─────────────────────────────────────── */}
+        <div className="space-y-6 pb-10">
+          <div className="space-y-2">
+            <h3
+              className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
+            >
+              {t.modeSettings ?? 'Налаштування режиму'}
+            </h3>
+            <div className="h-px w-full bg-white/10" />
+          </div>
+
+          <div className="space-y-4">
+            <p
+              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+            >
+              {t.gameMode ?? 'Режим гри'}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  [GameMode.CLASSIC, t.gameModeClassic ?? 'Classic'],
+                  [GameMode.TRANSLATION, t.gameModeTranslation ?? 'Translation'],
+                  [GameMode.SYNONYMS, t.gameModeSynonyms ?? 'Synonyms'],
+                  [GameMode.QUIZ, t.gameModeQuiz ?? 'Quiz'],
+                  [GameMode.HARDCORE, t.gameModeHardcore ?? 'Hardcore'],
+                  [GameMode.IMPOSTER, t.gameModeImposter ?? 'Imposter'],
+                ] as const
+              ).map(([mode, label]) => {
+                const active = (settings.mode.gameMode ?? GameMode.CLASSIC) === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => updateMode({ gameMode: mode })}
+                    className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all leading-tight ${
+                      active
+                        ? 'bg-champagne-gold text-black border-champagne-gold'
+                        : isDark
+                          ? 'bg-white/5 border-white/5 text-white/50 hover:text-white/80'
+                          : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {(() => {
+              const m = settings.mode.gameMode ?? GameMode.CLASSIC;
+              const hint =
+                m === GameMode.TRANSLATION
+                  ? (t.gameModeHintTranslation ??
+                    'У колоді використовуйте формат «Слово|Переклад» (кастомні слова або свій словник).')
+                  : m === GameMode.QUIZ
+                    ? (t.gameModeHintQuiz ??
+                      'Усі обирають варіант на екрані; перша правильна відповідь дає бал команді.')
+                    : m === GameMode.SYNONYMS
+                      ? (t.gameModeHintSynonyms ??
+                        'Поки що як класика — окрема колода синонімів з’явиться пізніше.')
+                      : m === GameMode.HARDCORE
+                        ? (t.gameModeHintHardcore as string | undefined)
+                        : m === GameMode.IMPOSTER
+                          ? (t.gameModeHintImposter as string | undefined)
+                          : (t.gameModeHintClassic as string | undefined);
+              if (!hint) return null;
+              return (
+                <p
+                  className={`text-[10px] leading-relaxed opacity-50 ${currentTheme.textSecondary}`}
+                >
+                  {hint}
+                </p>
+              );
+            })()}
+
+            {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
+              <div className="space-y-2 pt-1">
+                <p
+                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                >
+                  {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
+                </p>
+                <div className="flex gap-2">
+                  {[Language.UA, Language.DE, Language.EN].map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => updateGeneral('targetLanguage', l)}
+                      className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all ${
+                        (settings.general.targetLanguage ?? Language.EN) === l
+                          ? `border-yellow-500 bg-yellow-500/15 ${isDark ? 'text-yellow-400' : 'text-amber-900'}`
+                          : isDark
+                            ? 'bg-white/5 border-white/5 text-white/40'
+                            : 'bg-slate-100 border-slate-200 text-slate-400'
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {(() => {
+            const mode = settings.mode;
+            if (mode.gameMode === GameMode.IMPOSTER) {
+              return (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <p
+                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    >
+                      {t.imposterDiscussionTime ?? 'Час обговорення'}
+                    </p>
+                    <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                      {Math.round(mode.imposterDiscussionTime / 60)} хв
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([3, 5, 10] as const).map((min) => {
+                      const active = mode.imposterDiscussionTime === min * 60;
+                      return (
+                        <button
+                          key={min}
+                          type="button"
+                          onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
+                          className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all ${
+                            active
+                              ? 'bg-champagne-gold text-black border-champagne-gold'
+                              : isDark
+                                ? 'bg-white/5 border-white/5 text-white/50 hover:text-white/80'
+                                : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          {min} {t.min ?? 'хв'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <p
+                    className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                  >
+                    {t.roundTime}
+                  </p>
+                  <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                    {'classicRoundTime' in mode ? mode.classicRoundTime : 0}s
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="30"
+                  max="180"
+                  step="10"
+                  value={'classicRoundTime' in mode ? mode.classicRoundTime : 0}
+                  onChange={(e) => updateMode({ classicRoundTime: parseInt(e.target.value) })}
+                  className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}
+                />
+              </div>
+            );
+          })()}
+        </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-gradient-to-t from-black/80 to-transparent pointer-events-none flex justify-center">
+      <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-linear-to-t from-black/80 to-transparent pointer-events-none flex justify-center">
         <div className="max-w-2xl w-full pointer-events-auto">
           <Button
             themeClass={currentTheme.button}

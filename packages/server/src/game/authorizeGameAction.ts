@@ -18,6 +18,19 @@ export function authorizeGameAction(
   payload: GameActionPayload,
   ctx: GameActionAuthContext
 ): GameActionAuthResult {
+  // IMPOSTER: ready/end are allowed for any player in the room.
+  if (payload.action === 'IMPOSTER_READY' || payload.action === 'IMPOSTER_END_GAME') {
+    if (ctx.mode === 'socket') {
+      const pid = room.socketToPlayer.get(ctx.socketId);
+      if (!pid) return { ok: false, error: roomError('PLAYER_NOT_IN_ROOM', 'Not in this room') };
+      return { ok: true, actorPlayerId: pid };
+    }
+    if (!room.players.some((p) => p.id === ctx.playerId)) {
+      return { ok: false, error: roomError('PLAYER_NOT_IN_ROOM', 'Player not found in room') };
+    }
+    return { ok: true, actorPlayerId: ctx.playerId };
+  }
+
   let actorPlayerId: string;
   let isHost: boolean;
 
@@ -49,7 +62,6 @@ export function authorizeGameAction(
     'CONFIRM_ROUND',
     'RESET_GAME',
     'REMATCH',
-    'PAUSE_GAME',
     'UPDATE_SETTINGS',
     'KICK_PLAYER',
   ]);

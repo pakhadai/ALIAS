@@ -34,7 +34,7 @@ export const PlayingScreen = () => {
     sendAction,
   } = useGame();
   const haptic = useHapticFeedback();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number; text: string; color: string }[]
   >([]);
@@ -47,8 +47,9 @@ export const PlayingScreen = () => {
   }, [playerStats]);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const activeTeam = teams[currentTeamIndex];
-  const modeSetting = settings.gameMode ?? GameMode.CLASSIC;
+  const modeSetting = settings.mode.gameMode ?? GameMode.CLASSIC;
   const isQuizMode = modeSetting === GameMode.QUIZ;
+  const roundTime = 'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 0;
 
   const playerIdx =
     activeTeam && activeTeam.players.length > 0
@@ -103,8 +104,8 @@ export const PlayingScreen = () => {
 
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
-    if (timeLeft <= 10 && timeLeft > 0 && settings.soundEnabled) playSound('tick');
-  }, [timeLeft, gameState, isPaused, settings.soundEnabled, playSound]);
+    if (timeLeft <= 10 && timeLeft > 0 && settings.general.soundEnabled) playSound('tick');
+  }, [timeLeft, gameState, isPaused, settings.general.soundEnabled, playSound]);
 
   if (!activeTeam || activeTeam.players.length === 0) {
     return null;
@@ -135,7 +136,13 @@ export const PlayingScreen = () => {
         handleSkip();
         setParticles((prev) => [
           ...prev,
-          { id: Date.now(), x, y, text: settings.skipPenalty ? '-1' : '0', color: teamColor },
+          {
+            id: Date.now(),
+            x,
+            y,
+            text: settings.general.skipPenalty ? '-1' : '0',
+            color: teamColor,
+          },
         ]);
       }
       setWordExit(null);
@@ -147,7 +154,7 @@ export const PlayingScreen = () => {
     }, ACTION_DEBOUNCE_MS);
   };
 
-  const pctLeft = settings.roundTime > 0 ? timeLeft / settings.roundTime : 0;
+  const pctLeft = roundTime > 0 ? timeLeft / roundTime : 0;
   const dangerBar = pctLeft <= 0.2;
 
   return (
@@ -170,7 +177,6 @@ export const PlayingScreen = () => {
         <PlayingPauseOverlay
           currentTheme={currentTheme}
           t={{ paused: t.paused, tapResume: t.tapResume }}
-          isHost={isHost}
         />
       )}
 
@@ -181,14 +187,14 @@ export const PlayingScreen = () => {
             {t.finishWord}
           </p>
         )}
-        <div className="w-full h-[5px] bg-[color:var(--ui-surface)] rounded-full overflow-hidden">
+        <div className="w-full h-[5px] bg-(--ui-surface) rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-[width,background-color,box-shadow] duration-300 ease-linear ${
               dangerBar
                 ? 'bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.55)]'
                 : `${currentTheme.progressBar} shadow-[0_0_14px_rgba(243,229,171,0.35)]`
             }`}
-            style={{ width: `${(timeLeft / settings.roundTime) * 100}%` }}
+            style={{ width: `${roundTime > 0 ? (timeLeft / roundTime) * 100 : 0}%` }}
           />
         </div>
 
@@ -199,26 +205,22 @@ export const PlayingScreen = () => {
             {formatTime(timeLeft)}
           </div>
 
-          {isHost && (
-            <button
-              type="button"
-              onClick={() => {
-                haptic(HAPTIC.nav);
-                togglePause();
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full active:bg-[color:var(--ui-surface-hover)] transition-colors"
-            >
-              <span className="material-symbols-outlined text-champagne-gold text-2xl">
-                {isPaused ? 'play_arrow' : 'pause'}
-              </span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              haptic(HAPTIC.nav);
+              togglePause();
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-full active:bg-(--ui-surface-hover) transition-colors"
+          >
+            <span className="material-symbols-outlined text-champagne-gold text-2xl">
+              {isPaused ? 'play_arrow' : 'pause'}
+            </span>
+          </button>
 
           <div className="text-text-sub-dark font-sans text-sm tracking-wide w-20 text-right">
             {t.score}:{' '}
-            <span className="text-[color:var(--ui-fg)] font-medium">
-              {currentRoundStats.correct}
-            </span>
+            <span className="text-(--ui-fg) font-medium">{currentRoundStats.correct}</span>
           </div>
         </div>
       </header>

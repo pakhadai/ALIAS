@@ -30,6 +30,16 @@
 
 ---
 
+## [2026-04-06] — UI polish: WCAG contrast, unified theme palette, Imposter mode card, admin/profile readability
+
+### Changed
+- **Client UI tokens:** додано семантичні токени `--ui-accent`, `--ui-accent-contrast`, `--ui-danger`, `--ui-success`, `--ui-warning` + `color-scheme` (theme-aware). Файл: `packages/client/src/context/GameContext.tsx`.
+- **Global base:** `body` тепер використовує `--ui-bg`/`--ui-fg` як дефолтний фон/текст (менше “невидимих” елементів через спадкування). Файл: `packages/client/src/styles.css`.
+- **Base components:** `Button` primary тепер theme-aware через `--ui-accent`; тости/модалки/фолбеки приведено до `--ui-*`. Файли: `packages/client/src/components/Button.tsx`, `packages/client/src/components/Shared.tsx`.
+- **Screens:** вирівняно контраст і поверхні в `MenuFlow`, `LobbyFlow`, `ScoreboardScreen`, `PreRoundScreen`, `RoundSummaryScreen`, `GameOverScreen`. Файли: `packages/client/src/screens/MenuFlow.tsx`, `packages/client/src/screens/LobbyFlow.tsx`, `packages/client/src/screens/GameFlow/screens/*`.
+- **Imposter mode:** пастельно-rose картка імпостера стилізована як нейтральний “role reveal”, не як error; dark/light стани узгоджені. Файл: `packages/client/src/screens/GameFlow/screens/ImposterScreen.tsx`.
+- **Admin + Profile:** `AdminPanel` зроблено theme-aware (cards/inputs/tabs) з читабельними статусами; `ProfileModal` прибрано жорсткі hex і прив’язано бейджі/акценти до `--ui-accent`. Файли: `packages/client/src/screens/AdminPanel.tsx`, `packages/client/src/components/Auth/ProfileModal.tsx`.
+
 ## [2026-04-05] — Статистика гравця в БД, адмін live (Redis), захист адмінки через Prisma, сокет/JWT sync, PWA meta
 
 ### Added

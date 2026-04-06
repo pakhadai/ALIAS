@@ -35,7 +35,7 @@ function googleLocale(lang: Language): string {
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle, loginWithApple } = useAuthContext();
   const { currentTheme, settings } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const isDark = currentTheme.isDark;
   const [loading, setLoading] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState<string | null>(null);

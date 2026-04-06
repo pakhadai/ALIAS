@@ -13,6 +13,8 @@
 body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
 }
 
 .no-scrollbar::-webkit-scrollbar {

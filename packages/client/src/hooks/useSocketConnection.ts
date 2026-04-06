@@ -46,6 +46,7 @@ interface UseSocketConnectionOptions {
   onError: (error: RoomErrorPayload) => void;
   onNotification: (message: string, type: 'info' | 'error' | 'success') => void;
   onRejoined?: (roomCode: string, playerId: string) => void;
+  onImposterSecret?: (payload: Parameters<ServerToClientEvents['imposter:secret']>[0]) => void;
 }
 
 export function useSocketConnection(options: UseSocketConnectionOptions) {
@@ -118,6 +119,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
     socket.on('game:notification', ({ message, type }) => {
       optionsRef.current.onNotification(message, type);
+    });
+
+    socket.on('imposter:secret', (payload) => {
+      optionsRef.current.onImposterSecret?.(payload);
     });
 
     return () => {

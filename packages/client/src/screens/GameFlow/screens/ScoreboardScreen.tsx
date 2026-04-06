@@ -1,20 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AppTheme } from '../../../types';
 import { useGame } from '../../../context/GameContext';
 import { TRANSLATIONS } from '../../../constants';
 
 export const ScoreboardScreen = () => {
-  const { teams, settings, handleNextRound, isHost } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const { teams, settings, currentTheme, handleNextRound, isHost } = useGame();
+  const t = TRANSLATIONS[settings.general.language];
   const [mounted, setMounted] = useState(false);
 
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
-  const bgColor = isDark ? 'bg-premium-dark-bg' : 'bg-silver-bg';
-  const textColor = isDark ? 'text-white' : 'text-premium-black';
-  const subTextColor = isDark ? 'text-gray-400' : 'text-text-sub';
+  const isDark = currentTheme.isDark;
+  const bgColor = currentTheme.bg;
+  const textColor = 'text-(--ui-fg)';
+  const subTextColor = 'text-(--ui-fg-muted)';
 
   const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
-  const goal = settings.scoreToWin;
+  const goal = settings.general.scoreToWin;
 
   useEffect(() => {
     const t = window.setTimeout(() => setMounted(true), 30);
@@ -45,28 +44,14 @@ export const ScoreboardScreen = () => {
           </div>
 
           <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10">
-            <div
-              className={`absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}
-            ></div>
+            <div className="absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 bg-(--ui-border)"></div>
 
-            <div
-              className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/20 border-premium-dark-bg' : 'bg-gray-200 border-silver-bg'}`}
-            ></div>
-            <div
-              className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}
-            ></div>
-            <div
-              className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}
-            ></div>
-            <div
-              className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}
-            ></div>
-            <div
-              className={`w-2 h-2 rounded-full z-10 relative ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}
-            ></div>
-            <div
-              className={`w-3 h-3 rounded-full border-4 z-10 relative ${isDark ? 'bg-white/30 border-premium-dark-bg' : 'bg-gray-300 border-silver-bg'}`}
-            ></div>
+            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-(--ui-surface-hover) border-(--ui-bg)"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
+            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-(--ui-surface) border-(--ui-bg)"></div>
 
             {teams.map((team, idx) => {
               const progress = Math.min(1, team.score / goal);
@@ -89,7 +74,7 @@ export const ScoreboardScreen = () => {
                     {idx + 1}
                   </div>
                   <div
-                    className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} ${isDark ? 'bg-white/5 border border-white/5 text-white' : 'bg-white text-premium-black'}`}
+                    className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} bg-(--ui-card) border border-(--ui-border) text-(--ui-fg)`}
                   >
                     <span className="text-[10px] font-bold tracking-wider">
                       {team.score} {t.pts}
@@ -112,12 +97,12 @@ export const ScoreboardScreen = () => {
                 key={team.id}
                 className={`rounded-2xl p-4 shadow-card flex items-center justify-between border animate-slide-up transition-all`}
                 style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)',
                   borderColor:
                     team.score >= goal
-                      ? '#F3E5AB'
+                      ? 'var(--ui-accent)'
                       : isDark
-                        ? 'rgba(255,255,255,0.05)'
+                        ? 'rgba(255,255,255,0.10)'
                         : 'transparent',
                   animationDelay: `${idx * 100}ms`,
                 }}
@@ -136,9 +121,7 @@ export const ScoreboardScreen = () => {
                     <span className={`font-serif text-lg tracking-wide ${textColor}`}>
                       {team.name}
                     </span>
-                    <div
-                      className={`bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden w-24 ${isDark ? 'bg-white/10' : 'bg-gray-100'}`}
-                    >
+                    <div className="h-1 mt-1.5 rounded-full overflow-hidden w-24 bg-(--ui-surface)">
                       <div
                         className="h-full rounded-full transition-all duration-1000 ease-out"
                         style={{
@@ -163,7 +146,7 @@ export const ScoreboardScreen = () => {
 
       {/* Footer Button */}
       <footer
-        className={`fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-gradient-to-t ${isDark ? 'from-premium-dark-bg via-premium-dark-bg' : 'from-silver-bg via-silver-bg'} to-transparent`}
+        className={`fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t ${isDark ? 'from-premium-dark-bg via-premium-dark-bg' : 'from-silver-bg via-silver-bg'} to-transparent`}
       >
         {isHost ? (
           <button

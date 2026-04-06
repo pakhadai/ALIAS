@@ -63,7 +63,7 @@ function DeckItem({
 }) {
   const [deleting, setDeleting] = useState(false);
   const { showNotification, settings } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();

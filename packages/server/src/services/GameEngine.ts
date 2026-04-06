@@ -1,5 +1,11 @@
-import { GameState, TEAM_COLORS } from '@alias/shared';
-import type { GameActionPayload, GameTask, Team } from '@alias/shared';
+import { GameMode, GameState, TEAM_COLORS } from '@alias/shared';
+import type {
+  GameActionPayload,
+  GameTask,
+  ModeSettings,
+  ModeSettingsUpdate,
+  Team,
+} from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
 import type { WordService } from './WordService';
@@ -88,7 +94,7 @@ export class GameEngine {
   }
 
   private getActiveHandler(room: Room): IGameModeHandler {
-    return getHandler(room.settings.gameMode);
+    return getHandler(room.settings.mode.gameMode);
   }
 
   async handleAction(room: Room, payload: GameActionPayload, senderId?: string): Promise<void> {
@@ -96,6 +102,7 @@ export class GameEngine {
       case 'CORRECT':
       case 'SKIP':
       case 'GUESS_OPTION': {
+        if (room.isPaused) break;
         if (!room.currentTask) break;
 
         const handler = this.getActiveHandler(room);
@@ -163,7 +170,8 @@ export class GameEngine {
 
       case 'START_PLAYING': {
         room.gameState = GameState.PLAYING;
-        room.timeLeft = room.settings.roundTime;
+        room.timeLeft =
+          'classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0;
         room.isPaused = false;
         room.timeUp = false;
         await this.nextWord(room);
@@ -186,7 +194,7 @@ export class GameEngine {
       }
 
       case 'GENERATE_TEAMS': {
-        const teamCount = Math.min(room.settings.teamCount, room.players.length);
+        const teamCount = Math.min(room.settings.general.teamCount, room.players.length);
         const teamNames = [
           'Rockets',
           'Ninjas',
@@ -217,6 +225,34 @@ export class GameEngine {
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.roundsPlayed = 0;
+        room.timeUp = false;
+        room.isPaused = false;
+        room.revealedPlayerIds = [];
+        room.imposterPhase = undefined;
+        room.imposterPlayerId = undefined;
+        room.imposterWord = undefined;
+
+        if (room.settings.mode.gameMode === GameMode.IMPOSTER) {
+          const pool = room.players;
+          const picked =
+            pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+          room.imposterPlayerId = picked?.id;
+          room.imposterPhase = 'REVEAL';
+          // Pick a single word from the deck (secret for non-imposter clients)
+          const { word, deck, usedWords } = await this.wordService.nextWord(
+            room.wordDeck,
+            room.settings,
+            room.usedWords
+          );
+          room.wordDeck = deck;
+          room.usedWords = usedWords;
+          room.imposterWord = word;
+          // IMPOSTER does not use classic currentTask/currentWord here — reveal is handled via private event.
+          room.currentTask = null;
+          room.currentWord = '';
+          room.timeLeft = 0;
+        }
+
         await this.persistNewGameSession(room);
         break;
       }
@@ -229,12 +265,93 @@ export class GameEngine {
       }
 
       case 'PAUSE_GAME': {
-        room.isPaused = !room.isPaused;
+        const nextPaused = !room.isPaused;
+        room.isPaused = nextPaused;
+        if (nextPaused) {
+          this.stopTimer(room);
+        } else if (room.gameState === GameState.PLAYING && room.timeLeft > 0 && !room.timeUp) {
+          this.startTimer(room);
+        }
+        break;
+      }
+
+      case 'IMPOSTER_READY': {
+        if (room.settings.mode.gameMode !== GameMode.IMPOSTER) break;
+        if (!senderId) break;
+        if (room.imposterPhase !== 'REVEAL') break;
+        const revealed = new Set(room.revealedPlayerIds ?? []);
+        revealed.add(senderId);
+        room.revealedPlayerIds = [...revealed];
+
+        const allPlayerIds = room.players.map((p) => p.id);
+        const allRevealed = allPlayerIds.length > 0 && allPlayerIds.every((id) => revealed.has(id));
+        if (allRevealed) {
+          room.imposterPhase = 'DISCUSSION';
+          room.timeLeft = room.settings.mode.imposterDiscussionTime;
+          room.timeUp = false;
+          this.startTimer(room);
+        }
+        break;
+      }
+
+      case 'IMPOSTER_END_GAME': {
+        if (room.settings.mode.gameMode !== GameMode.IMPOSTER) break;
+        if (room.imposterPhase !== 'DISCUSSION') break;
+        this.stopTimer(room);
+        room.imposterPhase = 'RESULTS';
+        room.timeLeft = 0;
+        room.timeUp = false;
         break;
       }
 
       case 'UPDATE_SETTINGS': {
-        room.settings = { ...room.settings, ...payload.data };
+        const mergeModeSettings = (
+          prev: ModeSettings,
+          patch: ModeSettingsUpdate | undefined
+        ): ModeSettings => {
+          if (!patch) return prev;
+          const nextGameMode = patch.gameMode ?? prev.gameMode;
+          switch (nextGameMode) {
+            case GameMode.IMPOSTER: {
+              return {
+                gameMode: GameMode.IMPOSTER,
+                imposterDiscussionTime:
+                  patch.imposterDiscussionTime ??
+                  (prev.gameMode === GameMode.IMPOSTER ? prev.imposterDiscussionTime : 3 * 60),
+              };
+            }
+            case GameMode.HARDCORE: {
+              return {
+                gameMode: GameMode.HARDCORE,
+                classicRoundTime:
+                  patch.classicRoundTime ??
+                  (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+              };
+            }
+            case GameMode.CLASSIC:
+            case GameMode.TRANSLATION:
+            case GameMode.SYNONYMS:
+            case GameMode.QUIZ: {
+              return {
+                gameMode: nextGameMode,
+                classicRoundTime:
+                  patch.classicRoundTime ??
+                  (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+              };
+            }
+          }
+          return prev;
+        };
+
+        room.settings = {
+          ...room.settings,
+          ...(payload.data.general
+            ? { general: { ...room.settings.general, ...payload.data.general } }
+            : {}),
+          ...(payload.data.mode
+            ? { mode: mergeModeSettings(room.settings.mode, payload.data.mode) }
+            : {}),
+        };
         break;
       }
 
@@ -306,7 +423,8 @@ export class GameEngine {
       case 'CONFIRM_ROUND': {
         const { currentRoundStats, teams, currentTeamIndex, settings } = room;
         const rawPoints =
-          currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+          currentRoundStats.correct -
+          (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
         const points = Math.max(0, rawPoints);
 
         const activeTeam = teams[currentTeamIndex];
@@ -334,7 +452,7 @@ export class GameEngine {
 
         room.roundsPlayed += 1;
         const isLastTeam = currentTeamIndex === teams.length - 1;
-        const hasWinner = room.teams.some((t) => t.score >= settings.scoreToWin);
+        const hasWinner = room.teams.some((t) => t.score >= settings.general.scoreToWin);
         const isGameOver = isLastTeam && hasWinner;
         room.gameState = isGameOver ? GameState.GAME_OVER : GameState.SCOREBOARD;
 
@@ -385,6 +503,13 @@ export class GameEngine {
         room.timeUp = true;
         this.stopTimer(room);
         room.timeLeft = 0;
+        if (
+          room.settings.mode.gameMode === GameMode.IMPOSTER &&
+          room.imposterPhase === 'DISCUSSION'
+        ) {
+          room.imposterPhase = 'RESULTS';
+          room.timeUp = false;
+        }
         this.timerBroadcast?.(room);
       } else if (ticksSinceSync >= 10) {
         ticksSinceSync = 0;

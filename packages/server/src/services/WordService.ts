@@ -3,6 +3,7 @@ import { Category, Language, MOCK_WORDS } from '@alias/shared';
 const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'Вода', 'Сонце', 'Книга', 'Місяць'];
 import type { GameSettings } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
+import { randomInt } from 'crypto';
 
 export class WordService {
   private prisma: PrismaClient | null = null;
@@ -14,7 +15,7 @@ export class WordService {
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = randomInt(i + 1);
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
@@ -26,10 +27,11 @@ export class WordService {
    * Falls back to language+category query when no packs are selected.
    */
   async buildDeck(settings: GameSettings): Promise<string[]> {
+    const { general } = settings;
     // Handle custom deck from DB (by access code)
-    if (settings.customDeckCode && this.prisma) {
+    if (general.customDeckCode && this.prisma) {
       const deck = await this.prisma.customDeck.findUnique({
-        where: { accessCode: settings.customDeckCode },
+        where: { accessCode: general.customDeckCode },
         select: { words: true, status: true },
       });
       if (deck && deck.status === 'approved' && Array.isArray(deck.words)) {
@@ -38,21 +40,21 @@ export class WordService {
     }
 
     // Handle custom words (always from settings, not DB)
-    const customWords = settings.categories
-      .filter((cat) => cat === Category.CUSTOM && settings.customWords)
+    const customWords = general.categories
+      .filter((cat) => cat === Category.CUSTOM && general.customWords)
       .flatMap(() =>
-        settings
+        general
           .customWords!.split(',')
           .map((w) => w.trim().replace(/<[^>]*>/g, ''))
           .filter(Boolean)
       );
 
-    const dbCategories = settings.categories.filter((cat) => cat !== Category.CUSTOM);
+    const dbCategories = general.categories.filter((cat) => cat !== Category.CUSTOM);
 
     let dbWords: string[] = [];
 
     if (this.prisma) {
-      const selectedPackIds = settings.selectedPackIds;
+      const selectedPackIds = general.selectedPackIds;
       const hasPackFilter = selectedPackIds && selectedPackIds.length > 0;
 
       if (hasPackFilter) {
@@ -67,7 +69,7 @@ export class WordService {
         const rows = await this.prisma.word.findMany({
           where: {
             pack: {
-              language: settings.language,
+              language: general.language,
               category: { in: dbCategories },
               isDefault: true,
             },
@@ -80,13 +82,13 @@ export class WordService {
 
     // Fallback to static MOCK_WORDS if DB is empty or unavailable
     if (dbWords.length === 0 && dbCategories.length > 0) {
-      dbWords = dbCategories.flatMap((cat) => MOCK_WORDS[settings.language][cat] || []);
+      dbWords = dbCategories.flatMap((cat) => MOCK_WORDS[general.language][cat] || []);
     }
 
     const pool = [...dbWords, ...customWords];
 
     // Final fallback chain: settings pool → GENERAL mock words → emergency hardcoded
-    const generalFallback: string[] = MOCK_WORDS[settings.language]?.[Category.GENERAL] ?? [];
+    const generalFallback: string[] = MOCK_WORDS[general.language]?.[Category.GENERAL] ?? [];
     const finalPool: string[] =
       pool.length > 0 ? pool : generalFallback.length > 0 ? generalFallback : EMERGENCY_WORDS;
 

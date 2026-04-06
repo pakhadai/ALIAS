@@ -6,7 +6,7 @@ import { TRANSLATIONS } from '../constants';
 /** Fixed top banner while socket is restoring session (room:rejoin in flight). */
 export function ConnectionStatusBanner() {
   const { isReconnecting, settings } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   if (!isReconnecting) return null;
 

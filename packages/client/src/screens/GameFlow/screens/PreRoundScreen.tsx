@@ -19,7 +19,7 @@ export const PreRoundScreen = () => {
     gameMode,
     leaveRoom,
   } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const activeTeam = teams[currentTeamIndex];
 
   if (!activeTeam || activeTeam.players.length === 0) {
@@ -52,7 +52,7 @@ export const PreRoundScreen = () => {
           >
             {t.playingNow}
           </h2>
-          <div className={`inline-block px-8 py-3 rounded-full border border-white/10 bg-white/5`}>
+          <div className="inline-block px-8 py-3 rounded-full border border-(--ui-border) bg-(--ui-surface)">
             <div className="flex items-center gap-3">
               <div className={`w-3 h-3 rounded-full ${activeTeam.color}`} />
               <span className={`font-serif text-3xl ${currentTheme.textMain}`}>
@@ -106,7 +106,7 @@ export const PreRoundScreen = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-linear-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
         <div className="max-w-sm mx-auto pointer-events-auto">
           <Button
             themeClass={currentTheme.button}

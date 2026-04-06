@@ -32,10 +32,9 @@ export const roomRejoinSchema = z.object({
 
 // --- Game settings validation ---
 
-const gameSettingsPartialSchema = z
+const generalSettingsPartialSchema = z
   .object({
     language: z.nativeEnum(Language),
-    roundTime: z.number().int().min(10).max(300),
     scoreToWin: z.number().int().min(5).max(100),
     skipPenalty: z.boolean(),
     categories: z.array(z.nativeEnum(Category)).min(1).max(10),
@@ -47,8 +46,26 @@ const gameSettingsPartialSchema = z
     customDeckCode: z.string().max(20).optional(),
     customDeckName: z.string().max(120).optional(),
     selectedPackIds: z.array(z.string().uuid()).max(20).optional(),
-    gameMode: z.nativeEnum(GameMode),
     targetLanguage: z.nativeEnum(Language),
+  })
+  .partial();
+
+const modeSettingsPartialSchema = z
+  .object({
+    gameMode: z.nativeEnum(GameMode),
+    classicRoundTime: z.number().int().min(10).max(300),
+    imposterDiscussionTime: z
+      .number()
+      .int()
+      .min(60)
+      .max(15 * 60),
+  })
+  .partial();
+
+const gameSettingsPartialSchema = z
+  .object({
+    general: generalSettingsPartialSchema.optional(),
+    mode: modeSettingsPartialSchema.optional(),
   })
   .partial();
 
@@ -73,6 +90,8 @@ const validActions = new Set([
   'ADD_OFFLINE_PLAYER',
   'REMOVE_OFFLINE_PLAYER',
   'GUESS_OPTION',
+  'IMPOSTER_READY',
+  'IMPOSTER_END_GAME',
 ]);
 
 /**

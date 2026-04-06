@@ -195,7 +195,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
     >
       <div
         className={`relative w-full h-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
@@ -245,7 +245,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
 export const RulesScreen = () => {
   const { setGameState, settings, currentTheme } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   return (
     <div
       className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
@@ -304,7 +304,7 @@ export const MenuScreen = () => {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const [storeThemes, setStoreThemes] = useState<ThemeItem[]>([]);
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   // After sign-in inside the modal → close it and go to ProfileScreen
   useEffect(() => {
@@ -369,14 +369,14 @@ export const MenuScreen = () => {
           className="transition-all active:scale-90 p-2"
         >
           <span
-            className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
           >
             palette
           </span>
         </button>
         <button onClick={() => setShowRules(true)} className="transition-all active:scale-90 p-2">
           <span
-            className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
           >
             menu_book
           </span>
@@ -389,7 +389,7 @@ export const MenuScreen = () => {
             aria-label="Fullscreen"
           >
             <span
-              className={`material-symbols-outlined !text-[24px] ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+              className={`material-symbols-outlined text-[24px]! ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
             >
               fullscreen
             </span>
@@ -399,7 +399,7 @@ export const MenuScreen = () => {
           onClick={toggleLanguage}
           className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${currentTheme.isDark ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}
         >
-          {settings.language}
+          {settings.general.language}
         </button>
       </header>
 
@@ -441,9 +441,7 @@ export const MenuScreen = () => {
             className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-6 pt-4"
             style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
           >
-            <div
-              className={`h-[1px] w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`}
-            />
+            <div className={`h-px w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`} />
             <button onClick={startOfflineGame} className="inline-flex items-center gap-2 group h-6">
               <WifiOff
                 size={14}
@@ -479,7 +477,7 @@ export const MenuScreen = () => {
           aria-labelledby="fullscreen-hint-title"
         >
           <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-[2rem] md:rounded-[2rem] px-5 pt-5 pb-8"
+            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -521,7 +519,7 @@ export const MenuScreen = () => {
           onClick={() => setShowThemePicker(false)}
         >
           <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-[2rem] md:rounded-[2rem] px-5 pt-5 pb-8"
+            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -539,7 +537,7 @@ export const MenuScreen = () => {
             <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
               {(Object.keys(THEME_CONFIG) as AppTheme[]).map((themeId) => {
                 const theme = THEME_CONFIG[themeId];
-                const isActive = settings.theme === themeId;
+                const isActive = settings.general.theme === themeId;
                 const owned = isThemeOwned(themeId);
                 return (
                   <button
@@ -550,7 +548,10 @@ export const MenuScreen = () => {
                         setGameState(GameState.STORE);
                         return;
                       }
-                      setSettings((prev: any) => ({ ...prev, theme: themeId }));
+                      setSettings((prev: any) => ({
+                        ...prev,
+                        general: { ...prev.general, theme: themeId },
+                      }));
                       setShowThemePicker(false);
                     }}
                     className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden
@@ -611,7 +612,7 @@ export const EnterNameScreen = () => {
   const { authState, profile } = useAuthContext();
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   // Use consistent UUID for all players (host and guests)
   const stableId = useRef(`player-${generateUUID()}`);
@@ -694,7 +695,7 @@ export const EnterNameScreen = () => {
 export const JoinInputScreen = () => {
   const { setGameState, settings, currentTheme, setRoomCode } = useGame();
   const [code, setCode] = useState('');
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   const handleJoinRoom = () => {
     if (code.length === ROOM_CODE_LENGTH) {
@@ -769,7 +770,7 @@ function ProviderBadge({ provider }: { provider: string }) {
   const label =
     provider === 'google' ? 'GOOGLE' : provider === 'apple' ? 'APPLE' : provider.toUpperCase();
   return (
-    <span className="bg-[#D4AF6A] text-[#1C1C1E] text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
+    <span className="bg-(--ui-accent) text-(--ui-accent-contrast) text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
       {label}
     </span>
   );
@@ -797,14 +798,14 @@ export const ProfileScreen = () => {
 
   const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all active:scale-[0.98] ${
     isDark
-      ? 'bg-white/5 border border-white/5 hover:bg-white/8'
-      : 'bg-white border border-slate-100 hover:bg-slate-50 shadow-sm'
+      ? 'bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
+      : 'bg-(--ui-card) border border-(--ui-border) hover:bg-(--ui-surface-hover) shadow-sm'
   }`;
   const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
 
   return (
     <div
-      className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}
+      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} transition-colors duration-500`}
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         {/* Header */}
@@ -886,9 +887,7 @@ export const ProfileScreen = () => {
                   Мої паки слів
                 </span>
                 {!hasCustomPacks && (
-                  <p
-                    className={`text-[9px] mt-0.5 uppercase tracking-widest ${isDark ? 'text-white/25' : 'text-slate-400'}`}
-                  >
+                  <p className="text-[9px] mt-0.5 uppercase tracking-widest text-(--ui-fg-muted)">
                     Потрібна покупка
                   </p>
                 )}
@@ -1120,7 +1119,7 @@ export const ProfileSettingsScreen = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`material-symbols-outlined !text-[18px] ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+                      className={`material-symbols-outlined text-[18px]! ${isDark ? 'text-white/40' : 'text-slate-400'}`}
                     >
                       install_mobile
                     </span>
@@ -1187,7 +1186,13 @@ export const LobbySettingsScreen = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const set = (key: string, value: any) => setLocal((prev) => ({ ...prev, [key]: value }));
+  const setGeneral = <K extends keyof typeof gameSettings.general>(
+    key: K,
+    value: (typeof gameSettings.general)[K]
+  ) => setLocal((prev) => ({ ...prev, general: { ...prev.general, [key]: value } }));
+
+  const setMode = (patch: Partial<typeof gameSettings.mode>) =>
+    setLocal((prev) => ({ ...prev, mode: { ...(prev as any).mode, ...(patch as any) } }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -1263,8 +1268,8 @@ export const LobbySettingsScreen = () => {
                 {[Language.UA, Language.DE, Language.EN].map((l) => (
                   <button
                     key={l}
-                    onClick={() => set('language', l)}
-                    className={chip(local.language === l)}
+                    onClick={() => setGeneral('language', l)}
+                    className={chip(local.general.language === l)}
                   >
                     {l}
                   </button>
@@ -1276,15 +1281,17 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Час раунду</p>
-                <span className="text-[#D4AF6A] font-bold text-sm">{local.roundTime}с</span>
+                <span className="text-[#D4AF6A] font-bold text-sm">
+                  {'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 0}с
+                </span>
               </div>
               <input
                 type="range"
                 min="30"
                 max="180"
                 step="10"
-                value={local.roundTime}
-                onChange={(e) => set('roundTime', parseInt(e.target.value))}
+                value={'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 0}
+                onChange={(e) => setMode({ classicRoundTime: parseInt(e.target.value) } as any)}
                 className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
@@ -1300,15 +1307,15 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Рахунок для перемоги</p>
-                <span className="text-[#D4AF6A] font-bold text-sm">{local.scoreToWin}</span>
+                <span className="text-[#D4AF6A] font-bold text-sm">{local.general.scoreToWin}</span>
               </div>
               <input
                 type="range"
                 min="10"
                 max="100"
                 step="5"
-                value={local.scoreToWin}
-                onChange={(e) => set('scoreToWin', parseInt(e.target.value))}
+                value={local.general.scoreToWin}
+                onChange={(e) => setGeneral('scoreToWin', parseInt(e.target.value) as any)}
                 className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
@@ -1323,11 +1330,11 @@ export const LobbySettingsScreen = () => {
                 </p>
               </div>
               <button
-                onClick={() => set('skipPenalty', !local.skipPenalty)}
-                className={`w-12 h-7 rounded-full transition-all relative ${local.skipPenalty ? 'bg-[#D4AF6A]' : isDark ? 'bg-white/10' : 'bg-slate-200'}`}
+                onClick={() => setGeneral('skipPenalty', !local.general.skipPenalty as any)}
+                className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-[#D4AF6A]' : isDark ? 'bg-white/10' : 'bg-slate-200'}`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${local.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
+                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${local.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
                 />
               </button>
             </div>
@@ -1337,14 +1344,14 @@ export const LobbySettingsScreen = () => {
               <p className={sectionLabel}>Категорії слів</p>
               <div className="grid grid-cols-2 gap-2">
                 {cats.map((cat) => {
-                  const active = ((local.categories as string[]) || []).includes(cat);
+                  const active = ((local.general.categories as string[]) || []).includes(cat);
                   return (
                     <button
                       key={cat}
                       onClick={() => {
-                        const curr = (local.categories as string[]) || [];
+                        const curr = (local.general.categories as string[]) || [];
                         const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
-                        if (next.length > 0) set('categories', next);
+                        if (next.length > 0) setGeneral('categories', next as any);
                       }}
                       className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
                         active
@@ -2261,7 +2268,7 @@ export const StoreScreen = () => {
                       ? isDark
                         ? 'bg-[#1A2A1A] border-[#A1E3C8]/30'
                         : 'bg-emerald-50 border-emerald-200'
-                      : 'border-[#D4AF6A]/40 bg-gradient-to-br from-[#D4AF6A]/8 to-transparent'
+                      : 'border-[#D4AF6A]/40 bg-linear-to-br from-[#D4AF6A]/8 to-transparent'
                   }`}
                 >
                   <div className="flex justify-between items-start z-10">
@@ -2577,12 +2584,12 @@ export const PlayerStatsScreen = () => {
   const { get: getStats } = usePlayerStats();
   const stats = getStats();
   const isDark = currentTheme.isDark;
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
 
   const dateLocale =
-    settings.language === Language.UA
+    settings.general.language === Language.UA
       ? 'uk-UA'
-      : settings.language === Language.DE
+      : settings.general.language === Language.DE
         ? 'de-DE'
         : 'en-US';
 

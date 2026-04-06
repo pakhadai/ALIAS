@@ -2,6 +2,7 @@ export { VSScreen } from './VSScreen';
 export { PreRoundScreen } from './PreRoundScreen';
 export { CountdownScreen } from './CountdownScreen';
 export { PlayingScreen } from './PlayingScreen';
+export { ImposterScreen } from './ImposterScreen';
 export { RoundSummaryScreen } from './RoundSummaryScreen';
 export { ScoreboardScreen } from './ScoreboardScreen';
 export { GameOverScreen } from './GameOverScreen';

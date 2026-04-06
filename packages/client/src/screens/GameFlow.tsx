@@ -7,14 +7,17 @@ import {
   PreRoundScreen,
   CountdownScreen,
   PlayingScreen,
+  ImposterScreen,
   RoundSummaryScreen,
   ScoreboardScreen,
   GameOverScreen,
 } from './GameFlow/screens';
+import { GameMode } from '@alias/shared';
 
 /** Single router for all in-game flow states (VS → … → game over). */
 export function GameFlow() {
-  const { gameState } = useGame();
+  const { gameState, settings } = useGame();
+  const isImposter = settings.mode.gameMode === GameMode.IMPOSTER;
 
   switch (gameState) {
     case GameState.VS_SCREEN:
@@ -24,18 +27,39 @@ export function GameFlow() {
         </PageTransition>
       );
     case GameState.PRE_ROUND:
+      if (isImposter) {
+        return (
+          <div key="imposter" className="animate-page-in">
+            <ImposterScreen />
+          </div>
+        );
+      }
       return (
         <PageTransition key="pre_round">
           <PreRoundScreen />
         </PageTransition>
       );
     case GameState.COUNTDOWN:
+      if (isImposter) {
+        return (
+          <div key="imposter" className="animate-page-in">
+            <ImposterScreen />
+          </div>
+        );
+      }
       return (
         <div key="countdown" className="animate-page-in">
           <CountdownScreen />
         </div>
       );
     case GameState.PLAYING:
+      if (isImposter) {
+        return (
+          <div key="imposter" className="animate-page-in">
+            <ImposterScreen />
+          </div>
+        );
+      }
       return (
         <div key="playing" className="animate-page-in">
           <PlayingScreen />
@@ -69,6 +93,7 @@ export {
   PreRoundScreen,
   CountdownScreen,
   PlayingScreen,
+  ImposterScreen,
   RoundSummaryScreen,
   ScoreboardScreen,
   GameOverScreen,

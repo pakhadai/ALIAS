@@ -36,7 +36,9 @@ describe('createRoom', () => {
     expect(room.players).toHaveLength(0);
     expect(room.teams).toHaveLength(0);
     expect(room.settings).toBeDefined();
-    expect(room.settings.roundTime).toBe(60);
+    expect('classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0).toBe(
+      60
+    );
   });
 
   it('stores room in internal map', () => {

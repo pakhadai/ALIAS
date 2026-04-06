@@ -46,6 +46,8 @@ export interface ServerToClientEvents {
   'room:player-joined': (data: { player: Player }) => void;
   'room:player-left': (data: { playerId: string }) => void;
   'game:state-sync': (state: GameSyncState) => void;
+  /** IMPOSTER mode: per-player secret payload (never broadcast to the whole room). */
+  'imposter:secret': (data: { isImposter: boolean; word: string | null }) => void;
   'game:notification': (data: { message: string; type: 'info' | 'error' | 'success' }) => void;
   /** Emitted to the whole room so kicked clients work across Socket.IO nodes (adapter). */
   'player:kicked': (data: { playerId: string }) => void;
@@ -66,6 +68,10 @@ export interface GameSyncState {
   isPaused: boolean;
   timeUp?: boolean;
   wordDeck: string[];
+  /** IMPOSTER (public state only; word is never included here). */
+  imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';
+  imposterPlayerId?: string;
+  revealedPlayerIds?: string[];
 }
 
 // Inter-server events (for scaling)

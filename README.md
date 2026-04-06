@@ -730,6 +730,15 @@ switch (gameState) {
 
 CSS custom properties встановлюються динамічно: `--font-heading`, `--font-body`, `--theme-radius`.
 
+Додатково клієнт встановлює **семантичні UI-токени** (theme-aware), які варто використовувати в компонентах замість хардкоду `text-white/bg-white`:
+
+- `--ui-bg`, `--ui-fg`, `--ui-fg-muted`
+- `--ui-border`, `--ui-surface`, `--ui-surface-hover`, `--ui-card`
+- `--ui-accent`, `--ui-accent-contrast`
+- `--ui-danger`, `--ui-success`, `--ui-warning`
+
+Джерело: `packages/client/src/context/GameContext.tsx`.
+
 **Переклади** (`constants.ts` → `TRANSLATIONS`): об'єкт з ключами `UA`, `EN`, `DE`. ~150 ключів на мову.
 
 ### Офлайн-режим

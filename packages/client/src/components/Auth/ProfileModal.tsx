@@ -32,7 +32,7 @@ function AvatarIcon() {
 export function ProfileModal({ onClose }: ProfileModalProps) {
   const { authState, profile, loginWithGoogle, logout } = useAuthContext();
   const { currentTheme, settings, setGameState } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const { get: getStats } = usePlayerStats();
   const isDark = currentTheme.isDark;
   const [storeData, setStoreData] = useState<StoreData | null>(null);
@@ -152,8 +152,8 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
       onClick={handleClose}
     >
       <div
-        className={`relative w-full max-w-sm mx-auto rounded-t-[2rem] overflow-hidden
-          ${isDark ? 'bg-[#1C1C1E]' : 'bg-white'} transition-transform duration-300 ease-out
+        className={`relative w-full max-w-sm mx-auto rounded-t-4xl overflow-hidden
+          ${isDark ? 'bg-(--ui-card)' : 'bg-(--ui-card)'} transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0' : 'translate-y-full'}`}
         style={{ maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
@@ -175,14 +175,14 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               <AvatarDisplay avatarId={avatarId} size={76} />
             ) : (
               <div
-                className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-[#2C2C2E]' : 'bg-slate-100'} flex items-center justify-center`}
+                className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-(--ui-surface)' : 'bg-(--ui-surface)'} flex items-center justify-center`}
               >
                 <AvatarIcon />
               </div>
             )}
             <span
               className="absolute -bottom-3 left-1/2 -translate-x-1/2
-              bg-[#D4AF6A] text-[#1C1C1E] text-[7px] font-bold tracking-[0.18em]
+              bg-(--ui-accent) text-(--ui-accent-contrast) text-[7px] font-bold tracking-[0.18em]
               uppercase px-3 py-[3px] rounded-full whitespace-nowrap shadow-md"
             >
               {badgeLabel}
@@ -209,7 +209,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           <button
             type="button"
             onClick={openDetailedStats}
-            className={`mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] ${isDark ? 'text-[#D4AF6A] hover:text-[#e8cf8f]' : 'text-amber-700 hover:text-amber-800'} transition-colors`}
+            className={`mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] ${isDark ? 'text-(--ui-accent) hover:opacity-85' : 'text-(--ui-accent) hover:opacity-85'} transition-colors`}
           >
             {t.profileStatsDetailLink}
           </button>
@@ -263,7 +263,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               {purchases.map((p) => (
                 <div
                   key={p.id}
-                  className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}
+                  className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/5' : 'border-slate-100'}`}
                 >
                   <div>
                     <p
@@ -277,7 +277,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                       {new Date(p.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <Check size={14} className="text-[#D4AF6A]" />
+                  <Check size={14} className="text-(--ui-accent)" />
                 </div>
               ))}
             </div>
@@ -286,7 +286,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               {benefits.map((item, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}
+                  className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/5' : 'border-slate-100'}`}
                 >
                   <span className="text-[20px] leading-none w-7 text-center shrink-0">
                     {item.emoji}

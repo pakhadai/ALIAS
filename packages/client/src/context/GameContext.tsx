@@ -36,6 +36,31 @@ import { ToastNotification } from '../components/Shared';
 import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
 
+function parseHexColor(hex: string): { r: number; g: number; b: number } | null {
+  const raw = hex.trim().replace(/^#/, '');
+  if (!/^[0-9a-fA-F]{6}$/.test(raw)) return null;
+  const r = Number.parseInt(raw.slice(0, 2), 16);
+  const g = Number.parseInt(raw.slice(2, 4), 16);
+  const b = Number.parseInt(raw.slice(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
+  return { r, g, b };
+}
+
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
+  const srgb = [r, g, b].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * srgb[0]! + 0.7152 * srgb[1]! + 0.0722 * srgb[2]!;
+}
+
+function bestTextOnColor(hex: string): '#FFFFFF' | '#0B0F19' {
+  const rgb = parseHexColor(hex);
+  if (!rgb) return '#FFFFFF';
+  // Choose dark text for light accents (e.g., champagne), white otherwise.
+  return relativeLuminance(rgb) > 0.6 ? '#0B0F19' : '#FFFFFF';
+}
+
 function buildOfflineTask(
   rawWord: string,
   remainingDeck: string[],
@@ -109,15 +134,17 @@ const initialState: AppState = {
   gameState: GameState.MENU,
   gameMode: 'ONLINE',
   settings: {
-    language: Language.UA,
-    roundTime: 60,
-    scoreToWin: 30,
-    skipPenalty: true,
-    categories: [Category.GENERAL],
-    soundEnabled: true,
-    soundPreset: SoundPreset.FUN,
-    teamCount: 2,
-    theme: AppTheme.PREMIUM_DARK,
+    general: {
+      language: Language.UA,
+      scoreToWin: 30,
+      skipPenalty: true,
+      categories: [Category.GENERAL],
+      soundEnabled: true,
+      soundPreset: SoundPreset.FUN,
+      teamCount: 2,
+      theme: AppTheme.PREMIUM_DARK,
+    },
+    mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
   },
   roomCode: '',
   isHost: false,
@@ -135,6 +162,13 @@ const initialState: AppState = {
   notification: null,
   connectionError: null,
   connectionErrorCode: null,
+
+  imposterPhase: undefined,
+  imposterPlayerId: undefined,
+  revealedPlayerIds: [],
+  imposterSecret: null,
+  imposterOfflineRevealIndex: 0,
+  imposterWord: null,
 };
 
 function gameReducer(state: AppState, action: Action): AppState {
@@ -158,7 +192,15 @@ function restoreSession(init: AppState): AppState {
     const rawPrefs = localStorage.getItem(PREFS_KEY);
     if (rawPrefs) {
       const prefs = JSON.parse(rawPrefs);
-      init = { ...init, settings: { ...init.settings, ...prefs } };
+      // Backward-compatible prefs: either flat {theme, language, ...} or nested {general:{...}}
+      const generalFromPrefs =
+        prefs && typeof prefs === 'object' && 'general' in prefs
+          ? (prefs.general as Partial<GameSettings['general']>)
+          : (prefs as Partial<GameSettings['general']>);
+      init = {
+        ...init,
+        settings: { ...init.settings, general: { ...init.settings.general, ...generalFromPrefs } },
+      };
     }
   } catch {}
 
@@ -179,7 +221,15 @@ function restoreSession(init: AppState): AppState {
       ...init,
       gameState,
       gameMode: saved.gameMode || 'ONLINE',
-      settings: { ...init.settings, ...saved.settings },
+      settings: {
+        ...init.settings,
+        ...(saved.settings?.general
+          ? { general: { ...init.settings.general, ...saved.settings.general } }
+          : {}),
+        ...(saved.settings?.mode
+          ? { mode: { ...init.settings.mode, ...saved.settings.mode } }
+          : {}),
+      },
       roomCode: saved.roomCode,
       isHost: true,
       myPlayerId: saved.myPlayerId || '',
@@ -250,14 +300,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (code.length >= 4) {
           try {
             const deck = await fetchDeckByCode(code);
-            const lang = stateRef.current.settings.language;
+            const lang = stateRef.current.settings.general.language;
             dispatch({
               type: 'SET_STATE',
               payload: {
                 settings: {
                   ...stateRef.current.settings,
-                  customDeckCode: deck.accessCode ?? code,
-                  customDeckName: deck.name,
+                  general: {
+                    ...stateRef.current.settings.general,
+                    customDeckCode: deck.accessCode ?? code,
+                    customDeckName: deck.name,
+                  },
                 },
               },
             });
@@ -266,7 +319,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               'success'
             );
           } catch {
-            const lang = stateRef.current.settings.language;
+            const lang = stateRef.current.settings.general.language;
             showNotification(TRANSLATIONS[lang].customDeckDeepLinkError, 'error');
           }
         }
@@ -365,35 +418,61 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const nextWordLogic = useCallback(() => {
     offlineQuizLockTaskIdRef.current = null;
     const { settings, wordDeck } = stateRef.current;
+    const { general, mode } = settings;
     let deck = [...wordDeck];
     if (deck.length === 0) {
-      const pool = settings.categories.flatMap((cat) => {
-        if (cat === Category.CUSTOM && settings.customWords) {
-          return settings.customWords
+      const pool = general.categories.flatMap((cat) => {
+        if (cat === Category.CUSTOM && general.customWords) {
+          return general.customWords
             .split(',')
             .map((w) => w.trim().replace(/<[^>]*>/g, ''))
             .filter(Boolean);
         }
-        return MOCK_WORDS[settings.language][cat] || [];
+        return MOCK_WORDS[general.language][cat] || [];
       });
 
       const finalPool =
-        pool.length > 0 ? pool : MOCK_WORDS[settings.language][Category.GENERAL] || [];
+        pool.length > 0 ? pool : MOCK_WORDS[general.language][Category.GENERAL] || [];
       deck = shuffleArray(finalPool);
     }
     const word = deck.pop() || 'Error';
     offlineTaskIdRef.current += 1;
     const taskId = `offline-${offlineTaskIdRef.current}-${Date.now()}`;
-    const task = buildOfflineTask(word, deck, settings.gameMode, taskId);
+    const task = buildOfflineTask(word, deck, mode.gameMode, taskId);
     dispatch({
       type: 'SET_STATE',
       payload: { wordDeck: deck, currentWord: task.prompt, currentTask: task },
     });
   }, []);
 
+  const nextOfflineImposterWord = useCallback((): string => {
+    const { settings, wordDeck } = stateRef.current;
+    const { general } = settings;
+    let deck = [...wordDeck];
+    if (deck.length === 0) {
+      const pool = general.categories.flatMap((cat) => {
+        if (cat === Category.CUSTOM && general.customWords) {
+          return general.customWords
+            .split(',')
+            .map((w) => w.trim().replace(/<[^>]*>/g, ''))
+            .filter(Boolean);
+        }
+        return MOCK_WORDS[general.language][cat] || [];
+      });
+      const finalPool =
+        pool.length > 0 ? pool : MOCK_WORDS[general.language][Category.GENERAL] || [];
+      deck = shuffleArray(finalPool);
+    }
+    const word = deck.pop() || 'Error';
+    dispatch({ type: 'SET_STATE', payload: { wordDeck: deck } });
+    return word;
+  }, []);
+
   const handleGameAction = useCallback(
     (payload: GameActionPayload) => {
-      if (!stateRef.current.isHost) return;
+      // Offline mode: allow PAUSE_GAME from any local player.
+      // (Other actions remain host-driven in offline mode.)
+      if (!stateRef.current.isHost && payload.action !== 'PAUSE_GAME') return;
 
       switch (payload.action) {
         case 'CORRECT': {
@@ -445,7 +524,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               type: 'SET_STATE',
               payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false },
             });
-          } else if (stateRef.current.settings.gameMode === GameMode.HARDCORE) {
+          } else if (stateRef.current.settings.mode.gameMode === GameMode.HARDCORE) {
             dispatch({
               type: 'SET_STATE',
               payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false },
@@ -457,7 +536,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         case 'GUESS_OPTION': {
           const { settings, currentTask, timeUp } = stateRef.current;
-          if (settings.gameMode !== GameMode.QUIZ || !currentTask?.answer) break;
+          if (settings.mode.gameMode !== GameMode.QUIZ || !currentTask?.answer) break;
           const sel = payload.data.selectedOption;
           if (typeof sel !== 'string') break;
           if (offlineQuizLockTaskIdRef.current === currentTask.id) break;
@@ -522,11 +601,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         case 'START_PLAYING':
           playSound('start');
+          const roundTime =
+            'classicRoundTime' in stateRef.current.settings.mode
+              ? stateRef.current.settings.mode.classicRoundTime
+              : 0;
           dispatch({
             type: 'SET_STATE',
             payload: {
               gameState: GameState.PLAYING,
-              timeLeft: stateRef.current.settings.roundTime,
+              timeLeft: roundTime,
               isPaused: false,
               timeUp: false,
             },
@@ -551,9 +634,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         }
         case 'GENERATE_TEAMS': {
-          const teamNames = TRANSLATIONS[stateRef.current.settings.language].teamNames;
+          const teamNames = TRANSLATIONS[stateRef.current.settings.general.language].teamNames;
           const teamCount = Math.min(
-            stateRef.current.settings.teamCount,
+            stateRef.current.settings.general.teamCount,
             stateRef.current.players.length
           );
           const newTeams: Team[] = Array.from({ length: teamCount }, (_, i) => ({
@@ -571,10 +654,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         }
         case 'START_GAME':
-          dispatch({
-            type: 'SET_STATE',
-            payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0 },
-          });
+          if (stateRef.current.settings.mode.gameMode === GameMode.IMPOSTER) {
+            const ps = stateRef.current.players;
+            const imposter = ps[Math.floor(Math.random() * Math.max(1, ps.length))];
+            const w = nextOfflineImposterWord();
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                gameState: GameState.PRE_ROUND,
+                currentTeamIndex: 0,
+                imposterPhase: 'REVEAL',
+                imposterPlayerId: imposter?.id,
+                revealedPlayerIds: [],
+                imposterOfflineRevealIndex: 0,
+                imposterWord: w,
+                imposterSecret: null,
+                timeLeft: 0,
+                isPaused: false,
+                currentWord: '',
+                currentTask: null,
+              },
+            });
+          } else {
+            dispatch({
+              type: 'SET_STATE',
+              payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0 },
+            });
+          }
           break;
         case 'NEXT_ROUND':
           if (stateRef.current.teams.length === 0) break;
@@ -590,10 +696,99 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'PAUSE_GAME':
           dispatch({ type: 'SET_STATE', payload: { isPaused: !stateRef.current.isPaused } });
           break;
+        case 'IMPOSTER_READY': {
+          if (stateRef.current.settings.mode.gameMode !== GameMode.IMPOSTER) break;
+          const { players, revealedPlayerIds, imposterOfflineRevealIndex } = stateRef.current;
+          const current = players[imposterOfflineRevealIndex];
+          if (!current) break;
+          const nextRevealed = revealedPlayerIds.includes(current.id)
+            ? revealedPlayerIds
+            : [...revealedPlayerIds, current.id];
+          const nextIndex = imposterOfflineRevealIndex + 1;
+          const allRevealed = nextRevealed.length >= players.length;
+          if (allRevealed) {
+            const discussionTime =
+              'imposterDiscussionTime' in stateRef.current.settings.mode
+                ? stateRef.current.settings.mode.imposterDiscussionTime
+                : 3 * 60;
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                imposterPhase: 'DISCUSSION',
+                revealedPlayerIds: nextRevealed,
+                imposterOfflineRevealIndex: nextIndex,
+                timeLeft: discussionTime,
+                isPaused: false,
+              },
+            });
+          } else {
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                imposterPhase: 'REVEAL',
+                revealedPlayerIds: nextRevealed,
+                imposterOfflineRevealIndex: nextIndex,
+              },
+            });
+          }
+          break;
+        }
+        case 'IMPOSTER_END_GAME': {
+          if (stateRef.current.settings.mode.gameMode !== GameMode.IMPOSTER) break;
+          dispatch({ type: 'SET_STATE', payload: { imposterPhase: 'RESULTS', timeLeft: 0 } });
+          break;
+        }
         case 'UPDATE_SETTINGS':
           dispatch({
             type: 'SET_STATE',
-            payload: { settings: { ...stateRef.current.settings, ...payload.data } },
+            payload: {
+              settings: {
+                ...stateRef.current.settings,
+                ...(payload.data.general
+                  ? {
+                      general: { ...stateRef.current.settings.general, ...payload.data.general },
+                    }
+                  : {}),
+                ...(payload.data.mode
+                  ? {
+                      mode: (() => {
+                        const prev = stateRef.current.settings.mode;
+                        const patch = payload.data.mode;
+                        const nextGameMode = patch.gameMode ?? prev.gameMode;
+                        switch (nextGameMode) {
+                          case GameMode.IMPOSTER:
+                            return {
+                              gameMode: GameMode.IMPOSTER,
+                              imposterDiscussionTime:
+                                patch.imposterDiscussionTime ??
+                                (prev.gameMode === GameMode.IMPOSTER
+                                  ? prev.imposterDiscussionTime
+                                  : 3 * 60),
+                            };
+                          case GameMode.HARDCORE:
+                            return {
+                              gameMode: GameMode.HARDCORE,
+                              classicRoundTime:
+                                patch.classicRoundTime ??
+                                (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+                            };
+                          case GameMode.CLASSIC:
+                          case GameMode.TRANSLATION:
+                          case GameMode.SYNONYMS:
+                          case GameMode.QUIZ:
+                          default:
+                            return {
+                              gameMode: nextGameMode,
+                              classicRoundTime:
+                                patch.classicRoundTime ??
+                                (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+                            };
+                        }
+                      })(),
+                    }
+                  : {}),
+              },
+            },
           });
           break;
         case 'RESET_GAME':
@@ -609,6 +804,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               timeLeft: 0,
               isPaused: false,
               currentRoundStats: initialState.currentRoundStats,
+              imposterPhase: undefined,
+              imposterPlayerId: undefined,
+              revealedPlayerIds: [],
+              imposterSecret: null,
+              imposterOfflineRevealIndex: 0,
+              imposterWord: null,
             },
           });
           localStorage.removeItem('alias_active_session');
@@ -628,6 +829,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               wordDeck: [],
               currentWord: '',
               currentTask: null,
+              imposterPhase:
+                stateRef.current.settings.mode.gameMode === GameMode.IMPOSTER
+                  ? 'REVEAL'
+                  : undefined,
+              revealedPlayerIds: [],
+              imposterSecret: null,
+              imposterOfflineRevealIndex: 0,
+              imposterWord:
+                stateRef.current.settings.mode.gameMode === GameMode.IMPOSTER
+                  ? nextOfflineImposterWord()
+                  : null,
             },
           });
           break;
@@ -663,7 +875,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'CONFIRM_ROUND': {
           const { currentRoundStats, teams, currentTeamIndex, settings } = stateRef.current;
           const rawPoints =
-            currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+            currentRoundStats.correct -
+            (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
           const points = Math.max(0, rawPoints);
 
           const activeTeam = teams[currentTeamIndex];
@@ -679,7 +892,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
 
           const isLastTeam = currentTeamIndex === teams.length - 1;
-          const hasWinner = updatedTeams.some((t) => t.score >= settings.scoreToWin);
+          const hasWinner = updatedTeams.some((t) => t.score >= settings.general.scoreToWin);
           const nextState = isLastTeam && hasWinner ? GameState.GAME_OVER : GameState.SCOREBOARD;
 
           dispatch({ type: 'SET_STATE', payload: { teams: updatedTeams, gameState: nextState } });
@@ -692,7 +905,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: `local-${playerNum}-${Date.now()}`,
             name:
               payload.data?.name ||
-              `${TRANSLATIONS[stateRef.current.settings.language].playerN} ${playerNum}`,
+              `${TRANSLATIONS[stateRef.current.settings.general.language].playerN} ${playerNum}`,
             avatar: payload.data?.avatar || AVATARS[playerNum % AVATARS.length],
             isHost: false,
             stats: { explained: 0, guessed: 0 },
@@ -759,12 +972,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           isPaused: syncState.isPaused,
           timeUp: syncState.timeUp,
           wordDeck: syncState.wordDeck,
+          imposterPhase: syncState.imposterPhase,
+          imposterPlayerId: syncState.imposterPlayerId,
+          revealedPlayerIds: syncState.revealedPlayerIds ?? [],
           isHost: isHostFromSync,
           isConnected: true,
           connectionError: null,
           connectionErrorCode: null,
         },
       });
+    }, []),
+    onImposterSecret: useCallback((payload: { isImposter: boolean; word: string | null }) => {
+      dispatch({ type: 'SET_STATE', payload: { imposterSecret: payload } });
     }, []),
     onPlayerJoined: useCallback(
       (player: Player) => {
@@ -857,7 +1076,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [socketApi.myPlayerId, socketApi.roomCode, state.gameMode]);
 
-  const currentTheme = useMemo(() => THEME_CONFIG[state.settings.theme], [state.settings.theme]);
+  const currentTheme = useMemo(
+    () => THEME_CONFIG[state.settings.general.theme],
+    [state.settings.general.theme]
+  );
 
   // Apply per-theme design tokens via CSS custom properties
   useEffect(() => {
@@ -865,6 +1087,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     r.style.setProperty('--font-heading', currentTheme.fonts.heading);
     r.style.setProperty('--font-body', currentTheme.fonts.body);
     r.style.setProperty('--theme-radius', currentTheme.borderRadius);
+    r.style.colorScheme = currentTheme.isDark ? 'dark' : 'light';
 
     // Theme-safe semantic colors for base components (Button/Card fallbacks, etc.)
     if (currentTheme.isDark) {
@@ -884,18 +1107,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty('--ui-surface-hover', 'rgba(15,23,42,0.10)');
       r.style.setProperty('--ui-card', 'rgba(255,255,255,0.90)');
     }
+
+    // Accent + status colors (theme-aware)
+    const accent = currentTheme.preview?.accent ?? (currentTheme.isDark ? '#6366F1' : '#1E293B');
+    r.style.setProperty('--ui-accent', accent);
+    r.style.setProperty('--ui-accent-contrast', bestTextOnColor(accent));
+    r.style.setProperty('--ui-danger', currentTheme.isDark ? '#F87171' : '#DC2626'); // red-400 / red-600
+    r.style.setProperty('--ui-success', currentTheme.isDark ? '#34D399' : '#059669'); // emerald-400 / emerald-600
+    r.style.setProperty('--ui-warning', currentTheme.isDark ? '#FBBF24' : '#D97706'); // amber-400 / amber-600
   }, [currentTheme]);
 
   // Sync <html lang> with app language setting
   useEffect(() => {
     const lang =
-      state.settings.language === Language.UA
+      state.settings.general.language === Language.UA
         ? 'uk'
-        : state.settings.language === Language.DE
+        : state.settings.general.language === Language.DE
           ? 'de'
           : 'en';
     document.documentElement.lang = lang;
-  }, [state.settings.language]);
+  }, [state.settings.general.language]);
 
   // Persist user preferences (theme, language, sound) across sessions
   useEffect(() => {
@@ -903,18 +1134,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(
         PREFS_KEY,
         JSON.stringify({
-          theme: state.settings.theme,
-          language: state.settings.language,
-          soundEnabled: state.settings.soundEnabled,
-          soundPreset: state.settings.soundPreset,
+          theme: state.settings.general.theme,
+          language: state.settings.general.language,
+          soundEnabled: state.settings.general.soundEnabled,
+          soundPreset: state.settings.general.soundPreset,
         })
       );
     } catch {}
   }, [
-    state.settings.theme,
-    state.settings.language,
-    state.settings.soundEnabled,
-    state.settings.soundPreset,
+    state.settings.general.theme,
+    state.settings.general.language,
+    state.settings.general.soundEnabled,
+    state.settings.general.soundPreset,
   ]);
 
   const contextValue = useMemo(
@@ -941,16 +1172,28 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchLobbySettings()
           .then((saved) => {
             if (saved && typeof saved === 'object') {
-              const {
-                theme: _t,
-                language: _l,
-                soundEnabled: _se,
-                soundPreset: _sp,
-                ...roomSettings
-              } = saved as Partial<GameSettings>;
+              const roomSettings = saved as Partial<GameSettings>;
               dispatch({
                 type: 'SET_STATE',
-                payload: { settings: { ...stateRef.current.settings, ...roomSettings } },
+                payload: {
+                  settings: {
+                    ...stateRef.current.settings,
+                    ...(roomSettings.general
+                      ? {
+                          general: {
+                            ...stateRef.current.settings.general,
+                            ...roomSettings.general,
+                            // Keep personal prefs from device
+                            theme: stateRef.current.settings.general.theme,
+                            language: stateRef.current.settings.general.language,
+                            soundEnabled: stateRef.current.settings.general.soundEnabled,
+                            soundPreset: stateRef.current.settings.general.soundPreset,
+                          },
+                        }
+                      : {}),
+                    ...(roomSettings.mode ? { mode: roomSettings.mode as any } : {}),
+                  },
+                },
               });
             }
           })

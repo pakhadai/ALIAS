@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px]';
+    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[color:var(--ui-accent)] focus-visible:ring-offset-[color:var(--ui-bg)]';
 
   // Strict theme integration
   const getVariantStyle = () => {
@@ -34,15 +34,15 @@ export const Button: React.FC<ButtonProps> = ({
       case 'outline':
         return 'bg-transparent border border-[color:var(--ui-border)] text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)]';
       case 'danger':
-        return 'bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white';
+        return 'bg-[color:color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color:color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-[color:var(--ui-danger)] hover:bg-[color:color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
       case 'success':
-        return 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white';
+        return 'bg-[color:color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color:color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-[color:var(--ui-success)] hover:bg-[color:color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':
         return 'bg-[color:var(--ui-surface)] text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] border border-[color:var(--ui-border)] hover:bg-[color:var(--ui-surface-hover)]';
       case 'ghost':
         return 'bg-transparent text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)]';
       default:
-        return 'bg-[color:var(--ui-fg)] text-[color:var(--ui-bg)]';
+        return 'bg-[color:var(--ui-accent)] text-[color:var(--ui-accent-contrast)] hover:opacity-95';
     }
   };
 

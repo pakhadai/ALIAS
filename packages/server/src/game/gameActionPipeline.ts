@@ -18,6 +18,21 @@ export function broadcastRoomState(io: IO, roomCode: string, roomManager: RoomMa
   if (!room) return;
   const state = roomManager.getSyncState(room);
   io.to(roomCode).emit('game:state-sync', state);
+
+  // IMPOSTER: send per-player secret (word/null) individually.
+  if (room.settings.mode.gameMode === 'IMPOSTER' && room.imposterPhase) {
+    for (const [socketId, playerId] of room.socketToPlayer.entries()) {
+      const isImposter = !!room.imposterPlayerId && playerId === room.imposterPlayerId;
+      const word =
+        room.imposterPhase === 'RESULTS'
+          ? (room.imposterWord ?? null)
+          : isImposter
+            ? null
+            : (room.imposterWord ?? null);
+      io.to(socketId).emit('imposter:secret', { isImposter, word });
+    }
+  }
+
   roomManager.persistRoom(room);
 }
 

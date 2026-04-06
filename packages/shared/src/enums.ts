@@ -58,4 +58,5 @@ export enum GameMode {
   QUIZ = 'QUIZ',
   /** Skip ends the round immediately (stricter than classic). */
   HARDCORE = 'HARDCORE',
+  IMPOSTER = 'IMPOSTER',
 }

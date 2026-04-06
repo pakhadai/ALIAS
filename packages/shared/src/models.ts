@@ -31,8 +31,14 @@ export interface GameTask {
 }
 
 export interface GameSettings {
+  /** General settings: language/deck/audio/theme/etc. */
+  general: GeneralSettings;
+  /** Mode-specific settings: depends on selected gameMode. */
+  mode: ModeSettings;
+}
+
+export interface GeneralSettings {
   language: Language;
-  roundTime: number;
   scoreToWin: number;
   skipPenalty: boolean;
   categories: Category[];
@@ -45,9 +51,25 @@ export interface GameSettings {
   /** Display name for UI (from API / deep link); optional on server. */
   customDeckName?: string;
   selectedPackIds?: string[];
-  gameMode?: GameMode;
   targetLanguage?: Language;
 }
+
+export type ModeSettings =
+  | {
+      gameMode: GameMode.CLASSIC | GameMode.TRANSLATION | GameMode.SYNONYMS | GameMode.QUIZ;
+      /** Round time for classic-like modes (seconds). */
+      classicRoundTime: number;
+    }
+  | {
+      gameMode: GameMode.HARDCORE;
+      /** Round time for hardcore mode (seconds). */
+      classicRoundTime: number;
+    }
+  | {
+      gameMode: GameMode.IMPOSTER;
+      /** Discussion timer (seconds). */
+      imposterDiscussionTime: number;
+    };
 
 /** Per-round scoring and word history for the active team. */
 export interface RoundStats {

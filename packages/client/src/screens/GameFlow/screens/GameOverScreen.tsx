@@ -10,8 +10,8 @@ import { usePlayerStats } from '../../../hooks/usePlayerStats';
 
 export const GameOverScreen = () => {
   const { teams, currentTheme, settings, resetGame, rematch, leaveRoom, isHost } = useGame();
-  const t = TRANSLATIONS[settings.language];
-  const isDark = settings.theme === AppTheme.PREMIUM_DARK;
+  const t = TRANSLATIONS[settings.general.language];
+  const isDark = settings.general.theme === AppTheme.PREMIUM_DARK;
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);
@@ -162,7 +162,9 @@ export const GameOverScreen = () => {
   };
 
   const medals = ['🥇', '🥈', '🥉'];
-  const cardBg = isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100 shadow-sm';
+  const cardBg = isDark
+    ? 'bg-(--ui-surface) border-(--ui-border)'
+    : 'bg-(--ui-card) border-(--ui-border) shadow-sm';
 
   return (
     <div
@@ -173,8 +175,8 @@ export const GameOverScreen = () => {
 
       {/* Winner banner */}
       <div className="w-full max-w-sm pb-6 text-center animate-slide-up">
-        <Trophy size={56} className="text-yellow-500 mx-auto mb-4 animate-bounce" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-yellow-500 mb-2">
+        <Trophy size={56} className="text-(--ui-accent) mx-auto mb-4 animate-bounce" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-(--ui-accent) mb-2">
           {t.winners}
         </p>
         <h2 className={`text-4xl font-serif ${currentTheme.textMain}`}>{winner?.name}</h2>
@@ -202,7 +204,7 @@ export const GameOverScreen = () => {
               )}
             </div>
             <span
-              className={`font-bold text-base tabular-nums ${i === 0 ? 'text-yellow-500' : currentTheme.textMain}`}
+              className={`font-bold text-base tabular-nums ${i === 0 ? 'text-(--ui-accent)' : currentTheme.textMain}`}
             >
               {team.score} <span className="text-[10px] opacity-40">{t.pts}</span>
             </span>
@@ -254,7 +256,7 @@ export const GameOverScreen = () => {
       <div className="w-full max-w-sm space-y-3 pt-6 pb-2">
         <button
           onClick={handleShare}
-          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all text-[12px] font-bold uppercase tracking-widest ${isDark ? 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/20' : 'border-slate-200 text-slate-400 hover:text-slate-600'}`}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all text-[12px] font-bold uppercase tracking-widest"
         >
           {copied ? t.shareCopied : t.shareResults}
         </button>

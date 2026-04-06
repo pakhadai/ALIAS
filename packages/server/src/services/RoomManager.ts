@@ -5,6 +5,7 @@ import {
   Category,
   SoundPreset,
   AppTheme,
+  GameMode,
   ROOM_CODE_LENGTH,
   TEAM_COLORS,
   MAX_PLAYERS,
@@ -44,18 +45,30 @@ export interface Room {
   hostUserId?: string;
   createdAt: number;
   usedWords: string[];
+  // ─── IMPOSTER runtime state (public+secret) ───────────────────────────────
+  imposterPlayerId?: string;
+  /** Secret word (never included in GameSyncState). */
+  imposterWord?: string;
+  imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';
+  /** Players who already revealed their card (ids). */
+  revealedPlayerIds?: string[];
 }
 
 const defaultSettings: GameSettings = {
-  language: Language.UA,
-  roundTime: 60,
-  scoreToWin: 30,
-  skipPenalty: true,
-  categories: [Category.GENERAL],
-  soundEnabled: true,
-  soundPreset: SoundPreset.FUN,
-  teamCount: 2,
-  theme: AppTheme.PREMIUM_DARK,
+  general: {
+    language: Language.UA,
+    scoreToWin: 30,
+    skipPenalty: true,
+    categories: [Category.GENERAL],
+    soundEnabled: true,
+    soundPreset: SoundPreset.FUN,
+    teamCount: 2,
+    theme: AppTheme.PREMIUM_DARK,
+  },
+  mode: {
+    gameMode: GameMode.CLASSIC,
+    classicRoundTime: 60,
+  },
 };
 
 const defaultRoundStats: RoundStats = {
@@ -172,6 +185,10 @@ export class RoomManager {
       roundsPlayed: 0,
       createdAt: Date.now(),
       usedWords: [],
+      imposterPlayerId: undefined,
+      imposterWord: undefined,
+      imposterPhase: undefined,
+      revealedPlayerIds: [],
     };
     this.rooms.set(code, room);
     this.persistRoom(room);
@@ -551,6 +568,9 @@ export class RoomManager {
       isPaused: room.isPaused,
       timeUp: room.timeUp,
       wordDeck: room.wordDeck,
+      imposterPhase: room.imposterPhase,
+      imposterPlayerId: room.imposterPlayerId,
+      revealedPlayerIds: room.revealedPlayerIds ?? [],
     };
   }
 

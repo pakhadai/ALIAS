@@ -82,23 +82,28 @@ async function adminFetch<T>(path: string, token: string, opts?: RequestInit): P
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-1">
-      <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{label}</span>
-      <span className="text-3xl font-serif font-bold text-white">{value}</span>
-      {sub && <span className="text-xs text-white/40">{sub}</span>}
+    <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-5 flex flex-col gap-1">
+      <span className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold">
+        {label}
+      </span>
+      <span className="text-3xl font-serif font-bold text-(--ui-fg)">{value}</span>
+      {sub && <span className="text-xs text-(--ui-fg-muted)">{sub}</span>}
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    approved: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+    approved:
+      'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-[color:var(--ui-success)] border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)]',
+    pending:
+      'bg-[color-mix(in_srgb,var(--ui-warning)_14%,transparent)] text-[color:var(--ui-warning)] border-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)]',
+    rejected:
+      'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-[color:var(--ui-danger)] border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)]',
   };
   return (
     <span
-      className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border ${colors[status] ?? 'bg-white/10 text-white/40 border-white/10'}`}
+      className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border ${colors[status] ?? 'bg-(--ui-surface) text-(--ui-fg-muted) border-(--ui-border)'}`}
     >
       {status}
     </span>
@@ -107,7 +112,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function Bar({ pct, color = 'bg-[#D4AF6A]' }: { pct: number; color?: string }) {
   return (
-    <div className="flex-1 bg-white/5 rounded-full h-2 overflow-hidden">
+    <div className="flex-1 bg-(--ui-surface) rounded-full h-2 overflow-hidden">
       <div
         className={`h-full ${color} rounded-full transition-all`}
         style={{ width: `${Math.max(1, pct)}%` }}
@@ -429,15 +434,15 @@ export function AdminPanel() {
   // ── Input style ────────────────────────────────────────────────────────────
 
   const inp =
-    'bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#D4AF6A]';
+    'bg-(--ui-surface) border border-(--ui-border) rounded-lg px-3 py-2 text-(--ui-fg) text-sm placeholder:text-(--ui-fg-muted) focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent)';
 
   // ── Login screen ───────────────────────────────────────────────────────────
 
   if (!apiKey) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-8 bg-(--ui-bg) text-(--ui-fg)">
         <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
-          <h1 className="font-serif text-3xl text-center text-white mb-8">ALIAS Admin</h1>
+          <h1 className="font-serif text-3xl text-center text-(--ui-fg) mb-8">ALIAS Admin</h1>
           <input
             type="password"
             placeholder="Admin API Key"
@@ -448,7 +453,7 @@ export function AdminPanel() {
           {authError && <p className="text-red-400 text-sm text-center">{authError}</p>}
           <button
             type="submit"
-            className="w-full bg-[#D4AF6A] hover:bg-[#C9A55A] text-black font-bold py-3 rounded-xl transition-colors"
+            className="w-full bg-(--ui-accent) text-(--ui-accent-contrast) font-bold py-3 rounded-xl transition-colors hover:opacity-95"
           >
             Увійти
           </button>
@@ -469,29 +474,29 @@ export function AdminPanel() {
   const maxGames = Math.max(...daily.map((d) => d.games), 1);
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
-        <h1 className="font-serif text-xl text-white tracking-wide">ALIAS Admin</h1>
+    <div className="min-h-screen bg-(--ui-bg) text-(--ui-fg)">
+      <header className="border-b border-(--ui-border) px-6 py-4 flex items-center justify-between">
+        <h1 className="font-serif text-xl text-(--ui-fg) tracking-wide">ALIAS Admin</h1>
         <button
           onClick={() => {
             sessionStorage.removeItem('admin_key');
             setApiKey('');
           }}
-          className="text-[10px] uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+          className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors"
         >
           Вийти
         </button>
       </header>
 
-      <div className="border-b border-white/10 px-6 flex gap-1 overflow-x-auto">
+      <div className="border-b border-(--ui-border) px-6 flex gap-1 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`py-3 px-2 text-[11px] uppercase tracking-widest font-bold border-b-2 transition-colors whitespace-nowrap ${
               tab === t.id
-                ? 'border-[#D4AF6A] text-[#D4AF6A]'
-                : 'border-transparent text-white/30 hover:text-white/60'
+                ? 'border-(--ui-accent) text-(--ui-accent)'
+                : 'border-transparent text-(--ui-fg-muted) hover:text-(--ui-fg)'
             }`}
           >
             {t.label}
@@ -499,7 +504,7 @@ export function AdminPanel() {
         ))}
         <button
           onClick={() => load(apiKey, tab)}
-          className="ml-auto py-3 px-2 text-[11px] uppercase tracking-widest font-bold text-white/20 hover:text-white/50 transition-colors whitespace-nowrap"
+          className="ml-auto py-3 px-2 text-[11px] uppercase tracking-widest font-bold text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors whitespace-nowrap"
         >
           ↻
         </button>

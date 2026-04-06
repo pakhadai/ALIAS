@@ -39,9 +39,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-10 text-center">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-(--ui-bg) text-(--ui-fg) p-10 text-center">
           <h1 className="text-3xl font-serif mb-4 tracking-wide">Unexpected Error</h1>
-          <p className="text-white/40 mb-10 max-w-xs text-sm font-sans font-light leading-relaxed">
+          <p className="text-(--ui-fg-muted) mb-10 max-w-xs text-sm font-sans font-light leading-relaxed">
             We encountered a slight issue. Please try reloading the app.
           </p>
           <Button onClick={this.handleReload} variant="secondary" size="lg">
@@ -75,7 +75,7 @@ export const Confetti: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-100 overflow-hidden">
       {particles.map((p) => (
         <div
           key={p.id}
@@ -104,16 +104,18 @@ export const ToastNotification: React.FC<{
   }, [onClose]);
 
   const styles = {
-    info: 'border-white/20 bg-slate-900 text-white shadow-2xl',
-    error: 'border-red-500/30 bg-red-950/20 text-red-100',
-    success: 'border-emerald-500/30 bg-emerald-950/20 text-emerald-100',
+    info: 'border-[color:var(--ui-border)] bg-[color:var(--ui-card)] text-[color:var(--ui-fg)] shadow-2xl',
+    error:
+      'border-[color:color-mix(in_srgb,var(--ui-danger)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-danger)_12%,transparent)] text-[color:var(--ui-fg)]',
+    success:
+      'border-[color:color-mix(in_srgb,var(--ui-success)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-success)_12%,transparent)] text-[color:var(--ui-fg)]',
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-4 px-4 pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 z-1000 flex justify-center pt-4 px-4 pointer-events-none">
       <div className="pointer-events-auto w-[90%] max-w-sm animate-slide-up">
         <div
-          className={`${styles[type]} border rounded-[2rem] px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-white/5`}
+          className={`${styles[type]} border rounded-4xl px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-white/5`}
         >
           <div className="flex-1 text-center">
             <p className="text-[10px] font-sans font-bold uppercase tracking-[0.4em] leading-relaxed">
@@ -154,14 +156,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const cardClass = theme?.card || 'bg-slate-900';
-  const textMain = theme?.textMain || 'text-white';
-  const textSecondary = theme?.textSecondary || 'text-white/30';
+  const cardClass = theme?.card || 'bg-(--ui-card)';
+  const textMain = theme?.textMain || 'text-(--ui-fg)';
+  const textSecondary = theme?.textSecondary || 'text-(--ui-fg-muted)';
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg animate-fade-in">
+    <div className="fixed inset-0 z-600 flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg animate-fade-in">
       <div
-        className={`${cardClass} border border-white/5 rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center animate-pop-in`}
+        className={`${cardClass} border border-(--ui-border) rounded-[3rem] p-12 w-full max-w-sm shadow-2xl text-center animate-pop-in`}
       >
         <h3 className={`text-4xl font-serif ${textMain} mb-6 tracking-wide leading-tight`}>
           {title}
@@ -200,7 +202,7 @@ export const FloatingParticle: React.FC<{
 
   return (
     <div
-      className="fixed pointer-events-none z-[100] font-serif text-4xl animate-float-up"
+      className="fixed pointer-events-none z-100 font-serif text-4xl animate-float-up"
       style={{ left: x, top: y, color }}
     >
       {text}
@@ -233,16 +235,16 @@ export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({
     : `${teamName} reached ${points}!`;
 
   return (
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[150] w-full px-10 text-center animate-pop-in">
-      <div className="bg-slate-900/95 border border-white/10 p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-150 w-full px-10 text-center animate-pop-in">
+      <div className="bg-(--ui-card) border border-(--ui-border) p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-(--ui-border)">
         <Star
-          className="w-16 h-16 text-yellow-500 mx-auto mb-8 animate-pulse"
+          className="w-16 h-16 text-(--ui-accent) mx-auto mb-8 animate-pulse"
           fill="currentColor"
         />
-        <h2 className="text-white text-4xl font-serif mb-4 tracking-widest uppercase">
+        <h2 className="text-(--ui-fg) text-4xl font-serif mb-4 tracking-widest uppercase">
           {milestoneText || 'Milestone'}
         </h2>
-        <p className="text-yellow-500 text-xl tracking-[0.3em] font-sans font-light uppercase">
+        <p className="text-(--ui-accent) text-xl tracking-[0.3em] font-sans font-light uppercase">
           {displayText}
         </p>
       </div>
@@ -264,7 +266,7 @@ export const Logo: React.FC<LogoProps> = ({ theme }) => {
       >
         ALIAS
       </h1>
-      <div className={`h-[1px] w-16 ${isLight ? 'bg-slate-900/10' : 'bg-white/10'} mb-6`}></div>
+      <div className={`h-px w-16 ${isLight ? 'bg-slate-900/10' : 'bg-white/10'} mb-6`}></div>
       <p
         className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${isLight ? 'text-slate-900' : 'text-white'}`}
       >

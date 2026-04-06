@@ -1,18 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WordService } from '../WordService';
-import { Language, Category, SoundPreset, AppTheme, MOCK_WORDS } from '@alias/shared';
+import { Language, Category, SoundPreset, AppTheme, GameMode, MOCK_WORDS } from '@alias/shared';
 import type { GameSettings } from '@alias/shared';
 
 const baseSettings: GameSettings = {
-  language: Language.UA,
-  roundTime: 60,
-  scoreToWin: 30,
-  skipPenalty: true,
-  categories: [Category.GENERAL],
-  soundEnabled: true,
-  soundPreset: SoundPreset.FUN,
-  teamCount: 2,
-  theme: AppTheme.PREMIUM_DARK,
+  general: {
+    language: Language.UA,
+    scoreToWin: 30,
+    skipPenalty: true,
+    categories: [Category.GENERAL],
+    soundEnabled: true,
+    soundPreset: SoundPreset.FUN,
+    teamCount: 2,
+    theme: AppTheme.PREMIUM_DARK,
+  },
+  mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
 };
 
 // ─── buildDeck — MOCK_WORDS fallback (no prisma) ────────────────────────────
@@ -33,8 +35,7 @@ describe('buildDeck (no Prisma)', () => {
   it('returns words for EN FOOD', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      language: Language.EN,
-      categories: [Category.FOOD],
+      general: { ...baseSettings.general, language: Language.EN, categories: [Category.FOOD] },
     };
     const deck = await service.buildDeck(settings);
     const expected = MOCK_WORDS[Language.EN][Category.FOOD]!;
@@ -44,7 +45,7 @@ describe('buildDeck (no Prisma)', () => {
   it('combines multiple categories', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.GENERAL, Category.FOOD],
+      general: { ...baseSettings.general, categories: [Category.GENERAL, Category.FOOD] },
     };
     const deck = await service.buildDeck(settings);
     const genWords = MOCK_WORDS[Language.UA][Category.GENERAL]!;
@@ -75,8 +76,11 @@ describe('buildDeck (no Prisma)', () => {
   it('handles CUSTOM category with customWords', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.CUSTOM],
-      customWords: 'Apple, Banana, Cherry',
+      general: {
+        ...baseSettings.general,
+        categories: [Category.CUSTOM],
+        customWords: 'Apple, Banana, Cherry',
+      },
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toHaveLength(3);
@@ -88,8 +92,11 @@ describe('buildDeck (no Prisma)', () => {
   it('strips HTML from custom words', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.CUSTOM],
-      customWords: '<b>Apple</b>, Banana',
+      general: {
+        ...baseSettings.general,
+        categories: [Category.CUSTOM],
+        customWords: '<b>Apple</b>, Banana',
+      },
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('Apple');
@@ -99,8 +106,11 @@ describe('buildDeck (no Prisma)', () => {
   it('filters empty custom word entries', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.CUSTOM],
-      customWords: 'Apple,,  , Banana',
+      general: {
+        ...baseSettings.general,
+        categories: [Category.CUSTOM],
+        customWords: 'Apple,,  , Banana',
+      },
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toHaveLength(2);
@@ -109,8 +119,11 @@ describe('buildDeck (no Prisma)', () => {
   it('mixes CUSTOM and normal categories', async () => {
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.GENERAL, Category.CUSTOM],
-      customWords: 'MyWord',
+      general: {
+        ...baseSettings.general,
+        categories: [Category.GENERAL, Category.CUSTOM],
+        customWords: 'MyWord',
+      },
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('MyWord');
@@ -122,8 +135,7 @@ describe('buildDeck (no Prisma)', () => {
     // category with no data in MOCK_WORDS for any language
     const settings: GameSettings = {
       ...baseSettings,
-      categories: [Category.CUSTOM],
-      customWords: '', // empty → empty pool
+      general: { ...baseSettings.general, categories: [Category.CUSTOM], customWords: '' }, // empty → empty pool
     };
     const deck = await service.buildDeck(settings);
     // Should fallback to GENERAL words
@@ -185,7 +197,7 @@ describe('buildDeck (with Prisma)', () => {
     service.setPrisma(mockPrisma);
     const settings: GameSettings = {
       ...baseSettings,
-      selectedPackIds: ['pack-uuid-1'],
+      general: { ...baseSettings.general, selectedPackIds: ['pack-uuid-1'] },
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('PackWord');
@@ -208,7 +220,10 @@ describe('buildDeck (with Prisma)', () => {
     } as any;
 
     service.setPrisma(mockPrisma);
-    const settings: GameSettings = { ...baseSettings, customDeckCode: 'CORP123' };
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, customDeckCode: 'CORP123' },
+    };
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('Secret1');
     expect(deck).toContain('Secret2');
@@ -224,7 +239,10 @@ describe('buildDeck (with Prisma)', () => {
     } as any;
 
     service.setPrisma(mockPrisma);
-    const settings: GameSettings = { ...baseSettings, customDeckCode: 'CODE1' };
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, customDeckCode: 'CODE1' },
+    };
     const deck = await service.buildDeck(settings);
     expect(deck).not.toContain('X');
     expect(deck).toContain('DBWord');

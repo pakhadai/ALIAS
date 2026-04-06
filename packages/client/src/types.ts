@@ -29,6 +29,10 @@ import type {
   GameActionPayload,
 } from '@alias/shared';
 
+export type ImposterPhase = 'REVEAL' | 'DISCUSSION' | 'RESULTS';
+
+export type ImposterSecret = { isImposter: boolean; word: string | null };
+
 export interface ThemeConfig {
   id: AppTheme;
   name: string;
@@ -70,6 +74,16 @@ export interface AppState {
   notification: { message: string; type: 'info' | 'error' | 'success' } | null;
   connectionError: string | null;
   connectionErrorCode: RoomErrorCode | null;
+
+  // IMPOSTER mode runtime state (online sync + offline pass&play)
+  imposterPhase?: ImposterPhase;
+  imposterPlayerId?: string;
+  revealedPlayerIds: string[];
+  imposterSecret: ImposterSecret | null;
+  /** Offline pass&play: whose turn to reveal. */
+  imposterOfflineRevealIndex: number;
+  /** Offline only: stored secret word to show in RESULTS. */
+  imposterWord: string | null;
 }
 
 export interface GameContextType extends AppState {

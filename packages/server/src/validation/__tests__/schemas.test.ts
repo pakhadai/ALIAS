@@ -168,13 +168,13 @@ describe('validateGameAction', () => {
     it('accepts valid partial settings', () => {
       const result = validateGameAction({
         action: 'UPDATE_SETTINGS',
-        data: { roundTime: 90, language: Language.EN },
+        data: { mode: { classicRoundTime: 90 }, general: { language: Language.EN } },
       });
       expect(result).not.toBeNull();
       expect(result!.action).toBe('UPDATE_SETTINGS');
       if (result!.action === 'UPDATE_SETTINGS') {
-        expect(result.data.roundTime).toBe(90);
-        expect(result.data.language).toBe(Language.EN);
+        expect(result.data.mode?.classicRoundTime).toBe(90);
+        expect(result.data.general?.language).toBe(Language.EN);
       }
     });
 
@@ -184,77 +184,86 @@ describe('validateGameAction', () => {
     });
 
     it('rejects roundTime below minimum', () => {
-      expect(validateGameAction({ action: 'UPDATE_SETTINGS', data: { roundTime: 5 } })).toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { mode: { classicRoundTime: 5 } } })
+      ).toBeNull();
     });
 
     it('rejects roundTime above maximum', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { roundTime: 301 } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { mode: { classicRoundTime: 301 } } })
       ).toBeNull();
     });
 
     it('rejects scoreToWin below minimum', () => {
-      expect(validateGameAction({ action: 'UPDATE_SETTINGS', data: { scoreToWin: 4 } })).toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { scoreToWin: 4 } } })
+      ).toBeNull();
     });
 
     it('rejects scoreToWin above maximum', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { scoreToWin: 101 } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { scoreToWin: 101 } } })
       ).toBeNull();
     });
 
     it('rejects invalid language enum', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { language: 'FR' } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { language: 'FR' } } })
       ).toBeNull();
     });
 
     it('rejects invalid theme enum', () => {
-      expect(validateGameAction({ action: 'UPDATE_SETTINGS', data: { theme: 'NEON' } })).toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { theme: 'NEON' } } })
+      ).toBeNull();
     });
 
     it('rejects invalid category enum', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { categories: ['INVALID'] } })
+        validateGameAction({
+          action: 'UPDATE_SETTINGS',
+          data: { general: { categories: ['INVALID'] } },
+        })
       ).toBeNull();
     });
 
     it('rejects empty categories array', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { categories: [] } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { categories: [] } } })
       ).toBeNull();
     });
 
     it('accepts valid categories array', () => {
       const result = validateGameAction({
         action: 'UPDATE_SETTINGS',
-        data: { categories: [Category.GENERAL, Category.FOOD] },
+        data: { general: { categories: [Category.GENERAL, Category.FOOD] } },
       });
       expect(result?.action).toBe('UPDATE_SETTINGS');
       if (result?.action === 'UPDATE_SETTINGS') {
-        expect(result.data.categories).toEqual([Category.GENERAL, Category.FOOD]);
+        expect(result.data.general?.categories).toEqual([Category.GENERAL, Category.FOOD]);
       }
     });
 
     it('accepts customDeckCode', () => {
       const result = validateGameAction({
         action: 'UPDATE_SETTINGS',
-        data: { customDeckCode: 'CORP123' },
+        data: { general: { customDeckCode: 'CORP123' } },
       });
       expect(result?.action).toBe('UPDATE_SETTINGS');
       if (result?.action === 'UPDATE_SETTINGS') {
-        expect(result.data.customDeckCode).toBe('CORP123');
+        expect(result.data.general?.customDeckCode).toBe('CORP123');
       }
     });
 
     it('accepts selectedPackIds as UUID array', () => {
       const result = validateGameAction({
         action: 'UPDATE_SETTINGS',
-        data: { selectedPackIds: ['550e8400-e29b-41d4-a716-446655440000'] },
+        data: { general: { selectedPackIds: ['550e8400-e29b-41d4-a716-446655440000'] } },
       });
       expect(result?.action).toBe('UPDATE_SETTINGS');
       if (result?.action === 'UPDATE_SETTINGS') {
-        expect(result.data.selectedPackIds).toHaveLength(1);
+        expect(result.data.general?.selectedPackIds).toHaveLength(1);
       }
     });
 
@@ -262,7 +271,7 @@ describe('validateGameAction', () => {
       expect(
         validateGameAction({
           action: 'UPDATE_SETTINGS',
-          data: { selectedPackIds: ['not-a-uuid'] },
+          data: { general: { selectedPackIds: ['not-a-uuid'] } },
         })
       ).toBeNull();
     });
@@ -271,7 +280,7 @@ describe('validateGameAction', () => {
       expect(
         validateGameAction({
           action: 'UPDATE_SETTINGS',
-          data: { customWords: 'x'.repeat(5001) },
+          data: { general: { customWords: 'x'.repeat(5001) } },
         })
       ).toBeNull();
     });
@@ -279,31 +288,38 @@ describe('validateGameAction', () => {
     it('accepts customWords up to 5000 chars', () => {
       const result = validateGameAction({
         action: 'UPDATE_SETTINGS',
-        data: { customWords: 'x'.repeat(5000) },
+        data: { general: { customWords: 'x'.repeat(5000) } },
       });
       expect(result).not.toBeNull();
     });
 
     it('accepts teamCount in valid range', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { teamCount: 2 } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 2 } } })
       ).not.toBeNull();
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { teamCount: 8 } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 8 } } })
       ).not.toBeNull();
     });
 
     it('rejects teamCount below minimum', () => {
-      expect(validateGameAction({ action: 'UPDATE_SETTINGS', data: { teamCount: 1 } })).toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 1 } } })
+      ).toBeNull();
     });
 
     it('rejects teamCount above maximum', () => {
-      expect(validateGameAction({ action: 'UPDATE_SETTINGS', data: { teamCount: 9 } })).toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 9 } } })
+      ).toBeNull();
     });
 
     it('rejects non-integer roundTime', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { roundTime: 60.5 } })
+        validateGameAction({
+          action: 'UPDATE_SETTINGS',
+          data: { mode: { classicRoundTime: 60.5 } },
+        })
       ).toBeNull();
     });
   });

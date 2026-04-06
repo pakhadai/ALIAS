@@ -15,13 +15,13 @@ export const RoundSummaryScreen = () => {
     isHost,
     sendAction,
   } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const [milestone, setMilestone] = useState<{ points: number; team: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const processingRef = useRef(false);
 
   const rawPoints =
-    currentRoundStats.correct - (settings.skipPenalty ? currentRoundStats.skipped : 0);
+    currentRoundStats.correct - (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
   const points = Math.max(0, rawPoints);
   const activeTeam = teams[currentTeamIndex];
   const scoringTeam = teams.find((team) => team.id === currentRoundStats.teamId) || activeTeam;
@@ -38,9 +38,9 @@ export const RoundSummaryScreen = () => {
     const newTens = Math.floor(newScore / 10);
 
     let delay = 0;
-    if (newTens > oldTens && newScore < settings.scoreToWin) {
+    if (newTens > oldTens && newScore < settings.general.scoreToWin) {
       setMilestone({ points: newTens * 10, team: scoringTeam?.name || '' });
-      if (settings.soundEnabled) playSound('win');
+      if (settings.general.soundEnabled) playSound('win');
       delay = 3000;
     }
 
@@ -69,7 +69,7 @@ export const RoundSummaryScreen = () => {
         <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
           {t.timeIsUp}
         </h2>
-        <div className={`inline-block px-6 py-2 rounded-full border border-white/10 bg-white/5`}>
+        <div className="inline-block px-6 py-2 rounded-full border border-(--ui-border) bg-(--ui-surface)">
           <span
             className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
           >

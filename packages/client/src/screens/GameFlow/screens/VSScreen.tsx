@@ -6,7 +6,7 @@ import { TRANSLATIONS } from '../../../constants';
 
 export const VSScreen = () => {
   const { teams, currentTheme, settings, sendAction, isHost } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const [showButton, setShowButton] = useState(false);
 
   const totalDelay = teams.length * 2 * 0.6;

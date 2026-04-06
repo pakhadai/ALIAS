@@ -5,7 +5,7 @@ import { applyPwaUpdate } from '../pwa-client';
 
 export const PwaUpdateBanner: React.FC = () => {
   const { settings, currentTheme } = useGame();
-  const t = TRANSLATIONS[settings.language];
+  const t = TRANSLATIONS[settings.general.language];
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

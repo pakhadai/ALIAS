@@ -2,22 +2,32 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GameEngine } from '../GameEngine';
 import { WordService } from '../WordService';
 import { RoomManager } from '../RoomManager';
-import { GameState, Language, Category, SoundPreset, AppTheme, TEAM_COLORS } from '@alias/shared';
+import {
+  GameState,
+  Language,
+  Category,
+  SoundPreset,
+  AppTheme,
+  GameMode,
+  TEAM_COLORS,
+} from '@alias/shared';
 import type { Room } from '../RoomManager';
 import type { Player, Team, GameSettings } from '@alias/shared';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 const defaultSettings: GameSettings = {
-  language: Language.UA,
-  roundTime: 60,
-  scoreToWin: 30,
-  skipPenalty: true,
-  categories: [Category.GENERAL],
-  soundEnabled: true,
-  soundPreset: SoundPreset.FUN,
-  teamCount: 2,
-  theme: AppTheme.PREMIUM_DARK,
+  general: {
+    language: Language.UA,
+    scoreToWin: 30,
+    skipPenalty: true,
+    categories: [Category.GENERAL],
+    soundEnabled: true,
+    soundPreset: SoundPreset.FUN,
+    teamCount: 2,
+    theme: AppTheme.PREMIUM_DARK,
+  },
+  mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
 };
 
 function makePlayer(overrides: Partial<Player> = {}): Player {
@@ -93,7 +103,10 @@ describe('GENERATE_TEAMS', () => {
     const players = ['Alice', 'Bob', 'Charlie', 'Dave'].map((name, i) =>
       makePlayer({ id: `p${i}`, name })
     );
-    const room = makeRoom({ players, settings: { ...defaultSettings, teamCount: 2 } });
+    const room = makeRoom({
+      players,
+      settings: { ...defaultSettings, general: { ...defaultSettings.general, teamCount: 2 } },
+    });
 
     await engine.handleAction(room, { action: 'GENERATE_TEAMS' });
 
@@ -106,7 +119,7 @@ describe('GENERATE_TEAMS', () => {
   it('caps team count at player count', async () => {
     const room = makeRoom({
       players: [makePlayer()],
-      settings: { ...defaultSettings, teamCount: 4 },
+      settings: { ...defaultSettings, general: { ...defaultSettings.general, teamCount: 4 } },
     });
     await engine.handleAction(room, { action: 'GENERATE_TEAMS' });
     expect(room.teams).toHaveLength(1);
@@ -114,7 +127,10 @@ describe('GENERATE_TEAMS', () => {
 
   it('each team gets a unique TEAM_COLORS entry', async () => {
     const players = Array.from({ length: 3 }, (_, i) => makePlayer({ id: `p${i}`, name: `P${i}` }));
-    const room = makeRoom({ players, settings: { ...defaultSettings, teamCount: 3 } });
+    const room = makeRoom({
+      players,
+      settings: { ...defaultSettings, general: { ...defaultSettings.general, teamCount: 3 } },
+    });
     await engine.handleAction(room, { action: 'GENERATE_TEAMS' });
     const hexes = room.teams.map((t) => t.colorHex);
     expect(new Set(hexes).size).toBe(3);
@@ -179,7 +195,9 @@ describe('START_PLAYING', () => {
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.gameState).toBe(GameState.PLAYING);
     expect(room.currentWord).toBe('Кіт');
-    expect(room.timeLeft).toBe(defaultSettings.roundTime);
+    expect(room.timeLeft).toBe(
+      'classicRoundTime' in defaultSettings.mode ? defaultSettings.mode.classicRoundTime : 0
+    );
     expect(room.isPaused).toBe(false);
   });
 
@@ -190,7 +208,9 @@ describe('START_PLAYING', () => {
       usedWords: [],
       deckReshuffled: false,
     });
-    const room = makeRoom({ settings: { ...defaultSettings, roundTime: 5 } });
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 5 } },
+    });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timerInterval).not.toBeNull();
   });
@@ -263,12 +283,58 @@ describe('SKIP', () => {
 // ─── PAUSE_GAME ──────────────────────────────────────────────────────────────
 
 describe('PAUSE_GAME', () => {
-  it('toggles isPaused', async () => {
-    const room = makeRoom({ isPaused: false });
+  it('toggles isPaused and stops/starts timer', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom();
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    expect(room.timerInterval).not.toBeNull();
+
     await engine.handleAction(room, { action: 'PAUSE_GAME' });
     expect(room.isPaused).toBe(true);
+    expect(room.timerInterval).toBeNull();
+
     await engine.handleAction(room, { action: 'PAUSE_GAME' });
     expect(room.isPaused).toBe(false);
+    expect(room.timerInterval).not.toBeNull();
+  });
+
+  it('ignores gameplay actions while paused', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom();
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    await engine.handleAction(room, { action: 'PAUSE_GAME' });
+    expect(room.isPaused).toBe(true);
+
+    room.currentTask = { id: 'task-1', prompt: 'Собака' };
+    room.currentRoundStats = {
+      correct: 0,
+      skipped: 0,
+      words: [],
+      teamId: 't1',
+      explainerName: 'Alice',
+    };
+
+    await engine.handleAction(room, { action: 'CORRECT' });
+    await engine.handleAction(room, { action: 'SKIP' });
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'X' } },
+      'p2'
+    );
+
+    expect(room.currentRoundStats.correct).toBe(0);
+    expect(room.currentRoundStats.skipped).toBe(0);
+    expect(room.currentRoundStats.words).toHaveLength(0);
   });
 });
 
@@ -308,7 +374,10 @@ describe('CONFIRM_ROUND', () => {
         explainerName: 'Alice',
         explainerId: 'explainer',
       },
-      settings: { ...defaultSettings, skipPenalty: true, scoreToWin: 30 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: true, scoreToWin: 30 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     // 5 correct - 1 skip = 4 points
@@ -330,7 +399,10 @@ describe('CONFIRM_ROUND', () => {
         teamId: 't0',
         explainerName: 'Alice',
       },
-      settings: { ...defaultSettings, skipPenalty: true, scoreToWin: 30 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: true, scoreToWin: 30 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.teams[0].score).toBe(0);
@@ -349,7 +421,10 @@ describe('CONFIRM_ROUND', () => {
         teamId: 't0',
         explainerName: 'Alice',
       },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 30 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.teams[0].score).toBe(3);
@@ -367,7 +442,10 @@ describe('CONFIRM_ROUND', () => {
         teamId: 't0',
         explainerName: 'Alice',
       },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 30 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.teams[0].score).toBe(32);
@@ -386,7 +464,10 @@ describe('CONFIRM_ROUND', () => {
         teamId: 't0',
         explainerName: 'Alice',
       },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 30 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 30 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.gameState).toBe(GameState.SCOREBOARD);
@@ -411,7 +492,10 @@ describe('CONFIRM_ROUND', () => {
         explainerName: 'Alice',
         explainerId: 'explainer',
       },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 100 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 100 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     const updatedExplainer = room.teams[0].players.find((p) => p.id === 'explainer')!;
@@ -427,7 +511,10 @@ describe('CONFIRM_ROUND', () => {
       teams: [team],
       currentTeamIndex: 0,
       currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't0', explainerName: 'P0' },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 100 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 100 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.teams[0].nextPlayerIndex).toBe(1);
@@ -440,7 +527,10 @@ describe('CONFIRM_ROUND', () => {
       teams: [team],
       currentTeamIndex: 0,
       currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: 't0', explainerName: 'P1' },
-      settings: { ...defaultSettings, skipPenalty: false, scoreToWin: 100 },
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, skipPenalty: false, scoreToWin: 100 },
+      },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     expect(room.teams[0].nextPlayerIndex).toBe(0);
@@ -562,11 +652,14 @@ describe('UPDATE_SETTINGS', () => {
     const room = makeRoom();
     await engine.handleAction(room, {
       action: 'UPDATE_SETTINGS',
-      data: { roundTime: 90, language: Language.EN },
+      data: { mode: { classicRoundTime: 90 }, general: { language: Language.EN } },
     });
-    expect(room.settings.roundTime).toBe(90);
-    expect(room.settings.language).toBe(Language.EN);
-    expect(room.settings.scoreToWin).toBe(defaultSettings.scoreToWin);
+    expect(room.settings.mode.gameMode).toBe(GameMode.CLASSIC);
+    expect('classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0).toBe(
+      90
+    );
+    expect(room.settings.general.language).toBe(Language.EN);
+    expect(room.settings.general.scoreToWin).toBe(defaultSettings.general.scoreToWin);
   });
 });
 
@@ -597,7 +690,9 @@ describe('Timer', () => {
       usedWords: [],
       deckReshuffled: false,
     });
-    const room = makeRoom({ settings: { ...defaultSettings, roundTime: 3 } });
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 3 } },
+    });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     expect(room.timeLeft).toBe(3);
     vi.advanceTimersByTime(1000);
@@ -616,7 +711,9 @@ describe('Timer', () => {
       usedWords: [],
       deckReshuffled: false,
     });
-    const room = makeRoom({ settings: { ...defaultSettings, roundTime: 10 } });
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 10 } },
+    });
     await engine.handleAction(room, { action: 'START_PLAYING' });
     room.isPaused = true;
     vi.advanceTimersByTime(3000);
