@@ -27,8 +27,10 @@ export const ClassicWordCard: React.FC<ClassicWordCardProps> = ({
 }) => (
   <div
     key={displayPrompt}
-    className={`w-full max-w-sm aspect-[3/4] max-h-[55vh] bg-card-dark-bg rounded-[2rem] shadow-premium-card shadow-inner-glow flex items-center justify-center p-10 relative transform border transition-all duration-150 ease-out ${
-      isCriticalTime ? 'border-red-500/40' : 'border-[color:var(--ui-border)]'
+    className={`w-full max-w-sm aspect-3/4 max-h-[55vh] bg-(--ui-card) rounded-4xl shadow-2xl flex items-center justify-center p-10 relative transform border transition-all duration-150 ease-out ${
+      isCriticalTime
+        ? 'border-[color-mix(in_srgb,var(--ui-danger)_35%,transparent)]'
+        : 'border-(--ui-border)'
     } ${
       wordExit === 'right'
         ? 'opacity-0 translate-x-4'
@@ -37,10 +39,10 @@ export const ClassicWordCard: React.FC<ClassicWordCardProps> = ({
           : 'opacity-100 translate-x-0 animate-pop-in'
     }`}
   >
-    <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-[color:var(--ui-border)]" />
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-[color:var(--ui-border)]" />
+    <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-px bg-(--ui-border)" />
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-px bg-(--ui-border)" />
     <h2
-      className={`${currentTheme.textMain} font-sans font-black text-5xl sm:text-6xl text-center leading-tight tracking-tight uppercase break-words w-full drop-shadow-md`}
+      className={`${currentTheme.textMain} font-sans font-black text-5xl sm:text-6xl text-center leading-tight tracking-tight uppercase wrap-break-word w-full drop-shadow-md`}
     >
       {displayPrompt}
     </h2>
@@ -62,24 +64,24 @@ export const ClassicActionFooter: React.FC<ClassicActionFooterProps> = ({
     <button
       type="button"
       onClick={onSkip}
-      className="flex-1 h-24 sm:h-28 bg-burgundy-deep hover:bg-[#351A1A] active:bg-[#201010] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-[color:var(--ui-border)]"
+      className="flex-1 h-24 sm:h-28 bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] active:bg-[color-mix(in_srgb,var(--ui-danger)_38%,transparent)] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-(--ui-border)"
     >
-      <span className="material-symbols-outlined text-burgundy-text text-3xl group-active:scale-90 transition-transform">
+      <span className="material-symbols-outlined text-(--ui-danger) text-3xl group-active:scale-90 transition-transform">
         close
       </span>
-      <span className="text-burgundy-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-burgundy-text transition-colors">
+      <span className="text-(--ui-danger) text-[10px] tracking-[0.25em] uppercase font-bold opacity-80 group-hover:opacity-100 transition-opacity">
         {t.skip}
       </span>
     </button>
     <button
       type="button"
       onClick={onCorrect}
-      className="flex-1 h-24 sm:h-28 bg-forest-green-deep hover:bg-[#263333] active:bg-[#182020] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-[color:var(--ui-border)] border-l border-l-[color:var(--ui-border)]"
+      className="flex-1 h-24 sm:h-28 bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-success)_30%,transparent)] active:bg-[color-mix(in_srgb,var(--ui-success)_38%,transparent)] transition-colors flex flex-col items-center justify-center gap-2 group border-t border-(--ui-border) border-l border-l-(--ui-border)"
     >
-      <span className="material-symbols-outlined text-forest-green-text text-3xl group-active:scale-90 transition-transform font-bold">
+      <span className="material-symbols-outlined text-(--ui-success) text-3xl group-active:scale-90 transition-transform font-bold">
         check
       </span>
-      <span className="text-forest-green-text/80 text-[10px] tracking-[0.25em] uppercase font-bold group-hover:text-forest-green-text transition-colors">
+      <span className="text-(--ui-success) text-[10px] tracking-[0.25em] uppercase font-bold opacity-80 group-hover:opacity-100 transition-opacity">
         {t.correct}
       </span>
     </button>

@@ -49,12 +49,10 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Item summary */}
       <div
-        className={`flex items-center justify-between px-4 py-3 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border)"
       >
-        <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-          {itemName}
-        </span>
-        <span className="text-[#D4AF6A] font-bold text-base">${(amount / 100).toFixed(2)}</span>
+        <span className="text-sm font-semibold text-(--ui-fg)">{itemName}</span>
+        <span className="text-(--ui-accent) font-bold text-base">${(amount / 100).toFixed(2)}</span>
       </div>
 
       {/* Stripe Payment Element — renders Apple Pay / Google Pay / Card automatically */}
@@ -72,12 +70,12 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
         />
       </div>
 
-      {error && <p className="text-red-400 text-[12px] text-center">{error}</p>}
+      {error && <p className="text-(--ui-danger) text-[12px] text-center">{error}</p>}
 
       <button
         type="submit"
         disabled={paying || !stripe}
-        className="w-full bg-[#D4AF6A] hover:bg-[#C9A55A] active:scale-[0.98] text-black font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full bg-(--ui-accent) hover:opacity-95 active:scale-[0.98] text-(--ui-accent-contrast) font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {paying ? (
           <>
@@ -91,7 +89,7 @@ function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
       <div className="flex items-center justify-center gap-2 opacity-40">
         <ShieldCheck size={13} />
         <span
-          className={`text-[10px] uppercase tracking-widest font-medium ${isDark ? 'text-white' : 'text-slate-600'}`}
+          className="text-[10px] uppercase tracking-widest font-medium text-(--ui-fg-muted)"
         >
           Захищено Stripe
         </span>
@@ -149,7 +147,7 @@ export function QuickBuyModal({
   const appearance = {
     theme: (isDark ? 'night' : 'stripe') as 'night' | 'stripe',
     variables: {
-      colorPrimary: '#D4AF6A',
+      colorPrimary: 'var(--ui-accent)',
       borderRadius: '12px',
       fontFamily: 'inherit',
     },
@@ -165,7 +163,10 @@ export function QuickBuyModal({
         if (e.target === e.currentTarget) requestClose();
       }}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={requestClose} />
+      <div
+        className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm"
+        onClick={requestClose}
+      />
 
       {/* Sheet */}
       <div
@@ -174,39 +175,36 @@ export function QuickBuyModal({
       >
         {/* Handle */}
         <div className="flex justify-center mb-5">
-          <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-200'}`} />
+          <div className="w-10 h-1 rounded-full bg-(--ui-border)" />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2
-            className={`font-serif text-xl tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}
+            className="font-serif text-xl tracking-wide text-(--ui-fg)"
           >
             Швидка оплата
           </h2>
           <button
             onClick={requestClose}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/8 hover:bg-white/15' : 'bg-slate-100 hover:bg-slate-200'}`}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
           >
-            <X size={16} className={isDark ? 'text-white/70' : 'text-slate-500'} />
+            <X size={16} className="text-(--ui-fg-muted)" />
           </button>
         </div>
 
         {/* Content */}
         {loadError ? (
-          <p className="text-red-400 text-[13px] text-center py-8">{loadError}</p>
+          <p className="text-(--ui-danger) text-[13px] text-center py-8">{loadError}</p>
         ) : !stripePromise ? (
           <p
-            className={`text-[12px] text-center py-8 opacity-40 ${isDark ? 'text-white' : 'text-slate-600'}`}
+            className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)"
           >
             Платіжна система не налаштована
           </p>
         ) : !clientSecret ? (
           <div className="flex justify-center py-12">
-            <Loader2
-              size={24}
-              className={`animate-spin ${isDark ? 'text-white/40' : 'text-slate-400'}`}
-            />
+            <Loader2 size={24} className="animate-spin text-(--ui-fg-muted)" />
           </div>
         ) : (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>

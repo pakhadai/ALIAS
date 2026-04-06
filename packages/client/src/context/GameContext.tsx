@@ -1090,10 +1090,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [socketApi.myPlayerId, socketApi.roomCode, state.gameMode]);
 
-  const currentTheme = useMemo(
-    () => THEME_CONFIG[state.settings.general.theme],
-    [state.settings.general.theme]
-  );
+  const currentTheme = useMemo(() => {
+    const fallback = THEME_CONFIG[AppTheme.PREMIUM_DARK];
+    const themeId = state.settings.general.theme;
+    const allowed =
+      themeId === AppTheme.PREMIUM_DARK ||
+      themeId === AppTheme.CYBERPUNK ||
+      themeId === AppTheme.FOREST ||
+      themeId === AppTheme.SLEEK;
+    return allowed ? THEME_CONFIG[themeId] : fallback;
+  }, [state.settings.general.theme]);
+
+  // Hard-reset unknown themes to default (Deep Steel)
+  useEffect(() => {
+    const themeId = state.settings.general.theme;
+    const allowed =
+      themeId === AppTheme.PREMIUM_DARK ||
+      themeId === AppTheme.CYBERPUNK ||
+      themeId === AppTheme.FOREST ||
+      themeId === AppTheme.SLEEK;
+    if (allowed) return;
+    dispatch({
+      type: 'SET_STATE',
+      payload: {
+        settings: {
+          ...stateRef.current.settings,
+          general: { ...stateRef.current.settings.general, theme: AppTheme.PREMIUM_DARK },
+        },
+      },
+    });
+  }, [state.settings.general.theme]);
 
   // Apply per-theme design tokens via CSS custom properties
   useEffect(() => {
@@ -1103,32 +1129,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     r.style.setProperty('--theme-radius', currentTheme.borderRadius);
     r.style.colorScheme = currentTheme.isDark ? 'dark' : 'light';
 
-    // Theme-safe semantic colors for base components (Button/Card fallbacks, etc.)
-    if (currentTheme.isDark) {
-      r.style.setProperty('--ui-bg', '#020617'); // slate-950
-      r.style.setProperty('--ui-fg', 'rgba(255,255,255,0.92)');
-      r.style.setProperty('--ui-fg-muted', 'rgba(255,255,255,0.55)');
-      r.style.setProperty('--ui-border', 'rgba(255,255,255,0.12)');
-      r.style.setProperty('--ui-surface', 'rgba(255,255,255,0.06)');
-      r.style.setProperty('--ui-surface-hover', 'rgba(255,255,255,0.10)');
-      r.style.setProperty('--ui-card', 'rgba(15,23,42,0.55)'); // slate-900 tint
-    } else {
-      r.style.setProperty('--ui-bg', '#F8FAFC'); // slate-50
-      r.style.setProperty('--ui-fg', '#0F172A'); // slate-900
-      r.style.setProperty('--ui-fg-muted', 'rgba(15,23,42,0.65)');
-      r.style.setProperty('--ui-border', 'rgba(15,23,42,0.14)');
-      r.style.setProperty('--ui-surface', 'rgba(15,23,42,0.06)');
-      r.style.setProperty('--ui-surface-hover', 'rgba(15,23,42,0.10)');
-      r.style.setProperty('--ui-card', 'rgba(255,255,255,0.90)');
+    const tokens = currentTheme.tokens;
+    if (tokens) {
+      r.style.setProperty('--ui-bg', tokens.bg);
+      r.style.setProperty('--ui-surface', tokens.surface);
+      r.style.setProperty('--ui-border', tokens.border);
+      r.style.setProperty('--ui-accent', tokens.accent);
+      r.style.setProperty('--ui-fg', tokens.fg);
+
+      // Midnight Navy requests muted derived from accent with opacity.
+      r.style.setProperty(
+        '--ui-fg-muted',
+        `color-mix(in_srgb, ${tokens.fgMuted} 70%, transparent)`
+      );
+
+      r.style.setProperty(
+        '--ui-surface-hover',
+        `color-mix(in_srgb, ${tokens.surface} 88%, ${tokens.accent} 12%)`
+      );
+      r.style.setProperty(
+        '--ui-card',
+        `color-mix(in_srgb, ${tokens.surface} 70%, ${tokens.bg} 30%)`
+      );
+      r.style.setProperty('--ui-accent-contrast', bestTextOnColor(tokens.accent));
     }
 
-    // Accent + status colors (theme-aware)
-    const accent = currentTheme.preview?.accent ?? (currentTheme.isDark ? '#6366F1' : '#1E293B');
-    r.style.setProperty('--ui-accent', accent);
-    r.style.setProperty('--ui-accent-contrast', bestTextOnColor(accent));
-    r.style.setProperty('--ui-danger', currentTheme.isDark ? '#F87171' : '#DC2626'); // red-400 / red-600
-    r.style.setProperty('--ui-success', currentTheme.isDark ? '#34D399' : '#059669'); // emerald-400 / emerald-600
-    r.style.setProperty('--ui-warning', currentTheme.isDark ? '#FBBF24' : '#D97706'); // amber-400 / amber-600
+    // Status colors (theme-consistent, derived from accent to avoid hardcoded palettes)
+    const accent = (tokens?.accent ?? currentTheme.preview?.accent ?? '#4A5C6A').trim();
+    r.style.setProperty('--ui-danger', `color-mix(in_srgb, ${accent} 10%, #FF3B3B 90%)`);
+    r.style.setProperty('--ui-success', `color-mix(in_srgb, ${accent} 10%, #22C55E 90%)`);
+    r.style.setProperty('--ui-warning', `color-mix(in_srgb, ${accent} 10%, #F59E0B 90%)`);
   }, [currentTheme]);
 
   // Sync <html lang> with app language setting

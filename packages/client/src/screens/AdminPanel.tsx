@@ -95,11 +95,11 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     approved:
-      'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-[color:var(--ui-success)] border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-(--ui-success) border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)]',
     pending:
-      'bg-[color-mix(in_srgb,var(--ui-warning)_14%,transparent)] text-[color:var(--ui-warning)] border-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-warning)_14%,transparent)] text-(--ui-warning) border-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)]',
     rejected:
-      'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-[color:var(--ui-danger)] border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-(--ui-danger) border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)]',
   };
   return (
     <span
@@ -110,7 +110,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function Bar({ pct, color = 'bg-[#D4AF6A]' }: { pct: number; color?: string }) {
+function Bar({ pct, color = 'bg-(--ui-accent)' }: { pct: number; color?: string }) {
   return (
     <div className="flex-1 bg-(--ui-surface) rounded-full h-2 overflow-hidden">
       <div
@@ -450,7 +450,7 @@ export function AdminPanel() {
             onChange={(e) => setInputKey(e.target.value)}
             className={inp + ' w-full'}
           />
-          {authError && <p className="text-red-400 text-sm text-center">{authError}</p>}
+          {authError && <p className="text-(--ui-danger) text-sm text-center">{authError}</p>}
           <button
             type="submit"
             className="w-full bg-(--ui-accent) text-(--ui-accent-contrast) font-bold py-3 rounded-xl transition-colors hover:opacity-95"
@@ -513,11 +513,11 @@ export function AdminPanel() {
       <main className="p-6 max-w-5xl mx-auto">
         {loading && (
           <div className="flex justify-center py-16">
-            <div className="w-6 h-6 border-2 border-[#D4AF6A] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-(--ui-accent) border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         {error && !loading && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm text-center mb-4">
+          <div className="bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] rounded-xl px-4 py-3 text-(--ui-danger) text-sm text-center mb-4">
             {error}
           </div>
         )}
@@ -540,7 +540,7 @@ export function AdminPanel() {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+              <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold">
                 Live (Redis) · оновлення кожні 15 с
               </h2>
               <div className="grid grid-cols-2 gap-4">
@@ -564,15 +564,15 @@ export function AdminPanel() {
             </div>
 
             {/* Completion bar */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
-              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+            <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-5 space-y-3">
+              <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold">
                 Показники
               </h2>
               {[
                 {
                   label: 'Завершеність ігор',
                   pct: analytics.games.completionRate,
-                  color: 'bg-emerald-500',
+                  color: 'bg-(--ui-success)',
                 },
                 {
                   label: 'Конверсія покупок',
@@ -580,13 +580,13 @@ export function AdminPanel() {
                     analytics.games.total > 0
                       ? Math.round((analytics.revenue.totalPurchases / analytics.games.total) * 100)
                       : 0,
-                  color: 'bg-[#D4AF6A]',
+                  color: 'bg-(--ui-accent)',
                 },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-3">
-                  <span className="text-xs text-white/40 w-40 shrink-0">{row.label}</span>
+                  <span className="text-xs text-(--ui-fg-muted) w-40 shrink-0">{row.label}</span>
                   <Bar pct={row.pct} color={row.color} />
-                  <span className="text-xs text-white/60 font-bold w-10 text-right">
+                  <span className="text-xs text-(--ui-fg) opacity-70 font-bold w-10 text-right">
                     {row.pct}%
                   </span>
                 </div>
@@ -595,15 +595,15 @@ export function AdminPanel() {
 
             {/* Daily activity chart */}
             {daily.length > 0 && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-4">
+              <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-5">
+                <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold mb-4">
                   Активність за 30 днів (ігри)
                 </h2>
                 <div className="flex items-end gap-0.5 h-24">
                   {daily.map((d) => (
                     <div key={d.date} className="flex-1 flex flex-col items-center group relative">
                       <div
-                        className="w-full bg-[#D4AF6A]/60 hover:bg-[#D4AF6A] rounded-sm transition-all cursor-default"
+                        className="w-full bg-[color-mix(in_srgb,var(--ui-accent)_55%,transparent)] hover:bg-(--ui-accent) rounded-sm transition-all cursor-default"
                         style={{
                           height: `${(d.games / maxGames) * 100}%`,
                           minHeight: d.games > 0 ? '4px' : '0',
@@ -613,7 +613,7 @@ export function AdminPanel() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between mt-2 text-[9px] text-white/20">
+                <div className="flex justify-between mt-2 text-[9px] text-(--ui-fg-muted) opacity-60">
                   <span>{daily[0]?.date.slice(5)}</span>
                   <span>{daily[Math.floor(daily.length / 2)]?.date.slice(5)}</span>
                   <span>{daily[daily.length - 1]?.date.slice(5)}</span>
@@ -623,23 +623,30 @@ export function AdminPanel() {
 
             {/* Top packs */}
             <div>
-              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-4">
+              <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold mb-4">
                 Топ паки за покупками
               </h2>
               {analytics.topPacks.length === 0 ? (
-                <p className="text-white/20 text-sm text-center py-6">Ще немає покупок</p>
+                <p className="text-(--ui-fg-muted) opacity-60 text-sm text-center py-6">
+                  Ще немає покупок
+                </p>
               ) : (
                 <div className="space-y-2">
                   {analytics.topPacks.map((p, i) => {
                     const max = analytics.topPacks[0].purchases;
                     return (
                       <div key={p.packId} className="flex items-center gap-3">
-                        <span className="text-white/20 font-bold text-xs w-5">#{i + 1}</span>
-                        <span className="text-white text-sm font-medium w-40 truncate">
+                        <span className="text-(--ui-fg-muted) opacity-60 font-bold text-xs w-5">
+                          #{i + 1}
+                        </span>
+                        <span className="text-(--ui-fg) text-sm font-medium w-40 truncate">
                           {p.name}
                         </span>
-                        <Bar pct={Math.round((p.purchases / max) * 100)} color="bg-indigo-500" />
-                        <span className="text-[#D4AF6A] font-bold text-xs w-16 text-right">
+                        <Bar
+                          pct={Math.round((p.purchases / max) * 100)}
+                          color="bg-(--ui-accent)"
+                        />
+                        <span className="text-(--ui-accent) font-bold text-xs w-16 text-right">
                           {p.purchases} купівель
                         </span>
                       </div>
@@ -650,8 +657,8 @@ export function AdminPanel() {
             </div>
 
             {/* Push broadcast */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+            <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-5 space-y-4">
+              <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) font-bold">
                 Push-розсилка
               </h2>
               <div className="space-y-3">
@@ -659,19 +666,19 @@ export function AdminPanel() {
                   value={broadcastForm.title}
                   onChange={(e) => setBroadcastForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="Заголовок"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                  className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-4 py-3 text-sm text-(--ui-fg) placeholder:text-(--ui-fg-muted) outline-none focus:border-(--ui-accent)"
                 />
                 <input
                   value={broadcastForm.body}
                   onChange={(e) => setBroadcastForm((f) => ({ ...f, body: e.target.value }))}
                   placeholder="Текст повідомлення"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                  className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-4 py-3 text-sm text-(--ui-fg) placeholder:text-(--ui-fg-muted) outline-none focus:border-(--ui-accent)"
                 />
                 <input
                   value={broadcastForm.url}
                   onChange={(e) => setBroadcastForm((f) => ({ ...f, url: e.target.value }))}
                   placeholder="URL (необов'язково)"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF6A]"
+                  className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-4 py-3 text-sm text-(--ui-fg) placeholder:text-(--ui-fg-muted) outline-none focus:border-(--ui-accent)"
                 />
               </div>
               <div className="flex items-center gap-4">
@@ -694,13 +701,15 @@ export function AdminPanel() {
                     }
                   }}
                   disabled={broadcastLoading || !broadcastForm.title || !broadcastForm.body}
-                  className="px-5 py-2.5 rounded-xl bg-[#D4AF6A] text-black font-bold text-[11px] uppercase tracking-widest transition-all hover:opacity-90 disabled:opacity-40"
+                  className="px-5 py-2.5 rounded-xl bg-(--ui-accent) text-(--ui-accent-contrast) font-bold text-[11px] uppercase tracking-widest transition-all hover:opacity-95 disabled:opacity-40"
                 >
                   {broadcastLoading ? '...' : 'Розіслати всім'}
                 </button>
                 {broadcastResult && (
                   <span
-                    className={`text-[12px] ${broadcastResult.startsWith('Помилка') ? 'text-red-400' : 'text-emerald-400'}`}
+                    className={`text-[12px] ${
+                      broadcastResult.startsWith('Помилка') ? 'text-(--ui-danger)' : 'text-(--ui-success)'
+                    }`}
                   >
                     {broadcastResult}
                   </span>
@@ -714,24 +723,27 @@ export function AdminPanel() {
         {tab === 'decks' && !loading && (
           <div className="space-y-3">
             {decks.length === 0 && !error && (
-              <p className="text-white/20 text-sm text-center py-10">Немає власних колод</p>
+              <p className="text-(--ui-fg-muted) opacity-60 text-sm text-center py-10">
+                Немає власних колод
+              </p>
             )}
             {decks.map((deck) => (
               <div
                 key={deck.id}
-                className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4"
+                className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl px-5 py-4"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1 flex-wrap">
-                      <span className="text-white font-bold text-sm truncate">{deck.name}</span>
+                      <span className="text-(--ui-fg) font-bold text-sm truncate">{deck.name}</span>
                       <StatusBadge status={deck.status} />
                     </div>
-                    <div className="flex items-center gap-4 text-[11px] text-white/30">
+                    <div className="flex items-center gap-4 text-[11px] text-(--ui-fg-muted)">
                       <span>{deck.wordCount} слів</span>
                       {deck.accessCode && (
                         <span>
-                          Код: <span className="text-white/50 font-mono">{deck.accessCode}</span>
+                          Код:{' '}
+                          <span className="text-(--ui-fg) opacity-70 font-mono">{deck.accessCode}</span>
                         </span>
                       )}
                       <span>{new Date(deck.createdAt).toLocaleDateString('uk')}</span>
@@ -742,7 +754,7 @@ export function AdminPanel() {
                       <button
                         onClick={() => handleDeckAction(deck.id, 'approve')}
                         disabled={!!actionLoading}
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-40"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-(--ui-success) border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)] transition-colors disabled:opacity-40"
                       >
                         {actionLoading === deck.id + 'approve' ? '...' : 'Схвалити'}
                       </button>
@@ -751,7 +763,7 @@ export function AdminPanel() {
                       <button
                         onClick={() => handleDeckAction(deck.id, 'reject')}
                         disabled={!!actionLoading}
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30 transition-colors disabled:opacity-40"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-warning)_14%,transparent)] text-(--ui-warning) border border-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-warning)_22%,transparent)] transition-colors disabled:opacity-40"
                       >
                         {actionLoading === deck.id + 'reject' ? '...' : 'Відхилити'}
                       </button>
@@ -759,7 +771,7 @@ export function AdminPanel() {
                     <button
                       onClick={() => handleDeckAction(deck.id, 'delete')}
                       disabled={!!actionLoading}
-                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-40"
+                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)] transition-colors disabled:opacity-40"
                     >
                       {actionLoading === deck.id + 'delete' ? '...' : 'Видалити'}
                     </button>
@@ -775,12 +787,12 @@ export function AdminPanel() {
           <div className="space-y-4">
             {/* Create pack form */}
             <div className="flex justify-between items-center">
-              <h2 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+              <h2 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-80 font-bold">
                 {packs.length} паків
               </h2>
               <button
                 onClick={() => setShowCreatePack((v) => !v)}
-                className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[#D4AF6A]/20 text-[#D4AF6A] border border-[#D4AF6A]/30 hover:bg-[#D4AF6A]/30 transition-colors"
+                className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent) border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_20%,transparent)] transition-colors"
               >
                 {showCreatePack ? '✕ Скасувати' : '+ Новий пак'}
               </button>
@@ -789,9 +801,9 @@ export function AdminPanel() {
             {showCreatePack && (
               <form
                 onSubmit={handleCreatePack}
-                className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3"
+                className="bg-(--ui-card) border border-(--ui-border) rounded-2xl p-5 space-y-3"
               >
-                <h3 className="text-sm font-bold text-white mb-2">Новий Word Pack</h3>
+                <h3 className="text-sm font-bold text-(--ui-fg) mb-2">Новий Word Pack</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     className={inp}
@@ -842,12 +854,12 @@ export function AdminPanel() {
                       value={createForm.price}
                       onChange={(e) => setCreateForm((f) => ({ ...f, price: e.target.value }))}
                     />
-                    <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer whitespace-nowrap">
+                    <label className="flex items-center gap-2 text-xs text-(--ui-fg-muted) cursor-pointer whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={createForm.isFree}
                         onChange={(e) => setCreateForm((f) => ({ ...f, isFree: e.target.checked }))}
-                        className="accent-[#D4AF6A]"
+                        className="accent-(--ui-accent)"
                       />
                       Безкоштовний
                     </label>
@@ -856,7 +868,7 @@ export function AdminPanel() {
                 <button
                   type="submit"
                   disabled={actionLoading === 'create-pack'}
-                  className="w-full bg-[#D4AF6A] hover:bg-[#C9A55A] text-black font-bold py-2 rounded-xl transition-colors disabled:opacity-40"
+                  className="w-full bg-(--ui-accent) hover:brightness-110 text-(--ui-accent-contrast) font-bold py-2 rounded-xl transition-colors disabled:opacity-40"
                 >
                   {actionLoading === 'create-pack' ? 'Створення...' : 'Створити пак'}
                 </button>
@@ -866,32 +878,36 @@ export function AdminPanel() {
             {/* Pack list */}
             <div className="space-y-2">
               {packs.length === 0 && !error && (
-                <p className="text-white/20 text-sm text-center py-10">Немає паків</p>
+                <p className="text-(--ui-fg-muted) opacity-60 text-sm text-center py-10">
+                  Немає паків
+                </p>
               )}
               {packs.map((pack) => (
                 <div
                   key={pack.id}
-                  className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
+                  className="bg-(--ui-card) border border-(--ui-border) rounded-xl overflow-hidden"
                 >
                   {/* Pack row */}
                   <div className="px-5 py-3 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white font-medium text-sm">{pack.name}</span>
-                        <span className="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full font-mono">
+                        <span className="text-(--ui-fg) font-medium text-sm">{pack.name}</span>
+                        <span className="text-[10px] bg-(--ui-surface) text-(--ui-fg-muted) px-2 py-0.5 rounded-full font-mono border border-(--ui-border)">
                           {pack.slug}
                         </span>
-                        <span className="text-[10px] text-white/30">
+                        <span className="text-[10px] text-(--ui-fg-muted) opacity-80">
                           {pack.language} · {pack.category} · {pack.difficulty}
                         </span>
                         {pack.isFree ? (
-                          <span className="text-[10px] text-emerald-400 font-bold">FREE</span>
+                          <span className="text-[10px] text-(--ui-success) font-bold">FREE</span>
                         ) : (
-                          <span className="text-[10px] text-[#D4AF6A] font-bold">
+                          <span className="text-[10px] text-(--ui-accent) font-bold">
                             ${(pack.price / 100).toFixed(2)}
                           </span>
                         )}
-                        <span className="text-[10px] text-white/30">{pack.wordCount} слів</span>
+                        <span className="text-[10px] text-(--ui-fg-muted) opacity-80">
+                          {pack.wordCount} слів
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -899,7 +915,7 @@ export function AdminPanel() {
                         onClick={() =>
                           setSelectedPackId(selectedPackId === pack.id ? null : pack.id)
                         }
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent) border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_20%,transparent)] transition-colors"
                       >
                         {selectedPackId === pack.id ? '▲ Закрити' : `▼ Слова`}
                       </button>
@@ -917,14 +933,14 @@ export function AdminPanel() {
                                 }
                           )
                         }
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-white/10 text-white/50 border border-white/10 hover:bg-white/20 transition-colors"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
                       >
                         ✏
                       </button>
                       <button
                         onClick={() => handleDeletePack(pack.id)}
                         disabled={!!actionLoading}
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-40"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_20%,transparent)] transition-colors disabled:opacity-40"
                       >
                         🗑
                       </button>
@@ -933,8 +949,8 @@ export function AdminPanel() {
 
                   {/* Edit metadata panel */}
                   {editingPack?.id === pack.id && (
-                    <div className="border-t border-white/10 px-5 py-4 bg-white/3 space-y-3">
-                      <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                    <div className="border-t border-(--ui-border) px-5 py-4 bg-(--ui-surface) space-y-3">
+                      <h4 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-80 font-bold">
                         Редагувати метадані
                       </h4>
                       <div className="grid grid-cols-2 gap-3">
@@ -969,14 +985,14 @@ export function AdminPanel() {
                             setEditingPack((p) => (p ? { ...p, price: Number(e.target.value) } : p))
                           }
                         />
-                        <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                        <label className="flex items-center gap-2 text-xs text-(--ui-fg-muted) cursor-pointer">
                           <input
                             type="checkbox"
                             checked={editingPack.isFree ?? false}
                             onChange={(e) =>
                               setEditingPack((p) => (p ? { ...p, isFree: e.target.checked } : p))
                             }
-                            className="accent-[#D4AF6A]"
+                            className="accent-(--ui-accent)"
                           />
                           Безкоштовний
                         </label>
@@ -985,13 +1001,13 @@ export function AdminPanel() {
                         <button
                           onClick={handleSavePack}
                           disabled={!!actionLoading}
-                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-40"
+                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-(--ui-success) border border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-success)_20%,transparent)] transition-colors disabled:opacity-40"
                         >
                           {actionLoading === 'save-pack-' + pack.id ? '...' : 'Зберегти'}
                         </button>
                         <button
                           onClick={() => setEditingPack(null)}
-                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-white/10 text-white/40 border border-white/10 hover:bg-white/20 transition-colors"
+                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
                         >
                           Скасувати
                         </button>
@@ -1001,8 +1017,8 @@ export function AdminPanel() {
 
                   {/* Words panel */}
                   {selectedPackId === pack.id && (
-                    <div className="border-t border-white/10 px-5 py-4 bg-white/3 space-y-4">
-                      <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                    <div className="border-t border-(--ui-border) px-5 py-4 bg-(--ui-surface) space-y-4">
+                      <h4 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-80 font-bold">
                         Слова ({packWords.length})
                       </h4>
 
@@ -1017,7 +1033,7 @@ export function AdminPanel() {
                         <button
                           onClick={handleAddWords}
                           disabled={!newWords.trim() || actionLoading === 'add-words'}
-                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[#D4AF6A]/20 text-[#D4AF6A] border border-[#D4AF6A]/30 hover:bg-[#D4AF6A]/30 transition-colors disabled:opacity-40 whitespace-nowrap"
+                          className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent) border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_20%,transparent)] transition-colors disabled:opacity-40 whitespace-nowrap"
                         >
                           {actionLoading === 'add-words' ? '...' : '+ Додати'}
                         </button>
@@ -1036,7 +1052,7 @@ export function AdminPanel() {
                       {/* Word chips */}
                       {wordsLoading ? (
                         <div className="flex justify-center py-4">
-                          <div className="w-5 h-5 border-2 border-[#D4AF6A] border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-(--ui-accent) border-t-transparent rounded-full animate-spin" />
                         </div>
                       ) : (
                         <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto">
@@ -1049,20 +1065,22 @@ export function AdminPanel() {
                             .map((w) => (
                               <span
                                 key={w.id}
-                                className="flex items-center gap-1.5 bg-white/10 text-white/70 text-xs px-2.5 py-1 rounded-full"
+                                className="flex items-center gap-1.5 bg-(--ui-surface) text-(--ui-fg) text-xs px-2.5 py-1 rounded-full border border-(--ui-border)"
                               >
                                 {w.text}
                                 <button
                                   onClick={() => handleDeleteWord(w.id)}
                                   disabled={actionLoading === 'del-' + w.id}
-                                  className="text-white/30 hover:text-red-400 transition-colors text-xs leading-none"
+                                  className="text-(--ui-fg-muted) opacity-70 hover:text-(--ui-danger) transition-colors text-xs leading-none"
                                 >
                                   ×
                                 </button>
                               </span>
                             ))}
                           {packWords.length === 0 && (
-                            <p className="text-white/20 text-xs">Слів немає. Додайте вище.</p>
+                            <p className="text-(--ui-fg-muted) opacity-60 text-xs">
+                              Слів немає. Додайте вище.
+                            </p>
                           )}
                         </div>
                       )}
@@ -1078,38 +1096,38 @@ export function AdminPanel() {
         {tab === 'themes' && !loading && (
           <div className="space-y-3">
             {themes.length === 0 && !error && (
-              <p className="text-white/20 text-sm text-center py-10">Немає тем</p>
+              <p className="text-(--ui-fg-muted) opacity-60 text-sm text-center py-10">Немає тем</p>
             )}
             {themes.map((theme) => {
               const previewBg = theme.config?.preview?.bg ?? '#1A1A1A';
-              const previewAccent = theme.config?.preview?.accent ?? '#D4AF6A';
+              const previewAccent = theme.config?.preview?.accent ?? 'var(--ui-accent)';
               const isEditing = editingTheme?.id === theme.id;
               return (
                 <div
                   key={theme.id}
-                  className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                  className="bg-(--ui-card) border border-(--ui-border) rounded-2xl overflow-hidden"
                 >
                   <div className="px-5 py-4 flex items-center gap-4">
                     {/* Color swatch */}
                     <div
-                      className="w-12 h-12 rounded-xl shrink-0 border border-white/10 overflow-hidden relative"
+                      className="w-12 h-12 rounded-xl shrink-0 border border-(--ui-border) overflow-hidden relative"
                       style={{ background: previewBg }}
                     >
                       <div
-                        className="absolute bottom-1.5 right-1.5 w-3 h-3 rounded-full border border-white/20"
+                        className="absolute bottom-1.5 right-1.5 w-3 h-3 rounded-full border border-(--ui-border)"
                         style={{ background: previewAccent }}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white font-medium text-sm">{theme.name}</span>
-                        <span className="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full font-mono">
+                        <span className="text-(--ui-fg) font-medium text-sm">{theme.name}</span>
+                        <span className="text-[10px] bg-(--ui-surface) text-(--ui-fg-muted) px-2 py-0.5 rounded-full font-mono border border-(--ui-border)">
                           {theme.slug}
                         </span>
                         {theme.isFree ? (
-                          <span className="text-[10px] text-emerald-400 font-bold">FREE</span>
+                          <span className="text-[10px] text-(--ui-success) font-bold">FREE</span>
                         ) : (
-                          <span className="text-[10px] text-[#D4AF6A] font-bold">
+                          <span className="text-[10px] text-(--ui-accent) font-bold">
                             ${(theme.price / 100).toFixed(2)}
                           </span>
                         )}
@@ -1124,14 +1142,14 @@ export function AdminPanel() {
                               : { id: theme.id, price: String(theme.price), isFree: theme.isFree }
                           )
                         }
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-white/10 text-white/50 border border-white/10 hover:bg-white/20 transition-colors"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
                       >
                         {isEditing ? 'Скасувати' : '✏ Ред.'}
                       </button>
                       <button
                         onClick={() => handleDeleteTheme(theme.id)}
                         disabled={!!actionLoading}
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-40"
+                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_20%,transparent)] transition-colors disabled:opacity-40"
                       >
                         🗑
                       </button>
@@ -1140,20 +1158,20 @@ export function AdminPanel() {
 
                   {/* Inline edit */}
                   {isEditing && editingTheme && (
-                    <div className="border-t border-white/10 px-5 py-4 bg-white/3 flex items-center gap-4 flex-wrap">
-                      <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                    <div className="border-t border-(--ui-border) px-5 py-4 bg-(--ui-surface) flex items-center gap-4 flex-wrap">
+                      <label className="flex items-center gap-2 text-xs text-(--ui-fg-muted) cursor-pointer">
                         <input
                           type="checkbox"
                           checked={editingTheme.isFree}
                           onChange={(e) =>
                             setEditingTheme((t) => (t ? { ...t, isFree: e.target.checked } : t))
                           }
-                          className="accent-[#D4AF6A]"
+                          className="accent-(--ui-accent)"
                         />
                         Безкоштовна
                       </label>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/40">Ціна (центи):</span>
+                        <span className="text-xs text-(--ui-fg-muted) opacity-80">Ціна (центи):</span>
                         <input
                           className={inp + ' w-28'}
                           type="number"
@@ -1167,7 +1185,7 @@ export function AdminPanel() {
                       <button
                         onClick={handleSaveTheme}
                         disabled={!!actionLoading}
-                        className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-40"
+                        className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-(--ui-success) border border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-success)_20%,transparent)] transition-colors disabled:opacity-40"
                       >
                         {actionLoading === 'save-theme-' + theme.id ? '...' : 'Зберегти'}
                       </button>

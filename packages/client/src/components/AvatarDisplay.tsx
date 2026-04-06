@@ -1,26 +1,27 @@
 import React from 'react';
 
 export const PRESET_AVATARS = [
-  { emoji: '🦊', bg: '#FF6B6B' },
-  { emoji: '🐺', bg: '#4ECDC4' },
-  { emoji: '🦁', bg: '#FFD166' },
-  { emoji: '🐯', bg: '#F4A261' },
-  { emoji: '🐻', bg: '#8ECAE6' },
-  { emoji: '🐼', bg: '#95D5B2' },
-  { emoji: '🦋', bg: '#C77DFF' },
-  { emoji: '🦅', bg: '#E76F51' },
-  { emoji: '🐬', bg: '#48CAE4' },
-  { emoji: '🦄', bg: '#F8A5C2' },
-  { emoji: '🐉', bg: '#52B788' },
-  { emoji: '🦉', bg: '#B5C4B1' },
-  { emoji: '🐸', bg: '#80B918' },
-  { emoji: '🦈', bg: '#56CFE1' },
-  { emoji: '🦚', bg: '#2EC4B6' },
-  { emoji: '🦝', bg: '#FFBF69' },
-  { emoji: '🐊', bg: '#40916C' },
-  { emoji: '🦭', bg: '#74B3CE' },
-  { emoji: '🦩', bg: '#FF8FAB' },
-  { emoji: '🐙', bg: '#9B5DE5' },
+  // Use theme-derived colors (no hardcoded HEX)
+  { emoji: '🦊', mix: 72 },
+  { emoji: '🐺', mix: 64 },
+  { emoji: '🦁', mix: 78 },
+  { emoji: '🐯', mix: 60 },
+  { emoji: '🐻', mix: 68 },
+  { emoji: '🐼', mix: 52 },
+  { emoji: '🦋', mix: 70 },
+  { emoji: '🦅', mix: 58 },
+  { emoji: '🐬', mix: 66 },
+  { emoji: '🦄', mix: 74 },
+  { emoji: '🐉', mix: 56 },
+  { emoji: '🦉', mix: 48 },
+  { emoji: '🐸', mix: 62 },
+  { emoji: '🦈', mix: 54 },
+  { emoji: '🦚', mix: 67 },
+  { emoji: '🦝', mix: 76 },
+  { emoji: '🐊', mix: 50 },
+  { emoji: '🦭', mix: 59 },
+  { emoji: '🦩', mix: 73 },
+  { emoji: '🐙', mix: 65 },
 ];
 
 export function AvatarDisplay({
@@ -38,7 +39,7 @@ export function AvatarDisplay({
         style={{
           width: size,
           height: size,
-          background: preset.bg,
+          background: `color-mix(in_srgb, var(--ui-accent) ${preset.mix}%, var(--ui-bg))`,
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -55,7 +56,7 @@ export function AvatarDisplay({
       style={{
         width: size,
         height: size,
-        background: 'rgba(255,255,255,0.1)',
+        background: 'color-mix(in_srgb,var(--ui-fg)_10%,transparent)',
         borderRadius: '50%',
         display: 'flex',
         alignItems: 'center',
@@ -63,10 +64,10 @@ export function AvatarDisplay({
       }}
     >
       <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 44 44" fill="none">
-        <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.25)" />
+        <circle cx="22" cy="16" r="8" fill="color-mix(in_srgb,var(--ui-fg)_20%,transparent)" />
         <path
           d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18"
-          stroke="rgba(255,255,255,0.25)"
+          stroke="color-mix(in_srgb,var(--ui-fg)_20%,transparent)"
           strokeWidth="2"
           fill="none"
           strokeLinecap="round"

@@ -40,7 +40,7 @@ export const GuesserFeedback = memo(function GuesserFeedback({
     prevCorrectRef.current = correct;
   }, [correct]);
 
-  const accentColor = teamColorHex || '#D4AF6A';
+  const accentColor = teamColorHex || 'var(--ui-accent)';
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 text-center w-full max-w-sm animate-fade-in">
@@ -70,17 +70,17 @@ export const GuesserFeedback = memo(function GuesserFeedback({
             flash ? 'scale-105' : ''
           }`}
           style={{
-            borderColor: `${accentColor}33`,
-            backgroundColor: `${accentColor}0D`,
+            borderColor: `color-mix(in_srgb, ${accentColor} 30%, transparent)`,
+            backgroundColor: `color-mix(in_srgb, ${accentColor} 10%, transparent)`,
           }}
         >
           <p
             className="text-2xl font-serif uppercase tracking-wide"
-            style={{ color: `${accentColor}CC` }}
+            style={{ color: `color-mix(in_srgb, ${accentColor} 80%, transparent)` }}
           >
             {lastCorrect.word}
           </p>
-          <p className="text-[9px] uppercase tracking-widest font-bold mt-1 text-emerald-400/70">
+          <p className="text-[9px] uppercase tracking-widest font-bold mt-1 text-(--ui-success)">
             ✓ {t.correct}
           </p>
         </div>

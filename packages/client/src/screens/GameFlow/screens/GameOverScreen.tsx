@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Confetti } from '../../../components/Shared';
-import { AppTheme } from '../../../types';
 import { useGame } from '../../../context/GameContext';
 import { TRANSLATIONS } from '../../../constants';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
@@ -11,7 +10,6 @@ import { usePlayerStats } from '../../../hooks/usePlayerStats';
 export const GameOverScreen = () => {
   const { teams, currentTheme, settings, resetGame, rematch, leaveRoom, isHost } = useGame();
   const t = TRANSLATIONS[settings.general.language];
-  const isDark = settings.general.theme === AppTheme.PREMIUM_DARK;
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);
@@ -45,15 +43,35 @@ export const GameOverScreen = () => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
+      const tokens = currentTheme.tokens;
+      const bg = (tokens?.bg || getComputedStyle(document.documentElement).getPropertyValue('--ui-bg'))
+        .trim()
+        .replace(/^$/, '#000');
+      const surface = (
+        tokens?.surface ||
+        getComputedStyle(document.documentElement).getPropertyValue('--ui-surface')
+      )
+        .trim()
+        .replace(/^$/, '#111');
+      const accent = (
+        tokens?.accent ||
+        getComputedStyle(document.documentElement).getPropertyValue('--ui-accent')
+      )
+        .trim()
+        .replace(/^$/, '#777');
+      const fg = (tokens?.fg || getComputedStyle(document.documentElement).getPropertyValue('--ui-fg'))
+        .trim()
+        .replace(/^$/, '#fff');
+
       // Background
       const grad = ctx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, '#1a1a2e');
-      grad.addColorStop(1, '#16213e');
+      grad.addColorStop(0, surface);
+      grad.addColorStop(1, bg);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
       // Subtle grid lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.strokeStyle = 'color-mix(in_srgb,var(--ui-fg)_6%,transparent)';
       ctx.lineWidth = 1;
       for (let x = 0; x < W; x += 40) {
         ctx.beginPath();
@@ -69,17 +87,17 @@ export const GameOverScreen = () => {
       }
 
       // Gold accent bar
-      ctx.fillStyle = '#D4AF6A';
+      ctx.fillStyle = accent;
       ctx.fillRect(0, 0, W, 4);
 
       // Title
-      ctx.fillStyle = '#D4AF6A';
+      ctx.fillStyle = accent;
       ctx.font = 'bold 42px Georgia, serif';
       ctx.textAlign = 'center';
       ctx.fillText('ALIAS', W / 2, 60);
 
       // Subtitle
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillStyle = 'color-mix(in_srgb,var(--ui-fg)_45%,transparent)';
       ctx.font = '13px Arial, sans-serif';
       ctx.fillText(t.finalResults?.toUpperCase() ?? 'FINAL RESULTS', W / 2, 88);
 
@@ -90,7 +108,10 @@ export const GameOverScreen = () => {
         const alpha = i === 0 ? 1 : 0.75 - i * 0.08;
 
         // Row background
-        ctx.fillStyle = i === 0 ? 'rgba(212,175,106,0.12)' : 'rgba(255,255,255,0.04)';
+        ctx.fillStyle =
+          i === 0
+            ? 'color-mix(in_srgb,var(--ui-accent)_14%,transparent)'
+            : 'color-mix(in_srgb,var(--ui-fg)_6%,transparent)';
         ctx.beginPath();
         (ctx as any).roundRect?.(40, y - 30, W - 80, 44, 10);
         ctx.fill();
@@ -103,19 +124,19 @@ export const GameOverScreen = () => {
 
         // Team name
         ctx.font = i === 0 ? 'bold 20px Arial, sans-serif' : '18px Arial, sans-serif';
-        ctx.fillStyle = i === 0 ? '#D4AF6A' : '#ffffff';
+        ctx.fillStyle = i === 0 ? accent : fg;
         ctx.fillText(team.name.slice(0, 22), 96, y);
 
         // Score
         ctx.font = 'bold 20px Arial, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillStyle = i === 0 ? '#D4AF6A' : 'rgba(255,255,255,0.6)';
+        ctx.fillStyle = i === 0 ? accent : 'color-mix(in_srgb,var(--ui-fg)_70%,transparent)';
         ctx.fillText(`${team.score} ${t.pts ?? 'pts'}`, W - 56, y);
         ctx.globalAlpha = 1;
       });
 
       // Footer
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.fillStyle = 'color-mix(in_srgb,var(--ui-fg)_25%,transparent)';
       ctx.font = '11px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('aliasmaster.app', W / 2, H - 18);
@@ -162,9 +183,7 @@ export const GameOverScreen = () => {
   };
 
   const medals = ['🥇', '🥈', '🥉'];
-  const cardBg = isDark
-    ? 'bg-(--ui-surface) border-(--ui-border)'
-    : 'bg-(--ui-card) border-(--ui-border) shadow-sm';
+  const cardBg = 'bg-(--ui-card) border-(--ui-border)';
 
   return (
     <div
@@ -239,7 +258,7 @@ export const GameOverScreen = () => {
               </div>
               <div className="text-right">
                 <span
-                  className={`font-bold text-base tabular-nums ${i === 0 ? 'text-[#D4AF6A]' : currentTheme.textMain}`}
+                  className={`font-bold text-base tabular-nums ${i === 0 ? 'text-(--ui-accent)' : currentTheme.textMain}`}
                 >
                   {p.stats?.guessed ?? 0}
                 </span>

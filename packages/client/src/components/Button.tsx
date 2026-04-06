@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[color:var(--ui-accent)] focus-visible:ring-offset-[color:var(--ui-bg)]';
+    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--ui-accent) focus-visible:ring-offset-(--ui-bg)';
 
   // Strict theme integration
   const getVariantStyle = () => {
@@ -32,17 +32,17 @@ export const Button: React.FC<ButtonProps> = ({
 
     switch (variant) {
       case 'outline':
-        return 'bg-transparent border border-[color:var(--ui-border)] text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)]';
+        return 'bg-transparent border border-(--ui-border) text-(--ui-fg) hover:bg-(--ui-surface-hover)';
       case 'danger':
-        return 'bg-[color:color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color:color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-[color:var(--ui-danger)] hover:bg-[color:color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
+        return 'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-(--ui-danger) hover:bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
       case 'success':
-        return 'bg-[color:color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color:color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-[color:var(--ui-success)] hover:bg-[color:color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
+        return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-(--ui-success) hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':
-        return 'bg-[color:var(--ui-surface)] text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] border border-[color:var(--ui-border)] hover:bg-[color:var(--ui-surface-hover)]';
+        return 'bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)';
       case 'ghost':
-        return 'bg-transparent text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)]';
+        return 'bg-transparent text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)';
       default:
-        return 'bg-[color:var(--ui-accent)] text-[color:var(--ui-accent-contrast)] hover:opacity-95';
+        return 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95';
     }
   };
 

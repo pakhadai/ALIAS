@@ -6,7 +6,6 @@ import {
   Plus,
   Minus,
   FileText,
-  Copy,
   Loader2,
   Timer,
   Trophy,
@@ -91,15 +90,6 @@ export const LobbyScreen = () => {
     return rest > 0 ? `${names.join(', ')} +${rest}` : names.join(', ');
   }, [general.categories, t]);
 
-  const copyRoomCode = async () => {
-    try {
-      await navigator.clipboard.writeText(roomCode);
-      showNotification(t.shareCopied ?? 'Copied!', 'success');
-    } catch {
-      showNotification('Clipboard недоступний', 'error');
-    }
-  };
-
   return (
     <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
       <div className="max-w-2xl w-full flex-1 flex flex-col">
@@ -138,14 +128,14 @@ export const LobbyScreen = () => {
 
         {showQrModal && qrCodeData && (
           <div
-            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm animate-fade-in"
             onClick={() => setShowQrModal(false)}
           >
             <div
               className="flex flex-col items-center gap-6 max-w-[min(92vw,420px)]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-white p-8 rounded-2xl shadow-2xl ring-1 ring-black/10 animate-pop-in w-full flex justify-center">
+              <div className="bg-(--ui-card) p-8 rounded-2xl shadow-2xl ring-1 ring-(--ui-border) animate-pop-in w-full flex justify-center">
                 <img
                   src={qrCodeData}
                   alt="QR"
@@ -187,36 +177,38 @@ export const LobbyScreen = () => {
         {!isHost && gameMode === 'ONLINE' && !isConnected && !isReconnecting && (
           <div className="w-full max-w-sm mx-auto mb-6 space-y-3">
             {isRoomUnavailableError(connectionErrorCode) ? (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center animate-shake">
-                <p className="text-red-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">
+              <div className="bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] rounded-2xl p-6 text-center animate-shake">
+                <p className="text-(--ui-danger) font-sans text-sm mb-2 font-bold uppercase tracking-wider">
                   {t.connectionFailed}
                 </p>
-                <p className="text-red-300/60 text-xs">{t.roomNotFound.replace('{0}', roomCode)}</p>
+                <p className="text-(--ui-fg-muted) text-xs">
+                  {t.roomNotFound.replace('{0}', roomCode)}
+                </p>
                 <button
                   type="button"
                   onClick={() => setGameState(GameState.JOIN_INPUT)}
-                  className="mt-4 px-6 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-xl text-red-300 text-xs uppercase tracking-wider transition-colors"
+                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_35%,transparent)] rounded-xl text-(--ui-danger) text-xs uppercase tracking-wider transition-colors"
                 >
                   {t.tryAgain}
                 </button>
               </div>
             ) : connectionError ? (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center">
-                <p className="text-amber-400 font-sans text-sm mb-2 font-bold uppercase tracking-wider">
+              <div className="bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)] rounded-2xl p-6 text-center">
+                <p className="text-(--ui-warning) font-sans text-sm mb-2 font-bold uppercase tracking-wider">
                   {t.connectionFailed}
                 </p>
-                <p className="text-amber-200/70 text-xs">{connectionError}</p>
+                <p className="text-(--ui-fg-muted) text-xs">{connectionError}</p>
                 <button
                   type="button"
                   onClick={() => setGameState(GameState.JOIN_INPUT)}
-                  className="mt-4 px-6 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-xl text-amber-200 text-xs uppercase tracking-wider transition-colors"
+                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-warning)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] rounded-xl text-(--ui-warning) text-xs uppercase tracking-wider transition-colors"
                 >
                   {t.tryAgain}
                 </button>
               </div>
             ) : (
-              <div className="bg-slate-500/10 border border-slate-500/25 rounded-2xl p-6 text-center">
-                <p className="text-slate-400 text-sm">{t.lostServerConnection}</p>
+              <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-6 text-center">
+                <p className="text-(--ui-fg-muted) text-sm">{t.lostServerConnection}</p>
               </div>
             )}
           </div>
@@ -232,11 +224,7 @@ export const LobbyScreen = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') setShowQrModal(true);
                 }}
-                className={`p-4 rounded-3xl inline-block shadow-2xl ${
-                  currentTheme.isDark
-                    ? 'bg-white ring-1 ring-white/10'
-                    : 'bg-white ring-1 ring-slate-200/80'
-                } transition-transform duration-150 ease-out active:scale-95 cursor-pointer`}
+                className="p-4 rounded-3xl inline-block shadow-2xl bg-(--ui-card) ring-1 ring-(--ui-border) transition-transform duration-150 ease-out active:scale-95 cursor-pointer"
               >
                 <img src={qrCodeData} alt="QR" className="w-32 h-32 rounded-lg" />
               </div>
@@ -245,29 +233,13 @@ export const LobbyScreen = () => {
               >
                 {t.roomCode}
               </p>
-              <button
-                type="button"
-                onClick={copyRoomCode}
-                className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-150 ease-out active:scale-95 ${
-                  currentTheme.isDark
-                    ? 'bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
-                    : 'bg-(--ui-card) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
-                }`}
-                title={t.copyRoomCodeTitle ?? 'Скопіювати код'}
-              >
-                <span className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>
-                  {roomCode}
-                </span>
-                <Copy size={18} className={currentTheme.iconColor} />
-              </button>
+              <div className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>
+                {roomCode}
+              </div>
 
               {settings.general.customDeckCode && (
                 <div
-                  className={`mt-1 mx-auto max-w-xs rounded-2xl border px-4 py-3 text-left ${
-                    currentTheme.isDark
-                      ? 'border-indigo-400/35 bg-indigo-500/10'
-                      : 'border-indigo-300 bg-indigo-50'
-                  }`}
+                  className="mt-1 mx-auto max-w-xs rounded-2xl border border-(--ui-border) bg-(--ui-surface) px-4 py-3 text-left"
                 >
                   <p
                     className={`text-[8px] uppercase tracking-[0.25em] font-bold mb-1 ${currentTheme.textSecondary}`}
@@ -347,9 +319,7 @@ export const LobbyScreen = () => {
                   {settings.general.customDeckCode && (
                     <span
                       className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${
-                        currentTheme.isDark
-                          ? 'border-indigo-400/40 text-indigo-200/90 bg-indigo-500/10'
-                          : 'border-indigo-200 text-indigo-800 bg-indigo-50'
+                        'border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)'
                       }`}
                       title={settings.general.customDeckName || settings.general.customDeckCode}
                     >
@@ -380,7 +350,11 @@ export const LobbyScreen = () => {
                       currentTheme.isDark
                         ? 'bg-(--ui-surface) border-(--ui-border)'
                         : 'bg-(--ui-card) border-(--ui-border)'
-                    } ${!online ? 'opacity-75 border-amber-500/35' : ''}`}
+                    } ${
+                      !online
+                        ? 'opacity-75 border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]'
+                        : ''
+                    }`}
                   >
                     {p.avatarId != null ? (
                       <AvatarDisplay avatarId={p.avatarId} size={36} />
@@ -404,30 +378,36 @@ export const LobbyScreen = () => {
                         <button
                           type="button"
                           onClick={() => setKickTarget({ id: p.id, name: p.name })}
-                          className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
+                          className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-colors group"
                           title={t.kickPlayerTitle}
                         >
-                          <X size={14} className="text-red-400 group-hover:text-red-300" />
+                          <X
+                            size={14}
+                            className="text-(--ui-danger) opacity-80 group-hover:opacity-100"
+                          />
                         </button>
                       )}
                       {isHost && gameMode === 'OFFLINE' && !p.isHost && (
                         <button
                           type="button"
                           onClick={() => removeOfflinePlayer(p.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-500/20 border border-red-500/30 transition-colors group"
+                          className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-colors group"
                         >
-                          <Minus size={14} className="text-red-400 group-hover:text-red-300" />
+                          <Minus
+                            size={14}
+                            className="text-(--ui-danger) opacity-80 group-hover:opacity-100"
+                          />
                         </button>
                       )}
                       {gameMode === 'ONLINE' && online && (
                         <div
-                          className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]"
+                          className="w-3.5 h-3.5 rounded-full bg-(--ui-success) shadow-[0_0_6px_color-mix(in_srgb,var(--ui-success)_60%,transparent)]"
                           title={t.playerOnlineHint}
                         />
                       )}
                       {gameMode === 'ONLINE' && !online && (
                         <div
-                          className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.6)] animate-pulse"
+                          className="w-3.5 h-3.5 rounded-full bg-(--ui-warning) shadow-[0_0_6px_color-mix(in_srgb,var(--ui-warning)_60%,transparent)] animate-pulse"
                           title={t.playerDisconnected}
                         />
                       )}
@@ -456,7 +436,7 @@ export const LobbyScreen = () => {
 
             {/* Add Player Modal */}
             {showAddPlayer && (
-              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-md animate-fade-in">
                 <div
                   className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} animate-pop-in`}
                 >
@@ -577,7 +557,7 @@ export const TeamSetupScreen = () => {
         {teams.map((team: any) => (
           <div
             key={team.id}
-            className={`p-6 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}
+            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface)"
             style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -593,11 +573,11 @@ export const TeamSetupScreen = () => {
                 return (
                   <div
                     key={p.id}
-                    className={`px-3 py-1.5 rounded-full flex items-center gap-2 border ${
-                      currentTheme.isDark
-                        ? 'bg-white/5 border-white/5'
-                        : 'bg-slate-100 border-slate-200'
-                    } ${gameMode === 'ONLINE' && !online ? 'opacity-70 border-amber-500/30' : ''}`}
+                    className={`px-3 py-1.5 rounded-full flex items-center gap-2 border bg-(--ui-surface) border-(--ui-border) ${
+                      gameMode === 'ONLINE' && !online
+                        ? 'opacity-70 border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)]'
+                        : ''
+                    }`}
                   >
                     {p.avatarId != null ? (
                       <AvatarDisplay avatarId={p.avatarId} size={20} />
@@ -610,7 +590,7 @@ export const TeamSetupScreen = () => {
                       {p.name}
                     </span>
                     {gameMode === 'ONLINE' && !online && (
-                      <span className="text-[8px] font-bold uppercase text-amber-500/90">
+                      <span className="text-[8px] font-bold uppercase text-(--ui-warning) opacity-90">
                         {t.playerDisconnected}
                       </span>
                     )}
@@ -752,9 +732,7 @@ export const SettingsScreen = () => {
         <div className="w-full space-y-6 pb-32">
           {/* BLOCK 1: Game Mode */}
           <div
-            className={`p-6 rounded-3xl border space-y-5 ${
-              isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'
-            }`}
+            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-5"
           >
             <div className="space-y-2">
               <h3
@@ -762,7 +740,7 @@ export const SettingsScreen = () => {
               >
                 {t.gameMode ?? 'Режим гри'}
               </h3>
-              <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+              <div className="h-px w-full bg-(--ui-border)" />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -784,10 +762,8 @@ export const SettingsScreen = () => {
                     onClick={() => updateMode({ gameMode: mode })}
                     className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
                       active
-                        ? 'bg-champagne-gold text-black border-champagne-gold'
-                        : isDark
-                          ? 'bg-white/5 border-white/10 text-white/50 hover:text-white/80'
-                          : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
+                        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+                        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                     }`}
                   >
                     {label}
@@ -826,9 +802,7 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 2: Content */}
           <div
-            className={`p-6 rounded-3xl border space-y-6 ${
-              isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'
-            }`}
+            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6"
           >
             <div className="space-y-2">
               <h3
@@ -836,7 +810,7 @@ export const SettingsScreen = () => {
               >
                 {t.content ?? 'Словник'}
               </h3>
-              <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+              <div className="h-px w-full bg-(--ui-border)" />
             </div>
 
             <div className="space-y-3">
@@ -852,10 +826,8 @@ export const SettingsScreen = () => {
                     onClick={() => updateGeneral('language', l)}
                     className={`flex-1 py-3 rounded-xl border transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                       settings.general.language === l
-                        ? 'bg-champagne-gold text-black border-champagne-gold'
-                        : isDark
-                          ? 'bg-white/5 border-white/10 text-white/40'
-                          : 'bg-slate-100 border-slate-200 text-slate-400'
+                        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+                        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                     }`}
                   >
                     {l}
@@ -879,10 +851,8 @@ export const SettingsScreen = () => {
                       onClick={() => updateGeneral('targetLanguage', l)}
                       className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                         (settings.general.targetLanguage ?? Language.EN) === l
-                          ? `border-yellow-500 bg-yellow-500/15 ${isDark ? 'text-yellow-400' : 'text-amber-900'}`
-                          : isDark
-                            ? 'bg-white/5 border-white/10 text-white/40'
-                            : 'bg-slate-100 border-slate-200 text-slate-400'
+                          ? `border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)`
+                          : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted)'
                       }`}
                     >
                       {l}
@@ -912,10 +882,8 @@ export const SettingsScreen = () => {
                       }}
                       className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                         settings.general.categories.includes(cat)
-                          ? 'border-yellow-500 bg-yellow-500 text-black'
-                          : isDark
-                            ? 'border-white/10 bg-white/5 text-white/40'
-                            : 'border-slate-200 bg-slate-50 text-slate-400'
+                          ? 'border-(--ui-accent) bg-(--ui-accent) text-(--ui-accent-contrast)'
+                          : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                       }`}
                     >
                       {t[catKey] || cat}
@@ -936,7 +904,7 @@ export const SettingsScreen = () => {
                   value={settings.general.customWords || ''}
                   onChange={(e) => updateGeneral('customWords', e.target.value)}
                   placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
-                  className={`w-full h-24 p-4 rounded-xl border resize-none ${currentTheme.bg} ${currentTheme.textMain} border-white/10 focus:border-yellow-500 outline-none`}
+                  className="w-full h-24 p-4 rounded-xl border resize-none bg-(--ui-surface) text-(--ui-fg) border-(--ui-border) focus:border-(--ui-accent) outline-none"
                 />
               </div>
             )}
@@ -953,11 +921,7 @@ export const SettingsScreen = () => {
                   {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
                     <button
                       onClick={() => isHost && updateGeneral('selectedPackIds', [])}
-                      className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${
-                        isDark
-                          ? 'text-white/30 hover:text-white/60'
-                          : 'text-slate-400 hover:text-slate-600'
-                      } ${!isHost ? 'pointer-events-none' : ''}`}
+                      className={`text-[9px] uppercase tracking-widest font-bold transition-opacity text-(--ui-fg-muted) hover:text-(--ui-fg) ${!isHost ? 'pointer-events-none' : ''}`}
                     >
                       Скинути
                     </button>
@@ -973,16 +937,14 @@ export const SettingsScreen = () => {
                         disabled={!isHost}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
                           isSelected
-                            ? 'border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#D4AF6A]'
-                            : isDark
-                              ? 'border-white/10 bg-white/5 text-white/40 hover:text-white/70 hover:border-white/20'
-                              : 'border-slate-200 bg-white text-slate-400 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)'
+                            : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                         }`}
                       >
                         {isSelected && <Check size={10} />}
                         <span>{pack.name}</span>
                         <span
-                          className={`font-normal ${isSelected ? 'text-[#D4AF6A]/60' : 'opacity-40'}`}
+                          className={`font-normal ${isSelected ? 'text-(--ui-fg-muted)' : 'opacity-40'}`}
                         >
                           {pack.wordCount}
                         </span>
@@ -991,7 +953,7 @@ export const SettingsScreen = () => {
                   })}
                 </div>
                 {(settings.general.selectedPackIds?.length ?? 0) === 0 && (
-                  <p className={`text-[10px] ${isDark ? 'text-white/25' : 'text-slate-400'}`}>
+                  <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
                     Не вибрано — використовуються стандартні слова
                   </p>
                 )}
@@ -1005,14 +967,14 @@ export const SettingsScreen = () => {
                 {t.customDeckLobbyLabel ?? 'Власний словник'}
               </p>
               {settings.general.customDeckCode ? (
-                <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/10">
+                <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-(--ui-border) bg-(--ui-surface)">
                   <div className="flex items-start gap-2 min-w-0">
-                    <FileText size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                    <FileText size={14} className="text-(--ui-accent) shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white leading-tight truncate">
+                      <p className="text-xs font-semibold text-(--ui-fg) leading-tight truncate">
                         {settings.general.customDeckName || settings.general.customDeckCode}
                       </p>
-                      <p className="text-[10px] text-indigo-300/80 font-mono mt-0.5">
+                      <p className="text-[10px] text-(--ui-fg-muted) font-mono mt-0.5">
                         {settings.general.customDeckCode}
                       </p>
                     </div>
@@ -1021,7 +983,7 @@ export const SettingsScreen = () => {
                     <button
                       type="button"
                       onClick={clearCustomDeck}
-                      className="text-slate-400 hover:text-white transition-colors p-1 shrink-0"
+                      className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1 shrink-0"
                       aria-label={t.close}
                     >
                       <X size={14} />
@@ -1032,7 +994,7 @@ export const SettingsScreen = () => {
                 <button
                   onClick={() => isHost && setShowCustomDeckPicker(true)}
                   disabled={!isHost}
-                  className="w-full p-3 rounded-xl border border-dashed border-white/10 text-slate-500 hover:text-white hover:border-indigo-500/40 transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
+                  className="w-full p-3 rounded-xl border border-dashed border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
                 >
                   <FileText size={14} />
                   <span className="text-xs">Вибрати зі своїх словників…</span>
@@ -1043,9 +1005,7 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 3: Rules (dynamic) */}
           <div
-            className={`p-6 rounded-3xl border space-y-6 ${
-              isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-sm'
-            }`}
+            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6"
           >
             <div className="space-y-2">
               <h3
@@ -1053,7 +1013,7 @@ export const SettingsScreen = () => {
               >
                 {t.rules ?? 'Правила'}
               </h3>
-              <div className={`h-px w-full ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+              <div className="h-px w-full bg-(--ui-border)" />
             </div>
 
             {(() => {
@@ -1081,10 +1041,8 @@ export const SettingsScreen = () => {
                             onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
                             className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                               active
-                                ? 'bg-champagne-gold text-black border-champagne-gold'
-                                : isDark
-                                  ? 'bg-white/5 border-white/10 text-white/50 hover:text-white/80'
-                                  : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-800'
+                                ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+                                : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                             }`}
                           >
                             {min} {t.min ?? 'хв'}
@@ -1115,97 +1073,93 @@ export const SettingsScreen = () => {
                     step="10"
                     value={'classicRoundTime' in mode ? mode.classicRoundTime : 0}
                     onChange={(e) => updateMode({ classicRoundTime: parseInt(e.target.value) })}
-                    className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${
-                      isDark ? 'bg-white/10' : 'bg-slate-200'
-                    }`}
+                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                   />
                 </div>
               );
             })()}
 
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <p
-                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                >
-                  {t.scoreToWin}
-                </p>
-                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                  {settings.general.scoreToWin}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="100"
-                step="5"
-                value={settings.general.scoreToWin}
-                onChange={(e) => updateGeneral('scoreToWin', parseInt(e.target.value))}
-                className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${
-                  isDark ? 'bg-white/10' : 'bg-slate-200'
-                }`}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <p
-                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                >
-                  {t.teamCount}
-                </p>
-                <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                  {settings.general.teamCount}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="2"
-                max="10"
-                step="1"
-                value={settings.general.teamCount}
-                onChange={(e) => updateGeneral('teamCount', parseInt(e.target.value))}
-                className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-yellow-500 ${
-                  isDark ? 'bg-white/10' : 'bg-slate-200'
-                }`}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <p
-                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-              >
-                {t.skipPenalty}
-              </p>
-              <button
-                onClick={() => updateGeneral('skipPenalty', !settings.general.skipPenalty)}
-                className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
-                  settings.general.skipPenalty
-                    ? 'border-yellow-500 bg-yellow-500/10'
-                    : isDark
-                      ? 'border-white/10 bg-white/5 opacity-40'
-                      : 'border-slate-200 bg-slate-50 opacity-60'
-                }`}
-              >
-                <span className={currentTheme.textMain}>
-                  {settings.general.skipPenalty ? t.enabled : t.disabled}
-                </span>
-                <div
-                  className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-yellow-500' : isDark ? 'bg-white/20' : 'bg-slate-300'}`}
-                >
-                  <div
-                    className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all ${
-                      settings.general.skipPenalty ? 'right-0.5' : 'left-0.5'
-                    }`}
+            {(settings.mode.gameMode ?? GameMode.CLASSIC) !== GameMode.IMPOSTER && (
+              <>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <p
+                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    >
+                      {t.scoreToWin}
+                    </p>
+                    <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                      {settings.general.scoreToWin}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="5"
+                    value={settings.general.scoreToWin}
+                    onChange={(e) => updateGeneral('scoreToWin', parseInt(e.target.value))}
+                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                   />
                 </div>
-              </button>
-            </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <p
+                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    >
+                      {t.teamCount}
+                    </p>
+                    <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                      {settings.general.teamCount}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="2"
+                    max="10"
+                    step="1"
+                    value={settings.general.teamCount}
+                    onChange={(e) => updateGeneral('teamCount', parseInt(e.target.value))}
+                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <p
+                    className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                  >
+                    {t.skipPenalty}
+                  </p>
+                  <button
+                    onClick={() => updateGeneral('skipPenalty', !settings.general.skipPenalty)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                      settings.general.skipPenalty
+                        ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                        : 'border-(--ui-border) bg-(--ui-surface) opacity-50'
+                    }`}
+                  >
+                    <span className={currentTheme.textMain}>
+                      {settings.general.skipPenalty ? t.enabled : t.disabled}
+                    </span>
+                    <div
+                      className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'}`}
+                    >
+                      <div
+                        className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
+                          settings.general.skipPenalty ? 'right-0.5' : 'left-0.5'
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-linear-to-t from-black/80 to-transparent pointer-events-none flex justify-center">
+      <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] to-transparent pointer-events-none flex justify-center">
         <div className="max-w-2xl w-full pointer-events-auto">
           <Button
             themeClass={currentTheme.button}

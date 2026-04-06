@@ -74,7 +74,7 @@ export function ImposterScreen() {
     return (
       <div className="animate-page-in px-4 py-6">
         <div className="mx-auto w-full max-w-lg space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-(--ui-surface) p-4">
+          <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-sm opacity-70">Імпостер — перегляд карток</div>
@@ -92,7 +92,7 @@ export function ImposterScreen() {
           </div>
 
           {isOffline && !isFlipped ? (
-            <div className="rounded-2xl border border-white/10 bg-(--ui-surface) p-4 text-sm opacity-80">
+            <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4 text-sm opacity-80">
               Передай телефон гравцю{' '}
               <span className="font-semibold">{activeRevealPlayer?.name ?? '—'}</span> і натисни на
               картку, щоб перевернути.
@@ -107,9 +107,7 @@ export function ImposterScreen() {
               'w-full rounded-3xl border border-(--ui-border) p-8 text-center transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform',
               isFlipped
                 ? revealIsImposter
-                  ? isDark
-                    ? 'bg-rose-500/12 border-rose-400/25 text-rose-100'
-                    : 'bg-rose-100 border-rose-300 text-rose-900'
+                  ? 'bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] text-(--ui-fg)'
                   : 'bg-(--ui-card)'
                 : 'bg-(--ui-surface) hover:bg-(--ui-surface-hover)',
               !canReveal ? 'opacity-60' : '',
@@ -157,7 +155,7 @@ export function ImposterScreen() {
     return (
       <div className="animate-page-in px-4 py-6">
         <div className="mx-auto w-full max-w-lg space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-(--ui-surface) p-4">
+          <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-sm opacity-70">Імпостер — обговорення</div>
@@ -184,7 +182,7 @@ export function ImposterScreen() {
     return (
       <div className="animate-page-in px-4 py-6">
         <div className="mx-auto w-full max-w-lg space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-(--ui-surface) p-4">
+          <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4">
             <div className="text-sm opacity-70">Імпостер — результати</div>
             <div className="mt-3 space-y-2">
               <div className="text-sm opacity-70">Секретне слово було</div>
@@ -208,7 +206,7 @@ export function ImposterScreen() {
   // Fallback for desync/loading
   return (
     <div className="animate-page-in px-4 py-6">
-      <div className="mx-auto w-full max-w-lg rounded-2xl border border-white/10 bg-(--ui-surface) p-4">
+      <div className="mx-auto w-full max-w-lg rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4">
         <div className="text-sm opacity-70">Імпостер</div>
         <div className="mt-2 text-lg font-semibold">Завантаження…</div>
       </div>

@@ -119,8 +119,8 @@ export const PlayingScreen = () => {
       activeTeam && typeof (activeTeam as any).colorHex === 'string' && (activeTeam as any).colorHex
         ? (activeTeam as any).colorHex
         : type === 'correct'
-          ? '#10b981'
-          : '#ef4444';
+          ? 'var(--ui-success)'
+          : 'var(--ui-danger)';
 
     setWordExit(type === 'correct' ? 'right' : 'left');
     if (type === 'correct') haptic(HAPTIC.correct);
@@ -183,7 +183,7 @@ export const PlayingScreen = () => {
       {/* Progress Bar Header */}
       <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-5 z-20">
         {timeUp && canUseClassicButtons && !isQuizMode && (
-          <p className="text-center text-champagne-gold text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
+          <p className="text-center text-(--ui-accent) text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
             {t.finishWord}
           </p>
         )}
@@ -191,8 +191,8 @@ export const PlayingScreen = () => {
           <div
             className={`h-full rounded-full transition-[width,background-color,box-shadow] duration-300 ease-linear ${
               dangerBar
-                ? 'bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.55)]'
-                : `${currentTheme.progressBar} shadow-[0_0_14px_rgba(243,229,171,0.35)]`
+                ? 'bg-(--ui-danger) shadow-[0_0_14px_color-mix(in_srgb,var(--ui-danger)_55%,transparent)]'
+                : `${currentTheme.progressBar} shadow-[0_0_14px_color-mix(in_srgb,var(--ui-accent)_35%,transparent)]`
             }`}
             style={{ width: `${roundTime > 0 ? (timeLeft / roundTime) * 100 : 0}%` }}
           />
@@ -200,7 +200,7 @@ export const PlayingScreen = () => {
 
         <div className="flex justify-between items-center w-full">
           <div
-            className={`text-champagne-gold font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-red-500 animate-pulse' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}
+            className={`text-(--ui-accent) font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-(--ui-danger) animate-pulse' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}
           >
             {formatTime(timeLeft)}
           </div>
@@ -213,7 +213,7 @@ export const PlayingScreen = () => {
             }}
             className="w-10 h-10 flex items-center justify-center rounded-full active:bg-(--ui-surface-hover) transition-colors"
           >
-            <span className="material-symbols-outlined text-champagne-gold text-2xl">
+            <span className="material-symbols-outlined text-(--ui-accent) text-2xl">
               {isPaused ? 'play_arrow' : 'pause'}
             </span>
           </button>

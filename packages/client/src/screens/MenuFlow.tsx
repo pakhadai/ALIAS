@@ -196,7 +196,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-100 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
     >
       <div
         className={`relative w-full h-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
@@ -304,7 +304,6 @@ export const MenuScreen = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
-  const [storeThemes, setStoreThemes] = useState<ThemeItem[]>([]);
   const t = TRANSLATIONS[settings.general.language];
 
   // After sign-in inside the modal → close it and go to ProfileScreen
@@ -315,24 +314,12 @@ export const MenuScreen = () => {
     }
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    fetchStore()
-      .then((data) => setStoreThemes(data.themes))
-      .catch(() => {});
-  }, []);
-
   const handleProfileClick = () => {
     if (isAuthenticated) {
       setGameState(GameState.PROFILE);
     } else {
       setShowProfile(true);
     }
-  };
-
-  const themeSlug = (id: string) => id.toLowerCase().replace(/_/g, '-');
-  const isThemeOwned = (themeId: AppTheme) => {
-    const theme = THEME_CONFIG[themeId];
-    return theme.isFree || storeThemes.find((t) => t.slug === themeSlug(themeId))?.owned === true;
   };
 
   const toggleLanguage = () => {
@@ -397,7 +384,7 @@ export const MenuScreen = () => {
         )}
         <button
           onClick={toggleLanguage}
-          className={`w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-current rounded-full transition-all active:scale-90 ml-2 ${currentTheme.isDark ? 'text-white/40 border-white/10' : 'text-slate-900/40 border-slate-900/10'}`}
+          className="w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-(--ui-border) text-(--ui-fg-muted) rounded-full transition-all active:scale-90 ml-2 hover:text-(--ui-fg)"
         >
           {settings.general.language}
         </button>
@@ -408,9 +395,9 @@ export const MenuScreen = () => {
           <Logo theme={currentTheme} />
 
           {connectionError && (
-            <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-shake">
-              <AlertCircle className="text-red-500" size={20} />
-              <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">
+            <div className="mt-8 p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake">
+              <AlertCircle className="text-(--ui-danger)" size={20} />
+              <p className="text-[10px] uppercase tracking-widest text-(--ui-danger) font-bold">
                 Server Error: {connectionError}
               </p>
             </div>
@@ -428,7 +415,7 @@ export const MenuScreen = () => {
 
             <button
               onClick={() => setGameState(GameState.JOIN_INPUT)}
-              className={`w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] ${currentTheme.isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}
+              className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)"
             >
               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
                 {t.joinGame}
@@ -441,7 +428,7 @@ export const MenuScreen = () => {
             className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-6 pt-4"
             style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
           >
-            <div className={`h-px w-12 ${currentTheme.isDark ? 'bg-white/5' : 'bg-slate-900/5'}`} />
+            <div className="h-px w-12 bg-(--ui-border)" />
             <button onClick={startOfflineGame} className="inline-flex items-center gap-2 group h-6">
               <WifiOff
                 size={14}
@@ -470,34 +457,34 @@ export const MenuScreen = () => {
       />
       {showFullscreenHint && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-black/60"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)]"
           onClick={() => setShowFullscreenHint(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="fullscreen-hint-title"
         >
           <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-[#1C1C1E] rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
+            className="w-full max-w-sm md:max-w-md mx-auto bg-(--ui-card) border border-(--ui-border) rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
               <p
                 id="fullscreen-hint-title"
-                className="text-white/90 text-sm font-sans font-semibold tracking-wide pr-4"
+                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
               >
                 {t.fullscreenUnavailableTitle}
               </p>
               <button
                 type="button"
                 onClick={() => setShowFullscreenHint(false)}
-                className="text-white/40 hover:text-white/70 p-1 shrink-0"
+                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
                 aria-label={t.close}
               >
                 <X size={18} />
               </button>
             </div>
-            <p className="text-white/60 text-sm leading-relaxed font-sans mb-6">
+            <p className="text-(--ui-fg-muted) text-sm leading-relaxed font-sans mb-6">
               {t.fullscreenUnavailableBody}
             </p>
             <button
@@ -515,8 +502,6 @@ export const MenuScreen = () => {
       <AppSettingsModal
         isOpen={showAppSettings}
         onClose={() => setShowAppSettings(false)}
-        isThemeOwned={isThemeOwned}
-        onGoStore={() => setGameState(GameState.STORE)}
       />
     </div>
   );
@@ -572,14 +557,18 @@ export const EnterNameScreen = () => {
           value={name}
           onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
           placeholder={t.namePlaceholder}
-          className={`w-full ${currentTheme.isDark ? 'bg-white/5 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-6 py-4 focus:outline-none focus:border-champagne-gold transition-all font-sans font-bold text-center text-sm`}
+          className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) rounded-2xl px-6 py-4 focus:outline-none focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
         />
         <div className="grid grid-cols-4 gap-4">
           {AVATARS.slice(0, 12).map((a) => (
             <button
               key={a}
               onClick={() => setAvatar(a)}
-              className={`text-3xl p-3 rounded-2xl transition-all ${avatar === a ? 'bg-champagne-gold/20 scale-110 shadow-lg' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
+              className={`text-3xl p-3 rounded-2xl transition-all ${
+                avatar === a
+                  ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                  : 'hover:bg-(--ui-surface) opacity-50 hover:opacity-100'
+              }`}
             >
               {a}
             </button>
@@ -652,7 +641,7 @@ export const JoinInputScreen = () => {
             value={code}
             onChange={handleInputChange}
             placeholder="00000"
-            className={`w-full bg-transparent border-b ${currentTheme.isDark ? 'border-white/10 text-white' : 'border-slate-300 text-slate-900'} text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-champagne-gold transition-all pb-8`}
+            className="w-full bg-transparent border-b border-(--ui-border) text-(--ui-fg) text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-(--ui-accent) transition-all pb-8"
           />
         </div>
 
@@ -824,7 +813,7 @@ export const ProfileScreen = () => {
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="w-full text-center text-red-500 font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
+            className="w-full text-center text-(--ui-danger) font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
           >
             {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'ВИЙТИ З АКАУНТУ'}
           </button>
@@ -880,15 +869,12 @@ export const ProfileSettingsScreen = () => {
     setSaving(false);
   };
 
-  const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
-    isDark
-      ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:border-[#D4AF6A]'
-      : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'
-  }`;
+  const inputCls =
+    'w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)';
 
   return (
     <div
-      className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}
+      className="flex flex-col min-h-screen items-center bg-(--ui-bg)"
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
@@ -918,7 +904,7 @@ export const ProfileSettingsScreen = () => {
           {/* Avatar picker */}
           <div className="space-y-2">
             <p
-              className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
             >
               Виберіть аватарку
             </p>
@@ -929,15 +915,17 @@ export const ProfileSettingsScreen = () => {
                   onClick={() => setSelectedAvatar(idx)}
                   className={`relative flex items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${
                     selectedAvatar === idx
-                      ? 'ring-2 ring-[#D4AF6A] scale-105'
+                      ? 'ring-2 ring-(--ui-accent) scale-105'
                       : 'opacity-70 hover:opacity-100'
                   }`}
-                  style={{ background: av.bg }}
+                  style={{
+                    background: `color-mix(in_srgb, var(--ui-accent) ${av.mix}%, var(--ui-bg))`,
+                  }}
                 >
                   <span className="text-xl">{av.emoji}</span>
                   {selectedAvatar === idx && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#D4AF6A] rounded-full flex items-center justify-center">
-                      <Check size={7} className="text-black" />
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-(--ui-accent) rounded-full flex items-center justify-center">
+                      <Check size={7} className="text-(--ui-accent-contrast)" />
                     </div>
                   )}
                 </button>
@@ -948,7 +936,7 @@ export const ProfileSettingsScreen = () => {
           {/* Display name */}
           <div className="space-y-2">
             <label
-              className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
             >
               Ім'я в грі
             </label>
@@ -958,23 +946,23 @@ export const ProfileSettingsScreen = () => {
               placeholder="Твоє ім'я..."
               className={inputCls}
             />
-            <p className={`text-[10px] ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
+            <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
               {name.length}/20
             </p>
           </div>
 
           {/* Account info */}
           <div
-            className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5 space-y-3`}
+            className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-3"
           >
             <p
-              className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+              className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
             >
               Акаунт
             </p>
             {email && (
               <div className="flex justify-between items-center">
-                <span className={`text-[12px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                <span className="text-[12px] text-(--ui-fg-muted)">
                   Email
                 </span>
                 <span className={`text-[12px] font-medium ${currentTheme.textMain}`}>{email}</span>
@@ -982,7 +970,7 @@ export const ProfileSettingsScreen = () => {
             )}
             {provider && (
               <div className="flex justify-between items-center">
-                <span className={`text-[12px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                <span className="text-[12px] text-(--ui-fg-muted)">
                   Провайдер
                 </span>
                 <ProviderBadge provider={provider} />
@@ -993,29 +981,29 @@ export const ProfileSettingsScreen = () => {
           {/* Push notifications + Install app */}
           {(pushSupported || canInstall) && (
             <div
-              className={`rounded-2xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100'} p-5 space-y-4`}
+              className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-4"
             >
               <p
-                className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+                className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
               >
                 Сповіщення і застосунок
               </p>
 
               {pushSupported && (
                 <div className="flex justify-between items-center">
-                  <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                  <span className="text-[12px] text-(--ui-fg)">
                     Push-сповіщення
                   </span>
                   {pushPermission === 'granted' ? (
                     <button
                       onClick={pushUnsubscribe}
                       disabled={pushLoading}
-                      className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all ${isDark ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} disabled:opacity-50`}
+                      className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all bg-[color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-(--ui-success) hover:bg-[color-mix(in_srgb,var(--ui-success)_24%,transparent)] disabled:opacity-50"
                     >
                       {pushLoading ? '...' : '✓ Увімкнено'}
                     </button>
                   ) : pushPermission === 'denied' ? (
-                    <span className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                    <span className="text-[11px] text-(--ui-fg-muted)">
                       Заблоковано
                     </span>
                   ) : (
@@ -1034,11 +1022,11 @@ export const ProfileSettingsScreen = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`material-symbols-outlined text-[18px]! ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+                      className="material-symbols-outlined text-[18px]! text-(--ui-fg-muted) opacity-80"
                     >
                       install_mobile
                     </span>
-                    <span className={`text-[12px] ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                    <span className="text-[12px] text-(--ui-fg)">
                       На головний екран
                     </span>
                   </div>
@@ -1138,15 +1126,13 @@ export const LobbySettingsScreen = () => {
   const chip = (active: boolean) =>
     `flex-1 py-3 rounded-xl border font-sans font-bold text-[11px] transition-all ${
       active
-        ? 'bg-[#D4AF6A] text-black border-[#D4AF6A]'
-        : isDark
-          ? 'bg-white/5 border-white/5 text-white/40 hover:text-white/70'
-          : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700'
+        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
     }`;
 
   return (
     <div
-      className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}
+      className="flex flex-col min-h-screen items-center bg-(--ui-bg)"
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center justify-between px-6 md:px-8 pt-12 pb-4">
@@ -1163,7 +1149,7 @@ export const LobbySettingsScreen = () => {
           </div>
           <button
             onClick={handleReset}
-            className={`text-[9px] uppercase tracking-widest font-bold transition-opacity ${isDark ? 'text-white/25 hover:text-white/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-(--ui-fg-muted) hover:text-(--ui-fg)"
           >
             Скинути
           </button>
@@ -1198,7 +1184,7 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Час раунду</p>
-                <span className="text-[#D4AF6A] font-bold text-sm">
+                <span className="text-(--ui-accent) font-bold text-sm">
                   {'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 0}с
                 </span>
               </div>
@@ -1209,7 +1195,7 @@ export const LobbySettingsScreen = () => {
                 step="10"
                 value={'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 0}
                 onChange={(e) => setMode({ classicRoundTime: parseInt(e.target.value) } as any)}
-                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
+                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
               <div
@@ -1224,7 +1210,7 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Рахунок для перемоги</p>
-                <span className="text-[#D4AF6A] font-bold text-sm">{local.general.scoreToWin}</span>
+                <span className="text-(--ui-accent) font-bold text-sm">{local.general.scoreToWin}</span>
               </div>
               <input
                 type="range"
@@ -1233,7 +1219,7 @@ export const LobbySettingsScreen = () => {
                 step="5"
                 value={local.general.scoreToWin}
                 onChange={(e) => setGeneral('scoreToWin', parseInt(e.target.value) as any)}
-                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-[#D4AF6A]"
+                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
             </div>
@@ -1242,16 +1228,16 @@ export const LobbySettingsScreen = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className={sectionLabel}>Штраф за пропуск</p>
-                <p className={`text-[11px] mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                <p className="text-[11px] mt-0.5 text-(--ui-fg-muted) opacity-70">
                   −1 очко за пропущене слово
                 </p>
               </div>
               <button
                 onClick={() => setGeneral('skipPenalty', !local.general.skipPenalty as any)}
-                className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-[#D4AF6A]' : isDark ? 'bg-white/10' : 'bg-slate-200'}`}
+                className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'}`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${local.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
+                  className={`absolute top-0.5 w-6 h-6 bg-(--ui-fg) rounded-full shadow transition-all ${local.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
                 />
               </button>
             </div>
@@ -1272,10 +1258,8 @@ export const LobbySettingsScreen = () => {
                       }}
                       className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
                         active
-                          ? 'border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#D4AF6A]'
-                          : isDark
-                            ? 'border-white/5 bg-white/5 text-white/30'
-                            : 'border-slate-200 bg-white text-slate-400'
+                          ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)'
+                          : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted)'
                       }`}
                     >
                       {cat}
@@ -1338,11 +1322,11 @@ export const MyWordPacksScreen = () => {
   const [createError, setCreateError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const cardBg = isDark ? 'bg-[#1E1E1E] border border-white/5' : 'bg-white border border-slate-200';
+  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
   const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
     isDark
-      ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:border-[#D4AF6A]'
-      : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]'
+      ? 'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)'
+      : 'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)'
   }`;
 
   useEffect(() => {
@@ -1418,16 +1402,14 @@ export const MyWordPacksScreen = () => {
   };
 
   const STATUS_COLORS: Record<string, string> = {
-    approved: 'text-[#85C9AE]',
-    pending: 'text-[#D4AF6A]',
-    rejected: 'text-red-400',
+    approved: 'text-(--ui-success)',
+    pending: 'text-(--ui-accent)',
+    rejected: 'text-(--ui-danger)',
   };
 
   if (checkingAccess)
     return (
-      <div
-        className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} items-center justify-center`}
-      >
+      <div className="flex flex-col h-screen bg-(--ui-bg) items-center justify-center">
         <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
       </div>
     );
@@ -1436,7 +1418,7 @@ export const MyWordPacksScreen = () => {
   if (!isUnlocked)
     return (
       <div
-        className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}
+        className="flex flex-col h-screen items-center bg-(--ui-bg)"
       >
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
@@ -1453,7 +1435,7 @@ export const MyWordPacksScreen = () => {
 
           <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
             <div
-              className={`w-20 h-20 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'} flex items-center justify-center`}
+              className="w-20 h-20 rounded-full bg-(--ui-surface) flex items-center justify-center border border-(--ui-border)"
             >
               <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
             </div>
@@ -1462,7 +1444,7 @@ export const MyWordPacksScreen = () => {
                 Функція заблокована
               </h3>
               <p
-                className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-slate-500'}`}
+                className="text-sm leading-relaxed text-(--ui-fg-muted) opacity-80"
               >
                 Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}
                 Розблокуйте цю функцію в Магазині.
@@ -1484,7 +1466,7 @@ export const MyWordPacksScreen = () => {
   if (view === 'create')
     return (
       <div
-        className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}
+        className="flex flex-col h-screen items-center bg-(--ui-bg)"
       >
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
@@ -1508,7 +1490,7 @@ export const MyWordPacksScreen = () => {
           >
             <div className="space-y-2">
               <label
-                className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+                className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
               >
                 Назва паку
               </label>
@@ -1523,7 +1505,7 @@ export const MyWordPacksScreen = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label
-                  className={`text-[9px] font-bold tracking-[0.25em] uppercase ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+                  className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80"
                 >
                   Слова
                   <span
@@ -1534,7 +1516,7 @@ export const MyWordPacksScreen = () => {
                 </label>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-white/40 hover:text-white/70' : 'text-slate-400 hover:text-slate-600'} transition-colors`}
+                  className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors"
                 >
                   <Upload size={12} />
                   Завантажити .txt/.csv
@@ -1554,12 +1536,12 @@ export const MyWordPacksScreen = () => {
                 rows={10}
                 className={`${inputCls} resize-none`}
               />
-              <p className={`text-[11px] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+              <p className="text-[11px] text-(--ui-fg-muted) opacity-70">
                 {wordsText.split(/[\n,;]+/).filter((w) => w.trim()).length} слів
               </p>
             </div>
 
-            {createError && <p className="text-red-400 text-[12px] font-sans">{createError}</p>}
+            {createError && <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>}
           </div>
 
           <div
@@ -1580,23 +1562,23 @@ export const MyWordPacksScreen = () => {
 
   // List view
   return (
-    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+    <div className="flex flex-col h-screen bg-(--ui-bg)">
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col overflow-hidden">
         <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-white/20 rounded-full" />
+          <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
         </div>
         <div className="px-6 md:px-8 pb-5 pt-2 flex justify-between items-center">
           <div>
             <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>
               Мої паки слів
             </h2>
-            <p className={`text-[10px] mt-1 ${isDark ? 'text-white/25' : 'text-slate-400'}`}>
+            <p className="text-[10px] mt-1 text-(--ui-fg-muted) opacity-70">
               {decks.length} / {MAX_USER_PACKS}
             </p>
           </div>
           <button
             onClick={() => setGameState(GameState.PROFILE)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'}`}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
           >
             <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
           </button>
@@ -1643,7 +1625,7 @@ export const MyWordPacksScreen = () => {
                   <button
                     onClick={() => handleDelete(deck.id)}
                     disabled={deleting === deck.id}
-                    className={`ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 ${isDark ? 'text-red-400/50 hover:text-red-400 hover:bg-red-400/10' : 'text-red-400/50 hover:text-red-500 hover:bg-red-50'}`}
+                    className="ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 text-(--ui-danger) opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
                   >
                     {deleting === deck.id ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -1665,11 +1647,7 @@ export const MyWordPacksScreen = () => {
                   {deck.accessCode && (
                     <button
                       onClick={() => handleCopyCode(deck.accessCode!)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all ${
-                        isDark
-                          ? 'bg-white/5 hover:bg-white/10 text-white/60'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                      }`}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg-muted) border border-(--ui-border)"
                     >
                       <Copy size={11} />
                       {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}
@@ -1723,10 +1701,9 @@ export const MyDecksScreen = () => {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  const cardBg = isDark ? 'bg-[#1E1E1E] border border-white/5' : 'bg-white border border-slate-200';
-  const inputCls = isDark
-    ? 'bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:border-[#D4AF6A]'
-    : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF6A]';
+  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
+  const inputCls =
+    'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)';
 
   useEffect(() => {
     fetchMyDecks()
@@ -1781,14 +1758,14 @@ export const MyDecksScreen = () => {
   };
 
   const STATUS_COLORS: Record<string, string> = {
-    approved: 'text-[#85C9AE]',
-    pending: 'text-[#D4AF6A]',
-    rejected: 'text-red-400',
+    approved: 'text-(--ui-success)',
+    pending: 'text-(--ui-accent)',
+    rejected: 'text-(--ui-danger)',
   };
 
   if (view === 'create') {
     return (
-      <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+      <div className="flex flex-col h-screen bg-(--ui-bg)">
         {/* Header */}
         <header className="flex items-center px-6 pt-12 pb-4 gap-3">
           <button
@@ -1846,7 +1823,7 @@ export const MyDecksScreen = () => {
             </p>
           </div>
 
-          {createError && <p className="text-red-400 text-[12px] font-sans">{createError}</p>}
+          {createError && <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>}
         </div>
 
         <div
@@ -1866,10 +1843,10 @@ export const MyDecksScreen = () => {
   }
 
   return (
-    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}>
+    <div className="flex flex-col h-screen bg-(--ui-bg)">
       {/* Drag handle */}
       <div className="flex justify-center pt-4 pb-2">
-        <div className="w-12 h-1 bg-white/20 rounded-full" />
+        <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
       </div>
 
       {/* Header */}
@@ -1877,7 +1854,7 @@ export const MyDecksScreen = () => {
         <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>My Decks</h2>
         <button
           onClick={() => setGameState(GameState.PROFILE)}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'}`}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
         >
           <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
         </button>
@@ -1923,7 +1900,7 @@ export const MyDecksScreen = () => {
                 <button
                   onClick={() => handleDelete(deck.id)}
                   disabled={deleting === deck.id}
-                  className={`ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 ${isDark ? 'text-red-400/50 hover:text-red-400 hover:bg-red-400/10' : 'text-red-400/50 hover:text-red-500 hover:bg-red-50'}`}
+                  className="ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 text-(--ui-danger) opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
                 >
                   {deleting === deck.id ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -1943,11 +1920,7 @@ export const MyDecksScreen = () => {
                 {deck.accessCode && (
                   <button
                     onClick={() => handleCopyCode(deck.accessCode!)}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all ${
-                      isDark
-                        ? 'bg-white/5 hover:bg-white/10 text-white/60'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                    }`}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg-muted) border border-(--ui-border)"
                   >
                     <Copy size={11} />
                     {copied === deck.accessCode ? 'Copied!' : deck.accessCode}
@@ -2074,35 +2047,34 @@ export const StoreScreen = () => {
 
   const TAB_LABELS: Record<StoreTab, string> = { packs: 'Набори слів', themes: 'Теми' };
 
-  const cardBg = isDark ? 'bg-[#1E1E1E] border border-white/5' : 'bg-white border border-slate-200';
-  const divider = isDark ? 'border-[#333]' : 'border-slate-200';
-  const chipBase = isDark
-    ? 'border border-white/10 text-white/50'
-    : 'border border-slate-200 text-slate-500';
-  const chipActive = 'border-[#D4AF6A] text-[#D4AF6A] bg-[#D4AF6A]/8';
+  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
+  const divider = 'border-(--ui-border)';
+  const chipBase = 'border border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)';
+  const chipActive =
+    'border-(--ui-accent) text-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)]';
 
   return (
-    <div
-      className={`flex flex-col h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'} transition-colors duration-500`}
-    >
+    <div className="flex flex-col h-screen items-center bg-(--ui-bg) transition-colors duration-500">
       <div className="max-w-2xl w-full flex-1 flex flex-col overflow-hidden">
         {/* Purchase result banner */}
         {banner && (
           <div
-            className={`mx-6 md:mx-8 mt-3 mb-0 px-4 py-3 rounded-2xl flex items-center gap-3 transition-all shrink-0 ${
+            className={`mx-6 md:mx-8 mt-3 mb-0 px-4 py-3 rounded-2xl flex items-center gap-3 transition-all shrink-0 border ${
               banner === 'success'
-                ? 'bg-emerald-500/15 border border-emerald-500/30'
-                : 'bg-red-500/10 border border-red-500/20'
+                ? 'bg-[color-mix(in_srgb,var(--ui-success)_16%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]'
+                : 'bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)]'
             }`}
           >
             <span className="text-xl">{banner === 'success' ? '🎉' : '↩️'}</span>
             <div className="flex-1">
               <p
-                className={`text-[12px] font-bold ${banner === 'success' ? 'text-emerald-400' : 'text-red-400'}`}
+                className={`text-[12px] font-bold ${
+                  banner === 'success' ? 'text-(--ui-success)' : 'text-(--ui-danger)'
+                }`}
               >
                 {banner === 'success' ? 'Оплату прийнято!' : 'Оплату скасовано'}
               </p>
-              <p className={`text-[10px] ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+              <p className="text-[10px] text-(--ui-fg-muted) opacity-80">
                 {banner === 'success' ? 'Ваша покупка активована' : 'Спробуй ще раз'}
               </p>
             </div>
@@ -2114,13 +2086,13 @@ export const StoreScreen = () => {
 
         {/* Drag handle + Header */}
         <div className="flex justify-center pt-4 pb-2 shrink-0">
-          <div className="w-12 h-1 bg-white/20 rounded-full" />
+          <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
         </div>
         <div className="px-6 md:px-8 pb-4 pt-2 flex justify-between items-center shrink-0">
           <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Магазин</h2>
           <button
             onClick={() => setGameState(GameState.PROFILE)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'}`}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
           >
             <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
           </button>
@@ -2135,8 +2107,8 @@ export const StoreScreen = () => {
                 onClick={() => setTab(t)}
                 className={`pb-3 border-b-2 font-sans font-bold text-[11px] tracking-wider uppercase transition-colors ${
                   tab === t
-                    ? 'border-[#D4AF6A] text-[#D4AF6A]'
-                    : `border-transparent ${isDark ? 'text-white/40' : 'text-slate-400'}`
+                    ? 'border-(--ui-accent) text-(--ui-accent)'
+                    : 'border-transparent text-(--ui-fg-muted)'
                 }`}
               >
                 {TAB_LABELS[t]}
@@ -2182,16 +2154,14 @@ export const StoreScreen = () => {
                   key={pack.id}
                   className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-150 ease-out active:scale-95 ${
                     pack.owned
-                      ? isDark
-                        ? 'bg-[#1A2A1A] border-[#A1E3C8]/30'
-                        : 'bg-emerald-50 border-emerald-200'
-                      : 'border-[#D4AF6A]/40 bg-linear-to-br from-[#D4AF6A]/8 to-transparent'
+                      ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]'
+                      : 'border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)] to-transparent'
                   }`}
                 >
                   <div className="flex justify-between items-start z-10">
                     <div className="max-w-[60%]">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[#D4AF6A]/50 text-[#D4AF6A]">
+                        <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] text-(--ui-accent)">
                           ФУНКЦІЯ
                         </span>
                       </div>
@@ -2205,9 +2175,9 @@ export const StoreScreen = () => {
                       </p>
                     </div>
                     {pack.owned ? (
-                      <div className="flex items-center gap-1 px-3 py-1 rounded-full shrink-0 bg-[#A1E3C8]/10 border border-[#A1E3C8]/20">
-                        <Check size={11} className="text-[#85C9AE]" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-[#85C9AE]">
+                      <div className="flex items-center gap-1 px-3 py-1 rounded-full shrink-0 bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]">
+                        <Check size={11} className="text-(--ui-success)" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-(--ui-success)">
                           Куплено
                         </span>
                       </div>
@@ -2215,7 +2185,7 @@ export const StoreScreen = () => {
                       <button
                         onClick={() => handleBuy('wordPack', pack.id)}
                         disabled={acting === pack.id}
-                        className="shrink-0 bg-[#D4AF6A] hover:bg-[#C9A55A] active:scale-95 text-black px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                        className="shrink-0 bg-(--ui-accent) hover:brightness-110 active:scale-95 text-(--ui-accent-contrast) px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
                       >
                         {acting === pack.id ? (
                           <Loader2 size={12} className="animate-spin inline" />
@@ -2239,18 +2209,18 @@ export const StoreScreen = () => {
                     className={`${cardBg} rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden transition-all duration-150 ease-out active:scale-95`}
                   >
                     {pack.isFree && (
-                      <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-[#D4AF6A]/5 rounded-full blur-2xl pointer-events-none" />
+                      <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)] rounded-full blur-2xl pointer-events-none" />
                     )}
                     <div className="flex justify-between items-start z-10">
                       <div className="max-w-[60%]">
                         <div className="flex items-center gap-2 mb-2">
                           <span
-                            className={`text-[9px] font-bold border rounded px-1.5 py-0.5 ${isDark ? 'border-white/20 text-white/60' : 'border-slate-300 text-slate-500'}`}
+                            className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)"
                           >
                             {LANG_LABEL[pack.language] ?? pack.language}
                           </span>
                           <span
-                            className={`text-[9px] font-bold border rounded px-1.5 py-0.5 ${isDark ? 'border-white/20 text-white/60' : 'border-slate-300 text-slate-500'}`}
+                            className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)"
                           >
                             {pack.difficulty.toUpperCase()}
                           </span>
@@ -2268,18 +2238,20 @@ export const StoreScreen = () => {
                       {/* Status badge / action button */}
                       {pack.owned ? (
                         <div
-                          className={`flex items-center gap-1 px-3 py-1 rounded-full shrink-0 ${
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full shrink-0 border ${
                             pack.isFree
-                              ? 'bg-[#D4AF6A]/10 border border-[#D4AF6A]/20'
-                              : 'bg-[#A1E3C8]/10 border border-[#A1E3C8]/20'
+                              ? 'bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)]'
+                              : 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]'
                           }`}
                         >
                           <Check
                             size={11}
-                            className={pack.isFree ? 'text-[#D4AF6A]' : 'text-[#85C9AE]'}
+                            className={pack.isFree ? 'text-(--ui-accent)' : 'text-(--ui-success)'}
                           />
                           <span
-                            className={`text-[10px] font-bold uppercase tracking-wide ${pack.isFree ? 'text-[#D4AF6A]' : 'text-[#85C9AE]'}`}
+                            className={`text-[10px] font-bold uppercase tracking-wide ${
+                              pack.isFree ? 'text-(--ui-accent)' : 'text-(--ui-success)'
+                            }`}
                           >
                             {pack.isFree ? 'Додано' : 'Куплено'}
                           </span>
@@ -2288,11 +2260,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleAddFree('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className={`shrink-0 px-5 py-2 rounded-full font-bold text-[12px] transition-all active:scale-95 disabled:opacity-50 ${
-                            isDark
-                              ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
-                              : 'bg-slate-800 hover:bg-slate-700 text-white'
-                          }`}
+                          className="shrink-0 px-5 py-2 rounded-full font-bold text-[12px] transition-all active:scale-95 disabled:opacity-50 bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg) border border-(--ui-border)"
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -2304,7 +2272,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleBuy('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className="shrink-0 bg-white hover:bg-gray-100 active:scale-95 transition-all text-black px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                          className="shrink-0 bg-(--ui-accent) hover:brightness-110 active:scale-95 transition-all text-(--ui-accent-contrast) px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -2371,13 +2339,13 @@ export const StoreScreen = () => {
                             {theme.name}
                           </p>
                           {theme.isFree && !isBuiltIn && (
-                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[#D4AF6A]/15 text-[#D4AF6A] border border-[#D4AF6A]/30">
+                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] text-(--ui-accent) border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
                               FREE
                             </span>
                           )}
                           {isBuiltIn && (
                             <span
-                              className={`text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded ${isDark ? 'bg-white/5 text-white/30 border border-white/10' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}
+                              className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border)"
                             >
                               БАЗОВА
                             </span>
@@ -2393,26 +2361,20 @@ export const StoreScreen = () => {
                       <div className="px-3 flex items-center shrink-0">
                         {alreadyOwned ? (
                           <div
-                            className={`flex items-center gap-1 px-3 py-1 rounded-full ${
+                            className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
                               isBuiltIn
-                                ? isDark
-                                  ? 'bg-white/5 border border-white/10'
-                                  : 'bg-slate-100 border border-slate-200'
-                                : 'bg-[#A1E3C8]/10 border border-[#A1E3C8]/20'
+                                ? 'bg-(--ui-surface) border-(--ui-border)'
+                                : 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]'
                             }`}
                           >
                             <Check
                               size={10}
-                              className={
-                                isBuiltIn
-                                  ? isDark
-                                    ? 'text-white/30'
-                                    : 'text-slate-400'
-                                  : 'text-[#85C9AE]'
-                              }
+                              className={isBuiltIn ? 'text-(--ui-fg-muted)' : 'text-(--ui-success)'}
                             />
                             <span
-                              className={`text-[9px] font-bold uppercase tracking-wide ${isBuiltIn ? (isDark ? 'text-white/30' : 'text-slate-400') : 'text-[#85C9AE]'}`}
+                              className={`text-[9px] font-bold uppercase tracking-wide ${
+                                isBuiltIn ? 'text-(--ui-fg-muted)' : 'text-(--ui-success)'
+                              }`}
                             >
                               {isBuiltIn ? 'Стандарт' : 'Отримано'}
                             </span>
@@ -2421,11 +2383,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleAddFree('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className={`px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 ${
-                              isDark
-                                ? 'bg-[#D4AF6A]/15 hover:bg-[#D4AF6A]/25 text-[#D4AF6A] border border-[#D4AF6A]/30'
-                                : 'bg-slate-800 hover:bg-slate-700 text-white'
-                            }`}
+                            className="px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-accent) border border-(--ui-border)"
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -2437,7 +2395,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleBuy('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className="bg-white hover:bg-gray-100 active:scale-95 text-black px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
+                            className="bg-(--ui-accent) hover:brightness-110 active:scale-95 text-(--ui-accent-contrast) px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -2457,13 +2415,13 @@ export const StoreScreen = () => {
 
         {/* Bottom bar */}
         <div
-          className={`px-6 md:px-8 py-4 border-t ${divider} ${isDark ? 'bg-[#121212]/95' : 'bg-slate-50/95'} backdrop-blur shrink-0`}
+          className="px-6 md:px-8 py-4 border-t border-(--ui-border) bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0"
           style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
         >
           <div className="flex items-center justify-center gap-1.5">
-            <ShieldCheck size={12} className={isDark ? 'text-white/20' : 'text-slate-400'} />
+            <ShieldCheck size={12} className="text-(--ui-fg-muted) opacity-70" />
             <p
-              className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-400'}`}
+              className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-70"
             >
               Оплата через Stripe · Безпечно
             </p>
@@ -2527,9 +2485,7 @@ export const PlayerStatsScreen = () => {
   };
 
   return (
-    <div
-      className={`flex flex-col min-h-screen items-center ${isDark ? 'bg-[#121212]' : 'bg-slate-50'}`}
-    >
+    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
           <button
@@ -2548,16 +2504,12 @@ export const PlayerStatsScreen = () => {
           {rows.map((row) => (
             <div
               key={row.label}
-              className={`flex items-center justify-between px-5 py-4 rounded-2xl ${
-                isDark
-                  ? 'bg-white/5 border border-white/5'
-                  : 'bg-white border border-slate-100 shadow-sm'
-              }`}
+              className="flex items-center justify-between px-5 py-4 rounded-2xl bg-(--ui-card) border border-(--ui-border)"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{row.icon}</span>
                 <span
-                  className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-slate-600'}`}
+                  className="text-[13px] font-medium text-(--ui-fg)"
                 >
                   {row.label}
                 </span>
@@ -2570,7 +2522,7 @@ export const PlayerStatsScreen = () => {
 
           {stats.lastPlayed && (
             <p
-              className={`text-center text-[11px] pt-4 ${isDark ? 'text-white/20' : 'text-slate-400'}`}
+              className="text-center text-[11px] pt-4 text-(--ui-fg-muted) opacity-70"
             >
               {t.statsLastPlayedPrefix} {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
             </p>
@@ -2578,14 +2530,10 @@ export const PlayerStatsScreen = () => {
 
           {!isAuthenticated && (
             <div
-              className={`mt-6 rounded-2xl border px-5 py-4 ${
-                isDark
-                  ? 'bg-indigo-500/10 border-indigo-400/25'
-                  : 'bg-indigo-50 border-indigo-200/80'
-              }`}
+              className="mt-6 rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]"
             >
               <p
-                className={`text-[13px] leading-relaxed font-sans ${isDark ? 'text-white/85' : 'text-slate-700'}`}
+                className="text-[13px] leading-relaxed font-sans text-(--ui-fg)"
               >
                 {t.statsGuestBannerBody}
               </p>

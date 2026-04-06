@@ -16,8 +16,6 @@ export const PwaUpdateBanner: React.FC = () => {
 
   if (!visible) return null;
 
-  const isLight = currentTheme.id === 'PREMIUM_LIGHT';
-
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-100 flex justify-center px-4 pointer-events-none"
@@ -25,28 +23,20 @@ export const PwaUpdateBanner: React.FC = () => {
       role="status"
     >
       <div
-        className={`pointer-events-auto flex max-w-lg w-full items-center gap-3 rounded-2xl px-4 py-3 shadow-2xl border ${
-          isLight
-            ? 'bg-white border-slate-200 text-slate-800'
-            : 'bg-slate-900/95 border-white/10 text-white'
-        } backdrop-blur-md`}
+        className="pointer-events-auto flex max-w-lg w-full items-center gap-3 rounded-2xl px-4 py-3 shadow-2xl border border-(--ui-border) bg-(--ui-card) text-(--ui-fg) backdrop-blur-md"
       >
         <p className="flex-1 text-xs font-sans leading-snug">{t.pwaUpdateMessage}</p>
         <button
           type="button"
           onClick={() => applyPwaUpdate()}
-          className={`shrink-0 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-widest ${
-            isLight ? 'bg-slate-900 text-white' : currentTheme.button
-          }`}
+          className="shrink-0 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 transition-opacity"
         >
           {t.pwaUpdateReload}
         </button>
         <button
           type="button"
           onClick={() => setVisible(false)}
-          className={`shrink-0 text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 ${
-            isLight ? 'text-slate-600' : 'text-white/70'
-          }`}
+          className="shrink-0 text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 text-(--ui-fg-muted)"
           aria-label={t.close}
         >
           {t.pwaUpdateLater}

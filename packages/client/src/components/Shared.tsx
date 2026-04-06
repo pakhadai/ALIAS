@@ -65,9 +65,13 @@ export const Confetti: React.FC = () => {
         id: i,
         left: `${Math.random() * 100}%`,
         top: `${Math.random() * 100}%`,
-        color: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#f3e5ab'][
-          Math.floor(Math.random() * 5)
-        ],
+        color: [
+          'var(--ui-accent)',
+          'var(--ui-success)',
+          'var(--ui-warning)',
+          'var(--ui-danger)',
+          'color-mix(in_srgb,var(--ui-fg)_70%,transparent)',
+        ][Math.floor(Math.random() * 5)],
         delay: `${Math.random() * 2}s`,
         duration: `${3 + Math.random() * 2}s`,
       })),
@@ -115,7 +119,7 @@ export const ToastNotification: React.FC<{
     <div className="fixed top-0 left-0 right-0 z-1000 flex justify-center pt-4 px-4 pointer-events-none">
       <div className="pointer-events-auto w-[90%] max-w-sm animate-slide-up">
         <div
-          className={`${styles[type]} border rounded-4xl px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-white/5`}
+          className={`${styles[type]} border rounded-4xl px-8 py-5 flex items-center gap-4 backdrop-blur-2xl ring-1 ring-(--ui-border)`}
         >
           <div className="flex-1 text-center">
             <p className="text-[10px] font-sans font-bold uppercase tracking-[0.4em] leading-relaxed">
@@ -180,7 +184,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-600 flex items-center justify-center p-8 bg-black/80 backdrop-blur-lg ${
+      className={`fixed inset-0 z-600 flex items-center justify-center p-8 bg-[color-mix(in_srgb,var(--ui-bg)_70%,transparent)] backdrop-blur-lg ${
         isClosing ? 'animate-fade-out' : 'animate-fade-in'
       }`}
     >
@@ -281,19 +285,13 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ theme }) => {
-  const isLight = theme.id === AppTheme.PREMIUM_LIGHT;
   return (
     <div className="flex flex-col items-center w-full">
-      <h1
-        className="font-serif font-normal text-7xl tracking-[0.25em] text-white text-center mb-4 animate-pop-in"
-        style={{ color: isLight ? 'rgb(15, 23, 42)' : 'white' }}
-      >
+      <h1 className={`font-serif font-normal text-7xl tracking-[0.25em] text-center mb-4 animate-pop-in ${theme.textMain}`}>
         ALIAS
       </h1>
-      <div className={`h-px w-16 ${isLight ? 'bg-slate-900/10' : 'bg-white/10'} mb-6`}></div>
-      <p
-        className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${isLight ? 'text-slate-900' : 'text-white'}`}
-      >
+      <div className="h-px w-16 bg-(--ui-border) mb-6"></div>
+      <p className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${theme.textSecondary}`}>
         Premium Collection
       </p>
     </div>

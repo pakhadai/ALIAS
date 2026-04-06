@@ -52,27 +52,27 @@ function PackCard({
   buying: string | null;
 }) {
   return (
-    <div className="bg-[color:var(--ui-surface)] border border-[color:var(--ui-border)] rounded-2xl p-4 flex flex-col gap-3">
+    <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-lg">{LANG_FLAGS[pack.language] || '🌐'}</span>
-            <span className="font-semibold text-[color:var(--ui-fg)] text-sm">
+            <span className="font-semibold text-(--ui-fg) text-sm">
               {pack.name.replace(/🇺🇦|🇬🇧|🇩🇪/g, '').trim()}
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-[color:var(--ui-fg-muted)] uppercase tracking-wider">
+            <span className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider">
               {pack.category}
             </span>
-            <span className="text-slate-600">·</span>
-            <span className="text-[10px] text-[color:var(--ui-fg-muted)]">
+            <span className="text-(--ui-fg-muted)">·</span>
+            <span className="text-[10px] text-(--ui-fg-muted)">
               {pack.wordCount} слів
             </span>
             {pack.difficulty !== 'mixed' && (
               <>
-                <span className="text-slate-600">·</span>
-                <span className="text-[10px] text-[color:var(--ui-fg-muted)]">
+                <span className="text-(--ui-fg-muted)">·</span>
+                <span className="text-[10px] text-(--ui-fg-muted)">
                   {DIFF_LABELS[pack.difficulty] || pack.difficulty}
                 </span>
               </>
@@ -81,7 +81,7 @@ function PackCard({
         </div>
 
         {pack.owned ? (
-          <div className="flex items-center gap-1.5 text-emerald-400 shrink-0">
+          <div className="flex items-center gap-1.5 text-(--ui-success) shrink-0">
             <Check size={14} />
             <span className="text-[10px] font-semibold uppercase tracking-wider">Куплено</span>
           </div>
@@ -89,7 +89,7 @@ function PackCard({
           <button
             onClick={() => onBuy(pack.id)}
             disabled={buying !== null}
-            className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
+            className="shrink-0 h-8 px-3 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
           >
             {buying === pack.id ? <Loader2 size={12} className="animate-spin" /> : null}
             {pack.isFree ? 'Отримати' : formatPrice(pack.price)}
@@ -113,14 +113,14 @@ function ThemeCard({
   const cfg = theme.config as Record<string, string>;
   return (
     <div
-      className={`border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-[color:var(--ui-surface)]'}`}
+      className={`border border-(--ui-border) rounded-2xl p-4 flex items-center justify-between gap-3 ${cfg.bg || 'bg-(--ui-surface)'}`}
     >
       <div>
-        <p className="font-semibold text-[color:var(--ui-fg)] text-sm">{theme.name}</p>
-        <p className="text-[10px] text-[color:var(--ui-fg-muted)] mt-0.5">Тема оформлення</p>
+        <p className="font-semibold text-(--ui-fg) text-sm">{theme.name}</p>
+        <p className="text-[10px] text-(--ui-fg-muted) mt-0.5">Тема оформлення</p>
       </div>
       {theme.owned ? (
-        <div className="flex items-center gap-1.5 text-emerald-400 shrink-0">
+        <div className="flex items-center gap-1.5 text-(--ui-success) shrink-0">
           <Check size={14} />
           <span className="text-[10px] font-semibold uppercase tracking-wider">Активна</span>
         </div>
@@ -128,7 +128,7 @@ function ThemeCard({
         <button
           onClick={() => onBuy(theme.id)}
           disabled={buying !== null}
-          className="shrink-0 h-8 px-3 rounded-full bg-[color:var(--ui-surface)] hover:bg-[color:var(--ui-surface-hover)] text-[color:var(--ui-fg)] text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
+          className="shrink-0 h-8 px-3 rounded-full bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
         >
           {buying === theme.id ? (
             <Loader2 size={12} className="animate-spin" />
@@ -153,16 +153,16 @@ function SoundCard({
   buying: string | null;
 }) {
   return (
-    <div className="bg-[color:var(--ui-surface)] border border-[color:var(--ui-border)] rounded-2xl p-4 flex items-center justify-between gap-3">
+    <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-4 flex items-center justify-between gap-3">
       <div>
         <div className="flex items-center gap-2">
-          <Music size={14} className="text-indigo-400" />
-          <span className="font-semibold text-[color:var(--ui-fg)] text-sm">{sp.name}</span>
+          <Music size={14} className="text-(--ui-accent)" />
+          <span className="font-semibold text-(--ui-fg) text-sm">{sp.name}</span>
         </div>
-        <p className="text-[10px] text-[color:var(--ui-fg-muted)] mt-0.5">Звуковий пресет</p>
+        <p className="text-[10px] text-(--ui-fg-muted) mt-0.5">Звуковий пресет</p>
       </div>
       {sp.owned ? (
-        <div className="flex items-center gap-1.5 text-emerald-400 shrink-0">
+        <div className="flex items-center gap-1.5 text-(--ui-success) shrink-0">
           <Check size={14} />
           <span className="text-[10px] font-semibold uppercase tracking-wider">Куплено</span>
         </div>
@@ -170,7 +170,7 @@ function SoundCard({
         <button
           onClick={() => onBuy(sp.id)}
           disabled={buying !== null}
-          className="shrink-0 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
+          className="shrink-0 h-8 px-3 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center gap-1.5 transition-all duration-150 ease-out active:scale-95"
         >
           {buying === sp.id ? <Loader2 size={12} className="animate-spin" /> : null}
           {sp.isFree ? 'Отримати' : formatPrice(sp.price)}
@@ -253,39 +253,37 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col bg-[color:var(--ui-bg)] overflow-hidden">
+      <div className="fixed inset-0 z-50 flex flex-col bg-(--ui-bg) overflow-hidden">
         {/* Header */}
-        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-[color:var(--ui-border)]">
+        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-(--ui-border)">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-500/20">
-                <ShoppingBag size={20} className="text-indigo-400" />
+              <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
+                <ShoppingBag size={20} className="text-(--ui-accent)" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-[color:var(--ui-fg)]">Магазин</h1>
-                <p className="text-xs text-[color:var(--ui-fg-muted)]">
-                  Додаткові словники, теми та звуки
-                </p>
+                <h1 className="text-lg font-bold text-(--ui-fg)">Магазин</h1>
+                <p className="text-xs text-(--ui-fg-muted)">Додаткові словники, теми та звуки</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)] hover:bg-[color:var(--ui-surface-hover)] transition-all duration-150 ease-out active:scale-95"
+              className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all duration-150 ease-out active:scale-95"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-4 p-1 bg-[color:var(--ui-surface)] rounded-xl">
+          <div className="flex gap-1 mt-4 p-1 bg-(--ui-surface) border border-(--ui-border) rounded-xl">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold tracking-wider transition-all duration-150 ease-out active:scale-95 ${
                   activeTab === tab.id
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-[color:var(--ui-fg-muted)] hover:text-[color:var(--ui-fg)]'
+                    ? 'bg-(--ui-accent) text-(--ui-accent-contrast)'
+                    : 'text-(--ui-fg-muted) hover:text-(--ui-fg)'
                 }`}
               >
                 {tab.icon}
@@ -299,14 +297,14 @@ export function StoreModal({ onClose }: StoreModalProps) {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {loading ? (
             <div className="flex items-center justify-center h-40">
-              <Loader2 size={24} className="animate-spin text-indigo-400" />
+              <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
             </div>
           ) : !storeData ? (
-            <div className="text-center py-12 text-slate-400">
+            <div className="text-center py-12 text-(--ui-fg-muted)">
               <p className="text-sm">Не вдалося завантажити магазин</p>
               <button
                 onClick={loadStore}
-                className="mt-3 text-indigo-400 text-xs hover:text-indigo-300"
+                className="mt-3 text-(--ui-accent) text-xs hover:opacity-85"
               >
                 Спробувати знову
               </button>
@@ -320,7 +318,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
                     <div key={lang}>
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-base">{LANG_FLAGS[lang] || '🌐'}</span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                        <span className="text-xs font-bold uppercase tracking-widest text-(--ui-fg-muted)">
                           {lang === 'UA' ? 'Українська' : lang === 'EN' ? 'English' : 'Deutsch'}
                         </span>
                       </div>
@@ -371,8 +369,8 @@ export function StoreModal({ onClose }: StoreModalProps) {
         </div>
 
         {/* Footer note */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-[color:var(--ui-border)]">
-          <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px]">
+        <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
+          <div className="flex items-center justify-center gap-1.5 text-(--ui-fg-muted) text-[10px]">
             <ExternalLink size={10} />
             <span>Оплата через Stripe — безпечно та швидко</span>
           </div>

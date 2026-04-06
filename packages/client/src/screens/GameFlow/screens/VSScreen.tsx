@@ -36,7 +36,7 @@ export const VSScreen = () => {
                 className="animate-vs-scale-in opacity-0"
                 style={{ animationDelay: `${el.delay}s`, animationFillMode: 'forwards' }}
               >
-                <span className="text-4xl font-black tracking-widest text-champagne-gold drop-shadow-lg">
+                <span className="text-4xl font-black tracking-widest text-(--ui-accent) drop-shadow-lg">
                   {t.vs}
                 </span>
               </div>

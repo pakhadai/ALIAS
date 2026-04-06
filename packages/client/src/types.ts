@@ -40,6 +40,15 @@ export interface ThemeConfig {
   isFree: boolean;
   isDark: boolean;
   preview: { bg: string; accent: string };
+  /** Core semantic token colors used to set `--ui-*` variables. */
+  tokens?: {
+    bg: string;
+    surface: string;
+    border: string;
+    accent: string;
+    fgMuted: string;
+    fg: string;
+  };
   fonts: { heading: string; body: string };
   borderRadius: string;
   bg: string;

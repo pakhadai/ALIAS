@@ -12,7 +12,7 @@ export function ConnectionStatusBanner() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[200] flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold uppercase tracking-wider bg-amber-500/95 text-black shadow-lg"
+      className="fixed top-0 left-0 right-0 z-200 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold uppercase tracking-wider bg-[color-mix(in_srgb,var(--ui-warning)_85%,transparent)] text-(--ui-accent-contrast) shadow-lg border-b border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]"
       role="status"
       aria-live="polite"
     >

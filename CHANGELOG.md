@@ -33,6 +33,7 @@
 ## [2026-04-06] — UI polish: WCAG contrast, unified theme palette, Imposter mode card, admin/profile readability
 
 ### Changed
+- **Release:** bump app/package versions to **0.5.0** (client/server/shared + client `version.json`).
 - **Client UI tokens:** додано семантичні токени `--ui-accent`, `--ui-accent-contrast`, `--ui-danger`, `--ui-success`, `--ui-warning` + `color-scheme` (theme-aware). Файл: `packages/client/src/context/GameContext.tsx`.
 - **Global base:** `body` тепер використовує `--ui-bg`/`--ui-fg` як дефолтний фон/текст (менше “невидимих” елементів через спадкування). Файл: `packages/client/src/styles.css`.
 - **Base components:** `Button` primary тепер theme-aware через `--ui-accent`; тости/модалки/фолбеки приведено до `--ui-*`. Файли: `packages/client/src/components/Button.tsx`, `packages/client/src/components/Shared.tsx`.

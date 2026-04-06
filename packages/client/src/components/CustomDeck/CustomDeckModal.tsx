@@ -46,7 +46,7 @@ function CopyButton({ text }: { text: string }) {
       className="p-1.5 rounded-lg hover:bg-(--ui-surface-hover) transition-all duration-200 ease-out active:scale-95"
     >
       {copied ? (
-        <Check size={13} className="text-emerald-400" />
+        <Check size={13} className="text-(--ui-success)" />
       ) : (
         <Copy size={13} className="text-(--ui-fg-muted)" />
       )}
@@ -102,7 +102,7 @@ function DeckItem({
           <span className="text-[10px] text-(--ui-fg-muted)">{deck.wordCount} слів</span>
           <span className="text-(--ui-fg-muted)/60">·</span>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-indigo-400 font-mono font-bold">
+            <span className="text-[10px] text-(--ui-accent) font-mono font-bold">
               {deck.accessCode}
             </span>
             <CopyButton text={deck.accessCode} />
@@ -111,7 +111,7 @@ function DeckItem({
             <button
               type="button"
               onClick={handleShareLink}
-              className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors"
+              className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-colors"
             >
               <Share2 size={12} className="shrink-0" />
               {t.shareDeckLink}
@@ -120,16 +120,16 @@ function DeckItem({
           {deck.status !== 'approved' && (
             <>
               <span className="text-(--ui-fg-muted)/60">·</span>
-              <span className="text-[10px] text-amber-400">{deck.status}</span>
+              <span className="text-[10px] text-(--ui-warning)">{deck.status}</span>
             </>
           )}
         </div>
       </div>
-      {onSelect && <ChevronRight size={16} className="text-slate-500 shrink-0" />}
+      {onSelect && <ChevronRight size={16} className="text-(--ui-fg-muted) shrink-0" />}
       <button
         onClick={handleDelete}
         disabled={deleting}
-        className="shrink-0 p-2 rounded-xl hover:bg-red-500/20 text-(--ui-fg-muted) hover:text-red-400 transition-all duration-200 ease-out active:scale-95 disabled:opacity-50"
+        className="shrink-0 p-2 rounded-xl hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] text-(--ui-fg-muted) hover:text-(--ui-danger) transition-all duration-200 ease-out active:scale-95 disabled:opacity-50"
       >
         {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
       </button>
@@ -182,35 +182,40 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+        <label className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider block mb-1.5">
           Назва словника
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
           placeholder="Наприклад: Корпоративна вечірка"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
+          className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-3 py-2.5 text-(--ui-fg) text-sm focus:outline-none focus:border-(--ui-accent)"
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
-          Слова <span className="text-slate-500 normal-case">(через кому або з нового рядка)</span>
+        <label className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider block mb-1.5">
+          Слова{' '}
+          <span className="text-(--ui-fg-muted) normal-case opacity-70">
+            (через кому або з нового рядка)
+          </span>
         </label>
         <textarea
           value={wordsText}
           onChange={(e) => setWordsText(e.target.value)}
           placeholder={'ноутбук, мишка, клавіатура\nмонітор\nпроцесор'}
           rows={8}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 resize-none font-mono"
+          className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-3 py-2.5 text-(--ui-fg) text-sm focus:outline-none focus:border-(--ui-accent) resize-none font-mono"
         />
-        <p className="text-[10px] text-slate-500 mt-1">{wordCount} слів</p>
+        <p className="text-[10px] text-(--ui-fg-muted) mt-1">{wordCount} слів</p>
       </div>
 
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+        <label className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider block mb-1.5">
           Код доступу{' '}
-          <span className="text-slate-500 normal-case">(необов'язково, авто-генерується)</span>
+          <span className="text-(--ui-fg-muted) normal-case opacity-70">
+            (необов'язково, авто-генерується)
+          </span>
         </label>
         <input
           value={accessCode}
@@ -223,16 +228,16 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
             )
           }
           placeholder="ABCD12"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono uppercase"
+          className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-3 py-2.5 text-(--ui-fg) text-sm focus:outline-none focus:border-(--ui-accent) font-mono uppercase"
         />
       </div>
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
+      {error && <p className="text-(--ui-danger) text-xs">{error}</p>}
 
       <button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full h-11 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+        className="w-full h-11 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
         Створити словник
@@ -281,21 +286,23 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+        <label className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider block mb-1.5">
           Назва словника
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
           placeholder="Назва"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
+          className="w-full bg-(--ui-surface) border border-(--ui-border) rounded-xl px-3 py-2.5 text-(--ui-fg) text-sm focus:outline-none focus:border-(--ui-accent)"
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1.5">
+        <label className="text-[10px] text-(--ui-fg-muted) uppercase tracking-wider block mb-1.5">
           Файл{' '}
-          <span className="text-slate-500 normal-case">(.csv або .txt, одне слово на рядок)</span>
+          <span className="text-(--ui-fg-muted) opacity-70 normal-case">
+            (.csv або .txt, одне слово на рядок)
+          </span>
         </label>
         <input
           ref={fileRef}
@@ -306,24 +313,26 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
         />
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full h-24 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-indigo-500/50 hover:bg-white/3 transition-colors"
+          className="w-full h-24 border-2 border-dashed border-(--ui-border) rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] hover:bg-(--ui-surface) transition-colors"
         >
-          <FileText size={20} className="text-slate-500" />
-          <span className="text-xs text-slate-400">
+          <FileText size={20} className="text-(--ui-fg-muted)" />
+          <span className="text-xs text-(--ui-fg-muted)">
             {file ? file.name : 'Натисніть для вибору файлу'}
           </span>
           {file && (
-            <span className="text-[10px] text-slate-500">{(file.size / 1024).toFixed(1)} KB</span>
+            <span className="text-[10px] text-(--ui-fg-muted) opacity-70">
+              {(file.size / 1024).toFixed(1)} KB
+            </span>
           )}
         </button>
       </div>
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
+      {error && <p className="text-(--ui-danger) text-xs">{error}</p>}
 
       <button
         onClick={handleSubmit}
         disabled={saving || !file}
-        className="w-full h-11 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+        className="w-full h-11 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
         Завантажити
@@ -387,35 +396,35 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   return (
     <>
       <div
-        className={`fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden ${
+        className={`fixed inset-0 z-50 flex flex-col bg-(--ui-bg) overflow-hidden ${
           isClosing ? 'animate-fade-out' : 'animate-fade-in'
         }`}
       >
         {/* Header */}
-        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-white/10">
+        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-(--ui-border)">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {view !== 'list' ? (
                 <button
                   onClick={() => setView('list')}
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
                 >
                   <X size={18} />
                 </button>
               ) : (
-                <div className="p-2 rounded-xl bg-indigo-500/20">
-                  <FileText size={20} className="text-indigo-400" />
+                <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
+                  <FileText size={20} className="text-(--ui-accent)" />
                 </div>
               )}
               <div>
-                <h1 className="text-lg font-bold text-white">
+                <h1 className="text-lg font-bold text-(--ui-fg)">
                   {view === 'list'
                     ? 'Мої словники'
                     : view === 'create'
                       ? 'Новий словник'
                       : 'Завантажити файл'}
                 </h1>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-(--ui-fg-muted)">
                   {view === 'list'
                     ? 'Власні набори слів для гри'
                     : 'Введіть слова для свого словника'}
@@ -424,7 +433,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
             </div>
             <button
               onClick={requestClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
             >
               <X size={20} />
             </button>
@@ -441,7 +450,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('create');
                 }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider transition-colors"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
               >
                 <Plus size={13} />
                 Створити
@@ -454,7 +463,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('upload');
                 }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-bold tracking-wider transition-colors"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border) text-(--ui-fg) text-xs font-bold tracking-wider transition-colors"
               >
                 <Upload size={13} />
                 CSV / TXT
@@ -469,23 +478,25 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
             <>
               {!isAuthenticated ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3">
-                  <p className="text-slate-400 text-sm">Увійдіть, щоб створювати словники</p>
+                  <p className="text-(--ui-fg-muted) text-sm">Увійдіть, щоб створювати словники</p>
                   <button
                     onClick={() => setShowLogin(true)}
-                    className="h-9 px-5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold tracking-wider transition-colors"
+                    className="h-9 px-5 rounded-full bg-(--ui-accent) hover:opacity-95 text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
                   >
                     Увійти
                   </button>
                 </div>
               ) : loading ? (
                 <div className="flex items-center justify-center h-40">
-                  <Loader2 size={24} className="animate-spin text-indigo-400" />
+                  <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
                 </div>
               ) : decks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-2">
-                  <FileText size={32} className="text-slate-700" />
-                  <p className="text-slate-500 text-sm">Ще немає словників</p>
-                  <p className="text-slate-600 text-xs">Натисніть «Створити» щоб додати перший</p>
+                  <FileText size={32} className="text-(--ui-fg-muted) opacity-50" />
+                  <p className="text-(--ui-fg-muted) text-sm">Ще немає словників</p>
+                  <p className="text-(--ui-fg-muted) opacity-70 text-xs">
+                    Натисніть «Створити» щоб додати перший
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2 px-4 py-4">
@@ -507,8 +518,8 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 px-5 py-3 border-t border-white/5">
-          <p className="text-center text-slate-500 text-[10px]">
+        <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
+          <p className="text-center text-(--ui-fg-muted) text-[10px]">
             Поділіться кодом доступу з іншими гравцями
           </p>
         </div>

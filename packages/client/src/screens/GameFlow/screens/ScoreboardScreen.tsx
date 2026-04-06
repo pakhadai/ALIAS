@@ -7,7 +7,6 @@ export const ScoreboardScreen = () => {
   const t = TRANSLATIONS[settings.general.language];
   const [mounted, setMounted] = useState(false);
 
-  const isDark = currentTheme.isDark;
   const bgColor = currentTheme.bg;
   const textColor = 'text-(--ui-fg)';
   const subTextColor = 'text-(--ui-fg-muted)';
@@ -35,9 +34,9 @@ export const ScoreboardScreen = () => {
         {/* Visual Ladder/Path */}
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
           <div className="absolute top-4 flex flex-col items-center z-0 opacity-40">
-            <span className="material-symbols-outlined mb-1 text-champagne-dark">emoji_events</span>
+            <span className="material-symbols-outlined mb-1 text-(--ui-accent)">emoji_events</span>
             <span
-              className={`text-[10px] tracking-[0.2em] uppercase font-bold text-champagne-dark`}
+              className="text-[10px] tracking-[0.2em] uppercase font-bold text-(--ui-accent)"
             >
               {t.goal}: {goal}
             </span>
@@ -65,10 +64,11 @@ export const ScoreboardScreen = () => {
                   style={{ top: `${topPos}%` }}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white transition-transform hover:scale-110`}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-(--ui-border) transition-transform hover:scale-110"
                     style={{
-                      backgroundColor: team.colorHex || '#888',
-                      color: isDark ? 'white' : 'black',
+                      backgroundColor:
+                        team.colorHex || 'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
+                      color: 'var(--ui-accent-contrast)',
                     }}
                   >
                     {idx + 1}
@@ -97,13 +97,8 @@ export const ScoreboardScreen = () => {
                 key={team.id}
                 className={`rounded-2xl p-4 shadow-card flex items-center justify-between border animate-slide-up transition-all`}
                 style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)',
-                  borderColor:
-                    team.score >= goal
-                      ? 'var(--ui-accent)'
-                      : isDark
-                        ? 'rgba(255,255,255,0.10)'
-                        : 'transparent',
+                  backgroundColor: 'color-mix(in_srgb,var(--ui-card)_85%,transparent)',
+                  borderColor: team.score >= goal ? 'var(--ui-accent)' : 'var(--ui-border)',
                   animationDelay: `${idx * 100}ms`,
                 }}
               >
@@ -111,8 +106,9 @@ export const ScoreboardScreen = () => {
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm"
                     style={{
-                      backgroundColor: team.colorHex || '#888',
-                      color: isDark ? 'white' : 'black',
+                      backgroundColor:
+                        team.colorHex || 'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
+                      color: 'var(--ui-accent-contrast)',
                     }}
                   >
                     {teamIndex}
@@ -125,7 +121,8 @@ export const ScoreboardScreen = () => {
                       <div
                         className="h-full rounded-full transition-all duration-1000 ease-out"
                         style={{
-                          backgroundColor: team.colorHex || '#888',
+                          backgroundColor:
+                            team.colorHex || 'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
                           width: mounted ? `${progress}%` : '0%',
                         }}
                       ></div>
@@ -146,12 +143,12 @@ export const ScoreboardScreen = () => {
 
       {/* Footer Button */}
       <footer
-        className={`fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t ${isDark ? 'from-premium-dark-bg via-premium-dark-bg' : 'from-silver-bg via-silver-bg'} to-transparent`}
+        className="fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent"
       >
         {isHost ? (
           <button
             onClick={handleNextRound}
-            className={`w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group ${isDark ? 'bg-champagne-gold text-premium-black' : 'bg-premium-black text-white'}`}
+            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95"
           >
             <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
               {t.nextRound}

@@ -17,10 +17,10 @@ interface ProfileModalProps {
 function AvatarIcon() {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-      <circle cx="22" cy="16" r="8" fill="rgba(255,255,255,0.2)" />
+      <circle cx="22" cy="16" r="8" fill="color-mix(in_srgb,var(--ui-fg)_18%,transparent)" />
       <path
         d="M4 40c0-9.94 8.06-18 18-18s18 8.06 18 18"
-        stroke="rgba(255,255,255,0.2)"
+        stroke="color-mix(in_srgb,var(--ui-fg)_18%,transparent)"
         strokeWidth="2"
         fill="none"
         strokeLinecap="round"
@@ -34,7 +34,6 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const { currentTheme, settings, setGameState } = useGame();
   const t = TRANSLATIONS[settings.general.language];
   const { get: getStats } = usePlayerStats();
-  const isDark = currentTheme.isDark;
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -148,12 +147,12 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
-        ${visible ? 'bg-black/60' : 'bg-black/0'}`}
+        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)]' : 'bg-transparent'}`}
       onClick={handleClose}
     >
       <div
         className={`relative w-full max-w-sm mx-auto rounded-t-4xl overflow-hidden
-          ${isDark ? 'bg-(--ui-card)' : 'bg-(--ui-card)'} transition-transform duration-300 ease-out
+          bg-(--ui-card) border border-(--ui-border) transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0' : 'translate-y-full'}`}
         style={{ maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
@@ -162,7 +161,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         <div className="flex justify-end px-5 pt-5 pb-0">
           <button
             onClick={handleClose}
-            className={`${isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-400 hover:text-slate-700'} transition-colors p-1`}
+            className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1"
           >
             <X size={18} />
           </button>
@@ -175,7 +174,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               <AvatarDisplay avatarId={avatarId} size={76} />
             ) : (
               <div
-                className={`w-[76px] h-[76px] rounded-full ${isDark ? 'bg-(--ui-surface)' : 'bg-(--ui-surface)'} flex items-center justify-center`}
+                className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center"
               >
                 <AvatarIcon />
               </div>
@@ -190,18 +189,18 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           </div>
 
           <h2
-            className={`mt-6 font-serif text-[22px] tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}
+            className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)"
           >
             {displayName}
           </h2>
           <p
-            className={`text-[13px] font-sans mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-500'}`}
+            className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)"
           >
             {displaySub}
           </p>
 
           <p
-            className={`text-center text-[11px] font-sans leading-relaxed mt-3 px-1 ${isDark ? 'text-white/55' : 'text-slate-600'}`}
+            className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)"
           >
             {statsSummaryLine}
           </p>
@@ -209,7 +208,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           <button
             type="button"
             onClick={openDetailedStats}
-            className={`mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] ${isDark ? 'text-(--ui-accent) hover:opacity-85' : 'text-(--ui-accent) hover:opacity-85'} transition-colors`}
+            className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:opacity-85 transition-colors"
           >
             {t.profileStatsDetailLink}
           </button>
@@ -220,9 +219,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               onClick={openAdminPanel}
               className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
                 ${
-                  isDark
-                    ? 'bg-indigo-600/90 text-white hover:bg-indigo-500 border border-indigo-400/35'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-700/20'
+                  'bg-(--ui-accent) text-(--ui-accent-contrast) hover:opacity-95 border border-(--ui-border)'
                 }`}
             >
               <Shield size={16} strokeWidth={2.25} aria-hidden />
@@ -246,13 +243,13 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         )}
 
         {/* Divider */}
-        <div className={`h-px ${isDark ? 'bg-white/[0.07]' : 'bg-slate-200'}`} />
+        <div className="h-px bg-(--ui-border)" />
 
         {/* Purchases / benefits */}
         <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
             <p
-              className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+              className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)"
             >
               {purchases.length > 0 ? 'My Purchases' : 'What you get'}
             </p>
@@ -263,16 +260,16 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               {purchases.map((p) => (
                 <div
                   key={p.id}
-                  className={`flex items-center justify-between py-3 border-b ${isDark ? 'border-white/5' : 'border-slate-100'}`}
+                  className="flex items-center justify-between py-3 border-b border-(--ui-border)"
                 >
                   <div>
                     <p
-                      className={`text-[14px] font-sans ${isDark ? 'text-white/80' : 'text-slate-800'}`}
+                      className="text-[14px] font-sans text-(--ui-fg)"
                     >
                       {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
                     </p>
                     <p
-                      className={`text-[11px] font-sans mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+                      className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)"
                     >
                       {new Date(p.createdAt).toLocaleDateString()}
                     </p>
@@ -286,19 +283,19 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               {benefits.map((item, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-4 py-3 border-b last:border-0 ${isDark ? 'border-white/5' : 'border-slate-100'}`}
+                  className="flex items-center gap-4 py-3 border-b border-(--ui-border) last:border-0"
                 >
                   <span className="text-[20px] leading-none w-7 text-center shrink-0">
                     {item.emoji}
                   </span>
                   <div className="min-w-0">
                     <p
-                      className={`text-[13px] font-sans font-medium ${isDark ? 'text-white/80' : 'text-slate-800'}`}
+                      className="text-[13px] font-sans font-medium text-(--ui-fg)"
                     >
                       {item.label}
                     </p>
                     <p
-                      className={`text-[11px] font-sans mt-0.5 leading-snug ${isDark ? 'text-white/30' : 'text-slate-400'}`}
+                      className="text-[11px] font-sans mt-0.5 leading-snug text-(--ui-fg-muted)"
                     >
                       {item.sub}
                     </p>
@@ -310,7 +307,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         </div>
 
         {/* Divider */}
-        <div className={`h-px ${isDark ? 'bg-white/[0.07]' : 'bg-slate-200'}`} />
+        <div className="h-px bg-(--ui-border)" />
 
         {/* Logout */}
         <div
@@ -320,7 +317,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="w-full text-center text-[#FF3B30] font-sans font-bold
+            className="w-full text-center text-(--ui-danger) font-sans font-bold
               text-[10px] tracking-[0.3em] uppercase py-3
               hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
           >

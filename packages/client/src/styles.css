@@ -38,7 +38,7 @@ body {
   font-family: var(--font-body) !important;
 }
 
-/* Admin page accent color */
+/* Legacy admin accent — keep in sync with theme tokens */
 :root {
-  --admin-gold: #d4af6a;
+  --admin-gold: var(--ui-accent);
 }

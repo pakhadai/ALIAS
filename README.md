@@ -614,7 +614,7 @@ interface GameSyncState {
 
 | Поле | Тип | Опис |
 |------|-----|------|
-| `slug` | String | e.g. `premium-dark`, `cyberpunk` |
+| `slug` | String | e.g. `deep-steel`, `midnight-navy` |
 | `config` | Json | Кольори, шрифти, CSS-класи |
 | `isFree` / `price` | | Безкоштовність / ціна |
 
@@ -716,19 +716,20 @@ switch (gameState) {
 
 ### Теми та локалізація
 
-**5 тем** (визначені в `constants.ts` → `THEME_CONFIG`):
+**4 теми** (визначені в `constants.ts` → `THEME_CONFIG`):
 
 | Тема | Опис | Free |
 |------|------|------|
-| `PREMIUM_DARK` | Елегантна темна з золотими акцентами | Так |
-| `PREMIUM_LIGHT` | Чиста світла з класичним серіфом | Так |
-| `CYBERPUNK` | Темна з індиго та рожевим | Ні (Stripe) |
-| `FOREST` | Глибокий природний стиль | Ні (Stripe) |
-| `SLEEK` | Темна про з гострими кутами | Так |
+| `DEEP_STEEL` | Глибока сталь (default) | Так |
+| `EARTHY_DARK` | Темна “земляна” | Так* |
+| `MIDNIGHT_NAVY` | Нічний navy | Так* |
+| `DARK_RUBY` | Темний ruby | Так* |
 
 Кожна тема визначає: `bg`, `card`, `textMain`, `textSecondary`, `textAccent`, `button`, `fonts`, `borderRadius`, `progressBar`, `iconColor`.
 
 CSS custom properties встановлюються динамічно: `--font-heading`, `--font-body`, `--theme-radius`.
+
+\* Для гостей (неавторизованих) теми, окрім `DEEP_STEEL`, показуються як **locked** і пропонують логін для розблокування (вибір доступний після авторизації).
 
 Додатково клієнт встановлює **семантичні UI-токени** (theme-aware), які варто використовувати в компонентах замість хардкоду `text-white/bg-white`:
 
@@ -957,8 +958,8 @@ Seed створює:
 
 + `feature-custom-packs` — фіча-пакет (не слова, а покупка для розблокування кастомних паків).
 
-### Themes (5 штук)
-`premium-dark` (free), `premium-light` (free), `cyberpunk` ($0.99), `forest` ($0.99), `sleek` (free)
+### Themes (4 штуки)
+`deep-steel` (free, default), `earthy-dark` (login unlock), `midnight-navy` (login unlock), `dark-ruby` (login unlock)
 
 ### SoundPacks (3 штуки)
 `fun` (free), `minimal` (free), `eight-bit` (free)

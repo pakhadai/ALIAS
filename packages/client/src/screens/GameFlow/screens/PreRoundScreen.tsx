@@ -106,7 +106,7 @@ export const PreRoundScreen = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-linear-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] to-transparent pointer-events-none">
         <div className="max-w-sm mx-auto pointer-events-auto">
           <Button
             themeClass={currentTheme.button}

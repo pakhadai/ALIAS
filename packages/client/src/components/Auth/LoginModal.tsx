@@ -36,7 +36,6 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle, loginWithApple } = useAuthContext();
   const { currentTheme, settings } = useGame();
   const t = TRANSLATIONS[settings.general.language];
-  const isDark = currentTheme.isDark;
   const [loading, setLoading] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,48 +79,38 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div
-        className={`relative w-full max-w-sm rounded-2xl ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'} border p-6 shadow-2xl`}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-sm rounded-2xl bg-(--ui-card) border border-(--ui-border) p-6 shadow-2xl">
         {/* Close */}
         <button
           onClick={onClose}
-          className={`absolute top-4 right-4 p-1 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
+          className="absolute top-4 right-4 p-1 rounded-lg transition-colors text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface)"
         >
           <X size={20} />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-xl bg-indigo-500/20">
-            <LogIn size={22} className="text-indigo-400" />
+          <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
+            <LogIn size={22} className="text-(--ui-accent)" />
           </div>
           <div>
-            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              {t.loginTitle}
-            </h2>
-            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              {t.loginSubtitleShopping}
-            </p>
-            <p
-              className={`text-xs mt-1.5 leading-snug ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-            >
+            <h2 className="text-lg font-bold text-(--ui-fg)">{t.loginTitle}</h2>
+            <p className="text-sm text-(--ui-fg-muted)">{t.loginSubtitleShopping}</p>
+            <p className="text-xs mt-1.5 leading-snug text-(--ui-fg-muted)">
               {t.loginSubtitleStats}
             </p>
           </div>
         </div>
 
         {/* Anonymous note */}
-        <p className={`text-xs mb-5 text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          {t.loginAnonymousNote}
-        </p>
+        <p className="text-xs mb-5 text-center text-(--ui-fg-muted)">{t.loginAnonymousNote}</p>
 
         {/* Google */}
         <div className="mb-3">
           {loading === 'google' ? (
             <div
-              className={`flex items-center justify-center gap-2 h-11 rounded-xl ${isDark ? 'bg-white/5 text-slate-400' : 'bg-slate-100 text-slate-500'}`}
+              className="flex items-center justify-center gap-2 h-11 rounded-xl bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg-muted)"
             >
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">{t.loginGoogleLoading}</span>
@@ -145,7 +134,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         <button
           onClick={handleAppleSignIn}
           disabled={loading !== null}
-          className="w-full flex items-center justify-center gap-3 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-3 h-11 rounded-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) font-medium text-sm hover:bg-(--ui-surface-hover) disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading === 'apple' ? (
             <Loader2 size={18} className="animate-spin" />
@@ -158,13 +147,13 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         </button>
 
         {/* Error */}
-        {error && <p className="mt-3 text-xs text-red-400 text-center">{error}</p>}
+        {error && <p className="mt-3 text-xs text-(--ui-danger) text-center">{error}</p>}
 
         {/* Divider */}
-        <div className={`mt-5 pt-4 border-t ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+        <div className="mt-5 pt-4 border-t border-(--ui-border)">
           <button
             onClick={onClose}
-            className={`w-full text-sm transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+            className="w-full text-sm transition-colors text-(--ui-fg-muted) hover:text-(--ui-fg)"
           >
             {t.loginContinueWithout}
           </button>
