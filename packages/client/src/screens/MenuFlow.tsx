@@ -452,15 +452,6 @@ export const MenuScreen = () => {
     }
   };
 
-  const toggleLanguage = () => {
-    setSettings((prev) => {
-      const cur = prev.general.language;
-      const nextLang =
-        cur === Language.UA ? Language.DE : cur === Language.DE ? Language.EN : Language.UA;
-      return { ...prev, general: { ...prev.general, language: nextLang } };
-    });
-  };
-
   const handleFullscreenClick = async () => {
     if (isStandaloneDisplay()) return;
     const result = await toggleFullscreen();
@@ -512,12 +503,6 @@ export const MenuScreen = () => {
             </span>
           </button>
         )}
-        <button
-          onClick={toggleLanguage}
-          className="w-10 h-10 flex items-center justify-center font-sans font-bold text-[9px] tracking-[0.2em] border border-(--ui-border) text-(--ui-fg-muted) rounded-full transition-all active:scale-90 ml-2 hover:text-(--ui-fg)"
-        >
-          {settings.general.language}
-        </button>
       </header>
 
       <div className="max-w-2xl w-full flex-1 flex flex-col items-center mx-auto">
