@@ -637,7 +637,8 @@ export const MenuScreen = () => {
 };
 
 export const EnterNameScreen = () => {
-  const { setGameState, settings, currentTheme, handleJoin, isHost, gameMode, leaveRoom } = useGame();
+  const { setGameState, settings, currentTheme, handleJoin, isHost, gameMode, leaveRoom } =
+    useGame();
   const { authState, profile } = useAuthContext();
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
