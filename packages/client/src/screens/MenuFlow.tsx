@@ -457,14 +457,14 @@ export const MenuScreen = () => {
       />
       {showFullscreenHint && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in"
           onClick={() => setShowFullscreenHint(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="fullscreen-hint-title"
         >
           <div
-            className="w-full max-w-sm md:max-w-md mx-auto bg-(--ui-card) border border-(--ui-border) rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8"
+            className="w-full max-w-sm md:max-w-md mx-auto bg-(--ui-card) border border-(--ui-border) rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8 animate-pop-in"
             style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >

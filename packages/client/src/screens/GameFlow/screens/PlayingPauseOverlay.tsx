@@ -13,7 +13,7 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
   return (
     <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl flex items-center justify-center z-50 animate-fade-in">
       <div
-        className={`${currentTheme.card} border border-(--ui-border) rounded-[3rem] p-16 shadow-2xl text-center`}
+        className={`${currentTheme.card} border border-(--ui-border) rounded-[3rem] p-16 shadow-2xl text-center animate-pop-in`}
       >
         <span className="material-symbols-outlined text-(--ui-accent) text-6xl mb-4 block">
           pause_circle

@@ -31,14 +31,14 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl transition-all"
+        className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl transition-all animate-fade-in"
         onClick={onClose}
         role="dialog"
         aria-modal="true"
         aria-label="App settings"
       >
         <div
-          className={`w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8 ${currentTheme.card}`}
+          className={`w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8 ${currentTheme.card} animate-pop-in`}
           style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
           onClick={(e) => e.stopPropagation()}
         >

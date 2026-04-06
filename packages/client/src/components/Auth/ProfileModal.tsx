@@ -147,13 +147,13 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
-        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl' : 'bg-transparent'}`}
+        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in' : 'bg-transparent'}`}
       onClick={handleClose}
     >
       <div
         className={`relative w-full max-w-sm mx-auto rounded-t-4xl overflow-hidden
           bg-(--ui-card) border border-(--ui-border) transition-transform duration-300 ease-out
-          ${visible ? 'translate-y-0' : 'translate-y-full'}`}
+          ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
         style={{ maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
       >
