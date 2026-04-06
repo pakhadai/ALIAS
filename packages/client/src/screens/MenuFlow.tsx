@@ -73,10 +73,19 @@ type TabId = (typeof TABS)[number];
 const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any) => {
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
+  const [visible, setVisible] = useState(false);
   if (!isOpen && !isClosing) return null;
+
+  useEffect(() => {
+    if (isOpen) {
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isOpen]);
 
   const handleClose = () => {
     setIsClosing(true);
+    setVisible(false);
     setTimeout(() => {
       onClose();
       setIsClosing(false);
@@ -311,13 +320,27 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex ${isGuest ? 'items-end justify-center' : 'items-center justify-center'} bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-100 flex ${isGuest ? 'items-end justify-center' : 'items-center justify-center'} transition-all duration-300 ${
+        isGuest
+          ? visible
+            ? 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-in'
+            : 'bg-transparent'
+          : isClosing
+            ? 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-out'
+            : 'bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl animate-fade-in'
+      }`}
       onClick={handleClose}
       role="presentation"
     >
       <div
-        className={`relative w-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'} ${
-          isGuest ? 'rounded-t-4xl border border-(--ui-border)' : ''
+        className={`relative w-full max-w-md flex flex-col ${currentTheme.card} ${
+          isGuest
+            ? `rounded-t-4xl border border-(--ui-border) transition-transform duration-300 ease-out ${
+                visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'
+              }`
+            : isClosing
+              ? 'animate-pop-out'
+              : 'animate-pop-in'
         }`}
         style={{ maxHeight: isGuest ? '90dvh' : '100dvh' }}
         onClick={(e) => e.stopPropagation()}
