@@ -48,6 +48,20 @@ export interface ThemeConfig {
     accent: string;
     fgMuted: string;
     fg: string;
+    /** Raised surfaces (modals, nav). Falls back to a mix of surface/bg if omitted. */
+    elevated?: string;
+    /** Stronger separators than border. Falls back to `border` if omitted. */
+    divider?: string;
+    /** Hover/focus/glow around primary accent. */
+    accentSoft?: string;
+    /** Secondary accent (e.g. outline buttons, links). */
+    accentAlt?: string;
+    /** Warm premium CTA / highlights. Falls back to `accent` if omitted. */
+    accentWarm?: string;
+    /** Hover state for warm accent. */
+    accentWarmSoft?: string;
+    /** Tertiary text (captions, disabled, placeholders). */
+    fgSubtle?: string;
   };
   fonts: { heading: string; body: string };
   borderRadius: string;

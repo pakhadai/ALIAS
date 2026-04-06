@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'lucide-react';
 import { AppTheme, Language, SoundPreset } from '../../types';
-import { THEME_CONFIG, TRANSLATIONS } from '../../constants';
+import { THEME_CONFIG, TRANSLATIONS, UI_THEME_IDS } from '../../constants';
 import { useGame } from '../../context/GameContext';
 import { getHapticsEnabled, setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
@@ -14,16 +14,12 @@ type Props = {
 export function AppSettingsModal({ isOpen, onClose }: Props) {
   const { settings, currentTheme, setPreferences, showNotification } = useGame();
   const { isAuthenticated } = useAuthContext();
-  const isDark = currentTheme.isDark;
   const [haptics, setHaptics] = useState<boolean>(() => getHapticsEnabled());
   const t = TRANSLATIONS[settings.general.language];
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [visible, setVisible] = useState(false);
 
-  const themes = useMemo(
-    () => [AppTheme.PREMIUM_DARK, AppTheme.CYBERPUNK, AppTheme.FOREST, AppTheme.SLEEK],
-    []
-  );
+  const themes = useMemo(() => UI_THEME_IDS, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -40,7 +36,6 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
   if (!shouldRender) return null;
 
   const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
-  const isGuestSheet = !isAuthenticated;
   const handleClose = () => {
     setVisible(false);
     setTimeout(onClose, 280);
@@ -48,14 +43,13 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col transition-all duration-300
-        ${isGuestSheet ? 'justify-end' : 'justify-end md:justify-center md:items-center'}
+      className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
         ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in' : 'bg-transparent'}`}
       onClick={handleClose}
       role="presentation"
     >
       <div
-        className={`w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl md:rounded-4xl px-5 pt-5 pb-8 ${currentTheme.card}
+        className={`w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl px-5 pt-5 pb-8 ${currentTheme.card}
           transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
         style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))', maxHeight: '90vh' }}
@@ -64,11 +58,9 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
         aria-modal="true"
         aria-labelledby="app-settings-title"
       >
-        {isGuestSheet && (
-          <div className="flex justify-center pt-1 pb-2">
-            <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
-          </div>
-        )}
+        <div className="flex justify-center pt-1 pb-2">
+          <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+        </div>
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-2">
             <SettingsIcon size={16} className={currentTheme.iconColor} />
@@ -76,7 +68,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
               id="app-settings-title"
               className={`text-[9px] font-sans font-bold tracking-[0.28em] uppercase ${currentTheme.textSecondary}`}
             >
-              Settings
+              {t.settings}
             </p>
           </div>
           <button
@@ -119,7 +111,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
 
           {/* Appearance */}
           <div className="space-y-3">
-            <p className={sectionLabel}>Theme</p>
+            <p className={sectionLabel}>{t.theme}</p>
             <div className="grid grid-cols-2 gap-3">
               {themes.map((themeId) => {
                 const theme = THEME_CONFIG[themeId];
@@ -197,7 +189,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Volume2 size={16} className="text-(--ui-fg-muted) opacity-80" />
-                <p className={sectionLabel}>Sound</p>
+                <p className={sectionLabel}>{t.sound}</p>
               </div>
               <button
                 type="button"
@@ -226,9 +218,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                       className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${
                         active
                           ? 'border-(--ui-accent) bg-(--ui-accent) text-(--ui-accent-contrast)'
-                          : isDark
-                            ? 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg)'
-                            : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg)'
+                          : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg)'
                       }`}
                     >
                       {preset.replace('_', ' ')}
@@ -244,7 +234,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Vibrate size={16} className="text-(--ui-fg-muted) opacity-80" />
-                <p className={sectionLabel}>Vibration</p>
+                <p className={sectionLabel}>{t.vibration}</p>
               </div>
               <button
                 type="button"
@@ -266,7 +256,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
               </button>
             </div>
             <p className="text-[10px] leading-relaxed text-(--ui-fg-muted) opacity-70">
-              Vibration is stored on this device and won&apos;t affect the lobby rules.
+              {t.vibrationHint}
             </p>
           </div>
         </div>

@@ -720,10 +720,11 @@ switch (gameState) {
 
 | Тема | Опис | Free |
 |------|------|------|
-| `DEEP_STEEL` | Глибока сталь (default) | Так |
-| `EARTHY_DARK` | Темна “земляна” | Так* |
-| `MIDNIGHT_NAVY` | Нічний navy | Так* |
-| `DARK_RUBY` | Темний ruby | Так* |
+| `PREMIUM_DARK` (Deep Steel) | Глибока сталь (default) | Так |
+| `CYBERPUNK` (Earthy Dark) | Темна “земляна” | Так* |
+| `FOREST` (Midnight Navy) | Нічний navy | Так* |
+| `SLEEK` (Dark Ruby) | Темний ruby | Так* |
+| `VOID_LUXE` (Void Luxe) | OLED black, холодний синій + теплий акцент | Так* |
 
 Кожна тема визначає: `bg`, `card`, `textMain`, `textSecondary`, `textAccent`, `button`, `fonts`, `borderRadius`, `progressBar`, `iconColor`.
 
@@ -733,10 +734,12 @@ CSS custom properties встановлюються динамічно: `--font-h
 
 Додатково клієнт встановлює **семантичні UI-токени** (theme-aware), які варто використовувати в компонентах замість хардкоду `text-white/bg-white`:
 
-- `--ui-bg`, `--ui-fg`, `--ui-fg-muted`
-- `--ui-border`, `--ui-surface`, `--ui-surface-hover`, `--ui-card`
-- `--ui-accent`, `--ui-accent-contrast`
+- `--ui-bg`, `--ui-fg`, `--ui-fg-muted`, `--ui-fg-subtle`
+- `--ui-border`, `--ui-divider`, `--ui-surface`, `--ui-surface-hover`, `--ui-card`, `--ui-elevated`
+- `--ui-accent`, `--ui-accent-contrast`, `--ui-accent-soft`, `--ui-accent-alt`, `--ui-accent-warm`, `--ui-accent-warm-soft`
 - `--ui-danger`, `--ui-success`, `--ui-warning`
+
+Розширені токени (`--ui-elevated`, тощо) для старих тем **автоматично виводяться** з базових полів; повний набір задається в `THEME_CONFIG.tokens` (наприклад тема **Void Luxe**).
 
 Джерело: `packages/client/src/context/GameContext.tsx`.
 

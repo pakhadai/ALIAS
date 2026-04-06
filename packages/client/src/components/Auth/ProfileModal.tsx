@@ -93,17 +93,17 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const displayName =
     profileDisplayName ??
     (isAnonymous
-      ? 'Anonymous'
+      ? t.profileAnonymous
       : authState.status === 'authenticated'
         ? authState.email?.split('@')[0]
         : '');
   const displaySub = isAnonymous
-    ? 'Guest User'
+    ? t.profileGuestUser
     : authState.status === 'authenticated'
       ? authState.email
       : '';
   const badgeLabel = isAnonymous
-    ? 'FREE ACCOUNT'
+    ? t.profileFreeAccount
     : authState.status === 'authenticated'
       ? authState.provider?.toUpperCase()
       : '';
@@ -139,28 +139,34 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const benefits: { emoji: string; label: string; sub: string }[] = [
     {
       emoji: '📝',
-      label: 'Custom Word Lists',
-      sub: 'Upload your own words — CSV or plain text',
+      label: t.profileBenefitCustomListsLabel,
+      sub: t.profileBenefitCustomListsSub,
     },
     {
       emoji: '📦',
-      label: `${packCount > 0 ? packCount + ' Word Packs' : 'Word Packs'}`,
-      sub: 'New topics & languages — constantly growing',
+      label:
+        packCount > 0
+          ? t.profileBenefitWordPacksLabel.replace('{0}', String(packCount))
+          : t.profileBenefitWordPacksLabelZero,
+      sub: t.profileBenefitWordPacksSub,
     },
     {
       emoji: '🎨',
-      label: `${themeCount > 0 ? themeCount + ' Visual Themes' : 'Visual Themes'}`,
-      sub: 'Unique app skins for your style',
+      label:
+        themeCount > 0
+          ? t.profileBenefitVisualThemesLabel.replace('{0}', String(themeCount))
+          : t.profileBenefitVisualThemesLabelZero,
+      sub: t.profileBenefitVisualThemesSub,
     },
     {
       emoji: '📊',
-      label: 'Game Statistics',
-      sub: 'Track wins, rounds played & top words',
+      label: t.profileBenefitGameStatsLabel,
+      sub: t.profileBenefitGameStatsSub,
     },
     {
       emoji: '☁️',
-      label: 'Sync Across Devices',
-      sub: 'Your purchases & decks everywhere',
+      label: t.profileBenefitSyncLabel,
+      sub: t.profileBenefitSyncSub,
     },
   ];
 
@@ -280,7 +286,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
             <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
-              {purchases.length > 0 ? 'My Purchases' : 'What you get'}
+              {purchases.length > 0 ? t.profilePurchasesTitle : t.profileBenefitsTitle}
             </p>
           </div>
 

@@ -43,6 +43,7 @@ export enum AppTheme {
   CYBERPUNK = 'CYBERPUNK',
   FOREST = 'FOREST',
   SLEEK = 'SLEEK',
+  VOID_LUXE = 'VOID_LUXE',
 }
 
 export enum SoundPreset {

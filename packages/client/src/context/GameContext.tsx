@@ -1101,22 +1101,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const currentTheme = useMemo(() => {
     const fallback = THEME_CONFIG[AppTheme.PREMIUM_DARK];
     const themeId = state.settings.general.theme;
-    const allowed =
-      themeId === AppTheme.PREMIUM_DARK ||
-      themeId === AppTheme.CYBERPUNK ||
-      themeId === AppTheme.FOREST ||
-      themeId === AppTheme.SLEEK;
+    const allowed = Object.prototype.hasOwnProperty.call(THEME_CONFIG, themeId);
     return allowed ? THEME_CONFIG[themeId] : fallback;
   }, [state.settings.general.theme]);
 
   // Hard-reset unknown themes to default (Deep Steel)
   useEffect(() => {
     const themeId = state.settings.general.theme;
-    const allowed =
-      themeId === AppTheme.PREMIUM_DARK ||
-      themeId === AppTheme.CYBERPUNK ||
-      themeId === AppTheme.FOREST ||
-      themeId === AppTheme.SLEEK;
+    const allowed = Object.prototype.hasOwnProperty.call(THEME_CONFIG, themeId);
     if (allowed) return;
     dispatch({
       type: 'SET_STATE',
@@ -1151,13 +1143,43 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         `color-mix(in_srgb, ${tokens.fgMuted} 70%, transparent)`
       );
 
+      const hoverAccent = tokens.accentSoft ?? tokens.accent;
       r.style.setProperty(
         '--ui-surface-hover',
-        `color-mix(in_srgb, ${tokens.surface} 88%, ${tokens.accent} 12%)`
+        `color-mix(in_srgb, ${tokens.surface} 88%, ${hoverAccent} 12%)`
       );
+
+      const elevatedBase =
+        tokens.elevated ?? `color-mix(in_srgb, ${tokens.surface} 72%, ${tokens.bg} 28%)`;
+      r.style.setProperty('--ui-elevated', elevatedBase);
       r.style.setProperty(
         '--ui-card',
-        `color-mix(in_srgb, ${tokens.surface} 70%, ${tokens.bg} 30%)`
+        tokens.elevated
+          ? `color-mix(in_srgb, ${tokens.elevated} 88%, ${tokens.bg} 12%)`
+          : `color-mix(in_srgb, ${tokens.surface} 70%, ${tokens.bg} 30%)`
+      );
+      r.style.setProperty('--ui-divider', tokens.divider ?? tokens.border);
+      r.style.setProperty(
+        '--ui-accent-soft',
+        tokens.accentSoft ?? `color-mix(in_srgb, ${tokens.accent} 58%, ${tokens.surface} 42%)`
+      );
+      r.style.setProperty(
+        '--ui-accent-alt',
+        tokens.accentAlt ?? `color-mix(in_srgb, ${tokens.accent} 65%, ${tokens.fg} 35%)`
+      );
+      r.style.setProperty('--ui-accent-warm', tokens.accentWarm ?? tokens.accent);
+      r.style.setProperty(
+        '--ui-accent-warm-soft',
+        tokens.accentWarmSoft ??
+          (tokens.accentWarm
+            ? `color-mix(in_srgb, ${tokens.accentWarm} 72%, ${tokens.fg} 28%)`
+            : `color-mix(in_srgb, ${tokens.accent} 72%, ${tokens.fg} 28%)`)
+      );
+      r.style.setProperty(
+        '--ui-fg-subtle',
+        tokens.fgSubtle
+          ? `color-mix(in_srgb, ${tokens.fgSubtle} 78%, transparent)`
+          : `color-mix(in_srgb, ${tokens.fgMuted} 55%, transparent)`
       );
       r.style.setProperty('--ui-accent-contrast', bestTextOnColor(tokens.accent));
     }
