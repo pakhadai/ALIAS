@@ -128,7 +128,7 @@ export const LobbyScreen = () => {
 
         {showQrModal && qrCodeData && (
           <div
-            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-120 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in"
             onClick={() => setShowQrModal(false)}
           >
             <div
@@ -432,7 +432,7 @@ export const LobbyScreen = () => {
 
             {/* Add Player Modal */}
             {showAddPlayer && (
-              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-md animate-fade-in">
+              <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in">
                 <div
                   className={`relative w-full max-w-sm p-10 rounded-[2.5rem] shadow-2xl ${currentTheme.card} animate-pop-in`}
                 >

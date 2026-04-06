@@ -160,7 +160,7 @@ export function QuickBuyModal({
       }}
     >
       <div
-        className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm"
+        className="absolute inset-0 bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl"
         onClick={requestClose}
       />
 

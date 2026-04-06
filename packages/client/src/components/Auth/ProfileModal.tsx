@@ -147,7 +147,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
-        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)]' : 'bg-transparent'}`}
+        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl' : 'bg-transparent'}`}
       onClick={handleClose}
     >
       <div

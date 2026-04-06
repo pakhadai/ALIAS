@@ -8,7 +8,7 @@ export const SentryErrorFallback: React.FC<{
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-(--ui-bg) text-(--ui-fg) px-6 py-16 font-sans">
-      <div className="max-w-md w-full rounded-3xl border border-(--ui-border) bg-(--ui-card) p-8 shadow-2xl backdrop-blur-sm text-center space-y-6">
+      <div className="max-w-md w-full rounded-3xl border border-(--ui-border) bg-(--ui-card) p-8 shadow-2xl backdrop-blur-lg text-center space-y-6">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--ui-warning)_18%,transparent)] text-(--ui-warning) text-2xl font-serif">
           !
         </div>

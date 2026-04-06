@@ -196,7 +196,7 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-md ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-100 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
     >
       <div
         className={`relative w-full h-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
@@ -457,7 +457,7 @@ export const MenuScreen = () => {
       />
       {showFullscreenHint && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)]"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl"
           onClick={() => setShowFullscreenHint(false)}
           role="dialog"
           aria-modal="true"

@@ -31,7 +31,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] transition-all"
+        className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl transition-all"
         onClick={onClose}
         role="dialog"
         aria-modal="true"

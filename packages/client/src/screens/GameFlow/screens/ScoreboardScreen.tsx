@@ -24,7 +24,7 @@ export const ScoreboardScreen = () => {
       className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}
     >
       {/* Header */}
-      <header className="relative z-20 w-full px-6 pt-12 pb-2 flex justify-center items-center bg-transparent backdrop-blur-sm">
+      <header className="relative z-20 w-full px-6 pt-12 pb-2 flex justify-center items-center bg-transparent backdrop-blur-lg">
         <div className="text-center">
           <h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>
         </div>

@@ -79,7 +79,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl p-4">
       <div className="relative w-full max-w-sm rounded-2xl bg-(--ui-card) border border-(--ui-border) p-6 shadow-2xl">
         {/* Close */}
         <button
