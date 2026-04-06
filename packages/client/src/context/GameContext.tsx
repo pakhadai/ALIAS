@@ -1062,6 +1062,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedRoom = localStorage.getItem(ROOM_CODE_KEY);
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (!storedRoom || !storedPlayer) return;
+      // Validate before connecting to prevent "INVALID_PAYLOAD" rejoin errors.
+      const ROOM_CODE_RE = /^\d{5}$/;
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!ROOM_CODE_RE.test(storedRoom) || !UUID_RE.test(storedPlayer)) {
+        localStorage.removeItem(ROOM_CODE_KEY);
+        localStorage.removeItem(PLAYER_ID_KEY);
+        return;
+      }
       socketApi.connect();
     } catch {
       /* ignore */

@@ -11,6 +11,9 @@ import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
+const ROOM_CODE_RE = /^\d{5}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /** JWT is read once in `io()` options at mount — after Google login it must be refreshed before handshake. */
 function applyHandshakeAuth(socket: AppSocket): void {
   const token = getAuthToken();
@@ -76,6 +79,12 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       const storedRoom = localStorage.getItem(ROOM_CODE_KEY);
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (storedRoom && storedPlayer) {
+        // Guard against legacy/corrupted localStorage values (avoids noisy "INVALID_PAYLOAD" errors).
+        if (!ROOM_CODE_RE.test(storedRoom) || !UUID_RE.test(storedPlayer)) {
+          localStorage.removeItem(ROOM_CODE_KEY);
+          localStorage.removeItem(PLAYER_ID_KEY);
+          return;
+        }
         setIsReconnecting(true);
         socket.emit('room:rejoin', { roomCode: storedRoom, playerId: storedPlayer });
       }

@@ -26,7 +26,7 @@ import { Logo } from '../components/Shared';
 import { ProfileModal } from '../components/Auth/ProfileModal';
 import { LoginModal } from '../components/Auth/LoginModal';
 import { AppSettingsModal } from '../components/Settings/AppSettingsModal';
-import { GameState, Language, AppTheme, Category } from '../types';
+import { GameState, Language, AppTheme, Category, GameMode } from '../types';
 import { useGame, AVATARS } from '../context/GameContext';
 import { useAuthContext } from '../context/AuthContext';
 import {
@@ -70,7 +70,7 @@ const generateUUID = () => {
 const TABS = ['rules', 'logic', 'modes', 'settings'] as const;
 type TabId = (typeof TABS)[number];
 
-const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
+const RulesModal = ({ isOpen, onClose, t, currentTheme, settings, isGuest }: any) => {
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
   if (!isOpen && !isClosing) return null;
@@ -90,6 +90,21 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
     modes: t.infoModes,
     settings: t.infoSettings,
   };
+
+  const modeCards: {
+    id: GameMode;
+    title: string;
+    hint: string;
+  }[] = [
+    { id: GameMode.CLASSIC, title: t.gameModeClassic, hint: t.gameModeHintClassic },
+    { id: GameMode.TRANSLATION, title: t.gameModeTranslation, hint: t.gameModeHintTranslation },
+    { id: GameMode.QUIZ, title: t.gameModeQuiz, hint: t.gameModeHintQuiz },
+    { id: GameMode.HARDCORE, title: t.gameModeHardcore, hint: t.gameModeHintHardcore },
+    { id: GameMode.SYNONYMS, title: t.gameModeSynonyms, hint: t.gameModeHintSynonyms },
+    { id: GameMode.IMPOSTER, title: t.gameModeImposter, hint: t.gameModeHintImposter },
+  ];
+
+  const activeMode = settings?.mode?.gameMode as GameMode | undefined;
 
   const renderRules = () => (
     <div className="space-y-5">
@@ -142,19 +157,53 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   const renderModes = () => (
     <div className="space-y-6">
-      <div>
-        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoOnline}</h4>
-        <p
-          className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-        >
+      <div className="space-y-2">
+        <h4 className={`text-sm font-bold ${currentTheme.textMain}`}>{t.infoOnline}</h4>
+        <p className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
           {t.infoOnlineDesc}
         </p>
       </div>
-      <div>
-        <h4 className={`text-sm font-bold mb-2 ${currentTheme.textMain}`}>{t.infoOffline}</h4>
+
+      <div className="space-y-3">
         <p
-          className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
+          className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
         >
+          {t.gameMode}
+        </p>
+        <div className="grid gap-3">
+          {modeCards.map((m) => {
+            const isActive = activeMode === m.id;
+            return (
+              <div
+                key={m.id}
+                className={`rounded-3xl border px-5 py-4 transition-colors ${
+                  isActive
+                    ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]'
+                    : 'border-(--ui-border) bg-(--ui-surface)'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className={`text-sm font-bold ${currentTheme.textMain}`}>{m.title}</p>
+                    <p className={`text-xs mt-1 leading-relaxed ${currentTheme.textSecondary}`}>
+                      {m.hint}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-[0.18em] text-(--ui-accent)">
+                      {t.enabled}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className={`text-sm font-bold ${currentTheme.textMain}`}>{t.infoOffline}</h4>
+        <p className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
           {t.infoOfflineDesc}
         </p>
       </div>
@@ -163,27 +212,93 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   const renderSettings = () => (
     <div className="space-y-4">
-      {[
-        t.infoSettingTime,
-        t.infoSettingScore,
-        t.infoSettingCategories,
-        t.infoSettingPenalty,
-        t.infoSettingTeams,
-        t.infoSettingSound,
-      ].map((desc: string, i: number) => {
-        const [label, ...rest] = desc.split(' — ');
-        return (
-          <div key={i} className="flex gap-3 items-start">
-            <span className={`text-xs opacity-30 mt-0.5 ${currentTheme.textMain}`}>•</span>
+      <div className="grid gap-3">
+        <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
+          <p
+            className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
+          >
+            {t.gameMode}
+          </p>
+          <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+            {modeCards.find((m) => m.id === activeMode)?.title ?? activeMode ?? '—'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
             <p
-              className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
+              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
             >
-              <span className={`font-bold ${currentTheme.textMain}`}>{label}</span>
-              {rest.length > 0 && <span> — {rest.join(' — ')}</span>}
+              {t.roundTime}
+            </p>
+            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+              {settings?.mode?.classicRoundTime ?? '—'}s
             </p>
           </div>
-        );
-      })}
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
+            <p
+              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
+            >
+              {t.scoreToWin}
+            </p>
+            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+              {settings?.general?.scoreToWin ?? '—'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
+            <p
+              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
+            >
+              {t.skipPenalty}
+            </p>
+            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+              {settings?.general?.skipPenalty ? t.enabled : t.disabled}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
+            <p
+              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
+            >
+              {t.teams}
+            </p>
+            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+              {settings?.general?.teamCount ?? '—'}
+            </p>
+          </div>
+        </div>
+
+        {activeMode === GameMode.IMPOSTER && (
+          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4">
+            <p
+              className={`text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`}
+            >
+              {t.gameModeImposter}
+            </p>
+            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+              {settings?.mode?.imposterDiscussionTime ?? '—'}s
+            </p>
+            <p className={`mt-1 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+              {t.imposterDiscussionTime}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {isGuest && (
+        <div className="rounded-3xl border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_10%,transparent)] px-5 py-4">
+          <p
+            className={`text-[10px] font-sans font-bold uppercase tracking-[0.18em] ${currentTheme.textMain}`}
+          >
+            {t.statsGuestBannerCta}
+          </p>
+          <p className={`mt-1 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+            {t.statsGuestBannerBody}
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -196,14 +311,29 @@ const RulesModal = ({ isOpen, onClose, t, currentTheme }: any) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-100 flex ${isGuest ? 'items-end justify-center' : 'items-center justify-center'} bg-[color-mix(in_srgb,var(--ui-bg)_80%,transparent)] backdrop-blur-xl ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+      onClick={handleClose}
+      role="presentation"
     >
       <div
-        className={`relative w-full h-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`}
-        style={{ maxHeight: '100dvh' }}
+        className={`relative w-full max-w-md flex flex-col ${currentTheme.card} ${isClosing ? 'animate-pop-out' : 'animate-pop-in'} ${
+          isGuest ? 'rounded-t-4xl border border-(--ui-border)' : ''
+        }`}
+        style={{ maxHeight: isGuest ? '90dvh' : '100dvh' }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t.rulesTitle}
       >
+        {isGuest && (
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
+          </div>
+        )}
         {/* Header */}
-        <div className="shrink-0 px-8 pt-10 pb-4 flex items-center justify-between">
+        <div
+          className={`shrink-0 px-8 ${isGuest ? 'pt-4' : 'pt-10'} pb-4 flex items-center justify-between`}
+        >
           <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
           <button
             onClick={handleClose}
@@ -454,6 +584,8 @@ export const MenuScreen = () => {
         onClose={() => setShowRules(false)}
         t={t}
         currentTheme={currentTheme}
+        settings={settings}
+        isGuest={!isAuthenticated}
       />
       {showFullscreenHint && (
         <div

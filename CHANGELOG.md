@@ -30,6 +30,15 @@
 
 ---
 
+## [2026-04-06] — 0.5.2: bottom sheets, live help, pack language, rejoin guard
+
+### Changed
+- **Release:** bump app/package versions to **0.5.2** (client/server/shared + client `version.json`).
+- **UI:** `AppSettingsModal` для гостей відкривається як bottom-sheet (як `ProfileModal`), а не centered modal. Файл: `packages/client/src/components/Settings/AppSettingsModal.tsx`.
+- **Help/Rules:** “Довідник” (Rules) для гостей відкривається bottom-sheet знизу; вкладки оновлено під реальні режими/налаштування (підсвічує активний режим і показує поточні значення). Файл: `packages/client/src/screens/MenuFlow.tsx`.
+- **Lobby packs:** вибір мови для паків більше **не змінює мову UI** — впливає лише на доступні паки/слова (фільтр за мовою). Файл: `packages/client/src/screens/LobbyFlow.tsx`.
+- **Stability:** додано валідацію `localStorage` ключів `roomCode/playerId` перед auto-rejoin, щоб прибрати випадкові `INVALID_PAYLOAD` (“Invalid data”) при створенні/вході в лоббі. Файли: `packages/client/src/hooks/useSocketConnection.ts`, `packages/client/src/context/GameContext.tsx`.
+
 ## [2026-04-06] — 0.5.1: Google-only auth, locked themes toast, early room validation
 
 ### Changed

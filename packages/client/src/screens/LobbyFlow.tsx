@@ -704,6 +704,8 @@ export const SettingsScreen = () => {
     Category.MOVIES,
     Category.CUSTOM,
   ];
+  const packLanguage = (settings.general.targetLanguage ?? Language.EN) as Language;
+  const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === packLanguage);
 
   return (
     <div
@@ -805,29 +807,6 @@ export const SettingsScreen = () => {
               <div className="h-px w-full bg-(--ui-border)" />
             </div>
 
-            <div className="space-y-3">
-              <p
-                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-              >
-                {t.language}
-              </p>
-              <div className="flex gap-2">
-                {[Language.UA, Language.DE, Language.EN].map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => updateGeneral('language', l)}
-                    className={`flex-1 py-3 rounded-xl border transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                      settings.general.language === l
-                        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
-                    }`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
               <div className="space-y-2">
                 <p
@@ -919,8 +898,35 @@ export const SettingsScreen = () => {
                     </button>
                   )}
                 </div>
+                <div className="space-y-2">
+                  <p
+                    className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                  >
+                    {t.packLanguage ?? 'Pack language'}
+                  </p>
+                  <div className="flex gap-2">
+                    {[Language.UA, Language.DE, Language.EN].map((l) => (
+                      <button
+                        key={l}
+                        type="button"
+                        onClick={() => updateGeneral('targetLanguage', l)}
+                        className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                          packLanguage === l
+                            ? `border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)`
+                            : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted)'
+                        }`}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-(--ui-fg-muted) opacity-70 leading-relaxed">
+                    {t.packLanguageHint ??
+                      'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
+                  </p>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {ownedPacks.map((pack) => {
+                  {filteredOwnedPacks.map((pack) => {
                     const isSelected = (settings.general.selectedPackIds ?? []).includes(pack.id);
                     return (
                       <button
@@ -944,11 +950,15 @@ export const SettingsScreen = () => {
                     );
                   })}
                 </div>
-                {(settings.general.selectedPackIds?.length ?? 0) === 0 && (
+                {filteredOwnedPacks.length === 0 ? (
+                  <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
+                    {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
+                  </p>
+                ) : (settings.general.selectedPackIds?.length ?? 0) === 0 ? (
                   <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
                     Не вибрано — використовуються стандартні слова
                   </p>
-                )}
+                ) : null}
               </div>
             )}
 
