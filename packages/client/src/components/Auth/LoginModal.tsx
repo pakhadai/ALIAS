@@ -86,7 +86,6 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     }
   }, [currentTheme.isDark, handleGoogleSuccess, locale, t.loginGoogleFailed]);
 
-
   return (
     <div
       className={bottomSheetBackdropClass(visible, 'z-50')}

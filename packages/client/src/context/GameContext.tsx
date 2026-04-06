@@ -1166,8 +1166,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty('--ui-divider', tokens.divider ?? tokens.border);
       r.style.setProperty(
         '--ui-border-subtle',
-        tokens.borderSubtle ??
-          `color-mix(in_srgb, ${tokens.border} 62%, ${tokens.bg} 38%)`
+        tokens.borderSubtle ?? `color-mix(in_srgb, ${tokens.border} 62%, ${tokens.bg} 38%)`
       );
 
       const accentSoftComputed =
@@ -1179,18 +1178,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty('--ui-accent-muted', tokens.accentMuted ?? accentSoftComputed);
       r.style.setProperty(
         '--ui-accent-hover',
-        tokens.accentHover ??
-          `color-mix(in_srgb, ${tokens.accent} 88%, #ffffff 12%)`
+        tokens.accentHover ?? `color-mix(in_srgb, ${tokens.accent} 88%, #ffffff 12%)`
       );
       r.style.setProperty(
         '--ui-accent-pressed',
-        tokens.accentPressed ??
-          `color-mix(in_srgb, ${tokens.accent} 82%, #000000 18%)`
+        tokens.accentPressed ?? `color-mix(in_srgb, ${tokens.accent} 82%, #000000 18%)`
       );
       r.style.setProperty(
         '--ui-accent-ring',
-        tokens.accentRing ??
-          `color-mix(in_srgb, ${tokens.accent} 40%, transparent)`
+        tokens.accentRing ?? `color-mix(in_srgb, ${tokens.accent} 40%, transparent)`
       );
 
       r.style.setProperty(
@@ -1215,8 +1211,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       r.style.setProperty(
         '--ui-fg-disabled',
-        tokens.fgDisabled ??
-          `color-mix(in_srgb, ${tokens.fgMuted} 45%, transparent)`
+        tokens.fgDisabled ?? `color-mix(in_srgb, ${tokens.fgMuted} 45%, transparent)`
       );
       r.style.setProperty('--ui-accent-contrast', bestTextOnColor(tokens.accent));
     }

@@ -269,7 +269,10 @@ export function StoreModal({ onClose }: StoreModalProps) {
         role="presentation"
       >
         <div
-          className={bottomSheetPanelClass(sheetOpen, 'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!')}
+          className={bottomSheetPanelClass(
+            sheetOpen,
+            'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!'
+          )}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
@@ -319,77 +322,77 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
           {/* Content */}
           <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
-          {loading ? (
-            <div className="flex items-center justify-center h-40">
-              <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
-            </div>
-          ) : !storeData ? (
-            <div className="text-center py-12 text-(--ui-fg-muted)">
-              <p className="text-sm">Не вдалося завантажити магазин</p>
-              <button
-                onClick={loadStore}
-                className="mt-3 text-(--ui-accent) text-xs hover:text-(--ui-accent-hover)"
-              >
-                Спробувати знову
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Word Packs */}
-              {activeTab === 'packs' && (
-                <div className="space-y-6">
-                  {Object.entries(packsByLang).map(([lang, packs]) => (
-                    <div key={lang}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-base">{LANG_FLAGS[lang] || '🌐'}</span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-(--ui-fg-muted)">
-                          {lang === 'UA' ? 'Українська' : lang === 'EN' ? 'English' : 'Deutsch'}
-                        </span>
+            {loading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
+              </div>
+            ) : !storeData ? (
+              <div className="text-center py-12 text-(--ui-fg-muted)">
+                <p className="text-sm">Не вдалося завантажити магазин</p>
+                <button
+                  onClick={loadStore}
+                  className="mt-3 text-(--ui-accent) text-xs hover:text-(--ui-accent-hover)"
+                >
+                  Спробувати знову
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Word Packs */}
+                {activeTab === 'packs' && (
+                  <div className="space-y-6">
+                    {Object.entries(packsByLang).map(([lang, packs]) => (
+                      <div key={lang}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-base">{LANG_FLAGS[lang] || '🌐'}</span>
+                          <span className="text-xs font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+                            {lang === 'UA' ? 'Українська' : lang === 'EN' ? 'English' : 'Deutsch'}
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {packs.map((p) => (
+                            <PackCard
+                              key={p.id}
+                              pack={p}
+                              onBuy={(id) => handleBuy('wordPack', id)}
+                              buying={buying}
+                            />
+                          ))}
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        {packs.map((p) => (
-                          <PackCard
-                            key={p.id}
-                            pack={p}
-                            onBuy={(id) => handleBuy('wordPack', id)}
-                            buying={buying}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              {/* Themes */}
-              {activeTab === 'themes' && (
-                <div className="space-y-2">
-                  {storeData.themes.map((t) => (
-                    <ThemeCard
-                      key={t.id}
-                      theme={t}
-                      onBuy={(id) => handleBuy('theme', id)}
-                      buying={buying}
-                    />
-                  ))}
-                </div>
-              )}
+                {/* Themes */}
+                {activeTab === 'themes' && (
+                  <div className="space-y-2">
+                    {storeData.themes.map((t) => (
+                      <ThemeCard
+                        key={t.id}
+                        theme={t}
+                        onBuy={(id) => handleBuy('theme', id)}
+                        buying={buying}
+                      />
+                    ))}
+                  </div>
+                )}
 
-              {/* Sound Packs */}
-              {activeTab === 'sounds' && (
-                <div className="space-y-2">
-                  {storeData.soundPacks.map((s) => (
-                    <SoundCard
-                      key={s.id}
-                      sp={s}
-                      onBuy={(id) => handleBuy('soundPack', id)}
-                      buying={buying}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+                {/* Sound Packs */}
+                {activeTab === 'sounds' && (
+                  <div className="space-y-2">
+                    {storeData.soundPacks.map((s) => (
+                      <SoundCard
+                        key={s.id}
+                        sp={s}
+                        onBuy={(id) => handleBuy('soundPack', id)}
+                        buying={buying}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Footer note */}

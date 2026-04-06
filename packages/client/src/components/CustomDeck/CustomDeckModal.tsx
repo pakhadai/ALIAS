@@ -407,7 +407,10 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         role="presentation"
       >
         <div
-          className={bottomSheetPanelClass(sheetOpen, 'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!')}
+          className={bottomSheetPanelClass(
+            sheetOpen,
+            'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!'
+          )}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
@@ -417,122 +420,124 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
           </div>
           {/* Header */}
           <div className="shrink-0 px-5 pt-3 pb-4 border-b border-(--ui-border)">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {view !== 'list' ? (
-                <button
-                  onClick={() => setView('list')}
-                  className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              ) : (
-                <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
-                  <FileText size={20} className="text-(--ui-accent)" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {view !== 'list' ? (
+                  <button
+                    onClick={() => setView('list')}
+                    className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                ) : (
+                  <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
+                    <FileText size={20} className="text-(--ui-accent)" />
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-lg font-bold text-(--ui-fg)">
+                    {view === 'list'
+                      ? 'Мої словники'
+                      : view === 'create'
+                        ? 'Новий словник'
+                        : 'Завантажити файл'}
+                  </h1>
+                  <p className="text-xs text-(--ui-fg-muted)">
+                    {view === 'list'
+                      ? 'Власні набори слів для гри'
+                      : 'Введіть слова для свого словника'}
+                  </p>
                 </div>
-              )}
-              <div>
-                <h1 className="text-lg font-bold text-(--ui-fg)">
-                  {view === 'list'
-                    ? 'Мої словники'
-                    : view === 'create'
-                      ? 'Новий словник'
-                      : 'Завантажити файл'}
-                </h1>
-                <p className="text-xs text-(--ui-fg-muted)">
-                  {view === 'list'
-                    ? 'Власні набори слів для гри'
-                    : 'Введіть слова для свого словника'}
-                </p>
               </div>
+              <button
+                onClick={requestClose}
+                className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
-            <button
-              onClick={requestClose}
-              className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface) transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
 
-          {/* Tabs (only on list view) */}
-          {view === 'list' && (
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowLogin(true);
-                    return;
-                  }
-                  setView('create');
-                }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
-              >
-                <Plus size={13} />
-                Створити
-              </button>
-              <button
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowLogin(true);
-                    return;
-                  }
-                  setView('upload');
-                }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border) text-(--ui-fg) text-xs font-bold tracking-wider transition-colors"
-              >
-                <Upload size={13} />
-                CSV / TXT
-              </button>
-            </div>
-          )}
-        </div>
+            {/* Tabs (only on list view) */}
+            {view === 'list' && (
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setShowLogin(true);
+                      return;
+                    }
+                    setView('create');
+                  }}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
+                >
+                  <Plus size={13} />
+                  Створити
+                </button>
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setShowLogin(true);
+                      return;
+                    }
+                    setView('upload');
+                  }}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border) text-(--ui-fg) text-xs font-bold tracking-wider transition-colors"
+                >
+                  <Upload size={13} />
+                  CSV / TXT
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Content */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-          {view === 'list' && (
-            <>
-              {!isAuthenticated ? (
-                <div className="flex flex-col items-center justify-center h-40 gap-3">
-                  <p className="text-(--ui-fg-muted) text-sm">Увійдіть, щоб створювати словники</p>
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    className="h-9 px-5 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
-                  >
-                    Увійти
-                  </button>
-                </div>
-              ) : loading ? (
-                <div className="flex items-center justify-center h-40">
-                  <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
-                </div>
-              ) : decks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-40 gap-2">
-                  <FileText size={32} className="text-(--ui-fg-muted) opacity-50" />
-                  <p className="text-(--ui-fg-muted) text-sm">Ще немає словників</p>
-                  <p className="text-(--ui-fg-muted) opacity-70 text-xs">
-                    Натисніть «Створити» щоб додати перший
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2 px-4 py-4">
-                  {decks.map((deck) => (
-                    <DeckItem
-                      key={deck.id}
-                      deck={deck}
-                      onDelete={handleDelete}
-                      onSelect={onSelectDeck ? handleSelect : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+            {view === 'list' && (
+              <>
+                {!isAuthenticated ? (
+                  <div className="flex flex-col items-center justify-center h-40 gap-3">
+                    <p className="text-(--ui-fg-muted) text-sm">
+                      Увійдіть, щоб створювати словники
+                    </p>
+                    <button
+                      onClick={() => setShowLogin(true)}
+                      className="h-9 px-5 rounded-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) text-(--ui-accent-contrast) text-xs font-bold tracking-wider transition-colors"
+                    >
+                      Увійти
+                    </button>
+                  </div>
+                ) : loading ? (
+                  <div className="flex items-center justify-center h-40">
+                    <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
+                  </div>
+                ) : decks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-40 gap-2">
+                    <FileText size={32} className="text-(--ui-fg-muted) opacity-50" />
+                    <p className="text-(--ui-fg-muted) text-sm">Ще немає словників</p>
+                    <p className="text-(--ui-fg-muted) opacity-70 text-xs">
+                      Натисніть «Створити» щоб додати перший
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 px-4 py-4">
+                    {decks.map((deck) => (
+                      <DeckItem
+                        key={deck.id}
+                        deck={deck}
+                        onDelete={handleDelete}
+                        onSelect={onSelectDeck ? handleSelect : undefined}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
-          {view === 'create' && <CreateForm onCreated={handleCreated} />}
-          {view === 'upload' && <UploadForm onCreated={handleCreated} />}
-        </div>
+            {view === 'create' && <CreateForm onCreated={handleCreated} />}
+            {view === 'upload' && <UploadForm onCreated={handleCreated} />}
+          </div>
 
-        {/* Footer */}
+          {/* Footer */}
           <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
             <p className="text-center text-(--ui-fg-muted) text-[10px]">
               Поділіться кодом доступу з іншими гравцями

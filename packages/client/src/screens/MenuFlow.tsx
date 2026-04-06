@@ -23,11 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import {
-  Logo,
-  bottomSheetBackdropClass,
-  bottomSheetPanelClass,
-} from '../components/Shared';
+import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../components/Shared';
 import { ProfileModal } from '../components/Auth/ProfileModal';
 import { LoginModal } from '../components/Auth/LoginModal';
 import { AppSettingsModal } from '../components/Settings/AppSettingsModal';
@@ -493,7 +489,12 @@ export const MenuScreen = () => {
         className="relative z-10 w-full px-6 md:px-8 pb-4 flex justify-end items-center gap-2 sm:gap-3 shrink-0"
         style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
       >
-        <button type="button" onClick={handleProfileClick} className={menuHeaderIconBtn} aria-label="Profile">
+        <button
+          type="button"
+          onClick={handleProfileClick}
+          className={menuHeaderIconBtn}
+          aria-label="Profile"
+        >
           <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
         </button>
         <button
