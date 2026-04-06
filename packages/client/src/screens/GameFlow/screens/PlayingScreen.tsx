@@ -181,7 +181,10 @@ export const PlayingScreen = () => {
       )}
 
       {/* Progress Bar Header */}
-      <header className="w-full pt-12 px-6 pb-2 flex flex-col gap-5 z-20">
+      <header
+        className="w-full px-6 pb-2 flex flex-col gap-5 z-20"
+        style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+      >
         {timeUp && canUseClassicButtons && !isQuizMode && (
           <p className="text-center text-(--ui-accent) text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
             {t.finishWord}

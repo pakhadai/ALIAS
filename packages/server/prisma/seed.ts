@@ -3185,6 +3185,18 @@ const themes = [
       fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
     },
   },
+  {
+    slug: 'quantum-eclipse',
+    name: 'Quantum Eclipse',
+    isFree: false,
+    price: 99,
+    config: {
+      id: 'QUANTUM_ECLIPSE',
+      description: 'True OLED black with violet, cyan, and neon orange accents',
+      preview: { bg: '#000000', accent: '#6C47FF' },
+      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
+    },
+  },
 ];
 
 // ─── Seed sound packs ──────────────────────────────────────────────────

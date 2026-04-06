@@ -716,7 +716,7 @@ switch (gameState) {
 
 ### Теми та локалізація
 
-**4 теми** (визначені в `constants.ts` → `THEME_CONFIG`):
+**Теми** (`AppTheme` у `constants.ts` → `THEME_CONFIG`; у виборі UI без дубліката `PREMIUM_LIGHT`):
 
 | Тема | Опис | Free |
 |------|------|------|
@@ -725,6 +725,7 @@ switch (gameState) {
 | `FOREST` (Midnight Navy) | Нічний navy | Так* |
 | `SLEEK` (Dark Ruby) | Темний ruby | Так* |
 | `VOID_LUXE` (Void Luxe) | OLED black, холодний синій + теплий акцент | Так* |
+| `QUANTUM_ECLIPSE` (Quantum Eclipse) | OLED-чорний, фіолетовий + ціан + неоновий помаранч | Так* |
 
 Кожна тема визначає: `bg`, `card`, `textMain`, `textSecondary`, `textAccent`, `button`, `fonts`, `borderRadius`, `progressBar`, `iconColor`.
 
@@ -739,7 +740,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 - `--ui-accent`, `--ui-accent-contrast`, `--ui-accent-soft`, `--ui-accent-alt`, `--ui-accent-warm`, `--ui-accent-warm-soft`
 - `--ui-danger`, `--ui-success`, `--ui-warning`
 
-Розширені токени (`--ui-elevated`, тощо) для старих тем **автоматично виводяться** з базових полів; повний набір задається в `THEME_CONFIG.tokens` (наприклад тема **Void Luxe**).
+Розширені токени (`--ui-elevated`, тощо) для старих тем **автоматично виводяться** з базових полів; повний набір задається в `THEME_CONFIG.tokens` (наприклад **Void Luxe** або **Quantum Eclipse**).
 
 Джерело: `packages/client/src/context/GameContext.tsx`.
 

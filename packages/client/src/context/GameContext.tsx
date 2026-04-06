@@ -1271,22 +1271,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .catch(() => {});
       },
       handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => {
-        const sanitizedName = name.replace(/<[^>]*>/g, '').slice(0, 20);
+        const sanitizedName = name
+          .replace(/<[^>]*>/g, '')
+          .trim()
+          .slice(0, 20);
+        const safeAvatar = String(avatar ?? '')
+          .trim()
+          .slice(0, 4);
+        if (!sanitizedName) {
+          const lang = stateRef.current.settings.general.language;
+          showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Name is required', 'error');
+          return;
+        }
+        if (!safeAvatar) {
+          const lang = stateRef.current.settings.general.language;
+          showNotification(TRANSLATIONS[lang].chooseAvatar ?? 'Choose an avatar', 'error');
+          return;
+        }
         let playerData = JSON.parse(localStorage.getItem('alias_player') || '{}');
         if (!playerData.persistentId) {
           playerData.persistentId = crypto.randomUUID();
         }
         playerData.name = sanitizedName;
-        playerData.avatar = avatar;
+        playerData.avatar = safeAvatar;
         localStorage.setItem('alias_player', JSON.stringify(playerData));
 
         if (stateRef.current.gameMode === 'ONLINE') {
           // Server-based online mode
           if (stateRef.current.isHost) {
-            socketApi.createRoom(sanitizedName, avatar, avatarId);
+            socketApi.createRoom(sanitizedName, safeAvatar, avatarId);
             dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
           } else {
-            socketApi.joinRoom(stateRef.current.roomCode, sanitizedName, avatar, avatarId);
+            socketApi.joinRoom(stateRef.current.roomCode, sanitizedName, safeAvatar, avatarId);
             dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
           }
         } else {
@@ -1300,7 +1316,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 id,
                 persistentId: playerData.persistentId,
                 name: sanitizedName,
-                avatar,
+                avatar: safeAvatar,
                 ...(avatarId != null ? { avatarId } : {}),
                 isHost: true,
                 stats: { explained: 0, guessed: 0 },
@@ -1394,6 +1410,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
       rematch: () => sendAction({ action: 'REMATCH' }),
       leaveRoom: () => {
+        // Prevent host session restore after refresh (and clear any stale join keys).
+        try {
+          localStorage.removeItem(SESSION_KEY);
+          localStorage.removeItem(ROOM_CODE_KEY);
+          localStorage.removeItem(PLAYER_ID_KEY);
+        } catch {}
         socketApi.leaveRoom();
         dispatch({
           type: 'SET_STATE',

@@ -20,6 +20,7 @@ export type GameSoundId = 'correct' | 'skip' | 'start' | 'end' | 'tick' | 'win' 
 import type {
   GameState,
   AppTheme,
+  Language,
   RoomErrorCode,
   Player,
   Team,
@@ -37,6 +38,8 @@ export interface ThemeConfig {
   id: AppTheme;
   name: string;
   description: string;
+  /** Optional per-language copy in settings UI; falls back to name/description. */
+  labels?: Partial<Record<Language, { name?: string; description?: string }>>;
   isFree: boolean;
   isDark: boolean;
   preview: { bg: string; accent: string };

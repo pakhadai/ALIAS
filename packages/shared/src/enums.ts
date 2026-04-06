@@ -44,6 +44,7 @@ export enum AppTheme {
   FOREST = 'FOREST',
   SLEEK = 'SLEEK',
   VOID_LUXE = 'VOID_LUXE',
+  QUANTUM_ECLIPSE = 'QUANTUM_ECLIPSE',
 }
 
 export enum SoundPreset {

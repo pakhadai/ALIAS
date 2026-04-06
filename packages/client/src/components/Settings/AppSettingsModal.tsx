@@ -49,8 +49,8 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
       role="presentation"
     >
       <div
-        className={`w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl px-5 pt-5 pb-8 ${currentTheme.card}
-          transition-transform duration-300 ease-out
+        className={`relative w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl overflow-hidden
+          bg-(--ui-card) border border-(--ui-border) px-5 pt-5 pb-8 transition-transform duration-300 ease-out
           ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
         style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))', maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
@@ -115,6 +115,9 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
             <div className="grid grid-cols-2 gap-3">
               {themes.map((themeId) => {
                 const theme = THEME_CONFIG[themeId];
+                const lang = settings.general.language;
+                const themeName = theme.labels?.[lang]?.name ?? theme.name;
+                const themeDesc = theme.labels?.[lang]?.description ?? theme.description;
                 const isActive = settings.general.theme === themeId;
                 const locked = themeId !== AppTheme.PREMIUM_DARK && !isAuthenticated;
                 return (
@@ -149,13 +152,13 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                         fontFamily: theme.fonts.heading,
                       }}
                     >
-                      {theme.name}
+                      {themeName}
                     </span>
                     <span
                       className="text-[10px] opacity-50 leading-snug"
                       style={{ color: theme.isDark ? '#fff' : '#111' }}
                     >
-                      {theme.description}
+                      {themeDesc}
                     </span>
                     {locked && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[color-mix(in_srgb,var(--ui-bg)_70%,transparent)] backdrop-blur-[2px] px-3">

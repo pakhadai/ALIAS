@@ -483,7 +483,10 @@ export const MenuScreen = () => {
     <div
       className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
     >
-      <header className="relative z-10 w-full px-6 md:px-8 pt-12 pb-4 flex justify-end items-center gap-6 shrink-0">
+      <header
+        className="relative z-10 w-full px-6 md:px-8 pb-4 flex justify-end items-center gap-6 shrink-0"
+        style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+      >
         <button onClick={handleProfileClick} className="transition-all active:scale-90 p-2">
           <User size={22} className={`${currentTheme.iconColor} opacity-50 hover:opacity-100`} />
         </button>
@@ -866,7 +869,10 @@ export const ProfileScreen = () => {
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         {/* Header */}
-        <header className="flex items-center px-6 pt-12 pb-4 md:px-8">
+        <header
+          className="flex items-center px-6 pb-4 md:px-8"
+          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+        >
           <button
             onClick={() => setGameState(GameState.MENU)}
             className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
@@ -1028,7 +1034,10 @@ export const ProfileSettingsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
+        <header
+          className="flex items-center px-6 md:px-8 pb-4 gap-3"
+          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+        >
           <button
             onClick={() => setGameState(GameState.PROFILE)}
             className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
@@ -1258,7 +1267,10 @@ export const LobbySettingsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header className="flex items-center justify-between px-6 md:px-8 pt-12 pb-4">
+        <header
+          className="flex items-center justify-between px-6 md:px-8 pb-4"
+          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+        >
           <div className="flex items-center gap-3">
             <button
               onClick={() => setGameState(GameState.PROFILE)}
@@ -1544,7 +1556,10 @@ export const MyWordPacksScreen = () => {
     return (
       <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
-          <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
+          <header
+            className="flex items-center px-6 md:px-8 pb-4 gap-3"
+            style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+          >
             <button
               onClick={() => setGameState(GameState.PROFILE)}
               className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
@@ -1586,7 +1601,10 @@ export const MyWordPacksScreen = () => {
     return (
       <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
-          <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
+          <header
+            className="flex items-center px-6 md:px-8 pb-4 gap-3"
+            style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+          >
             <button
               onClick={() => {
                 setView('list');
@@ -1882,7 +1900,10 @@ export const MyDecksScreen = () => {
     return (
       <div className="flex flex-col h-screen bg-(--ui-bg)">
         {/* Header */}
-        <header className="flex items-center px-6 pt-12 pb-4 gap-3">
+        <header
+          className="flex items-center px-6 pb-4 gap-3"
+          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+        >
           <button
             onClick={() => {
               setView('list');
@@ -2594,7 +2615,10 @@ export const PlayerStatsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header className="flex items-center px-6 md:px-8 pt-12 pb-4 gap-3">
+        <header
+          className="flex items-center px-6 md:px-8 pb-4 gap-3"
+          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
+        >
           <button
             type="button"
             onClick={goBack}

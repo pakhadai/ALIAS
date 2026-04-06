@@ -7,6 +7,7 @@ import { AvatarDisplay } from '../AvatarDisplay';
 import { GameState } from '../../types';
 import { TRANSLATIONS } from '../../constants';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
+import { ensureGoogleInitialized, promptGoogleSignIn } from '../../utils/googleIdentity';
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -75,16 +76,15 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   };
 
   const handleGoogleClick = useCallback(() => {
-    const googleId = (window as any)?.google?.accounts?.id ?? null;
     const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID as string | undefined;
-    if (!googleId || !clientId) return;
-    googleId.initialize({
-      client_id: clientId,
-      callback: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
-      auto_select: false,
+    if (!clientId) return;
+    const init = ensureGoogleInitialized({
+      clientId,
       locale,
+      onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
     });
-    googleId.prompt();
+    if (!init.ok) return;
+    promptGoogleSignIn();
   }, [handleGoogleSuccess, locale]);
 
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';

@@ -4,6 +4,7 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
 import { Language } from '../../types';
+import { ensureGoogleInitialized, promptGoogleSignIn } from '../../utils/googleIdentity';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -18,11 +19,6 @@ function googleLocale(lang: Language): string {
 }
 
 type GoogleIdCredentialResponse = { credential?: string };
-
-function getGoogleId(): any | null {
-  // Loaded by Google Identity Services via @react-oauth/google provider
-  return (window as any)?.google?.accounts?.id ?? null;
-}
 
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
@@ -52,30 +48,29 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   };
 
   const handleGoogleClick = useCallback(() => {
-    const googleId = getGoogleId();
     const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID as string | undefined;
-    if (!googleId || !clientId) {
+    if (!clientId) {
       setError(t.loginGoogleFailed);
       return;
     }
 
     setLoading('google');
     setError(null);
-    googleId.initialize({
-      client_id: clientId,
-      callback: (res: GoogleIdCredentialResponse) => {
-        void handleGoogleSuccess(res);
-      },
-      auto_select: false,
+    const init = ensureGoogleInitialized({
+      clientId,
       locale,
+      onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
     });
-    googleId.prompt((notification: any) => {
-      // If popup is blocked/closed or not displayed, surface a friendly error
-      if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-        setLoading(null);
-        setError(t.loginGoogleFailed);
-      }
-    });
+    if (!init.ok) {
+      setLoading(null);
+      setError(t.loginGoogleFailed);
+      return;
+    }
+    const promptRes = promptGoogleSignIn();
+    if (!promptRes.ok) {
+      setLoading(null);
+      setError(t.loginGoogleFailed);
+    }
   }, [handleGoogleSuccess, locale, t.loginGoogleFailed]);
 
   return (
