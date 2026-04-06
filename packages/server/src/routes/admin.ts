@@ -35,7 +35,7 @@ export function createAdminRoutes(
   // check is disabled for local development.
   router.use(ipWhitelist(config.adminAllowedIps));
 
-  // Admin auth: only authenticated user whose email is whitelisted.
+  // Admin auth: only authenticated user whose email is whitelisted and has isAdmin in DB.
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const auth = req.headers.authorization;
@@ -70,7 +70,17 @@ export function createAdminRoutes(
         return;
       }
 
-      if (email && config.adminAllowedEmails.includes(email) && user?.isAdmin) {
+      if (email && !config.adminAllowedEmails.includes(email)) {
+        res.status(403).json({ error: 'Access denied.' });
+        return;
+      }
+
+      if (!user?.isAdmin) {
+        res.status(403).json({ error: 'Access denied. Admin role required.' });
+        return;
+      }
+
+      if (email && config.adminAllowedEmails.includes(email)) {
         next();
         return;
       }

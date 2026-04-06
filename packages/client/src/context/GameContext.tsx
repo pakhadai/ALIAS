@@ -1324,6 +1324,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       },
       startOfflineGame: () => {
+        // Ensure a clean slate when starting offline mode (prevents "host clones" after re-entry).
+        try {
+          localStorage.removeItem(SESSION_KEY);
+          localStorage.removeItem(ROOM_CODE_KEY);
+          localStorage.removeItem(PLAYER_ID_KEY);
+        } catch {}
         dispatch({
           type: 'SET_STATE',
           payload: {
@@ -1331,6 +1337,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             isHost: true,
             isConnected: true,
             gameState: GameState.ENTER_NAME,
+            roomCode: '',
+            myPlayerId: '',
+            players: [],
+            teams: [],
             connectionError: null,
             connectionErrorCode: null,
           },
@@ -1367,6 +1377,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           type: 'SET_STATE',
           payload: {
             gameState: GameState.MENU,
+            gameMode: 'ONLINE',
+            isHost: false,
             isConnected: false,
             roomCode: '',
             myPlayerId: '',

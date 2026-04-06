@@ -161,6 +161,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     localStorage.removeItem(PLAYER_ID_KEY);
 
     const doEmit = () => {
+      // If a previous create attempt never returned, don't keep stacking listeners.
+      socket.removeAllListeners('room:created');
       socket.once('room:created', ({ roomCode: code, playerId }) => {
         myPlayerIdRef.current = playerId;
         setMyPlayerId(playerId);
@@ -186,6 +188,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       localStorage.removeItem(PLAYER_ID_KEY);
 
       const doEmit = () => {
+        // If a previous join attempt never returned, don't keep stacking listeners.
+        socket.removeAllListeners('room:joined');
         socket.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
@@ -236,6 +240,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const leaveRoom = useCallback(() => {
     setIsReconnecting(false);
     socketRef.current?.emit('room:leave');
+    // Explicitly leaving a room should fully tear down the connection to avoid stale listeners/state.
+    socketRef.current?.disconnect();
     setRoomCode('');
     setMyPlayerId('');
     myPlayerIdRef.current = '';

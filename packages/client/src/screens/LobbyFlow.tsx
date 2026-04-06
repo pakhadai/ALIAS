@@ -101,8 +101,8 @@ export const LobbyScreen = () => {
           theme={currentTheme}
           onCancel={() => setShowExitConfirm(false)}
           onConfirm={() => {
-            if (gameMode === 'ONLINE') leaveRoom();
-            else setGameState(GameState.MENU);
+            // Always do a full leave/reset (offline mode must clear local players too).
+            leaveRoom();
           }}
           confirmText={t.confirmExit}
           cancelText={t.goBack}

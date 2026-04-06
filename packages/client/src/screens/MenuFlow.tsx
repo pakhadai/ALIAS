@@ -637,7 +637,7 @@ export const MenuScreen = () => {
 };
 
 export const EnterNameScreen = () => {
-  const { setGameState, settings, currentTheme, handleJoin, isHost } = useGame();
+  const { setGameState, settings, currentTheme, handleJoin, isHost, gameMode, leaveRoom } = useGame();
   const { authState, profile } = useAuthContext();
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
@@ -714,7 +714,11 @@ export const EnterNameScreen = () => {
             {t.next}
           </Button>
           <button
-            onClick={() => setGameState(GameState.MENU)}
+            onClick={() => {
+              // Offline mode must fully reset local room/players when cancelling.
+              if (gameMode === 'OFFLINE') leaveRoom();
+              else setGameState(GameState.MENU);
+            }}
             className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
           >
             {t.cancel}
