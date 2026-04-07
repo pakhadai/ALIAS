@@ -14,6 +14,7 @@ export const ROOM_ERROR_CODES = [
   'PLAYER_NOT_IN_ROOM',
   'RELAY_UNAVAILABLE',
   'RELAY_TIMEOUT',
+  'ALREADY_IN_ROOM',
 ] as const;
 
 export type RoomErrorCode = (typeof ROOM_ERROR_CODES)[number];
