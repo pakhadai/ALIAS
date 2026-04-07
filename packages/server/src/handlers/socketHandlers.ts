@@ -77,7 +77,10 @@ export function registerSocketHandlers(
   onSocket(socket, 'room:create', async (rawData) => {
     // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо створювати нову
     if (socket.data.roomCode) {
-      socket.emit('room:error', roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати'));
+      socket.emit(
+        'room:error',
+        roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
+      );
       return;
     }
 
@@ -120,7 +123,10 @@ export function registerSocketHandlers(
 
     // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо приєднуватися до іншої
     if (socket.data.roomCode) {
-      socket.emit('room:error', roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати'));
+      socket.emit(
+        'room:error',
+        roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
+      );
       return;
     }
 

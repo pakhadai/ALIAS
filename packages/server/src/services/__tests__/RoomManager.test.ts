@@ -274,8 +274,8 @@ describe('getSyncState', () => {
     expect(state).toHaveProperty('wordDeck');
   });
 
-  it('does not expose timerInterval or socketToPlayer', () => {
-    const room = rm.createRoom('s1');
+  it('does not expose timerInterval or socketToPlayer', async () => {
+    const room = await rm.createRoom('s1');
     const state = rm.getSyncState(room);
     expect(state).not.toHaveProperty('timerInterval');
     expect(state).not.toHaveProperty('socketToPlayer');
@@ -300,8 +300,8 @@ describe('getPlayerSocketId', () => {
 // ─── deleteRoom ──────────────────────────────────────────────────────────────
 
 describe('deleteRoom', () => {
-  it('removes room from map', () => {
-    const room = rm.createRoom('s1');
+  it('removes room from map', async () => {
+    const room = await rm.createRoom('s1');
     rm.deleteRoom(room.code);
     expect(rm.getRoom(room.code)).toBeUndefined();
   });
