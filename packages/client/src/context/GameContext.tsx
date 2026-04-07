@@ -971,30 +971,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const me = syncState.players.find((p) => p.id === myId);
       const isHostFromSync = me?.isHost ?? stateRef.current.isHost;
 
+      const payload: Partial<AppState> = {
+        settings,
+        roomCode: syncState.roomCode,
+        players: syncState.players,
+        teams: syncState.teams,
+        currentTeamIndex: syncState.currentTeamIndex,
+        currentWord: syncState.currentWord,
+        currentTask: syncState.currentTask ?? null,
+        currentRoundStats: syncState.currentRoundStats,
+        timeLeft: syncState.timeLeft,
+        isPaused: syncState.isPaused,
+        timeUp: syncState.timeUp,
+        wordDeck: syncState.wordDeck,
+        imposterPhase: syncState.imposterPhase,
+        imposterPlayerId: syncState.imposterPlayerId,
+        revealedPlayerIds: syncState.revealedPlayerIds ?? [],
+        isHost: isHostFromSync,
+        isConnected: true,
+        connectionError: null,
+        connectionErrorCode: null,
+      };
+
+      // Змінюємо екран ТІЛЬКИ якщо нам не треба зберігати поточну навігацію клієнта
+      if (!keepClientNav) {
+        payload.gameState = syncState.gameState;
+      }
+
       dispatch({
         type: 'SET_STATE',
-        payload: {
-          gameState: keepClientNav ? currentClientState : syncState.gameState,
-          settings,
-          roomCode: syncState.roomCode,
-          players: syncState.players,
-          teams: syncState.teams,
-          currentTeamIndex: syncState.currentTeamIndex,
-          currentWord: syncState.currentWord,
-          currentTask: syncState.currentTask ?? null,
-          currentRoundStats: syncState.currentRoundStats,
-          timeLeft: syncState.timeLeft,
-          isPaused: syncState.isPaused,
-          timeUp: syncState.timeUp,
-          wordDeck: syncState.wordDeck,
-          imposterPhase: syncState.imposterPhase,
-          imposterPlayerId: syncState.imposterPlayerId,
-          revealedPlayerIds: syncState.revealedPlayerIds ?? [],
-          isHost: isHostFromSync,
-          isConnected: true,
-          connectionError: null,
-          connectionErrorCode: null,
-        },
+        payload,
       });
     }, []),
     onImposterSecret: useCallback((payload: { isImposter: boolean; word: string | null }) => {
