@@ -690,7 +690,9 @@ export const SettingsScreen = () => {
   const isDark = currentTheme.isDark;
 
   // Local state for sliders to prevent flooding
-  const [localRoundTime, setLocalRoundTime] = useState('classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 60);
+  const [localRoundTime, setLocalRoundTime] = useState(
+    'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 60
+  );
   const [localScoreToWin, setLocalScoreToWin] = useState(settings.general.scoreToWin);
   const [localTeamCount, setLocalTeamCount] = useState(settings.general.teamCount);
 

@@ -1014,10 +1014,10 @@ export const ProfileScreen = () => {
 
           {/* ДОДАЙ ЦЕЙ БЛОК: Кнопка Адмінки */}
           {profile?.isAdmin && (
-            <button onClick={() => window.location.href = '/admin.html'} className={navBtn}>
+            <button onClick={() => (window.location.href = '/admin.html')} className={navBtn}>
               <div className="flex items-center gap-3">
                 <ShieldCheck size={16} className="text-(--ui-danger)" />
-                <span className={navLabel + " text-(--ui-danger)"}>Адмін-панель</span>
+                <span className={navLabel + ' text-(--ui-danger)'}>Адмін-панель</span>
               </div>
               <ChevronRight size={16} className="text-(--ui-danger) opacity-30" />
             </button>

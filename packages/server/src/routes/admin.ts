@@ -60,7 +60,7 @@ export function createAdminRoutes(
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
-      
+
       const payload = authService.verifyToken(auth.slice(7));
       if (!payload?.sub) {
         res.status(401).json({ error: 'Unauthorized' });
