@@ -44,6 +44,15 @@
 
 - **TypeScript typing in CSV upload:** виправлено використання `as any` при призначенні мови словам у CSV завантаженні. Замінено на правильну типізацію `as Language` з імпортом типу. Файл: `packages/server/src/routes/admin.ts`.
 
+### Fixed
+- **Slider settings flood:** повзунки часу раунду, очок для перемоги і кількості команд тепер використовують локальний стан у `packages/client/src/screens/LobbyFlow.tsx` і відправляють `UPDATE_SETTINGS` тільки після `onMouseUp` / `onTouchEnd`.
+
+- **Room leave race condition:** `room:leave` тепер синхронно очищує `socket.data` перед асинхронним видаленням з черги, щоб уникнути помилки `ALREADY_IN_ROOM`, якщо користувач швидко створює нову кімнату. Файл: `packages/server/src/handlers/socketHandlers.ts`.
+
+- **Zombie room cleanup:** якщо `addPlayer` після `createRoom` не вдалося, новостворена кімната видаляється через `roomManager.deleteRoom(room.code)`. Файл: `packages/server/src/handlers/socketHandlers.ts`.
+
+- **Pack language fallback fix:** вибір мови пака тепер fallback-иться на `settings.general.language`, а не на `EN`. Файл: `packages/client/src/screens/LobbyFlow.tsx`.
+
 ### Changed
 - **Admin authentication flow:** оновлено логіку аутентифікації адмін-маршрутів — тепер спочатку перевіряється API-ключ у заголовку `x-admin-key`, а потім JWT-токен. Це дозволяє гнучкіший доступ для адміністраторів. Файл: `packages/server/src/routes/admin.ts`.
 

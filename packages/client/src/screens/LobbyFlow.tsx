@@ -689,6 +689,24 @@ export const SettingsScreen = () => {
   const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
   const isDark = currentTheme.isDark;
 
+  // Local state for sliders to prevent flooding
+  const [localRoundTime, setLocalRoundTime] = useState('classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 60);
+  const [localScoreToWin, setLocalScoreToWin] = useState(settings.general.scoreToWin);
+  const [localTeamCount, setLocalTeamCount] = useState(settings.general.teamCount);
+
+  // Sync local state with server changes
+  useEffect(() => {
+    if ('classicRoundTime' in settings.mode) setLocalRoundTime(settings.mode.classicRoundTime);
+  }, [settings.mode]);
+
+  useEffect(() => {
+    setLocalScoreToWin(settings.general.scoreToWin);
+  }, [settings.general.scoreToWin]);
+
+  useEffect(() => {
+    setLocalTeamCount(settings.general.teamCount);
+  }, [settings.general.teamCount]);
+
   useEffect(() => {
     fetchStore()
       .then((data) => setOwnedPacks(data.wordPacks.filter((p) => p.owned)))
@@ -753,7 +771,7 @@ export const SettingsScreen = () => {
     Category.MOVIES,
     Category.CUSTOM,
   ];
-  const packLanguage = (settings.general.targetLanguage ?? Language.EN) as Language;
+  const packLanguage = (settings.general.targetLanguage ?? settings.general.language) as Language;
   const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === packLanguage);
 
   return (
@@ -1120,8 +1138,10 @@ export const SettingsScreen = () => {
                     min="30"
                     max="180"
                     step="10"
-                    value={'classicRoundTime' in mode ? mode.classicRoundTime : 0}
-                    onChange={(e) => updateMode({ classicRoundTime: parseInt(e.target.value) })}
+                    value={localRoundTime}
+                    onChange={(e) => setLocalRoundTime(parseInt(e.target.value))}
+                    onMouseUp={() => updateMode({ classicRoundTime: localRoundTime })}
+                    onTouchEnd={() => updateMode({ classicRoundTime: localRoundTime })}
                     className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                   />
                 </div>
@@ -1146,8 +1166,10 @@ export const SettingsScreen = () => {
                     min="10"
                     max="100"
                     step="5"
-                    value={settings.general.scoreToWin}
-                    onChange={(e) => updateGeneral('scoreToWin', parseInt(e.target.value))}
+                    value={localScoreToWin}
+                    onChange={(e) => setLocalScoreToWin(parseInt(e.target.value))}
+                    onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
+                    onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
                     className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                   />
                 </div>
@@ -1168,8 +1190,10 @@ export const SettingsScreen = () => {
                     min="2"
                     max="10"
                     step="1"
-                    value={settings.general.teamCount}
-                    onChange={(e) => updateGeneral('teamCount', parseInt(e.target.value))}
+                    value={localTeamCount}
+                    onChange={(e) => setLocalTeamCount(parseInt(e.target.value))}
+                    onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
+                    onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
                     className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                   />
                 </div>

@@ -99,6 +99,7 @@ export function registerSocketHandlers(
       data.avatarId
     );
     if (!player) {
+      roomManager.deleteRoom(room.code); // Clean up the zombie room
       socket.emit('room:error', roomError('ROOM_CREATE_FAILED', 'Failed to create room'));
       return;
     }
@@ -197,6 +198,11 @@ export function registerSocketHandlers(
       return;
     }
 
+    // Clear socket data synchronously to prevent race conditions
+    delete socket.data.roomCode;
+    delete socket.data.playerId;
+    delete socket.data.playerName;
+
     const selfId = config.serverInstanceId;
     const writer = await getRoomWriterId(relayDeps, roomCode);
     const useRelay =
@@ -227,9 +233,6 @@ export function registerSocketHandlers(
         cancelGraceRemoval(removedId);
       }
       void socket.leave(roomCode);
-      delete socket.data.roomCode;
-      delete socket.data.playerId;
-      delete socket.data.playerName;
       if (removedId) {
         io.to(roomCode).emit('room:player-left', { playerId: removedId });
         broadcastRoomState(io, roomCode, roomManager);
