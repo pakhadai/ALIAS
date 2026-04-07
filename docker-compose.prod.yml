@@ -55,6 +55,8 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SUCCESS_URL: https://${DOMAIN}/store?payment=success
       STRIPE_CANCEL_URL: https://${DOMAIN}/store
+      ADMIN_ALLOWED_EMAILS: ${ADMIN_ALLOWED_EMAILS:-}
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:-}
     depends_on:
       postgres:
         condition: service_healthy
