@@ -655,11 +655,20 @@ export const EnterNameScreen = () => {
   // Use consistent UUID for all players (host and guests)
   const stableId = useRef(`player-${generateUUID()}`);
 
-  // Auto-join if authenticated with a complete profile (name + avatar)
+  // Auto-join for signed-in users:
+  // - Online guest (join by code): never auto — first frame often has roomCode ""; joinRoom("") → Invalid data.
+  // - Online host (create): auto OK, but do NOT depend on profile.avatarId: after login the profile often
+  //   updates twice (name first, avatarId second) which re-ran this effect and fired a second createRoom.
   useEffect(() => {
     const displayName = profile?.displayName;
-    if (authState.status === 'authenticated' && displayName) {
+    const canAutoJoin =
+      authState.status === 'authenticated' &&
+      Boolean(displayName) &&
+      (gameMode === 'OFFLINE' || (gameMode === 'ONLINE' && isHost));
+
+    if (canAutoJoin && profile && displayName) {
       let cancelled = false;
+      const nameForServer = displayName;
       const avatarEmoji =
         profile.avatarId != null
           ? (PRESET_AVATARS[parseInt(profile.avatarId, 10)]?.emoji ?? AVATARS[0])
@@ -667,7 +676,12 @@ export const EnterNameScreen = () => {
       setIsEntering(true);
       void (async () => {
         try {
-          const ok = await handleJoin(stableId.current, displayName, avatarEmoji, profile.avatarId);
+          const ok = await handleJoin(
+            stableId.current,
+            nameForServer,
+            avatarEmoji,
+            profile.avatarId
+          );
           if (!cancelled && ok) setGameState(GameState.LOBBY);
         } finally {
           if (!cancelled) setIsEntering(false);
@@ -677,11 +691,10 @@ export const EnterNameScreen = () => {
         cancelled = true;
       };
     }
-    // Prefill display name from profile (anonymous or authenticated)
     if (profile?.displayName) setName(profile.displayName);
     return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState.status, profile?.displayName, profile?.avatarId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- avatarId omitted on purpose (see above)
+  }, [authState.status, profile?.displayName, gameMode, isHost]);
 
   const handleSubmit = async () => {
     const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);
