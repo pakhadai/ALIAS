@@ -155,8 +155,8 @@ describe('buildDeck (with Prisma)', () => {
 
   it('uses DB words when available via isDefault filter', async () => {
     const mockPrisma = {
-      word: {
-        findMany: vi.fn().mockResolvedValue([{ text: 'DBWord1' }, { text: 'DBWord2' }]),
+      wordTranslation: {
+        findMany: vi.fn().mockResolvedValue([{ word: 'DBWord1' }, { word: 'DBWord2' }]),
       },
       customDeck: {
         findUnique: vi.fn().mockResolvedValue(null),
@@ -167,10 +167,10 @@ describe('buildDeck (with Prisma)', () => {
     const deck = await service.buildDeck(baseSettings);
     expect(deck).toContain('DBWord1');
     expect(deck).toContain('DBWord2');
-    expect(mockPrisma.word.findMany).toHaveBeenCalledWith(
+    expect(mockPrisma.wordTranslation.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          pack: expect.objectContaining({ isDefault: true }),
+          concept: expect.objectContaining({ pack: expect.objectContaining({ isDefault: true }) }),
         }),
       })
     );
@@ -178,7 +178,7 @@ describe('buildDeck (with Prisma)', () => {
 
   it('falls back to MOCK_WORDS when DB returns empty', async () => {
     const mockPrisma = {
-      word: { findMany: vi.fn().mockResolvedValue([]) },
+      wordTranslation: { findMany: vi.fn().mockResolvedValue([]) },
       customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
     } as any;
 
@@ -190,7 +190,7 @@ describe('buildDeck (with Prisma)', () => {
 
   it('uses selectedPackIds when provided (ignores isDefault filter)', async () => {
     const mockPrisma = {
-      word: { findMany: vi.fn().mockResolvedValue([{ text: 'PackWord' }]) },
+      wordTranslation: { findMany: vi.fn().mockResolvedValue([{ word: 'PackWord' }]) },
       customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
     } as any;
 
@@ -201,9 +201,12 @@ describe('buildDeck (with Prisma)', () => {
     };
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('PackWord');
-    expect(mockPrisma.word.findMany).toHaveBeenCalledWith(
+    expect(mockPrisma.wordTranslation.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { pack: { id: { in: ['pack-uuid-1'] } } },
+        where: {
+          language: Language.UA,
+          concept: { pack: { id: { in: ['pack-uuid-1'] } } },
+        },
       })
     );
   });
@@ -227,7 +230,7 @@ describe('buildDeck (with Prisma)', () => {
     const deck = await service.buildDeck(settings);
     expect(deck).toContain('Secret1');
     expect(deck).toContain('Secret2');
-    expect(mockPrisma.word.findMany).not.toHaveBeenCalled();
+    expect(mockPrisma.wordTranslation.findMany).not.toHaveBeenCalled();
   });
 
   it('ignores customDeck when status is not approved', async () => {
@@ -235,7 +238,7 @@ describe('buildDeck (with Prisma)', () => {
       customDeck: {
         findUnique: vi.fn().mockResolvedValue({ words: ['X'], status: 'pending' }),
       },
-      word: { findMany: vi.fn().mockResolvedValue([{ text: 'DBWord' }]) },
+      wordTranslation: { findMany: vi.fn().mockResolvedValue([{ word: 'DBWord' }]) },
     } as any;
 
     service.setPrisma(mockPrisma);

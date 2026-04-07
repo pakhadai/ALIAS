@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from '../services/api';
+import { getApiBaseUrl, uploadCsvToPack } from '../services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -324,6 +324,29 @@ export function AdminPanel() {
       );
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUploadCsv = async (packId: string, file: File) => {
+    if (!apiKey) return;
+    setActionLoading(`upload-${packId}`);
+    try {
+      await uploadCsvToPack(packId, file, apiKey);
+      const [updatedPack, updatedWords] = await Promise.all([
+        adminFetch<WordPackRow>(`/api/admin/packs/${packId}`, apiKey),
+        adminFetch<{ words: PackWord[] }>(`/api/admin/packs/${packId}`, apiKey),
+      ]);
+      setPacks((prev) =>
+        prev.map((p) => (p.id === packId ? { ...p, wordCount: updatedPack.wordCount } : p))
+      );
+      if (selectedPackId === packId) {
+        setPackWords(updatedWords.words);
+      }
+      alert('CSV Uploaded Successfully!');
+    } catch (err: any) {
+      alert(err?.message || 'Upload failed');
     } finally {
       setActionLoading(null);
     }
@@ -1022,6 +1045,31 @@ export function AdminPanel() {
                       <h4 className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-80 font-bold">
                         Слова ({packWords.length})
                       </h4>
+
+                      {/* Upload CSV */}
+                      <div className="bg-(--ui-card) border border-(--ui-border) rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-80 font-bold">
+                            Upload CSV
+                          </span>
+                          <span className="text-[10px] text-(--ui-fg-muted)">
+                            .csv, headers: difficulty, word_ua, synonyms_ua, taboo_ua, word_en,
+                            synonyms_en, taboo_en
+                          </span>
+                        </div>
+                        <input
+                          type="file"
+                          accept=".csv"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            await handleUploadCsv(pack.id, file);
+                            e.target.value = '';
+                          }}
+                          disabled={actionLoading === `upload-${pack.id}`}
+                          className="w-full text-sm file:rounded-lg file:border file:border-(--ui-border) file:bg-(--ui-card) file:px-3 file:py-2 file:text-(--ui-fg)"
+                        />
+                      </div>
 
                       {/* Add words */}
                       <div className="flex gap-2 items-start">

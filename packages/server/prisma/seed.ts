@@ -3257,17 +3257,24 @@ async function main() {
       },
     });
 
-    // Delete existing words for this pack (to handle updates cleanly)
-    await prisma.word.deleteMany({ where: { packId: wordPack.id } });
+    // Delete existing concepts and translations for this pack (to handle updates cleanly)
+    await prisma.wordConcept.deleteMany({ where: { packId: wordPack.id } });
 
-    // Batch insert words
-    await prisma.word.createMany({
-      data: uniqueWords.map((text) => ({
-        text,
-        packId: wordPack.id,
-      })),
-      skipDuplicates: true,
-    });
+    // Batch insert word concepts and one translation per word in the pack language
+    for (const text of uniqueWords) {
+      await prisma.wordConcept.create({
+        data: {
+          packId: wordPack.id,
+          difficulty: 1,
+          translations: {
+            create: [{
+              language: pack.language as any,
+              word: text,
+            }],
+          },
+        },
+      });
+    }
 
     console.log(`  [WordPack] ${pack.slug}: ${uniqueWords.length} words`);
   }
@@ -3330,9 +3337,9 @@ async function main() {
   }
 
   // Summary
-  const wordCount = await prisma.word.count();
+  const wordCount = await prisma.wordConcept.count();
   const packCount = await prisma.wordPack.count();
-  console.log(`\nSeed complete: ${packCount} word packs, ${wordCount} total words`);
+  console.log(`\nSeed complete: ${packCount} word packs, ${wordCount} total concepts`);
 }
 
 main()

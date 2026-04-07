@@ -7,93 +7,116 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Language {
+  UA
+  EN
+  DE
+}
+
 model User {
-  id              String   @id @default(uuid())
-  anonymousId     String?  @unique
-  email           String?  @unique
-  authProvider    String   @default("anonymous")
-  displayName     String?                      // custom in-game name
-  avatarId        String?                      // preset avatar index "0"–"19"
-  defaultSettings Json?                        // saved GameSettings for lobby
-  statsGamesPlayed   Int      @default(0)
-  statsWordsGuessed  Int      @default(0)
-  statsWordsSkipped  Int      @default(0)
-  statsLastPlayedAt  DateTime?
-  isAdmin         Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  purchases           Purchase[]
-  customDecks         CustomDeck[]
-  pushSubscriptions   PushSubscription[]
+  id                String             @id @default(uuid())
+  anonymousId       String?            @unique
+  email             String?            @unique
+  authProvider      String             @default("anonymous")
+  displayName       String? // custom in-game name
+  avatarId          String? // preset avatar index "0"–"19"
+  defaultSettings   Json? // saved GameSettings for lobby
+  statsGamesPlayed  Int                @default(0)
+  statsWordsGuessed Int                @default(0)
+  statsWordsSkipped Int                @default(0)
+  statsLastPlayedAt DateTime?
+  isAdmin           Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  purchases         Purchase[]
+  customDecks       CustomDeck[]
+  pushSubscriptions PushSubscription[]
 }
 
 model WordPack {
-  id          String   @id @default(uuid())
-  slug        String   @unique
+  id          String        @id @default(uuid())
+  slug        String        @unique
   name        String
-  language    String                    // "UA" | "DE" | "EN"
-  category    String                    // "General" | "Food" | etc.
-  difficulty  String   @default("mixed") // "easy" | "medium" | "hard" | "18+" | "mixed"
-  version     Int      @default(1)
-  price       Int      @default(0)      // cents, 0 = free
-  isFree      Boolean  @default(true)
-  isDefault   Boolean  @default(false)   // always available to all users without claiming
-  wordCount   Int      @default(0)
+  language    String // "UA" | "DE" | "EN"
+  category    String // "General" | "Food" | etc.
+  difficulty  String        @default("mixed") // "easy" | "medium" | "hard" | "18+" | "mixed"
+  version     Int           @default(1)
+  price       Int           @default(0) // cents, 0 = free
+  isFree      Boolean       @default(true)
+  isDefault   Boolean       @default(false) // always available to all users without claiming
+  wordCount   Int           @default(0)
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  words       Word[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  concepts    WordConcept[]
   purchases   Purchase[]
 
   // Store listing (orderBy language, category) + WordService pack filters
   @@index([language, category])
 }
 
-model Word {
-  id     String   @id @default(uuid())
-  text   String
-  packId String
-  pack   WordPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+model WordConcept {
+  id         String   @id @default(uuid())
+  packId     String?
+  difficulty Int      @default(1)
+  isNsfw     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-  @@unique([text, packId])
-  @@index([packId])
+  pack         WordPack?         @relation(fields: [packId], references: [id])
+  translations WordTranslation[]
+}
+
+model WordTranslation {
+  id        String   @id @default(uuid())
+  conceptId String
+  language  Language
+
+  word       String
+  synonyms   String[] @default([])
+  antonyms   String[] @default([])
+  tabooWords String[] @default([])
+  hint       String?
+
+  concept WordConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, language])
 }
 
 model Theme {
-  id        String    @id @default(uuid())
-  slug      String    @unique
+  id        String     @id @default(uuid())
+  slug      String     @unique
   name      String
   config    Json
-  price     Int       @default(0)
-  isFree    Boolean   @default(true)
+  price     Int        @default(0)
+  isFree    Boolean    @default(true)
   purchases Purchase[]
 }
 
 model SoundPack {
-  id        String    @id @default(uuid())
-  slug      String    @unique
+  id        String     @id @default(uuid())
+  slug      String     @unique
   name      String
   config    Json
-  price     Int       @default(0)
-  isFree    Boolean   @default(true)
+  price     Int        @default(0)
+  isFree    Boolean    @default(true)
   purchases Purchase[]
 }
 
 model Purchase {
-  id              String     @id @default(uuid())
-  userId          String
-  user            User       @relation(fields: [userId], references: [id])
-  wordPackId      String?
-  wordPack        WordPack?  @relation(fields: [wordPackId], references: [id])
-  themeId         String?
-  theme           Theme?     @relation(fields: [themeId], references: [id])
-  soundPackId     String?
-  soundPack       SoundPack? @relation(fields: [soundPackId], references: [id])
-  amount          Int
-  paymentProvider String     // "stripe" | "liqpay"
-  status          String     @default("pending") // "pending" | "completed" | "refunded" | "abandoned"
-  stripeCheckoutSessionId String? @unique
-  stripePaymentIntentId   String? @unique
-  createdAt       DateTime   @default(now())
+  id                      String     @id @default(uuid())
+  userId                  String
+  user                    User       @relation(fields: [userId], references: [id])
+  wordPackId              String?
+  wordPack                WordPack?  @relation(fields: [wordPackId], references: [id])
+  themeId                 String?
+  theme                   Theme?     @relation(fields: [themeId], references: [id])
+  soundPackId             String?
+  soundPack               SoundPack? @relation(fields: [soundPackId], references: [id])
+  amount                  Int
+  paymentProvider         String // "stripe" | "liqpay"
+  status                  String     @default("pending") // "pending" | "completed" | "refunded" | "abandoned"
+  stripeCheckoutSessionId String?    @unique
+  stripePaymentIntentId   String?    @unique
+  createdAt               DateTime   @default(now())
 
   @@index([userId])
   // Admin analytics/daily revenue: WHERE status = ? AND createdAt >= ?
@@ -105,8 +128,8 @@ model CustomDeck {
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   name       String
-  words      Json                        // string[]
-  branding   Json?                       // { logoUrl, primaryColor, companyName }
+  words      Json // string[]
+  branding   Json? // { logoUrl, primaryColor, companyName }
   accessCode String?  @unique
   status     String   @default("pending") // "pending" | "approved" | "rejected"
   createdAt  DateTime @default(now())

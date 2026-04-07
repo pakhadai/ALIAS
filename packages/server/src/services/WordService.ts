@@ -58,25 +58,29 @@ export class WordService {
       const hasPackFilter = selectedPackIds && selectedPackIds.length > 0;
 
       if (hasPackFilter) {
-        // Use only the host's selected packs (ignores language filter — packs already belong to correct language)
-        const rows = await this.prisma.word.findMany({
-          where: { pack: { id: { in: selectedPackIds } } },
-          select: { text: true },
-        });
-        dbWords = rows.map((r: { text: string }) => r.text);
-      } else if (dbCategories.length > 0) {
-        // Default: only use isDefault packs (free standard content available to all)
-        const rows = await this.prisma.word.findMany({
+        const rows = await this.prisma.wordTranslation.findMany({
           where: {
-            pack: {
-              language: general.language,
-              category: { in: dbCategories },
-              isDefault: true,
+            language: general.language,
+            concept: { pack: { id: { in: selectedPackIds } } },
+          },
+          select: { word: true },
+        });
+        dbWords = rows.map((r: { word: string }) => r.word);
+      } else if (dbCategories.length > 0) {
+        const rows = await this.prisma.wordTranslation.findMany({
+          where: {
+            language: general.language,
+            concept: {
+              pack: {
+                language: general.language,
+                category: { in: dbCategories },
+                isDefault: true,
+              },
             },
           },
-          select: { text: true },
+          select: { word: true },
         });
-        dbWords = rows.map((r: { text: string }) => r.text);
+        dbWords = rows.map((r: { word: string }) => r.word);
       }
     }
 

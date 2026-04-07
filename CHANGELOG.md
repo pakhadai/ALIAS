@@ -30,6 +30,27 @@
 
 ---
 
+## [2026-04-07] — Database migration for multilingual words & CSV upload
+
+### Added
+- **Multilingual word support:** повністю переписана структура бази даних для підтримки багатомовних слів. Замість простої моделі `Word` тепер використовується `WordConcept` (концепт слова) з `WordTranslation` (переклади на різні мови). Це дозволяє одному концепту мати переклади на українську, англійську, німецьку тощо з окремими синонімами, антонімами та забороненими словами для кожної мови. Файл: `packages/server/prisma/schema.prisma`.
+
+- **CSV upload for word packs:** додано функціонал завантаження слів через CSV файли в адмін-панелі. Адмін може завантажити CSV з колонками `difficulty, word_ua, synonyms_ua, taboo_ua, word_en, synonyms_en, taboo_en` для створення концептів з перекладами. Файли: `packages/server/src/routes/admin.ts` (новий ендпоінт `POST /api/admin/upload-csv`), `packages/client/src/services/api.ts` (функція `uploadCsvToPack`), `packages/client/src/screens/AdminPanel.tsx` (UI для завантаження).
+
+### Changed
+- **WordService.buildDeck():** оновлено логіку вибору слів з бази даних — тепер вибирає з `wordTranslation` замість `word`, фільтруючи за мовою гри. Файл: `packages/server/src/services/WordService.ts`.
+
+- **Admin routes:** адаптовано всі адмін-ендпоінти для роботи з новою структурою слів (концепти + переклади замість прямих слів). Файл: `packages/server/src/routes/admin.ts`.
+
+- **Seed script:** оновлено для створення концептів та перекладів замість прямих слів. Файл: `packages/server/prisma/seed.ts`.
+
+- **WordService tests:** оновлено моки та перевірки для роботи з `wordTranslation` замість `word`. Файл: `packages/server/src/services/__tests__/WordService.test.ts`.
+
+### Fixed
+- **REMATCH word deck preservation:** виправлено логіку ревіншу — тепер при ревінші зберігається поточна колода слів замість скидання на порожній масив. Це запобігає повторному появі тих самих слів у другій грі. Файли: `packages/client/src/context/GameContext.tsx` (клієнт), `packages/server/src/services/GameEngine.ts` (сервер).
+
+---
+
 ## [2026-04-07] — Pause overlay UX, auto-login race condition, & unified modal animations
 
 ### Fixed

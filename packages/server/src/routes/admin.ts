@@ -1,6 +1,10 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from 'express';
+import multer from 'multer';
+import { parse } from 'csv-parse/sync';
 import type { PrismaClient } from '@prisma/client';
 import type { RedisRoomStore } from '../services/RedisRoomStore';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /** Row shape from `customDeck.findMany` with admin list select */
 type AdminCustomDeckListRow = {
@@ -132,13 +136,26 @@ export function createAdminRoutes(
   router.get('/packs/:id', async (req, res) => {
     const pack = await prisma.wordPack.findUnique({
       where: { id: req.params.id },
-      include: { words: { select: { id: true, text: true } } },
+      include: {
+        concepts: {
+          include: {
+            translations: true,
+          },
+        },
+      },
     });
     if (!pack) {
       res.status(404).json({ error: 'Pack not found' });
       return;
     }
-    res.json(pack);
+
+    const words = pack.concepts.flatMap((concept) =>
+      concept.translations
+        .filter((translation) => translation.language === pack.language)
+        .map((translation) => ({ id: translation.id, text: translation.word }))
+    );
+
+    res.json({ ...pack, words });
   });
 
   /** POST /api/admin/packs — create a new pack */
@@ -176,7 +193,7 @@ export function createAdminRoutes(
     res.json({ ok: true });
   });
 
-  /** DELETE /api/admin/packs/:packId/words/:wordId — delete a single word */
+  /** DELETE /api/admin/packs/:packId/words/:wordId — delete a single word translation */
   router.delete('/packs/:packId/words/:wordId', async (req, res) => {
     const { packId, wordId } = req.params;
     const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
@@ -184,8 +201,20 @@ export function createAdminRoutes(
       res.status(404).json({ error: 'Pack not found' });
       return;
     }
-    await prisma.word.delete({ where: { id: wordId } });
-    const count = await prisma.word.count({ where: { packId } });
+
+    const deletedTranslation = await prisma.wordTranslation.delete({
+      where: { id: wordId },
+      select: { conceptId: true },
+    });
+
+    const remainingTranslations = await prisma.wordTranslation.count({
+      where: { conceptId: deletedTranslation.conceptId },
+    });
+    if (remainingTranslations === 0) {
+      await prisma.wordConcept.delete({ where: { id: deletedTranslation.conceptId } });
+    }
+
+    const count = await prisma.wordConcept.count({ where: { packId } });
     await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
     res.json({ ok: true, totalWords: count });
   });
@@ -207,19 +236,102 @@ export function createAdminRoutes(
 
     const uniqueWords = [...new Set(words.map((w) => w.trim()).filter(Boolean))];
 
-    const result = await prisma.word.createMany({
-      data: uniqueWords.map((text) => ({ text, packId })),
-      skipDuplicates: true,
+    await prisma.$transaction(async (tx) => {
+      for (const text of uniqueWords) {
+        const concept = await tx.wordConcept.create({
+          data: { packId, difficulty: 1 },
+        });
+        await tx.wordTranslation.create({
+          data: {
+            conceptId: concept.id,
+            language: pack.language as any,
+            word: text,
+          },
+        });
+      }
+
+      const count = await tx.wordConcept.count({ where: { packId } });
+      await tx.wordPack.update({
+        where: { id: packId },
+        data: { wordCount: count },
+      });
     });
 
-    // Update word count
-    const count = await prisma.word.count({ where: { packId } });
-    await prisma.wordPack.update({
-      where: { id: packId },
-      data: { wordCount: count },
-    });
+    const count = await prisma.wordConcept.count({ where: { packId } });
+    res.status(201).json({ added: uniqueWords.length, totalWords: count });
+  });
 
-    res.status(201).json({ added: result.count, totalWords: count });
+  /** POST /api/admin/upload-csv — upload a CSV file for pack word concepts */
+  router.post('/upload-csv', upload.single('file'), async (req, res) => {
+    try {
+      const { packId } = req.body;
+      if (!req.file || !packId) {
+        return res.status(400).json({ error: 'File and packId are required' });
+      }
+
+      const fileContent = req.file.buffer.toString('utf-8');
+      const records = parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+      });
+
+      let createdCount = 0;
+
+      await prisma.$transaction(async (tx) => {
+        for (const row of records as Record<string, string>[]) {
+          const difficulty = parseInt(row.difficulty) || 1;
+
+          const concept = await tx.wordConcept.create({
+            data: { packId, difficulty },
+          });
+
+          if (row.word_ua) {
+            await tx.wordTranslation.create({
+              data: {
+                conceptId: concept.id,
+                language: 'UA',
+                word: row.word_ua,
+                synonyms: row.synonyms_ua
+                  ? row.synonyms_ua.split(',').map((s: string) => s.trim())
+                  : [],
+                tabooWords: row.taboo_ua
+                  ? row.taboo_ua.split(',').map((s: string) => s.trim())
+                  : [],
+              },
+            });
+          }
+
+          if (row.word_en) {
+            await tx.wordTranslation.create({
+              data: {
+                conceptId: concept.id,
+                language: 'EN',
+                word: row.word_en,
+                synonyms: row.synonyms_en
+                  ? row.synonyms_en.split(',').map((s: string) => s.trim())
+                  : [],
+                tabooWords: row.taboo_en
+                  ? row.taboo_en.split(',').map((s: string) => s.trim())
+                  : [],
+              },
+            });
+          }
+
+          createdCount++;
+        }
+
+        await tx.wordPack.update({
+          where: { id: packId },
+          data: { wordCount: { increment: createdCount } },
+        });
+      });
+
+      res.json({ message: `Successfully uploaded ${createdCount} concepts.` });
+    } catch (error) {
+      console.error('CSV Upload Error:', error);
+      res.status(500).json({ error: 'Failed to process CSV file' });
+    }
   });
 
   // ─── Themes ─────────────────────────────────────────────────────────

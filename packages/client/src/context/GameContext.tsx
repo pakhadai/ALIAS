@@ -833,7 +833,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               teams: remTeams,
               gameState: GameState.PRE_ROUND,
               currentTeamIndex: 0,
-              wordDeck: [],
+              wordDeck: stateRef.current.wordDeck,
               currentWord: '',
               currentTask: null,
               imposterPhase:

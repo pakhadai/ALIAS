@@ -195,6 +195,28 @@ export async function mergeLocalPlayerStats(
   return res.playerStats;
 }
 
+export async function uploadCsvToPack(packId: string, file: File, token: string): Promise<void> {
+  const formData = new FormData();
+  formData.append('packId', packId);
+  formData.append('file', file);
+
+  const isJwt = token.includes('.');
+  const headers: HeadersInit = {};
+  if (isJwt) headers.Authorization = `Bearer ${token}`;
+  else headers['x-admin-key'] = token;
+
+  const res = await fetch(`${SERVER_URL}/api/admin/upload-csv`, {
+    method: 'POST',
+    body: formData,
+    headers,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error((err as any).error || `Failed to upload CSV: HTTP ${res.status}`);
+  }
+}
+
 // ─── Store API ─────────────────────────────────────────────────────────
 
 export interface StoreItem {

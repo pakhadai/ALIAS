@@ -386,7 +386,6 @@ export class GameEngine {
         }));
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
-        room.wordDeck = [];
         room.usedWords = [];
         room.currentWord = '';
         room.currentTask = null;
