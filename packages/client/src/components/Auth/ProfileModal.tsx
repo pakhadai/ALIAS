@@ -173,10 +173,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   ];
 
   return (
-    <div
-      className={bottomSheetBackdropClass(visible, 'z-50')}
-      onClick={handleClose}
-    >
+    <div className={bottomSheetBackdropClass(visible, 'z-50')} onClick={handleClose}>
       <div
         className={bottomSheetPanelClass(visible, 'max-w-sm')}
         style={{ maxHeight: '90vh' }}

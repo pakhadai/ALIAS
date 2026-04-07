@@ -52,7 +52,9 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
           {t.paused}
         </p>
 
-        <p className={`text-xs font-bold ${currentTheme.textSecondary} uppercase tracking-[0.2em] mt-6 opacity-80`}>
+        <p
+          className={`text-xs font-bold ${currentTheme.textSecondary} uppercase tracking-[0.2em] mt-6 opacity-80`}
+        >
           {t.tapResume}
         </p>
       </div>
