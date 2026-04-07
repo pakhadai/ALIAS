@@ -1327,6 +1327,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             theme: stateRef.current.settings.general.theme,
                             soundEnabled: stateRef.current.settings.general.soundEnabled,
                             soundPreset: stateRef.current.settings.general.soundPreset,
+                            language: stateRef.current.settings.general.language,
                           },
                         }
                       : {}),

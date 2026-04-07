@@ -6,9 +6,8 @@ type GoogleId = {
     callback: (res: GoogleIdCredentialResponse) => void;
     auto_select?: boolean;
     locale?: string;
-    /** One Tap / account picker — avoids light “card” on dark sites when set to `dark`. */
     color_scheme?: 'light' | 'dark' | string;
-    use_fedcm_for_button?: boolean;
+    use_fedcm_for_prompt?: boolean; // Оновлений параметр для FedCM
   }) => void;
   prompt: (cb?: (notification: any) => void) => void;
 };
@@ -23,15 +22,10 @@ export type GooglePromptResult =
   | { ok: true }
   | { ok: false; reason: 'unavailable' | 'blocked' | 'skipped' };
 
-/**
- * Initialize GIS only once per (clientId+locale) pair.
- * Re-initializing repeatedly triggers noisy warnings and can lead to unexpected behavior.
- */
 export function ensureGoogleInitialized(params: {
   clientId: string;
   locale: string;
   onCredential: (res: GoogleIdCredentialResponse) => void;
-  /** Match app theme so Google’s prompt isn’t a bright sheet on dark UI. */
   colorScheme?: 'light' | 'dark';
 }): GooglePromptResult {
   const googleId = getGoogleId();
@@ -46,7 +40,7 @@ export function ensureGoogleInitialized(params: {
       auto_select: false,
       locale: params.locale,
       color_scheme: scheme,
-      use_fedcm_for_button: false,
+      use_fedcm_for_prompt: true, // УВІМКНЕНО НАЙНОВІШИЙ СТАНДАРТ GOOGLE
     });
     initializedKey = key;
   }
@@ -57,10 +51,8 @@ export function promptGoogleSignIn(): GooglePromptResult {
   const googleId = getGoogleId();
   if (!googleId) return { ok: false, reason: 'unavailable' };
 
-  let result: GooglePromptResult = { ok: true };
-  googleId.prompt((notification: any) => {
-    if (notification?.isNotDisplayed?.()) result = { ok: false, reason: 'blocked' };
-    else if (notification?.isSkippedMoment?.()) result = { ok: false, reason: 'skipped' };
-  });
-  return result;
+  // Викликаємо вікно авторизації без старих колбеків (які викликали попередження GSI_LOGGER)
+  googleId.prompt();
+
+  return { ok: true };
 }

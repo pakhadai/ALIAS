@@ -43,67 +43,47 @@ export function createAdminRoutes(
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const auth = req.headers.authorization;
-      const adminKey = req.headers['x-admin-key'];
 
-      // 1. Перевірка статичного API-ключа (якщо введено вручну)
-      if (adminKey) {
-        if (config.adminApiKey && adminKey === config.adminApiKey) {
-          next();
-          return;
-        }
-        res.status(401).json({ error: 'Invalid admin key' });
-        return;
-      }
-
-      // 2. Стандартна перевірка JWT (якщо зайшли через акаунт)
       if (!auth?.startsWith('Bearer ')) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       const payload = authService.verifyToken(auth.slice(7));
-      if (!payload?.sub) {
+      if (!payload?.sub || payload.type === 'anonymous') {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
-      if (payload.type === 'anonymous') {
-        res.status(401).json({ error: 'Unauthorized' });
-        return;
-      }
+
       const user = await prisma.user.findUnique({
         where: { id: payload.sub },
         select: { email: true, isAdmin: true },
       });
-      const email = user?.email?.toLowerCase() ?? null;
-
-      // Strict in production: if ADMIN_ALLOWED_EMAILS is not set, lock admin routes.
-      if (config.nodeEnv === 'production' && config.adminAllowedEmails.length === 0) {
-        res.status(403).json({ error: 'Admin access is not configured.' });
-        return;
-      }
-
-      // Dev convenience: allow any authenticated (non-anonymous) user if whitelist is empty.
-      if (config.nodeEnv !== 'production' && config.adminAllowedEmails.length === 0) {
-        next();
-        return;
-      }
-
-      if (email && !config.adminAllowedEmails.includes(email)) {
-        res.status(403).json({ error: 'Access denied.' });
-        return;
-      }
 
       if (!user?.isAdmin) {
         res.status(403).json({ error: 'Access denied. Admin role required.' });
         return;
       }
 
-      if (email && config.adminAllowedEmails.includes(email)) {
-        next();
+      const email = user?.email?.toLowerCase() ?? null;
+
+      // Перевірка списку email-ів
+      if (config.adminAllowedEmails.length > 0) {
+        if (email && config.adminAllowedEmails.includes(email)) {
+          next();
+          return;
+        }
+        res.status(403).json({ error: 'Access denied. Email not whitelisted.' });
         return;
       }
 
-      res.status(403).json({ error: 'Access denied.' });
+      // Захист від порожнього списку в продакшені
+      if (config.nodeEnv === 'production') {
+        res.status(403).json({ error: 'Admin access is not configured.' });
+        return;
+      }
+
+      next();
     } catch (err) {
       next(err);
     }

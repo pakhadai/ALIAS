@@ -30,6 +30,14 @@
 
 ---
 
+## [2026-04-07] — Version 0.5.4: Admin auth simplification & lobby language fix
+
+### Security
+- **Strict token-based admin authentication:** спрощено функцію `adminAuth` для суворої перевірки тільки через JWT-токени. Видалено підтримку статичних API-ключів для входу в адмінку. Тепер доступ можливий тільки через авторизований акаунт з `isAdmin: true` і email у білому списку. Файл: `packages/server/src/routes/admin.ts`.
+
+### Fixed
+- **Lobby language reset bug:** при створенні нової кімнати мова більше не затирається старими налаштуваннями з сервера. Додано збереження `language` з поточних налаштувань користувача. Файл: `packages/client/src/context/GameContext.tsx`.
+
 ## [2026-04-07] — Admin panel fixes and API key authentication
 
 ### Added
@@ -53,8 +61,15 @@
 
 - **Pack language fallback fix:** вибір мови пака тепер fallback-иться на `settings.general.language`, а не на `EN`. Файл: `packages/client/src/screens/LobbyFlow.tsx`.
 
+- **Lobby language reset bug:** при створенні нової кімнати мова більше не затирається старими налаштуваннями з сервера. Додано збереження `language` з поточних налаштувань користувача. Файл: `packages/client/src/context/GameContext.tsx`.
+
 ### Changed
 - **Admin authentication flow:** оновлено логіку аутентифікації адмін-маршрутів — тепер спочатку перевіряється API-ключ у заголовку `x-admin-key`, а потім JWT-токен. Це дозволяє гнучкіший доступ для адміністраторів. Файл: `packages/server/src/routes/admin.ts`.
+
+## [2026-04-07] — Admin authentication simplification
+
+### Security
+- **Strict token-based admin authentication:** спрощено функцію `adminAuth` для суворої перевірки тільки через JWT-токени. Видалено підтримку статичних API-ключів для входу в адмінку. Тепер доступ можливий тільки через авторизований акаунт з `isAdmin: true` і email у білому списку. Файл: `packages/server/src/routes/admin.ts`.
 
 ---
 
