@@ -54,6 +54,11 @@ export const config = {
    */
   adminAllowedEmails: parseCsvList(process.env.ADMIN_ALLOWED_EMAILS).map((e) => e.toLowerCase()),
   /**
+   * Static API key for admin access (alternative to JWT).
+   * Used for manual admin login in AdminPanel.
+   */
+  adminApiKey: process.env.ADMIN_API_KEY || '',
+  /**
    * Optional IP whitelist for admin routes (VPN / WireGuard).
    *
    * - Comma-separated IPs or CIDR ranges, e.g. `127.0.0.1,::1,10.8.0.0/24`

@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from 'express';
 import multer from 'multer';
 import { parse } from 'csv-parse/sync';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, Language } from '@prisma/client';
 import type { RedisRoomStore } from '../services/RedisRoomStore';
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -43,10 +43,24 @@ export function createAdminRoutes(
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const auth = req.headers.authorization;
+      const adminKey = req.headers['x-admin-key'];
+
+      // 1. Перевірка статичного API-ключа (якщо введено вручну)
+      if (adminKey) {
+        if (config.adminApiKey && adminKey === config.adminApiKey) {
+          next();
+          return;
+        }
+        res.status(401).json({ error: 'Invalid admin key' });
+        return;
+      }
+
+      // 2. Стандартна перевірка JWT (якщо зайшли через акаунт)
       if (!auth?.startsWith('Bearer ')) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
+      
       const payload = authService.verifyToken(auth.slice(7));
       if (!payload?.sub) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -230,7 +244,7 @@ export function createAdminRoutes(
         await tx.wordTranslation.create({
           data: {
             conceptId: concept.id,
-            language: pack.language as any, // Призначаємо мову всього паку
+            language: pack.language as Language, // Призначаємо мову всього паку
             word: text,
           },
         });
