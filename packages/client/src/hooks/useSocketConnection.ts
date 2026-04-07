@@ -180,68 +180,132 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
   const createRoom = useCallback(
     (playerName: string, avatar: string, avatarId?: string | null) => {
-      const socket = socketRef.current;
-      if (!socket) return;
+      return new Promise<{ roomCode: string; playerId: string }>((resolve, reject) => {
+        const socket = socketRef.current;
+        if (!socket) {
+          reject(new Error('NO_SOCKET'));
+          return;
+        }
 
-      setIsReconnecting(false);
-      localStorage.removeItem(ROOM_CODE_KEY);
-      localStorage.removeItem(PLAYER_ID_KEY);
+        setIsReconnecting(false);
+        localStorage.removeItem(ROOM_CODE_KEY);
+        localStorage.removeItem(PLAYER_ID_KEY);
 
-      const doEmit = () => {
-        // If a previous create attempt never returned, don't keep stacking listeners.
-        socket.removeAllListeners('room:created');
-        socket.once('room:created', ({ roomCode: code, playerId }) => {
+        let detached = false;
+        let tid: number | undefined;
+        let onCreated: (d: { roomCode: string; playerId: string }) => void;
+        let onErr: (p: RoomErrorPayload) => void;
+
+        const detach = () => {
+          if (detached) return;
+          detached = true;
+          if (tid !== undefined) clearTimeout(tid);
+          socket.off('room:created', onCreated);
+          socket.off('room:error', onErr);
+        };
+
+        onCreated = ({ roomCode: code, playerId }) => {
+          detach();
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
           setRoomCode(code);
           localStorage.setItem(ROOM_CODE_KEY, code);
           localStorage.setItem(PLAYER_ID_KEY, playerId);
-        });
-        const payload = {
-          playerName,
-          avatar,
-          ...(avatarId != null && String(avatarId).trim() !== ''
-            ? { avatarId: String(avatarId).slice(0, 3) }
-            : {}),
+          resolve({ roomCode: code, playerId });
         };
-        socket.emit('room:create', payload);
-      };
 
-      scheduleEmitAfterHandshakeConnect(doEmit);
+        onErr = (payload: RoomErrorPayload) => {
+          detach();
+          reject(Object.assign(new Error(payload.message), { code: payload.code }));
+        };
+
+        tid = window.setTimeout(() => {
+          detach();
+          reject(new Error('ROOM_OPERATION_TIMEOUT'));
+        }, 45_000);
+
+        const doEmit = () => {
+          socket.removeAllListeners('room:created');
+          socket.on('room:created', onCreated);
+          socket.on('room:error', onErr);
+          const payload = {
+            playerName,
+            avatar,
+            ...(avatarId != null && String(avatarId).trim() !== ''
+              ? { avatarId: String(avatarId).slice(0, 3) }
+              : {}),
+          };
+          socket.emit('room:create', payload);
+        };
+
+        scheduleEmitAfterHandshakeConnect(doEmit);
+      });
     },
     [scheduleEmitAfterHandshakeConnect]
   );
 
   const joinRoom = useCallback(
     (code: string, playerName: string, avatar: string, avatarId?: string | null) => {
-      const socket = socketRef.current;
-      if (!socket) return;
+      return new Promise<{ roomCode: string; playerId: string }>((resolve, reject) => {
+        const socket = socketRef.current;
+        if (!socket) {
+          reject(new Error('NO_SOCKET'));
+          return;
+        }
 
-      setIsReconnecting(false);
-      localStorage.removeItem(ROOM_CODE_KEY);
-      localStorage.removeItem(PLAYER_ID_KEY);
+        setIsReconnecting(false);
+        localStorage.removeItem(ROOM_CODE_KEY);
+        localStorage.removeItem(PLAYER_ID_KEY);
 
-      const doEmit = () => {
-        // If a previous join attempt never returned, don't keep stacking listeners.
-        socket.removeAllListeners('room:joined');
-        socket.once('room:joined', ({ roomCode: joinedCode, playerId }) => {
+        let detached = false;
+        let tid: number | undefined;
+        let onJoined: (d: { roomCode: string; playerId: string }) => void;
+        let onErr: (p: RoomErrorPayload) => void;
+
+        const detach = () => {
+          if (detached) return;
+          detached = true;
+          if (tid !== undefined) clearTimeout(tid);
+          socket.off('room:joined', onJoined);
+          socket.off('room:error', onErr);
+        };
+
+        onJoined = ({ roomCode: joinedCode, playerId }) => {
+          detach();
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
           setRoomCode(joinedCode);
           localStorage.setItem(ROOM_CODE_KEY, joinedCode);
           localStorage.setItem(PLAYER_ID_KEY, playerId);
-        });
-        socket.emit('room:join', {
-          roomCode: code,
-          playerName,
-          avatar,
-          ...(avatarId != null && String(avatarId).trim() !== ''
-            ? { avatarId: String(avatarId).slice(0, 3) }
-            : {}),
-        });
-      };
+          resolve({ roomCode: joinedCode, playerId });
+        };
 
-      scheduleEmitAfterHandshakeConnect(doEmit);
+        onErr = (payload: RoomErrorPayload) => {
+          detach();
+          reject(Object.assign(new Error(payload.message), { code: payload.code }));
+        };
+
+        tid = window.setTimeout(() => {
+          detach();
+          reject(new Error('ROOM_OPERATION_TIMEOUT'));
+        }, 45_000);
+
+        const doEmit = () => {
+          socket.removeAllListeners('room:joined');
+          socket.on('room:joined', onJoined);
+          socket.on('room:error', onErr);
+          socket.emit('room:join', {
+            roomCode: code,
+            playerName,
+            avatar,
+            ...(avatarId != null && String(avatarId).trim() !== ''
+              ? { avatarId: String(avatarId).slice(0, 3) }
+              : {}),
+          });
+        };
+
+        scheduleEmitAfterHandshakeConnect(doEmit);
+      });
     },
     [scheduleEmitAfterHandshakeConnect]
   );

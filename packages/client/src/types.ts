@@ -137,8 +137,13 @@ export interface GameContextType extends AppState {
   currentTheme: ThemeConfig;
   setGameState: (state: GameState) => void;
   createNewRoom: () => void;
-  /** Returns false if validation/local storage failed (caller must not navigate to lobby). */
-  handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => boolean;
+  /** Resolves false if validation/local storage failed or room:create|join failed. */
+  handleJoin: (
+    id: string,
+    name: string,
+    avatar: string,
+    avatarId?: string | null
+  ) => Promise<boolean>;
   sendAction: (action: GameActionPayload) => void;
   playSound: (soundId: GameSoundId) => void;
   showNotification: (message: string, type?: 'info' | 'error' | 'success') => void;

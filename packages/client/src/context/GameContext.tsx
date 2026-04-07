@@ -1332,7 +1332,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           })
           .catch(() => {});
       },
-      handleJoin: (id: string, name: string, avatar: string, avatarId?: string | null) => {
+      handleJoin: async (id: string, name: string, avatar: string, avatarId?: string | null) => {
         const sanitizedName = name
           .replace(/<[^>]*>/g, '')
           .trim()
@@ -1377,15 +1377,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
 
         if (stateRef.current.gameMode === 'ONLINE') {
-          if (stateRef.current.isHost) {
-            socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
-          } else {
-            socketApi.joinRoom(
-              stateRef.current.roomCode,
-              sanitizedName,
-              safeAvatar,
-              avatarIdForServer
-            );
+          const lang = stateRef.current.settings.general.language;
+          try {
+            if (stateRef.current.isHost) {
+              await socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
+            } else {
+              await socketApi.joinRoom(
+                stateRef.current.roomCode,
+                sanitizedName,
+                safeAvatar,
+                avatarIdForServer
+              );
+            }
+            return true;
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg === 'ROOM_OPERATION_TIMEOUT' || msg === 'NO_SOCKET') {
+              showNotification(TRANSLATIONS[lang].connectionFailed ?? 'Connection failed', 'error');
+            }
+            return false;
           }
         } else {
           dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
