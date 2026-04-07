@@ -60,26 +60,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
  * @param zIndexClass e.g. z-50, z-600 for stacking above game UI.
  * @param position fixed (default) or absolute for in-screen overlays (e.g. pause).
  */
-export function bottomSheetBackdropClass(
+export const bottomSheetBackdropClass = (
   visible: boolean,
-  zIndexClass = 'z-50',
+  zIndex = 'z-50',
   position: 'fixed' | 'absolute' = 'fixed'
-): string {
-  return [
-    position === 'fixed' ? 'fixed' : 'absolute',
-    'inset-0 flex flex-col justify-end transition-all duration-300',
-    zIndexClass,
+) =>
+  `${position} inset-0 ${zIndex} flex flex-col justify-end transition-all duration-300 ${
     visible
-      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in'
-      : 'bg-transparent',
-  ].join(' ');
-}
+      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in opacity-100'
+      : 'bg-transparent opacity-0 pointer-events-none'
+  }`;
 
 /** Panel shell: rounded top, translate + pop-in when `open` is true. */
 export function bottomSheetPanelClass(open: boolean, extraClassName = ''): string {
   return [
-    'relative z-10 w-full max-w-sm md:max-w-md mx-auto rounded-t-4xl overflow-hidden',
-    'bg-(--ui-card) border border-(--ui-border) shadow-2xl',
+    'relative w-full max-w-md mx-auto rounded-t-4xl overflow-hidden',
+    'bg-(--ui-card) border border-(--ui-border)',
     'transition-transform duration-300 ease-out',
     open ? 'translate-y-0 animate-pop-in' : 'translate-y-full',
     extraClassName,

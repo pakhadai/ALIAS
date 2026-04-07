@@ -30,6 +30,32 @@
 
 ---
 
+## [2026-04-07] — Pause overlay UX, auto-login race condition, & unified modal animations
+
+### Fixed
+- **Auto-login race condition:** виправлена проблема, де `stateRef.current` у `GameContext.handleJoin()` містив застарілі значення `isHost` і `roomCode` під час автоматичного входу на EnterNameScreen. Тепер замість `stateRef.current` використовується актуальний `state` із замикання `useMemo`, що гарантує консистентність даних при швидких переходах (створення гри → введення імені → auto-login). Результат: авто-вхід як для хостів, так і для гравців, які приєднуються, може надійно відбутися без затримок. Файл: `packages/client/src/context/GameContext.tsx:handleJoin()`.
+
+### Changed
+- **PlayingPauseOverlay:** поліпшена UX паузи під час гри:
+  - Додано `onResume` prop для прямого callback на натиск
+  - Весь оверлей тепер клікабельний (фон + панель)
+  - Збільшено візуальну масштабність: `py-16` замість `py-12`, іконка `text-[80px]` замість `text-6xl`
+  - Замінено іконку з `pause_circle` на `play_circle` (інтуїтивніше для resume)
+  - Додано масштабний transition: `active:scale-[0.98]`
+  - Вміст детальніше описаний для ясної взаємодії
+  - Файл: `packages/client/src/screens/GameFlow/screens/PlayingPauseOverlay.tsx`.
+
+- **Unified bottom-sheet modal animations:** стандартизовано анімацію появи/зникнення для всіх bottom-sheet модалок:
+  - Оновлено `bottomSheetBackdropClass()` та `bottomSheetPanelClass()` у `Shared.tsx` для генерування однорідних CSS-класів
+  - Фон тепер має `bg-transparent opacity-0 pointer-events-none` при закритті (замість лише `bg-transparent`)
+  - Панель слідує `translate-y-full` (вниз) при закритті без анімованого повороту
+  - Всі модалки (`ProfileModal`, `LoginModal`, `CustomDeckModal`, `StoreModal`, `QuickBuyModal`, `RulesModal`, QR-sheet, AddPlayer-sheet) тепер використовують одні й ті ж класи
+  - Особливо `ProfileModal` було перероблено на єдині функції замість жорстко прописаних класів
+  - Результат: плавна, зв'язна анімація по всьому додатку при появі та закритті модалок
+  - Файли: `packages/client/src/components/Shared.tsx`, `packages/client/src/components/Auth/ProfileModal.tsx`, `packages/client/src/screens/GameFlow/screens/PlayingPauseOverlay.tsx`.
+
+---
+
 ## [2026-04-07] — Critical room management & mobile state sync fixes
 
 ### Fixed

@@ -4,6 +4,7 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { fetchStore, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 import { GameState } from '../../types';
 import { TRANSLATIONS } from '../../constants';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
@@ -173,14 +174,11 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
-        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in' : 'bg-transparent'}`}
+      className={bottomSheetBackdropClass(visible, 'z-50')}
       onClick={handleClose}
     >
       <div
-        className={`relative w-full max-w-sm mx-auto rounded-t-4xl overflow-hidden
-          bg-(--ui-card) border border-(--ui-border) transition-transform duration-300 ease-out
-          ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
+        className={bottomSheetPanelClass(visible, 'max-w-sm')}
         style={{ maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
       >

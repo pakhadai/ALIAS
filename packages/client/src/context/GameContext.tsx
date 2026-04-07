@@ -1382,14 +1382,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const avatarIdForServer =
           avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
 
-        if (stateRef.current.gameMode === 'ONLINE') {
-          const lang = stateRef.current.settings.general.language;
+        if (state.gameMode === 'ONLINE') {
+          const lang = state.settings.general.language;
           try {
-            if (stateRef.current.isHost) {
+            if (state.isHost) {
               await socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
             } else {
               await socketApi.joinRoom(
-                stateRef.current.roomCode,
+                state.roomCode,
                 sanitizedName,
                 safeAvatar,
                 avatarIdForServer

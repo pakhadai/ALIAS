@@ -177,6 +177,7 @@ export const PlayingScreen = () => {
         <PlayingPauseOverlay
           currentTheme={currentTheme}
           t={{ paused: t.paused, tapResume: t.tapResume }}
+          onResume={togglePause}
         />
       )}
 
