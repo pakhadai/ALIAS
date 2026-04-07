@@ -64,11 +64,30 @@ describe('roomCreateSchema', () => {
     expect(validatePayload(roomCreateSchema, null)).toBeNull();
     expect(validatePayload(roomCreateSchema, 'string')).toBeNull();
   });
+
+  it('coerces non-string playerName (e.g. mobile JSON quirks)', () => {
+    const result = validatePayload(roomCreateSchema, {
+      playerName: 12345 as unknown as string,
+      avatar: '🦊',
+    });
+    expect(result).not.toBeNull();
+    expect(result!.playerName).toBe('12345');
+  });
 });
 
 // ─── roomJoinSchema ──────────────────────────────────────────────────────────
 
 describe('roomJoinSchema', () => {
+  it('normalizes fullwidth digits in room code (mobile IME)', () => {
+    const result = validatePayload(roomJoinSchema, {
+      roomCode: '１２３４５',
+      playerName: 'Bob',
+      avatar: '🐶',
+    });
+    expect(result).not.toBeNull();
+    expect(result!.roomCode).toBe('12345');
+  });
+
   it('accepts valid 5-digit room code', () => {
     const result = validatePayload(roomJoinSchema, {
       roomCode: '12345',

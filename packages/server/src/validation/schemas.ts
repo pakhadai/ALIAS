@@ -4,34 +4,66 @@ import type { GameActionPayload, GameSettingsUpdate } from '@alias/shared';
 
 // --- Socket event payloads ---
 
+/** Fullwidth digits (common on mobile IME) → ASCII 0–9. */
+function normalizeAsciiDigits(s: string): string {
+  return s.replace(/[\uFF10-\uFF19]/g, (ch) =>
+    String.fromCharCode(ch.charCodeAt(0) - 0xff10 + 0x30)
+  );
+}
+
+function preprocessRoomCode(v: unknown): unknown {
+  if (v == null) return v;
+  return normalizeAsciiDigits(String(v).trim());
+}
+
+function preprocessPlayerName(v: unknown): unknown {
+  if (v == null) return v;
+  return String(v)
+    .replace(/<[^>]*>/g, '')
+    .trim();
+}
+
+function preprocessAvatar(v: unknown): unknown {
+  if (v == null) return v;
+  return String(v).trim();
+}
+
+function preprocessAvatarId(v: unknown): unknown {
+  if (v === undefined) return undefined;
+  if (v === null) return null;
+  const s = String(v).trim().slice(0, 3);
+  return s === '' ? undefined : s;
+}
+
 export const roomCreateSchema = z.object({
-  playerName: z
-    .string()
-    .min(1)
-    .max(20)
-    .transform((s) => s.replace(/<[^>]*>/g, '')),
-  avatar: z.string().min(1).max(4),
-  avatarId: z.string().max(3).optional().nullable(),
+  playerName: z.preprocess(preprocessPlayerName, z.string().min(1).max(20)),
+  avatar: z.preprocess(preprocessAvatar, z.string().min(1).max(12)),
+  avatarId: z.preprocess(preprocessAvatarId, z.union([z.string().max(3), z.null()]).optional()),
 });
 
 export const roomJoinSchema = z.object({
-  roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
-  playerName: z
-    .string()
-    .min(1)
-    .max(20)
-    .transform((s) => s.replace(/<[^>]*>/g, '')),
-  avatar: z.string().min(1).max(4),
-  avatarId: z.string().max(3).optional().nullable(),
+  roomCode: z.preprocess(
+    preprocessRoomCode,
+    z.string().regex(/^\d{5}$/, 'Room code must be 5 digits')
+  ),
+  playerName: z.preprocess(preprocessPlayerName, z.string().min(1).max(20)),
+  avatar: z.preprocess(preprocessAvatar, z.string().min(1).max(12)),
+  avatarId: z.preprocess(preprocessAvatarId, z.union([z.string().max(3), z.null()]).optional()),
 });
 
 export const roomRejoinSchema = z.object({
-  roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
+  roomCode: z.preprocess(
+    preprocessRoomCode,
+    z.string().regex(/^\d{5}$/, 'Room code must be 5 digits')
+  ),
   playerId: z.string().uuid(),
 });
 
 export const roomExistsSchema = z.object({
-  roomCode: z.string().regex(/^\d{5}$/, 'Room code must be 5 digits'),
+  roomCode: z.preprocess(
+    preprocessRoomCode,
+    z.string().regex(/^\d{5}$/, 'Room code must be 5 digits')
+  ),
 });
 
 // --- Game settings validation ---

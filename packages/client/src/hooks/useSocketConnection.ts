@@ -63,6 +63,28 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   optionsRef.current = options;
   /** Синхронний ref для myPlayerId — потрібен для onStateSync, щоб одразу мати актуальний id після room:created */
   const myPlayerIdRef = useRef('');
+  /** Скасовує попередній `connect`-слухач для room:create / room:join (мобільні: disconnect не завжди синхронний). */
+  const pendingRoomConnectHandlerRef = useRef<(() => void) | null>(null);
+
+  const scheduleEmitAfterHandshakeConnect = useCallback((emitWhenConnected: () => void) => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    if (pendingRoomConnectHandlerRef.current) {
+      socket.off('connect', pendingRoomConnectHandlerRef.current);
+      pendingRoomConnectHandlerRef.current = null;
+    }
+    prepareSocketForRoomHandshake(socket);
+    const onConnected = () => {
+      socket.off('connect', onConnected);
+      pendingRoomConnectHandlerRef.current = null;
+      emitWhenConnected();
+    };
+    pendingRoomConnectHandlerRef.current = onConnected;
+    socket.on('connect', onConnected);
+    window.setTimeout(() => {
+      socket.connect();
+    }, 0);
+  }, []);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -135,6 +157,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     });
 
     return () => {
+      if (pendingRoomConnectHandlerRef.current) {
+        socket.off('connect', pendingRoomConnectHandlerRef.current);
+        pendingRoomConnectHandlerRef.current = null;
+      }
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
@@ -152,47 +178,39 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socketRef.current?.disconnect();
   }, []);
 
-  const createRoom = useCallback((playerName: string, avatar: string, avatarId?: string | null) => {
-    const socket = socketRef.current;
-    if (!socket) return;
+  const createRoom = useCallback(
+    (playerName: string, avatar: string, avatarId?: string | null) => {
+      const socket = socketRef.current;
+      if (!socket) return;
 
-    setIsReconnecting(false);
-    localStorage.removeItem(ROOM_CODE_KEY);
-    localStorage.removeItem(PLAYER_ID_KEY);
+      setIsReconnecting(false);
+      localStorage.removeItem(ROOM_CODE_KEY);
+      localStorage.removeItem(PLAYER_ID_KEY);
 
-    const doEmit = () => {
-      // If a previous create attempt never returned, don't keep stacking listeners.
-      socket.removeAllListeners('room:created');
-      socket.once('room:created', ({ roomCode: code, playerId }) => {
-        myPlayerIdRef.current = playerId;
-        setMyPlayerId(playerId);
-        setRoomCode(code);
-        localStorage.setItem(ROOM_CODE_KEY, code);
-        localStorage.setItem(PLAYER_ID_KEY, playerId);
-      });
-      const payload = {
-        playerName,
-        avatar,
-        ...(avatarId != null && String(avatarId).trim() !== ''
-          ? { avatarId: String(avatarId).slice(0, 3) }
-          : {}),
+      const doEmit = () => {
+        // If a previous create attempt never returned, don't keep stacking listeners.
+        socket.removeAllListeners('room:created');
+        socket.once('room:created', ({ roomCode: code, playerId }) => {
+          myPlayerIdRef.current = playerId;
+          setMyPlayerId(playerId);
+          setRoomCode(code);
+          localStorage.setItem(ROOM_CODE_KEY, code);
+          localStorage.setItem(PLAYER_ID_KEY, playerId);
+        });
+        const payload = {
+          playerName,
+          avatar,
+          ...(avatarId != null && String(avatarId).trim() !== ''
+            ? { avatarId: String(avatarId).slice(0, 3) }
+            : {}),
+        };
+        socket.emit('room:create', payload);
       };
-      socket.emit('room:create', payload);
-    };
 
-    prepareSocketForRoomHandshake(socket);
-
-    const onConnect = () => {
-      socket.off('connect', onConnect);
-      doEmit();
-    };
-    socket.on('connect', onConnect);
-    if (socket.connected) {
-      onConnect();
-    } else {
-      socket.connect();
-    }
-  }, []);
+      scheduleEmitAfterHandshakeConnect(doEmit);
+    },
+    [scheduleEmitAfterHandshakeConnect]
+  );
 
   const joinRoom = useCallback(
     (code: string, playerName: string, avatar: string, avatarId?: string | null) => {
@@ -223,20 +241,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       };
 
-      prepareSocketForRoomHandshake(socket);
-
-      const onConnect = () => {
-        socket.off('connect', onConnect);
-        doEmit();
-      };
-      socket.on('connect', onConnect);
-      if (socket.connected) {
-        onConnect();
-      } else {
-        socket.connect();
-      }
+      scheduleEmitAfterHandshakeConnect(doEmit);
     },
-    []
+    [scheduleEmitAfterHandshakeConnect]
   );
 
   const checkRoomExists = useCallback((code: string): Promise<boolean> => {

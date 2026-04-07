@@ -35,6 +35,7 @@ import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
 import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
+import { truncateUtf16Safe } from '../utils/utf16';
 
 function parseHexColor(hex: string): { r: number; g: number; b: number } | null {
   const raw = hex.trim().replace(/^#/, '');
@@ -1336,9 +1337,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .replace(/<[^>]*>/g, '')
           .trim()
           .slice(0, 20);
-        const safeAvatar = String(avatar ?? '')
-          .trim()
-          .slice(0, 4);
+        const safeAvatar = truncateUtf16Safe(String(avatar ?? '').trim(), 12);
         if (!sanitizedName) {
           const lang = stateRef.current.settings.general.language;
           showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Name is required', 'error');
