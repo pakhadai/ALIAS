@@ -30,6 +30,25 @@
 
 ---
 
+## [2026-04-07] — Critical room management & mobile state sync fixes
+
+### Fixed
+- **Headless room bug (БАГ 1.1):** виправлена логіка передачі прав хоста при виході хоста з кімнати. Хост більше не залишається "безголовим". Файл: `packages/server/src/services/RoomManager.ts:removePlayer()`.
+- **Memory leak (БАГ 1.2):** порожні кімнати тепер автоматично очищаються при виході останнього гравця, замість того щоб зависати в Redis на 2 години. Файл: `packages/server/src/services/RoomManager.ts:removePlayer()`.
+- **Premature host migration (БАГ 1.3):** видалена логіка миттєвої міграції хоста з `markSocketDisconnected()` — міграція тепер відбувається лише в `finalizeGraceRemoval()` після grace-періоду, що дозволяє хостам з морганням інтернету зберегти свої права. Файл: `packages/server/src/services/RoomManager.ts:markSocketDisconnected()`.
+- **Room code collisions in cluster (БАГ 2.1):** `generateRoomCode()` тепер асинхронна і перевіряє унікальність коду не тільки в локальній пам'яті, а й у Redis, запобігаючи колізіям у кластерних розгортаннях. Файл: `packages/server/src/services/RoomManager.ts:generateRoomCode()`, `packages/server/src/handlers/socketHandlers.ts`.
+- **Ghost players (multi-join corruption):** додана перевірка в `room:create` та `room:join` обробники — гравець не може бути одночасно у двох кімнатах. Файл: `packages/server/src/handlers/socketHandlers.ts`.
+- **Dead host assignment:** при міграції прав хоста тепер пріоритизуються онлайн-гравці. Якщо всі офлайн, праці йдуть до першого гравця в списку (кімната все одно скоро помре). Файли: `packages/server/src/services/RoomManager.ts:removePlayer()` та `finalizeGraceRemoval()`.
+- **Race condition on mobile join (БАГ 3.x):** виправлена race condition в `onStateSync()` (GameContext), де server-side `gameState` перезаписував client-side навігацію на мобільних мережах. Тепер payload будується умовно: якщо `keepClientNav = true`, `gameState` не включається в dispatch, що дозволяє React об'єднати дані. Результат: користувачі більше не зависають на ENTER_NAME екрані після приєднання. Файл: `packages/client/src/context/GameContext.tsx:onStateSync()`.
+
+### Added
+- **New error code:** `ALREADY_IN_ROOM` для повідомлення користувачу при спробі приєднатися до нової кімнати без виходу з поточної. Файл: `packages/shared/src/events.ts`.
+
+### Changed
+- **RoomManager.createRoom():** тепер поверта `Promise<Room>` замість синхронного результату (через асинхронну генерацію коду з перевіркою Redis). Всі тести оновлені на `async/await`. Файл: `packages/server/src/services/RoomManager.ts`, `packages/server/src/handlers/socketHandlers.ts`, `packages/server/src/services/__tests__/RoomManager.test.ts`.
+
+---
+
 ## [2026-04-06] — Midnight Ruby (default theme), розширені `--ui-*` та документація
 
 ### Changed
