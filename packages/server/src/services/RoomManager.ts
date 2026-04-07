@@ -154,16 +154,22 @@ export class RoomManager {
     this.persistSocket(socketId, roomCode, playerId);
   }
 
-  generateRoomCode(): string {
+  async generateRoomCode(): Promise<string> {
     let code: string;
+    let exists = true;
+    let attempts = 0;
     do {
       code = Math.floor(10000 + Math.random() * 90000).toString();
-    } while (this.rooms.has(code));
+      const localExists = this.rooms.has(code);
+      const redisExists = this.redisStore?.isConnected ? await this.redisStore.roomExists(code) : false;
+      exists = localExists || redisExists;
+      attempts++;
+    } while (exists && attempts < 100);
     return code;
   }
 
-  createRoom(hostSocketId: string): Room {
-    const code = this.generateRoomCode();
+  async createRoom(hostSocketId: string): Promise<Room> {
+    const code = await this.generateRoomCode();
     const hostPlayerId = uuidv4();
     const room: Room = {
       code,
@@ -280,6 +286,8 @@ export class RoomManager {
     const playerId = room.socketToPlayer.get(socketId);
     if (!playerId) return null;
 
+    const wasHost = room.hostPlayerId === playerId; // Перевіряємо чи був це хост
+
     room.players = room.players.filter((p) => p.id !== playerId);
     room.teams = room.teams
       .map((team) => {
@@ -299,6 +307,29 @@ export class RoomManager {
       room.currentTeamIndex = 0;
     }
     room.socketToPlayer.delete(socketId);
+
+    // Очищення, якщо кімната порожня
+    if (room.players.length === 0) {
+      if (room.timerInterval) clearInterval(room.timerInterval);
+      this.rooms.delete(roomCode);
+      this.clearWriterMismatchThrottle(roomCode);
+      if (this.redisStore?.isConnected) {
+        this.redisStore.deleteRoom(roomCode).catch(() => {});
+      }
+      return playerId;
+    }
+
+    // Передача прав хоста, якщо кімната не порожня
+    if (wasHost) {
+      // Шукаємо першого, хто онлайн. Якщо всі офлайн — беремо будь-кого (кімната все одно скоро помре).
+      const nextPlayer = room.players.find(p => p.isConnected) || room.players[0];
+      if (nextPlayer) {
+        room.hostPlayerId = nextPlayer.id;
+        room.hostSocketId = this.getPlayerSocketId(room, nextPlayer.id) ?? '';
+        this.applyHostFlags(room, nextPlayer.id);
+      }
+    }
+
     this.persistRoom(room);
     if (this.redisStore?.isConnected) {
       this.redisStore.removeSocket(socketId).catch(() => {});
@@ -400,16 +431,9 @@ export class RoomManager {
 
       let wasHostMigration = false;
       if (wasHost) {
-        const firstEntry = room.socketToPlayer.entries().next().value;
-        if (firstEntry) {
-          const [newHostSocketId, newHostPlayerId] = firstEntry;
-          room.hostSocketId = newHostSocketId;
-          room.hostPlayerId = newHostPlayerId;
-          this.applyHostFlags(room, newHostPlayerId);
-          wasHostMigration = true;
-        } else {
-          room.hostSocketId = '';
-        }
+        // Host migration is now handled only in finalizeGraceRemoval
+        room.hostSocketId = '';
+        wasHostMigration = false;
       }
 
       this.persistRoom(room);
@@ -472,11 +496,12 @@ export class RoomManager {
         const [newHostSocketId, newHostPlayerId] = firstEntry;
         room.hostSocketId = newHostSocketId;
         room.hostPlayerId = newHostPlayerId;
-        this.applyHostFlags(room, newHostPlayerId);
+        this.applyHostFlags(room, newHostP.id);
         this.persistRoom(room);
         return { roomCode, removedPlayerId: playerId, newHostSocketId, wasMigration: true };
       }
-      const newHostP = room.players[0];
+      // Шукаємо першого, хто онлайн. Якщо всі офлайн — беремо будь-кого (кімната все одно скоро помре).
+      const newHostP = room.players.find(p => p.isConnected) || room.players[0];
       room.hostPlayerId = newHostP.id;
       room.hostSocketId = this.getPlayerSocketId(room, newHostP.id) ?? '';
       this.applyHostFlags(room, newHostP.id);

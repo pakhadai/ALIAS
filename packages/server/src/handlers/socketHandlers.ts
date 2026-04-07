@@ -74,14 +74,20 @@ export function registerSocketHandlers(
     });
   });
 
-  onSocket(socket, 'room:create', (rawData) => {
+  onSocket(socket, 'room:create', async (rawData) => {
+    // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо створювати нову
+    if (socket.data.roomCode) {
+      socket.emit('room:error', roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати'));
+      return;
+    }
+
     const data = validatePayload(roomCreateSchema, rawData);
     if (!data) {
       socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
       return;
     }
 
-    const room = roomManager.createRoom(socket.id);
+    const room = await roomManager.createRoom(socket.id);
     const player = roomManager.addPlayer(
       room.code,
       socket.id,
@@ -109,6 +115,12 @@ export function registerSocketHandlers(
     const data = validatePayload(roomJoinSchema, rawData);
     if (!data) {
       socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
+      return;
+    }
+
+    // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо приєднуватися до іншої
+    if (socket.data.roomCode) {
+      socket.emit('room:error', roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати'));
       return;
     }
 
