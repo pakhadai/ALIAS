@@ -28,6 +28,11 @@
 - Чому (контекст, причина)
 ```
 
+## [2026-04-07] — Pre-commit hooks for code quality
+
+### Added
+- **Pre-commit hooks with Husky:** додано автоматичну перевірку якості коду перед кожним комітом. Тепер перед пушем автоматично запускаються перевірки типів (`typecheck`), лінтингу (`lint`) та форматування (`format:check`). Це запобігає проблемам з CI та забезпечує консистентність коду. Файли: `.husky/pre-commit`, `package.json` (додано скрипт `prepare` та `verify`).
+
 ---
 
 ## [2026-04-07] — Version 0.5.4: Admin auth simplification & lobby language fix
