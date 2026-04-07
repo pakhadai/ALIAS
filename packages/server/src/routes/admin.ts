@@ -132,28 +132,30 @@ export function createAdminRoutes(
     res.json(packs);
   });
 
-  /** GET /api/admin/packs/:id — get pack with words */
+  /** GET /api/admin/packs/:id — get pack with concepts and translations */
   router.get('/packs/:id', async (req, res) => {
     const pack = await prisma.wordPack.findUnique({
       where: { id: req.params.id },
       include: {
         concepts: {
           include: {
-            translations: true,
-          },
-        },
+            translations: {
+              where: { language: 'UA' } // В адмінці показуємо український переклад для орієнтиру
+            }
+          }
+        }
       },
     });
     if (!pack) {
       res.status(404).json({ error: 'Pack not found' });
       return;
     }
-
-    const words = pack.concepts.flatMap((concept) =>
-      concept.translations
-        .filter((translation) => translation.language === pack.language)
-        .map((translation) => ({ id: translation.id, text: translation.word }))
-    );
+    
+    // Форматуємо дані так, як очікує старий фронтенд адмінки (щоб не переписувати весь UI)
+    const words = pack.concepts.map(c => ({
+      id: c.id, // Це ID концепту
+      text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`
+    }));
 
     res.json({ ...pack, words });
   });
@@ -193,33 +195,19 @@ export function createAdminRoutes(
     res.json({ ok: true });
   });
 
-  /** DELETE /api/admin/packs/:packId/words/:wordId — delete a single word translation */
-  router.delete('/packs/:packId/words/:wordId', async (req, res) => {
-    const { packId, wordId } = req.params;
-    const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
-    if (!pack) {
-      res.status(404).json({ error: 'Pack not found' });
-      return;
-    }
-
-    const deletedTranslation = await prisma.wordTranslation.delete({
-      where: { id: wordId },
-      select: { conceptId: true },
-    });
-
-    const remainingTranslations = await prisma.wordTranslation.count({
-      where: { conceptId: deletedTranslation.conceptId },
-    });
-    if (remainingTranslations === 0) {
-      await prisma.wordConcept.delete({ where: { id: deletedTranslation.conceptId } });
-    }
-
+  /** DELETE /api/admin/packs/:packId/words/:conceptId — delete a single concept */
+  router.delete('/packs/:packId/words/:conceptId', async (req, res) => {
+    const { packId, conceptId } = req.params;
+    
+    // Видаляємо весь концепт (його переклади видаляться автоматично завдяки onDelete: Cascade)
+    await prisma.wordConcept.delete({ where: { id: conceptId } });
+    
     const count = await prisma.wordConcept.count({ where: { packId } });
     await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
     res.json({ ok: true, totalWords: count });
   });
 
-  /** POST /api/admin/packs/:id/words — bulk add words to a pack */
+  /** POST /api/admin/packs/:id/words — bulk add simple words to a pack */
   router.post('/packs/:id/words', async (req, res) => {
     const { words } = req.body as { words?: string[] };
     if (!Array.isArray(words) || words.length === 0) {
@@ -230,35 +218,31 @@ export function createAdminRoutes(
     const packId = req.params.id;
     const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
     if (!pack) {
-      res.status(404).json({ error: 'Pack not found' });
-      return;
+      return res.status(404).json({ error: 'Pack not found' });
     }
 
     const uniqueWords = [...new Set(words.map((w) => w.trim()).filter(Boolean))];
+    let addedCount = 0;
 
     await prisma.$transaction(async (tx) => {
       for (const text of uniqueWords) {
-        const concept = await tx.wordConcept.create({
-          data: { packId, difficulty: 1 },
-        });
+        const concept = await tx.wordConcept.create({ data: { packId } });
         await tx.wordTranslation.create({
           data: {
             conceptId: concept.id,
-            language: pack.language as any,
+            language: pack.language as any, // Призначаємо мову всього паку
             word: text,
-          },
+          }
         });
+        addedCount++;
       }
-
+      
       const count = await tx.wordConcept.count({ where: { packId } });
-      await tx.wordPack.update({
-        where: { id: packId },
-        data: { wordCount: count },
-      });
+      await tx.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
     });
 
-    const count = await prisma.wordConcept.count({ where: { packId } });
-    res.status(201).json({ added: uniqueWords.length, totalWords: count });
+    const finalCount = await prisma.wordConcept.count({ where: { packId } });
+    res.status(201).json({ added: addedCount, totalWords: finalCount });
   });
 
   /** POST /api/admin/upload-csv — upload a CSV file for pack word concepts */
