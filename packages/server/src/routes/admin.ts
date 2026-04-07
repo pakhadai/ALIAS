@@ -140,21 +140,21 @@ export function createAdminRoutes(
         concepts: {
           include: {
             translations: {
-              where: { language: 'UA' } // В адмінці показуємо український переклад для орієнтиру
-            }
-          }
-        }
+              where: { language: 'UA' }, // В адмінці показуємо український переклад для орієнтиру
+            },
+          },
+        },
       },
     });
     if (!pack) {
       res.status(404).json({ error: 'Pack not found' });
       return;
     }
-    
+
     // Форматуємо дані так, як очікує старий фронтенд адмінки (щоб не переписувати весь UI)
-    const words = pack.concepts.map(c => ({
+    const words = pack.concepts.map((c) => ({
       id: c.id, // Це ID концепту
-      text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`
+      text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`,
     }));
 
     res.json({ ...pack, words });
@@ -198,10 +198,10 @@ export function createAdminRoutes(
   /** DELETE /api/admin/packs/:packId/words/:conceptId — delete a single concept */
   router.delete('/packs/:packId/words/:conceptId', async (req, res) => {
     const { packId, conceptId } = req.params;
-    
+
     // Видаляємо весь концепт (його переклади видаляться автоматично завдяки onDelete: Cascade)
     await prisma.wordConcept.delete({ where: { id: conceptId } });
-    
+
     const count = await prisma.wordConcept.count({ where: { packId } });
     await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
     res.json({ ok: true, totalWords: count });
@@ -232,11 +232,11 @@ export function createAdminRoutes(
             conceptId: concept.id,
             language: pack.language as any, // Призначаємо мову всього паку
             word: text,
-          }
+          },
         });
         addedCount++;
       }
-      
+
       const count = await tx.wordConcept.count({ where: { packId } });
       await tx.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
     });
