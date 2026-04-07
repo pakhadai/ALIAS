@@ -219,7 +219,7 @@ describe('buildDeck (with Prisma)', () => {
           status: 'approved',
         }),
       },
-      word: { findMany: vi.fn() },
+      wordTranslation: { findMany: vi.fn() },
     } as any;
 
     service.setPrisma(mockPrisma);

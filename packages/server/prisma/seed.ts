@@ -3267,10 +3267,12 @@ async function main() {
           packId: wordPack.id,
           difficulty: 1,
           translations: {
-            create: [{
-              language: pack.language as any,
-              word: text,
-            }],
+            create: [
+              {
+                language: pack.language as any,
+                word: text,
+              },
+            ],
           },
         },
       });
