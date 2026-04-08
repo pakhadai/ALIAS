@@ -6,6 +6,12 @@ const ROOM_PREFIX = 'alias:room:';
 /** Last process that persisted room JSON — ops hint for multi-instance (sticky session debugging). */
 const ROOM_WRITER_PREFIX = 'alias:room:writer:';
 const SOCKET_KEY_PREFIX = 'alias:socket:';
+/**
+ * Separate prefix for the IMPOSTER secret word.
+ * Intentionally NOT under `alias:room:` so the SCAN in getLiveStats never counts it.
+ * The word is never included in GameSyncState (it's secret from all clients).
+ */
+const IMPOSTER_WORD_PREFIX = 'alias:imposter:';
 
 export class RedisRoomStore {
   private redis: Redis | null = null;
@@ -76,7 +82,37 @@ export class RedisRoomStore {
   async deleteRoom(roomCode: string): Promise<void> {
     if (!this.redis) return;
     try {
-      await this.redis.del(`${ROOM_PREFIX}${roomCode}`, `${ROOM_WRITER_PREFIX}${roomCode}`);
+      await this.redis.del(
+        `${ROOM_PREFIX}${roomCode}`,
+        `${ROOM_WRITER_PREFIX}${roomCode}`,
+        `${IMPOSTER_WORD_PREFIX}${roomCode}`
+      );
+    } catch {}
+  }
+
+  /** Persist the IMPOSTER secret word (stored separately — never in GameSyncState). */
+  async saveImposterWord(roomCode: string, word: string): Promise<void> {
+    if (!this.redis) return;
+    try {
+      await this.redis.set(`${IMPOSTER_WORD_PREFIX}${roomCode}`, word, 'EX', ROOM_TTL);
+    } catch {}
+  }
+
+  /** Load the IMPOSTER secret word, or null if not found. */
+  async getImposterWord(roomCode: string): Promise<string | null> {
+    if (!this.redis) return null;
+    try {
+      return await this.redis.get(`${IMPOSTER_WORD_PREFIX}${roomCode}`);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Remove the IMPOSTER secret word (e.g. on game reset or room expiry). */
+  async deleteImposterWord(roomCode: string): Promise<void> {
+    if (!this.redis) return;
+    try {
+      await this.redis.del(`${IMPOSTER_WORD_PREFIX}${roomCode}`);
     } catch {}
   }
 

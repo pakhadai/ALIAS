@@ -23,10 +23,9 @@ type TopPurchasedPackRow = {
 };
 import { config } from '../config';
 import { ipWhitelist } from '../middleware/ipWhitelist';
-import { AuthService } from '../services/AuthService';
+import { authService } from '../services/AuthService';
 import { broadcastPush } from './push';
-
-const authService = new AuthService();
+import { asyncRoute } from '../utils/asyncRoute';
 
 export function createAdminRoutes(
   prisma: PrismaClient,
@@ -92,159 +91,186 @@ export function createAdminRoutes(
   router.use(adminAuth);
 
   /** GET /api/admin/live — Redis: active room keys + socket bindings */
-  router.get('/live', async (_req, res) => {
-    const asOf = new Date().toISOString();
-    if (!redisStore) {
-      res.json({ activeRooms: 0, playersOnline: 0, redisConnected: false, asOf });
-      return;
-    }
-    const stats = await redisStore.getLiveStats();
-    res.json({ ...stats, asOf });
-  });
+  router.get(
+    '/live',
+    asyncRoute(async (_req, res) => {
+      const asOf = new Date().toISOString();
+      if (!redisStore) {
+        res.json({ activeRooms: 0, playersOnline: 0, redisConnected: false, asOf });
+        return;
+      }
+      const stats = await redisStore.getLiveStats();
+      res.json({ ...stats, asOf });
+    })
+  );
+
   // ─── WordPacks ──────────────────────────────────────────────────────
 
   /** GET /api/admin/packs — list all packs */
-  router.get('/packs', async (_req, res) => {
-    const packs = await prisma.wordPack.findMany({
-      orderBy: [{ language: 'asc' }, { category: 'asc' }],
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        language: true,
-        category: true,
-        difficulty: true,
-        version: true,
-        price: true,
-        isFree: true,
-        wordCount: true,
-        description: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-    res.json(packs);
-  });
+  router.get(
+    '/packs',
+    asyncRoute(async (_req, res) => {
+      const packs = await prisma.wordPack.findMany({
+        orderBy: [{ language: 'asc' }, { category: 'asc' }],
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          language: true,
+          category: true,
+          difficulty: true,
+          version: true,
+          price: true,
+          isFree: true,
+          wordCount: true,
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      res.json(packs);
+    })
+  );
 
   /** GET /api/admin/packs/:id — get pack with concepts and translations */
-  router.get('/packs/:id', async (req, res) => {
-    const pack = await prisma.wordPack.findUnique({
-      where: { id: req.params.id },
-      include: {
-        concepts: {
-          include: {
-            translations: {
-              where: { language: 'UA' }, // В адмінці показуємо український переклад для орієнтиру
+  router.get(
+    '/packs/:id',
+    asyncRoute(async (req, res) => {
+      const pack = await prisma.wordPack.findUnique({
+        where: { id: req.params.id },
+        include: {
+          concepts: {
+            include: {
+              translations: {
+                where: { language: 'UA' }, // В адмінці показуємо український переклад для орієнтиру
+              },
             },
           },
         },
-      },
-    });
-    if (!pack) {
-      res.status(404).json({ error: 'Pack not found' });
-      return;
-    }
-
-    // Форматуємо дані так, як очікує старий фронтенд адмінки (щоб не переписувати весь UI)
-    const words = pack.concepts.map((c) => ({
-      id: c.id, // Це ID концепту
-      text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`,
-    }));
-
-    res.json({ ...pack, words });
-  });
-
-  /** POST /api/admin/packs — create a new pack */
-  router.post('/packs', async (req, res) => {
-    const { slug, name, language, category, difficulty, price, isFree, description } = req.body;
-    if (!slug || !name || !language || !category) {
-      res.status(400).json({ error: 'slug, name, language, category are required' });
-      return;
-    }
-    const pack = await prisma.wordPack.create({
-      data: { slug, name, language, category, difficulty, price, isFree, description },
-    });
-    // Auto-notify subscribers about new pack
-    broadcastPush(prisma, {
-      title: '🃏 Новий набір слів!',
-      body: `«${pack.name}» вже доступний у магазині`,
-      url: '/?tab=store',
-    }).catch(() => {});
-    res.status(201).json(pack);
-  });
-
-  /** PUT /api/admin/packs/:id — update pack metadata */
-  router.put('/packs/:id', async (req, res) => {
-    const { name, difficulty, price, isFree, description } = req.body;
-    const pack = await prisma.wordPack.update({
-      where: { id: req.params.id },
-      data: { name, difficulty, price, isFree, description },
-    });
-    res.json(pack);
-  });
-
-  /** DELETE /api/admin/packs/:id — delete pack and its words */
-  router.delete('/packs/:id', async (req, res) => {
-    await prisma.wordPack.delete({ where: { id: req.params.id } });
-    res.json({ ok: true });
-  });
-
-  /** DELETE /api/admin/packs/:packId/words/:conceptId — delete a single concept */
-  router.delete('/packs/:packId/words/:conceptId', async (req, res) => {
-    const { packId, conceptId } = req.params;
-
-    // Видаляємо весь концепт (його переклади видаляться автоматично завдяки onDelete: Cascade)
-    await prisma.wordConcept.delete({ where: { id: conceptId } });
-
-    const count = await prisma.wordConcept.count({ where: { packId } });
-    await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
-    res.json({ ok: true, totalWords: count });
-  });
-
-  /** POST /api/admin/packs/:id/words — bulk add simple words to a pack */
-  router.post('/packs/:id/words', async (req, res) => {
-    const { words } = req.body as { words?: string[] };
-    if (!Array.isArray(words) || words.length === 0) {
-      res.status(400).json({ error: 'words must be a non-empty array of strings' });
-      return;
-    }
-
-    const packId = req.params.id;
-    const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
-    if (!pack) {
-      return res.status(404).json({ error: 'Pack not found' });
-    }
-
-    const uniqueWords = [...new Set(words.map((w) => w.trim()).filter(Boolean))];
-    let addedCount = 0;
-
-    await prisma.$transaction(async (tx) => {
-      for (const text of uniqueWords) {
-        const concept = await tx.wordConcept.create({ data: { packId } });
-        await tx.wordTranslation.create({
-          data: {
-            conceptId: concept.id,
-            language: pack.language as Language, // Призначаємо мову всього паку
-            word: text,
-          },
-        });
-        addedCount++;
+      });
+      if (!pack) {
+        res.status(404).json({ error: 'Pack not found' });
+        return;
       }
 
-      const count = await tx.wordConcept.count({ where: { packId } });
-      await tx.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
-    });
+      // Форматуємо дані так, як очікує старий фронтенд адмінки (щоб не переписувати весь UI)
+      const words = pack.concepts.map((c) => ({
+        id: c.id, // Це ID концепту
+        text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`,
+      }));
 
-    const finalCount = await prisma.wordConcept.count({ where: { packId } });
-    res.status(201).json({ added: addedCount, totalWords: finalCount });
-  });
+      res.json({ ...pack, words });
+    })
+  );
+
+  /** POST /api/admin/packs — create a new pack */
+  router.post(
+    '/packs',
+    asyncRoute(async (req, res) => {
+      const { slug, name, language, category, difficulty, price, isFree, description } = req.body;
+      if (!slug || !name || !language || !category) {
+        res.status(400).json({ error: 'slug, name, language, category are required' });
+        return;
+      }
+      const pack = await prisma.wordPack.create({
+        data: { slug, name, language, category, difficulty, price, isFree, description },
+      });
+      // Auto-notify subscribers about new pack
+      broadcastPush(prisma, {
+        title: '🃏 Новий набір слів!',
+        body: `«${pack.name}» вже доступний у магазині`,
+        url: '/?tab=store',
+      }).catch(() => {});
+      res.status(201).json(pack);
+    })
+  );
+
+  /** PUT /api/admin/packs/:id — update pack metadata */
+  router.put(
+    '/packs/:id',
+    asyncRoute(async (req, res) => {
+      const { name, difficulty, price, isFree, description } = req.body;
+      const pack = await prisma.wordPack.update({
+        where: { id: req.params.id },
+        data: { name, difficulty, price, isFree, description },
+      });
+      res.json(pack);
+    })
+  );
+
+  /** DELETE /api/admin/packs/:id — delete pack and its words */
+  router.delete(
+    '/packs/:id',
+    asyncRoute(async (req, res) => {
+      await prisma.wordPack.delete({ where: { id: req.params.id } });
+      res.json({ ok: true });
+    })
+  );
+
+  /** DELETE /api/admin/packs/:packId/words/:conceptId — delete a single concept */
+  router.delete(
+    '/packs/:packId/words/:conceptId',
+    asyncRoute(async (req, res) => {
+      const { packId, conceptId } = req.params;
+
+      // Видаляємо весь концепт (його переклади видаляться автоматично завдяки onDelete: Cascade)
+      await prisma.wordConcept.delete({ where: { id: conceptId } });
+
+      const count = await prisma.wordConcept.count({ where: { packId } });
+      await prisma.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
+      res.json({ ok: true, totalWords: count });
+    })
+  );
+
+  /** POST /api/admin/packs/:id/words — bulk add simple words to a pack */
+  router.post(
+    '/packs/:id/words',
+    asyncRoute(async (req, res) => {
+      const { words } = req.body as { words?: string[] };
+      if (!Array.isArray(words) || words.length === 0) {
+        res.status(400).json({ error: 'words must be a non-empty array of strings' });
+        return;
+      }
+
+      const packId = req.params.id;
+      const pack = await prisma.wordPack.findUnique({ where: { id: packId } });
+      if (!pack) {
+        res.status(404).json({ error: 'Pack not found' });
+        return;
+      }
+
+      const uniqueWords = [...new Set(words.map((w) => w.trim()).filter(Boolean))];
+      let addedCount = 0;
+
+      await prisma.$transaction(async (tx) => {
+        for (const text of uniqueWords) {
+          const concept = await tx.wordConcept.create({ data: { packId } });
+          await tx.wordTranslation.create({
+            data: {
+              conceptId: concept.id,
+              language: pack.language as Language, // Призначаємо мову всього паку
+              word: text,
+            },
+          });
+          addedCount++;
+        }
+
+        const count = await tx.wordConcept.count({ where: { packId } });
+        await tx.wordPack.update({ where: { id: packId }, data: { wordCount: count } });
+      });
+
+      const finalCount = await prisma.wordConcept.count({ where: { packId } });
+      res.status(201).json({ added: addedCount, totalWords: finalCount });
+    })
+  );
 
   /** POST /api/admin/upload-csv — upload a CSV file for pack word concepts */
   router.post('/upload-csv', upload.single('file'), async (req, res) => {
     try {
       const { packId } = req.body;
       if (!req.file || !packId) {
-        return res.status(400).json({ error: 'File and packId are required' });
+        res.status(400).json({ error: 'File and packId are required' });
+        return;
       }
 
       const fileContent = req.file.buffer.toString('utf-8');
@@ -307,7 +333,7 @@ export function createAdminRoutes(
 
       res.json({ message: `Successfully uploaded ${createdCount} concepts.` });
     } catch (error) {
-      console.error('CSV Upload Error:', error);
+      console.error('[Admin] CSV Upload Error:', error);
       res.status(500).json({ error: 'Failed to process CSV file' });
     }
   });
@@ -315,213 +341,253 @@ export function createAdminRoutes(
   // ─── Themes ─────────────────────────────────────────────────────────
 
   /** GET /api/admin/themes — list all themes */
-  router.get('/themes', async (_req, res) => {
-    const themes = await prisma.theme.findMany({ orderBy: { name: 'asc' } });
-    res.json(themes);
-  });
+  router.get(
+    '/themes',
+    asyncRoute(async (_req, res) => {
+      const themes = await prisma.theme.findMany({ orderBy: { name: 'asc' } });
+      res.json(themes);
+    })
+  );
 
   /** PUT /api/admin/themes/:id — update theme price/isFree/name */
-  router.put('/themes/:id', async (req, res) => {
-    const { name, price, isFree } = req.body as { name?: string; price?: number; isFree?: boolean };
-    const theme = await prisma.theme.update({
-      where: { id: req.params.id },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(price !== undefined && { price }),
-        ...(isFree !== undefined && { isFree }),
-      },
-    });
-    res.json(theme);
-  });
+  router.put(
+    '/themes/:id',
+    asyncRoute(async (req, res) => {
+      const { name, price, isFree } = req.body as {
+        name?: string;
+        price?: number;
+        isFree?: boolean;
+      };
+      const theme = await prisma.theme.update({
+        where: { id: req.params.id },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(price !== undefined && { price }),
+          ...(isFree !== undefined && { isFree }),
+        },
+      });
+      res.json(theme);
+    })
+  );
 
   /** DELETE /api/admin/themes/:id */
-  router.delete('/themes/:id', async (req, res) => {
-    await prisma.theme.delete({ where: { id: req.params.id } });
-    res.json({ ok: true });
-  });
+  router.delete(
+    '/themes/:id',
+    asyncRoute(async (req, res) => {
+      await prisma.theme.delete({ where: { id: req.params.id } });
+      res.json({ ok: true });
+    })
+  );
 
   /** POST /api/admin/themes — create a theme */
-  router.post('/themes', async (req, res) => {
-    const { slug, name, config: themeConfig, price, isFree } = req.body;
-    if (!slug || !name || !themeConfig) {
-      res.status(400).json({ error: 'slug, name, config are required' });
-      return;
-    }
-    const theme = await prisma.theme.create({
-      data: { slug, name, config: themeConfig, price, isFree },
-    });
-    res.status(201).json(theme);
-  });
+  router.post(
+    '/themes',
+    asyncRoute(async (req, res) => {
+      const { slug, name, config: themeConfig, price, isFree } = req.body;
+      if (!slug || !name || !themeConfig) {
+        res.status(400).json({ error: 'slug, name, config are required' });
+        return;
+      }
+      const theme = await prisma.theme.create({
+        data: { slug, name, config: themeConfig, price, isFree },
+      });
+      res.status(201).json(theme);
+    })
+  );
 
   // ─── SoundPacks ─────────────────────────────────────────────────────
 
   /** GET /api/admin/sound-packs — list all sound packs */
-  router.get('/sound-packs', async (_req, res) => {
-    const packs = await prisma.soundPack.findMany({ orderBy: { name: 'asc' } });
-    res.json(packs);
-  });
+  router.get(
+    '/sound-packs',
+    asyncRoute(async (_req, res) => {
+      const packs = await prisma.soundPack.findMany({ orderBy: { name: 'asc' } });
+      res.json(packs);
+    })
+  );
 
   /** POST /api/admin/sound-packs — create a sound pack */
-  router.post('/sound-packs', async (req, res) => {
-    const { slug, name, config: soundConfig, price, isFree } = req.body;
-    if (!slug || !name || !soundConfig) {
-      res.status(400).json({ error: 'slug, name, config are required' });
-      return;
-    }
-    const pack = await prisma.soundPack.create({
-      data: { slug, name, config: soundConfig, price, isFree },
-    });
-    res.status(201).json(pack);
-  });
+  router.post(
+    '/sound-packs',
+    asyncRoute(async (req, res) => {
+      const { slug, name, config: soundConfig, price, isFree } = req.body;
+      if (!slug || !name || !soundConfig) {
+        res.status(400).json({ error: 'slug, name, config are required' });
+        return;
+      }
+      const pack = await prisma.soundPack.create({
+        data: { slug, name, config: soundConfig, price, isFree },
+      });
+      res.status(201).json(pack);
+    })
+  );
 
   // ─── Custom Decks (moderation) ──────────────────────────────────────
 
   /** GET /api/admin/custom-decks — list all custom decks */
-  router.get('/custom-decks', async (_req, res) => {
-    const decks = await prisma.customDeck.findMany({
-      select: {
-        id: true,
-        name: true,
-        accessCode: true,
-        status: true,
-        createdAt: true,
-        userId: true,
-        words: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(
-      decks.map((d: AdminCustomDeckListRow) => ({
-        ...d,
-        wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
-        words: undefined,
-      }))
-    );
-  });
+  router.get(
+    '/custom-decks',
+    asyncRoute(async (_req, res) => {
+      const decks = await prisma.customDeck.findMany({
+        select: {
+          id: true,
+          name: true,
+          accessCode: true,
+          status: true,
+          createdAt: true,
+          userId: true,
+          words: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json(
+        decks.map((d: AdminCustomDeckListRow) => ({
+          ...d,
+          wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
+          words: undefined,
+        }))
+      );
+    })
+  );
 
   /** PUT /api/admin/custom-decks/:id — update status (approve/reject) */
-  router.put('/custom-decks/:id', async (req, res) => {
-    const { status } = req.body as { status?: string };
-    if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
-      res.status(400).json({ error: 'status must be pending|approved|rejected' });
-      return;
-    }
-    const deck = await prisma.customDeck.update({
-      where: { id: req.params.id },
-      data: { status },
-    });
-    res.json(deck);
-  });
+  router.put(
+    '/custom-decks/:id',
+    asyncRoute(async (req, res) => {
+      const { status } = req.body as { status?: string };
+      if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+        res.status(400).json({ error: 'status must be pending|approved|rejected' });
+        return;
+      }
+      const deck = await prisma.customDeck.update({
+        where: { id: req.params.id },
+        data: { status },
+      });
+      res.json(deck);
+    })
+  );
 
   /** DELETE /api/admin/custom-decks/:id */
-  router.delete('/custom-decks/:id', async (req, res) => {
-    await prisma.customDeck.delete({ where: { id: req.params.id } });
-    res.json({ success: true });
-  });
+  router.delete(
+    '/custom-decks/:id',
+    asyncRoute(async (req, res) => {
+      await prisma.customDeck.delete({ where: { id: req.params.id } });
+      res.json({ success: true });
+    })
+  );
 
   // ─── Analytics ───────────────────────────────────────────────────────
 
   /** GET /api/admin/analytics — summary stats */
-  router.get('/analytics', async (_req, res) => {
-    const [totalSessions, completedSessions, totalPurchases, revenueResult, topPacks] =
-      await Promise.all([
-        prisma.gameSession.count(),
-        prisma.gameSession.count({ where: { status: 'completed' } }),
-        prisma.purchase.count({ where: { status: 'completed' } }),
-        prisma.purchase.aggregate({
-          where: { status: 'completed' },
-          _sum: { amount: true },
+  router.get(
+    '/analytics',
+    asyncRoute(async (_req, res) => {
+      const [totalSessions, completedSessions, totalPurchases, revenueResult, topPacks] =
+        await Promise.all([
+          prisma.gameSession.count(),
+          prisma.gameSession.count({ where: { status: 'completed' } }),
+          prisma.purchase.count({ where: { status: 'completed' } }),
+          prisma.purchase.aggregate({
+            where: { status: 'completed' },
+            _sum: { amount: true },
+          }),
+          prisma.purchase.groupBy({
+            by: ['wordPackId'],
+            where: { status: 'completed', wordPackId: { not: null } },
+            _count: { wordPackId: true },
+            orderBy: { _count: { wordPackId: 'desc' } },
+            take: 5,
+          }),
+        ]);
+
+      const packIds = topPacks.map((p: TopPurchasedPackRow) => p.wordPackId!);
+      const packNames = await prisma.wordPack.findMany({
+        where: { id: { in: packIds } },
+        select: { id: true, name: true },
+      });
+      const packMap = Object.fromEntries(
+        packNames.map((p: { id: string; name: string }) => [p.id, p.name])
+      );
+
+      res.json({
+        games: {
+          total: totalSessions,
+          completed: completedSessions,
+          completionRate:
+            totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
+        },
+        revenue: {
+          totalPurchases,
+          totalCents: revenueResult._sum.amount ?? 0,
+        },
+        topPacks: topPacks.map((p: TopPurchasedPackRow) => ({
+          packId: p.wordPackId,
+          name: packMap[p.wordPackId!] || 'Unknown',
+          purchases: p._count.wordPackId,
+        })),
+      });
+    })
+  );
+
+  /** GET /api/admin/analytics/daily?days=30 — time-series activity */
+  router.get(
+    '/analytics/daily',
+    asyncRoute(async (req, res) => {
+      const days = Math.min(parseInt(String(req.query.days ?? '30')), 90);
+      const since = new Date();
+      since.setDate(since.getDate() - days);
+
+      const [sessions, purchases] = await Promise.all([
+        prisma.gameSession.findMany({
+          where: { createdAt: { gte: since } },
+          select: { createdAt: true },
         }),
-        prisma.purchase.groupBy({
-          by: ['wordPackId'],
-          where: { status: 'completed', wordPackId: { not: null } },
-          _count: { wordPackId: true },
-          orderBy: { _count: { wordPackId: 'desc' } },
-          take: 5,
+        prisma.purchase.findMany({
+          where: { status: 'completed', createdAt: { gte: since } },
+          select: { createdAt: true, amount: true },
         }),
       ]);
 
-    const packIds = topPacks.map((p: TopPurchasedPackRow) => p.wordPackId!);
-    const packNames = await prisma.wordPack.findMany({
-      where: { id: { in: packIds } },
-      select: { id: true, name: true },
-    });
-    const packMap = Object.fromEntries(
-      packNames.map((p: { id: string; name: string }) => [p.id, p.name])
-    );
+      // Group by date string YYYY-MM-DD
+      const gamesByDate: Record<string, number> = {};
+      const revenueByDate: Record<string, number> = {};
 
-    res.json({
-      games: {
-        total: totalSessions,
-        completed: completedSessions,
-        completionRate:
-          totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
-      },
-      revenue: {
-        totalPurchases,
-        totalCents: revenueResult._sum.amount ?? 0,
-      },
-      topPacks: topPacks.map((p: TopPurchasedPackRow) => ({
-        packId: p.wordPackId,
-        name: packMap[p.wordPackId!] || 'Unknown',
-        purchases: p._count.wordPackId,
-      })),
-    });
-  });
+      for (const s of sessions) {
+        const d = s.createdAt.toISOString().slice(0, 10);
+        gamesByDate[d] = (gamesByDate[d] ?? 0) + 1;
+      }
+      for (const p of purchases) {
+        const d = p.createdAt.toISOString().slice(0, 10);
+        revenueByDate[d] = (revenueByDate[d] ?? 0) + p.amount;
+      }
 
-  /** GET /api/admin/analytics/daily?days=30 — time-series activity */
-  router.get('/analytics/daily', async (req, res) => {
-    const days = Math.min(parseInt(String(req.query.days ?? '30')), 90);
-    const since = new Date();
-    since.setDate(since.getDate() - days);
+      // Build array for each day
+      const result: { date: string; games: number; revenue: number }[] = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        result.push({ date: key, games: gamesByDate[key] ?? 0, revenue: revenueByDate[key] ?? 0 });
+      }
 
-    const [sessions, purchases] = await Promise.all([
-      prisma.gameSession.findMany({
-        where: { createdAt: { gte: since } },
-        select: { createdAt: true },
-      }),
-      prisma.purchase.findMany({
-        where: { status: 'completed', createdAt: { gte: since } },
-        select: { createdAt: true, amount: true },
-      }),
-    ]);
-
-    // Group by date string YYYY-MM-DD
-    const gamesByDate: Record<string, number> = {};
-    const revenueByDate: Record<string, number> = {};
-
-    for (const s of sessions) {
-      const d = s.createdAt.toISOString().slice(0, 10);
-      gamesByDate[d] = (gamesByDate[d] ?? 0) + 1;
-    }
-    for (const p of purchases) {
-      const d = p.createdAt.toISOString().slice(0, 10);
-      revenueByDate[d] = (revenueByDate[d] ?? 0) + p.amount;
-    }
-
-    // Build array for each day
-    const result: { date: string; games: number; revenue: number }[] = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      result.push({ date: key, games: gamesByDate[key] ?? 0, revenue: revenueByDate[key] ?? 0 });
-    }
-
-    res.json(result);
-  });
+      res.json(result);
+    })
+  );
 
   /** POST /api/admin/push/broadcast — send push notification to all subscribers */
-  router.post('/push/broadcast', async (req, res) => {
-    const { title, body, url } = req.body as { title?: string; body?: string; url?: string };
-    if (!title || !body) {
-      res.status(400).json({ error: 'title and body are required' });
-      return;
-    }
-    const count = await prisma.pushSubscription.count();
-    await broadcastPush(prisma, { title, body, url });
-    res.json({ ok: true, sent: count });
-  });
+  router.post(
+    '/push/broadcast',
+    asyncRoute(async (req, res) => {
+      const { title, body, url } = req.body as { title?: string; body?: string; url?: string };
+      if (!title || !body) {
+        res.status(400).json({ error: 'title and body are required' });
+        return;
+      }
+      const count = await prisma.pushSubscription.count();
+      await broadcastPush(prisma, { title, body, url });
+      res.json({ ok: true, sent: count });
+    })
+  );
 
   // ─── Infra / multi-instance debugging ───────────────────────────────
 
@@ -529,28 +595,31 @@ export function createAdminRoutes(
    * GET /api/admin/infra/room-redis?code=12345
    * Whether a Redis snapshot exists, last writer INSTANCE_ID, minimal state summary.
    */
-  router.get('/infra/room-redis', async (req, res) => {
-    const code = String(req.query.code ?? '').trim();
-    if (!/^\d{5}$/.test(code)) {
-      res.status(400).json({ error: 'Query code must be a 5-digit room code' });
-      return;
-    }
-    if (!redisStore?.isConnected) {
-      res.status(503).json({ error: 'Redis not connected' });
-      return;
-    }
-    const [snapshot, lastWriterInstanceId] = await Promise.all([
-      redisStore.getRoomState(code),
-      redisStore.getRoomWriter(code),
-    ]);
-    res.json({
-      roomCode: code,
-      hasSnapshot: snapshot !== null,
-      lastWriterInstanceId,
-      gameState: snapshot?.gameState ?? null,
-      playerCount: snapshot?.players?.length ?? 0,
-    });
-  });
+  router.get(
+    '/infra/room-redis',
+    asyncRoute(async (req, res) => {
+      const code = String(req.query.code ?? '').trim();
+      if (!/^\d{5}$/.test(code)) {
+        res.status(400).json({ error: 'Query code must be a 5-digit room code' });
+        return;
+      }
+      if (!redisStore?.isConnected) {
+        res.status(503).json({ error: 'Redis not connected' });
+        return;
+      }
+      const [snapshot, lastWriterInstanceId] = await Promise.all([
+        redisStore.getRoomState(code),
+        redisStore.getRoomWriter(code),
+      ]);
+      res.json({
+        roomCode: code,
+        hasSnapshot: snapshot !== null,
+        lastWriterInstanceId,
+        gameState: snapshot?.gameState ?? null,
+        playerCount: snapshot?.players?.length ?? 0,
+      });
+    })
+  );
 
   return router;
 }

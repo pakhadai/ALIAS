@@ -1,9 +1,8 @@
 import { Router, type IRouter } from 'express';
 import type { Prisma, PrismaClient } from '@prisma/client';
-import { AuthService } from '../services/AuthService';
+import { authService } from '../services/AuthService';
 import { maxDate, parseNonNegInt } from '../utils/playerStats';
-
-const authService = new AuthService();
+import { gameSettingsPartialSchema } from '../validation/schemas';
 
 function playerStatsJson(u: {
   statsGamesPlayed: number;
@@ -49,11 +48,15 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       // Race: два запити з одним deviceId — другий отримає P2002 Unique constraint
       const prismaErr = err as { code?: string };
       if (prismaErr?.code === 'P2002') {
-        const existing = await prisma.user.findFirst({ where: { anonymousId: deviceId } });
-        if (existing) {
-          const token = authService.createToken({ sub: existing.id, type: 'anonymous' });
-          res.json({ token, userId: existing.id });
-          return;
+        try {
+          const existing = await prisma.user.findFirst({ where: { anonymousId: deviceId } });
+          if (existing) {
+            const token = authService.createToken({ sub: existing.id, type: 'anonymous' });
+            res.json({ token, userId: existing.id });
+            return;
+          }
+        } catch (retryErr) {
+          console.error('[Auth] anonymous retry error:', retryErr);
         }
       }
       console.error('[Auth] anonymous error:', err);
@@ -76,71 +79,69 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const verified = await authService.verifyGoogleToken(idToken);
-    if (!verified) {
-      res.status(401).json({ error: 'Invalid Google token' });
-      return;
-    }
-
-    // Find or create user
-    let user = await prisma.user.findUnique({ where: { email: verified.email } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: { email: verified.email, authProvider: 'google' },
-      });
-    } else if (user.authProvider === 'anonymous') {
-      // Upgrade anonymous → google
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { email: verified.email, authProvider: 'google' },
-      });
-    }
-
-    // Merge anonymous purchases + player stats if deviceId provided
-    if (deviceId) {
-      const anonUser = await prisma.user.findUnique({ where: { anonymousId: deviceId } });
-      if (anonUser && anonUser.id !== user.id) {
-        const mergedLast = maxDate(user.statsLastPlayedAt, anonUser.statsLastPlayedAt);
-        await prisma.$transaction([
-          prisma.user.update({
-            where: { id: user.id },
-            data: {
-              statsGamesPlayed: { increment: anonUser.statsGamesPlayed },
-              statsWordsGuessed: { increment: anonUser.statsWordsGuessed },
-              statsWordsSkipped: { increment: anonUser.statsWordsSkipped },
-              ...(mergedLast ? { statsLastPlayedAt: mergedLast } : {}),
-            },
-          }),
-          prisma.user.update({
-            where: { id: anonUser.id },
-            data: {
-              statsGamesPlayed: 0,
-              statsWordsGuessed: 0,
-              statsWordsSkipped: 0,
-              statsLastPlayedAt: null,
-            },
-          }),
-          prisma.purchase.updateMany({
-            where: { userId: anonUser.id },
-            data: { userId: user.id },
-          }),
-          prisma.customDeck.updateMany({
-            where: { userId: anonUser.id },
-            data: { userId: user.id },
-          }),
-        ]);
-        const refreshed = await prisma.user.findUnique({ where: { id: user.id } });
-        if (refreshed) user = refreshed;
+    try {
+      const verified = await authService.verifyGoogleToken(idToken);
+      if (!verified) {
+        res.status(401).json({ error: 'Invalid Google token' });
+        return;
       }
-    }
 
-    const token = authService.createToken({
-      sub: user.id,
-      type: 'google',
-      email: user.email!,
-      isAdmin: user.isAdmin,
-    });
-    res.json({ token, userId: user.id, email: user.email, isAdmin: user.isAdmin });
+      // Find or create user — use upsert to avoid TOCTOU race on concurrent requests
+      let user = await prisma.user.upsert({
+        where: { email: verified.email },
+        update: { authProvider: 'google' },
+        create: { email: verified.email, authProvider: 'google' },
+      });
+
+      // Merge anonymous purchases + player stats if deviceId provided
+      if (deviceId) {
+        const anonUser = await prisma.user.findUnique({ where: { anonymousId: deviceId } });
+        if (anonUser && anonUser.id !== user.id) {
+          const mergedLast = maxDate(user.statsLastPlayedAt, anonUser.statsLastPlayedAt);
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: user.id },
+              data: {
+                statsGamesPlayed: { increment: anonUser.statsGamesPlayed },
+                statsWordsGuessed: { increment: anonUser.statsWordsGuessed },
+                statsWordsSkipped: { increment: anonUser.statsWordsSkipped },
+                ...(mergedLast ? { statsLastPlayedAt: mergedLast } : {}),
+              },
+            }),
+            prisma.user.update({
+              where: { id: anonUser.id },
+              data: {
+                statsGamesPlayed: 0,
+                statsWordsGuessed: 0,
+                statsWordsSkipped: 0,
+                statsLastPlayedAt: null,
+              },
+            }),
+            prisma.purchase.updateMany({
+              where: { userId: anonUser.id },
+              data: { userId: user.id },
+            }),
+            prisma.customDeck.updateMany({
+              where: { userId: anonUser.id },
+              data: { userId: user.id },
+            }),
+          ]);
+          const refreshed = await prisma.user.findUnique({ where: { id: user.id } });
+          if (refreshed) user = refreshed;
+        }
+      }
+
+      const token = authService.createToken({
+        sub: user.id,
+        type: 'google',
+        email: user.email!,
+        isAdmin: user.isAdmin,
+      });
+      res.json({ token, userId: user.id, email: user.email, isAdmin: user.isAdmin });
+    } catch (err) {
+      console.error('[Auth] google error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   // ─── Update profile ───────────────────────────────────────────────────
@@ -172,8 +173,13 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       if (!isNaN(idx) && idx >= 0 && idx <= 19) data.avatarId = String(idx);
     }
 
-    const user = await prisma.user.update({ where: { id: payload.sub }, data });
-    res.json({ displayName: user.displayName, avatarId: user.avatarId });
+    try {
+      const user = await prisma.user.update({ where: { id: payload.sub }, data });
+      res.json({ displayName: user.displayName, avatarId: user.avatarId });
+    } catch (err) {
+      console.error('[Auth] profile update error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   // ─── Lobby settings ───────────────────────────────────────────────────
@@ -190,11 +196,16 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { defaultSettings: true },
-    });
-    res.json({ settings: user?.defaultSettings ?? null });
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { defaultSettings: true },
+      });
+      res.json({ settings: user?.defaultSettings ?? null });
+    } catch (err) {
+      console.error('[Auth] lobby-settings get error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   router.put('/lobby-settings', async (req, res) => {
@@ -209,14 +220,22 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const settings = req.body;
-    if (!settings || typeof settings !== 'object') {
-      res.status(400).json({ error: 'Invalid settings' });
+    const parsed = gameSettingsPartialSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid settings', details: parsed.error.issues });
       return;
     }
 
-    await prisma.user.update({ where: { id: payload.sub }, data: { defaultSettings: settings } });
-    res.json({ success: true });
+    try {
+      await prisma.user.update({
+        where: { id: payload.sub },
+        data: { defaultSettings: parsed.data as object },
+      });
+      res.json({ success: true });
+    } catch (err) {
+      console.error('[Auth] lobby-settings put error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   // ─── Player stats (server-backed) ─────────────────────────────────────
@@ -246,18 +265,22 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const now = new Date();
-    const updated = await prisma.user.update({
-      where: { id: payload.sub },
-      data: {
-        statsGamesPlayed: { increment: dGames },
-        statsWordsGuessed: { increment: dGuess },
-        statsWordsSkipped: { increment: dSkip },
-        statsLastPlayedAt: now,
-      },
-    });
-
-    res.json({ playerStats: playerStatsJson(updated) });
+    try {
+      const now = new Date();
+      const updated = await prisma.user.update({
+        where: { id: payload.sub },
+        data: {
+          statsGamesPlayed: { increment: dGames },
+          statsWordsGuessed: { increment: dGuess },
+          statsWordsSkipped: { increment: dSkip },
+          statsLastPlayedAt: now,
+        },
+      });
+      res.json({ playerStats: playerStatsJson(updated) });
+    } catch (err) {
+      console.error('[Auth] player-stats delta error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   /**
@@ -287,42 +310,47 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       if (!Number.isNaN(d.getTime())) legacyDate = d;
     }
 
-    const current = await prisma.user.findUnique({ where: { id: payload.sub } });
-    if (!current) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    const hasTotals = addGames > 0 || addGuess > 0 || addSkip > 0;
-
-    if (!hasTotals) {
-      if (
-        legacyDate &&
-        (!current.statsLastPlayedAt || legacyDate.getTime() > current.statsLastPlayedAt.getTime())
-      ) {
-        const updated = await prisma.user.update({
-          where: { id: payload.sub },
-          data: { statsLastPlayedAt: legacyDate },
-        });
-        res.json({ playerStats: playerStatsJson(updated) });
+    try {
+      const current = await prisma.user.findUnique({ where: { id: payload.sub } });
+      if (!current) {
+        res.status(404).json({ error: 'User not found' });
         return;
       }
-      res.json({ playerStats: playerStatsJson(current) });
-      return;
+
+      const hasTotals = addGames > 0 || addGuess > 0 || addSkip > 0;
+
+      if (!hasTotals) {
+        if (
+          legacyDate &&
+          (!current.statsLastPlayedAt || legacyDate.getTime() > current.statsLastPlayedAt.getTime())
+        ) {
+          const updated = await prisma.user.update({
+            where: { id: payload.sub },
+            data: { statsLastPlayedAt: legacyDate },
+          });
+          res.json({ playerStats: playerStatsJson(updated) });
+          return;
+        }
+        res.json({ playerStats: playerStatsJson(current) });
+        return;
+      }
+
+      const mergedLast =
+        maxDate(maxDate(current.statsLastPlayedAt, legacyDate), new Date()) ?? new Date();
+
+      const data: Prisma.UserUpdateInput = {
+        statsLastPlayedAt: mergedLast,
+      };
+      if (addGames > 0) data.statsGamesPlayed = { increment: addGames };
+      if (addGuess > 0) data.statsWordsGuessed = { increment: addGuess };
+      if (addSkip > 0) data.statsWordsSkipped = { increment: addSkip };
+
+      const updated = await prisma.user.update({ where: { id: payload.sub }, data });
+      res.json({ playerStats: playerStatsJson(updated) });
+    } catch (err) {
+      console.error('[Auth] merge-local error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    const mergedLast =
-      maxDate(maxDate(current.statsLastPlayedAt, legacyDate), new Date()) ?? new Date();
-
-    const data: Prisma.UserUpdateInput = {
-      statsLastPlayedAt: mergedLast,
-    };
-    if (addGames > 0) data.statsGamesPlayed = { increment: addGames };
-    if (addGuess > 0) data.statsWordsGuessed = { increment: addGuess };
-    if (addSkip > 0) data.statsWordsSkipped = { increment: addSkip };
-
-    const updated = await prisma.user.update({ where: { id: payload.sub }, data });
-    res.json({ playerStats: playerStatsJson(updated) });
   });
 
   // ─── Me ───────────────────────────────────────────────────────────────
@@ -346,39 +374,44 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      include: {
-        purchases: {
-          where: { status: 'completed' },
-          select: {
-            id: true,
-            wordPackId: true,
-            wordPack: { select: { slug: true } },
-            themeId: true,
-            soundPackId: true,
-            createdAt: true,
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        include: {
+          purchases: {
+            where: { status: 'completed' },
+            select: {
+              id: true,
+              wordPackId: true,
+              wordPack: { select: { slug: true } },
+              themeId: true,
+              soundPackId: true,
+              createdAt: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      res.json({
+        id: user.id,
+        email: user.email,
+        authProvider: user.authProvider,
+        displayName: user.displayName,
+        avatarId: user.avatarId,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+        purchases: user.purchases,
+        playerStats: playerStatsJson(user),
+      });
+    } catch (err) {
+      console.error('[Auth] me error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    res.json({
-      id: user.id,
-      email: user.email,
-      authProvider: user.authProvider,
-      displayName: user.displayName,
-      avatarId: user.avatarId,
-      isAdmin: user.isAdmin,
-      createdAt: user.createdAt,
-      purchases: user.purchases,
-      playerStats: playerStatsJson(user),
-    });
   });
 
   return router;

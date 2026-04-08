@@ -8,7 +8,6 @@ export type {
   GameTask,
   RoundStats,
   GameActionPayload,
-  NetworkMessage,
   GameActionType,
   NetworkActionType,
   RoomErrorCode,

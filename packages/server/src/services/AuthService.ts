@@ -56,3 +56,6 @@ export class AuthService {
     }
   }
 }
+
+/** Shared singleton — import this instead of `new AuthService()` in route files. */
+export const authService = new AuthService();

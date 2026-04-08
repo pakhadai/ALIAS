@@ -118,6 +118,8 @@ export class RoomManager {
     const code = room.code;
     const state = this.getSyncState(room);
     const selfId = config.serverInstanceId;
+    // Capture imposterWord at call time — the async closure must not read stale room state.
+    const imposterWord = room.imposterWord;
 
     void (async () => {
       try {
@@ -137,6 +139,14 @@ export class RoomManager {
       }
       try {
         await store.saveRoomState(code, state, selfId);
+        // Persist imposterWord under a separate key — it must never appear in GameSyncState
+        // because that state is broadcast to all clients. A separate key ensures the secret
+        // survives server restarts without leaking to non-imposter players.
+        if (imposterWord !== undefined && imposterWord !== '') {
+          await store.saveImposterWord(code, imposterWord);
+        } else {
+          await store.deleteImposterWord(code);
+        }
       } catch {
         /* ignore */
       }
@@ -178,7 +188,7 @@ export class RoomManager {
       hostSocketId,
       hostPlayerId,
       gameState: GameState.LOBBY,
-      settings: { ...defaultSettings },
+      settings: structuredClone(defaultSettings),
       players: [],
       teams: [],
       currentTeamIndex: 0,
@@ -216,7 +226,10 @@ export class RoomManager {
     if (this.rooms.has(code)) return this.rooms.get(code)!;
     if (!this.redisStore?.isConnected) return null;
 
-    const syncState = await this.redisStore.getRoomState(code);
+    const [syncState, imposterWord] = await Promise.all([
+      this.redisStore.getRoomState(code),
+      this.redisStore.getImposterWord(code),
+    ]);
     if (!syncState) return null;
 
     const hostPlayer = syncState.players.find((p) => p.isHost);
@@ -245,6 +258,12 @@ export class RoomManager {
       roundsPlayed: 0,
       createdAt: Date.now(),
       usedWords: [], // can't restore from Redis; new deck will be built fresh
+      // Restore IMPOSTER secret word — it was stored separately to keep it out of GameSyncState.
+      // Without this, the RESULTS screen would show null after a server restart.
+      imposterWord: imposterWord ?? undefined,
+      imposterPhase: syncState.imposterPhase,
+      imposterPlayerId: syncState.imposterPlayerId,
+      revealedPlayerIds: syncState.revealedPlayerIds ?? [],
     };
 
     this.rooms.set(code, room);
@@ -264,15 +283,22 @@ export class RoomManager {
     if (room.players.length >= MAX_PLAYERS) return null;
 
     const playerId = uuidv4();
+    const isHostSocket = socketId === room.hostSocketId;
     const player: Player = {
       id: playerId,
       name: name.replace(/<[^>]*>/g, '').slice(0, 20),
       avatar,
       ...(avatarId != null ? { avatarId } : {}),
-      isHost: socketId === room.hostSocketId,
+      isHost: isHostSocket,
       isConnected: true,
       stats: { explained: 0, guessed: 0 },
     };
+
+    // Sync room.hostPlayerId with the actual player UUID.
+    // createRoom() sets a placeholder UUID; the real host UUID is only known after addPlayer.
+    if (isHostSocket) {
+      room.hostPlayerId = playerId;
+    }
 
     room.players.push(player);
     room.socketToPlayer.set(socketId, playerId);
@@ -343,6 +369,10 @@ export class RoomManager {
   /**
    * Handle socket disconnect with host migration.
    * Returns { roomCode, removedPlayerId?, newHostSocketId?, wasMigration } — roomCode завжди, якщо кімната ще існує.
+   *
+   * Delegates all mutation (player removal, host migration, persist) to removePlayer(),
+   * then reads back the result. This avoids a double-migration bug where both
+   * removePlayer() and this method independently applied conflicting host reassignments.
    */
   handleDisconnect(socketId: string): {
     roomCode: string;
@@ -356,49 +386,22 @@ export class RoomManager {
       const wasHost = socketId === room.hostSocketId;
       const removedPlayerId = this.removePlayer(code, socketId) ?? undefined;
 
-      // Room empty — clean up
+      // removePlayer already handled timer cleanup + Redis delete if room became empty
       if (room.players.length === 0) {
-        if (room.timerInterval) clearInterval(room.timerInterval);
-        this.rooms.delete(code);
-        this.clearWriterMismatchThrottle(code);
-        if (this.redisStore?.isConnected) {
-          this.redisStore.deleteRoom(code).catch(() => {});
-        }
         return null;
       }
 
-      // Host migration: assign the first remaining connected player as new host
+      // removePlayer already migrated the host via applyHostFlags (prefers connected players).
+      // Read the updated host socket from room state — no second migration needed.
       if (wasHost) {
-        const firstEntry = room.socketToPlayer.entries().next().value;
-        if (!firstEntry) {
-          console.warn(`[RoomManager] Host disconnected but no remaining sockets in room ${code}`);
-          this.persistRoom(room);
-          return { roomCode: code, removedPlayerId };
-        }
-        const [newHostSocketId, newHostPlayerId] = firstEntry;
-        room.hostSocketId = newHostSocketId;
-        room.hostPlayerId = newHostPlayerId;
-
-        // Update isHost flag on players
-        room.players = room.players.map((p) => ({
-          ...p,
-          isHost: p.id === newHostPlayerId,
-        }));
-
-        // Update in teams too
-        room.teams = room.teams.map((team) => ({
-          ...team,
-          players: team.players.map((p) => ({
-            ...p,
-            isHost: p.id === newHostPlayerId,
-          })),
-        }));
-
-        this.persistRoom(room);
-        return { roomCode: code, removedPlayerId, newHostSocketId, wasMigration: true };
+        return {
+          roomCode: code,
+          removedPlayerId,
+          newHostSocketId: room.hostSocketId || undefined,
+          wasMigration: true,
+        };
       }
 
-      this.persistRoom(room);
       return { roomCode: code, removedPlayerId };
     }
     return null;

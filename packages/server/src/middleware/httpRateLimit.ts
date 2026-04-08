@@ -30,3 +30,12 @@ export const pushLimiter = rateLimit({
   legacyHeaders: false,
   message,
 });
+
+/** Admin endpoints: 30 requests per minute — prevents brute-force against admin API */
+export const adminLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isDev ? 1000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message,
+});

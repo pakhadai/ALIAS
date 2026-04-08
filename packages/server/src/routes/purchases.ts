@@ -1,10 +1,8 @@
 import { Router, type IRouter, type Request, type Response } from 'express';
 import Stripe from 'stripe';
 import type { PrismaClient } from '@prisma/client';
-import { AuthService } from '../services/AuthService';
+import { authService } from '../services/AuthService';
 import { config } from '../config';
-
-const authService = new AuthService();
 
 /** Require authenticated JWT */
 function requireAuth(req: Request, res: Response): string | null {
@@ -161,113 +159,118 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    // Fetch item details
-    let itemName = '';
-    let priceInCents = 0;
-
-    if (itemType === 'wordPack') {
-      const pack = await prisma.wordPack.findUnique({ where: { id: itemId } });
-      if (!pack || pack.isFree) {
-        res.status(404).json({ error: 'Pack not found or is free' });
-        return;
-      }
-      itemName = pack.name;
-      priceInCents = pack.price;
-    } else if (itemType === 'theme') {
-      const theme = await prisma.theme.findUnique({ where: { id: itemId } });
-      if (!theme || theme.isFree) {
-        res.status(404).json({ error: 'Theme not found or is free' });
-        return;
-      }
-      itemName = theme.name;
-      priceInCents = theme.price;
-    } else if (itemType === 'soundPack') {
-      const sp = await prisma.soundPack.findUnique({ where: { id: itemId } });
-      if (!sp || sp.isFree) {
-        res.status(404).json({ error: 'Sound pack not found or is free' });
-        return;
-      }
-      itemName = sp.name;
-      priceInCents = sp.price;
-    }
-
-    if (priceInCents <= 0) {
-      res.status(400).json({ error: 'Invalid price' });
-      return;
-    }
-
-    const st = itemType as StoreItemType;
-    const already = await prisma.purchase.findFirst({
-      where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
-    });
-    if (already) {
-      res.status(409).json({ error: 'Already purchased' });
-      return;
-    }
-
-    const reuseCheckout = await tryReuseCheckout(userId, st, itemId);
-    if (reuseCheckout?.kind === 'already_purchased') {
-      res.status(409).json({ error: 'Already purchased' });
-      return;
-    }
-    if (reuseCheckout?.kind === 'reuse') {
-      res.json({
-        checkoutUrl: reuseCheckout.checkoutUrl,
-        purchaseId: reuseCheckout.purchaseId,
-        reused: true,
-      });
-      return;
-    }
-
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId,
-        amount: priceInCents,
-        paymentProvider: 'stripe',
-        status: 'pending',
-        wordPackId: itemType === 'wordPack' ? itemId : null,
-        themeId: itemType === 'theme' ? itemId : null,
-        soundPackId: itemType === 'soundPack' ? itemId : null,
-      },
-    });
-
     try {
-      const session = await stripe.checkout.sessions.create(
-        {
-          payment_method_types: ['card'],
-          mode: 'payment',
-          line_items: [
-            {
-              price_data: {
-                currency: 'usd',
-                product_data: { name: `ALIAS — ${itemName}` },
-                unit_amount: priceInCents,
-              },
-              quantity: 1,
-            },
-          ],
-          metadata: {
-            purchaseId: purchase.id,
-            userId,
-            itemType,
-            itemId,
-          },
-          success_url: `${config.stripe.successUrl}&session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: config.stripe.cancelUrl,
-        },
-        { idempotencyKey: `checkout_${purchase.id}` }
-      );
+      // Fetch item details
+      let itemName = '';
+      let priceInCents = 0;
 
-      await prisma.purchase.update({
-        where: { id: purchase.id },
-        data: { stripeCheckoutSessionId: session.id },
+      if (itemType === 'wordPack') {
+        const pack = await prisma.wordPack.findUnique({ where: { id: itemId } });
+        if (!pack || pack.isFree) {
+          res.status(404).json({ error: 'Pack not found or is free' });
+          return;
+        }
+        itemName = pack.name;
+        priceInCents = pack.price;
+      } else if (itemType === 'theme') {
+        const theme = await prisma.theme.findUnique({ where: { id: itemId } });
+        if (!theme || theme.isFree) {
+          res.status(404).json({ error: 'Theme not found or is free' });
+          return;
+        }
+        itemName = theme.name;
+        priceInCents = theme.price;
+      } else if (itemType === 'soundPack') {
+        const sp = await prisma.soundPack.findUnique({ where: { id: itemId } });
+        if (!sp || sp.isFree) {
+          res.status(404).json({ error: 'Sound pack not found or is free' });
+          return;
+        }
+        itemName = sp.name;
+        priceInCents = sp.price;
+      }
+
+      if (priceInCents <= 0) {
+        res.status(400).json({ error: 'Invalid price' });
+        return;
+      }
+
+      const st = itemType as StoreItemType;
+      const already = await prisma.purchase.findFirst({
+        where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
+      });
+      if (already) {
+        res.status(409).json({ error: 'Already purchased' });
+        return;
+      }
+
+      const reuseCheckout = await tryReuseCheckout(userId, st, itemId);
+      if (reuseCheckout?.kind === 'already_purchased') {
+        res.status(409).json({ error: 'Already purchased' });
+        return;
+      }
+      if (reuseCheckout?.kind === 'reuse') {
+        res.json({
+          checkoutUrl: reuseCheckout.checkoutUrl,
+          purchaseId: reuseCheckout.purchaseId,
+          reused: true,
+        });
+        return;
+      }
+
+      const purchase = await prisma.purchase.create({
+        data: {
+          userId,
+          amount: priceInCents,
+          paymentProvider: 'stripe',
+          status: 'pending',
+          wordPackId: itemType === 'wordPack' ? itemId : null,
+          themeId: itemType === 'theme' ? itemId : null,
+          soundPackId: itemType === 'soundPack' ? itemId : null,
+        },
       });
 
-      res.json({ checkoutUrl: session.url, purchaseId: purchase.id });
+      try {
+        const session = await stripe.checkout.sessions.create(
+          {
+            payment_method_types: ['card'],
+            mode: 'payment',
+            line_items: [
+              {
+                price_data: {
+                  currency: 'usd',
+                  product_data: { name: `ALIAS — ${itemName}` },
+                  unit_amount: priceInCents,
+                },
+                quantity: 1,
+              },
+            ],
+            metadata: {
+              purchaseId: purchase.id,
+              userId,
+              itemType,
+              itemId,
+            },
+            success_url: `${config.stripe.successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: config.stripe.cancelUrl,
+          },
+          { idempotencyKey: `checkout_${purchase.id}` }
+        );
+
+        await prisma.purchase.update({
+          where: { id: purchase.id },
+          data: { stripeCheckoutSessionId: session.id },
+        });
+
+        res.json({ checkoutUrl: session.url, purchaseId: purchase.id });
+      } catch (err) {
+        console.warn('[Stripe] checkout.sessions.create failed:', (err as Error).message);
+        await prisma.purchase.delete({ where: { id: purchase.id } }).catch(() => {});
+        res.status(502).json({ error: 'Payment provider unavailable' });
+      }
     } catch (err) {
-      console.warn('[Stripe] checkout.sessions.create failed:', (err as Error).message);
-      await prisma.purchase.delete({ where: { id: purchase.id } }).catch(() => {});
-      res.status(502).json({ error: 'Payment provider unavailable' });
+      console.error('[Purchases] POST /checkout error:', err);
+      if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -294,104 +297,109 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    let itemName = '';
-    let priceInCents = 0;
-
-    if (itemType === 'wordPack') {
-      const pack = await prisma.wordPack.findUnique({ where: { id: itemId } });
-      if (!pack || pack.isFree) {
-        res.status(404).json({ error: 'Pack not found or is free' });
-        return;
-      }
-      itemName = pack.name;
-      priceInCents = pack.price;
-    } else if (itemType === 'theme') {
-      const theme = await prisma.theme.findUnique({ where: { id: itemId } });
-      if (!theme || theme.isFree) {
-        res.status(404).json({ error: 'Theme not found or is free' });
-        return;
-      }
-      itemName = theme.name;
-      priceInCents = theme.price;
-    } else if (itemType === 'soundPack') {
-      const sp = await prisma.soundPack.findUnique({ where: { id: itemId } });
-      if (!sp || sp.isFree) {
-        res.status(404).json({ error: 'Sound pack not found or is free' });
-        return;
-      }
-      itemName = sp.name;
-      priceInCents = sp.price;
-    }
-
-    if (priceInCents <= 0) {
-      res.status(400).json({ error: 'Invalid price' });
-      return;
-    }
-
-    const st = itemType as StoreItemType;
-    const existing = await prisma.purchase.findFirst({
-      where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
-    });
-    if (existing) {
-      res.status(409).json({ error: 'Already purchased' });
-      return;
-    }
-
-    const reusePi = await tryReusePaymentIntent(userId, st, itemId);
-    if (reusePi?.kind === 'already_purchased') {
-      res.status(409).json({ error: 'Already purchased' });
-      return;
-    }
-    if (reusePi?.kind === 'reuse') {
-      res.json({
-        clientSecret: reusePi.clientSecret,
-        purchaseId: reusePi.purchaseId,
-        amount: priceInCents,
-        itemName,
-        reused: true,
-      });
-      return;
-    }
-
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId,
-        amount: priceInCents,
-        paymentProvider: 'stripe',
-        status: 'pending',
-        wordPackId: itemType === 'wordPack' ? itemId : null,
-        themeId: itemType === 'theme' ? itemId : null,
-        soundPackId: itemType === 'soundPack' ? itemId : null,
-      },
-    });
-
     try {
-      const paymentIntent = await stripe.paymentIntents.create(
-        {
+      let itemName = '';
+      let priceInCents = 0;
+
+      if (itemType === 'wordPack') {
+        const pack = await prisma.wordPack.findUnique({ where: { id: itemId } });
+        if (!pack || pack.isFree) {
+          res.status(404).json({ error: 'Pack not found or is free' });
+          return;
+        }
+        itemName = pack.name;
+        priceInCents = pack.price;
+      } else if (itemType === 'theme') {
+        const theme = await prisma.theme.findUnique({ where: { id: itemId } });
+        if (!theme || theme.isFree) {
+          res.status(404).json({ error: 'Theme not found or is free' });
+          return;
+        }
+        itemName = theme.name;
+        priceInCents = theme.price;
+      } else if (itemType === 'soundPack') {
+        const sp = await prisma.soundPack.findUnique({ where: { id: itemId } });
+        if (!sp || sp.isFree) {
+          res.status(404).json({ error: 'Sound pack not found or is free' });
+          return;
+        }
+        itemName = sp.name;
+        priceInCents = sp.price;
+      }
+
+      if (priceInCents <= 0) {
+        res.status(400).json({ error: 'Invalid price' });
+        return;
+      }
+
+      const st = itemType as StoreItemType;
+      const existing = await prisma.purchase.findFirst({
+        where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
+      });
+      if (existing) {
+        res.status(409).json({ error: 'Already purchased' });
+        return;
+      }
+
+      const reusePi = await tryReusePaymentIntent(userId, st, itemId);
+      if (reusePi?.kind === 'already_purchased') {
+        res.status(409).json({ error: 'Already purchased' });
+        return;
+      }
+      if (reusePi?.kind === 'reuse') {
+        res.json({
+          clientSecret: reusePi.clientSecret,
+          purchaseId: reusePi.purchaseId,
           amount: priceInCents,
-          currency: 'usd',
-          automatic_payment_methods: { enabled: true },
-          description: `ALIAS — ${itemName}`,
-          metadata: { purchaseId: purchase.id, userId, itemType, itemId },
+          itemName,
+          reused: true,
+        });
+        return;
+      }
+
+      const purchase = await prisma.purchase.create({
+        data: {
+          userId,
+          amount: priceInCents,
+          paymentProvider: 'stripe',
+          status: 'pending',
+          wordPackId: itemType === 'wordPack' ? itemId : null,
+          themeId: itemType === 'theme' ? itemId : null,
+          soundPackId: itemType === 'soundPack' ? itemId : null,
         },
-        { idempotencyKey: `pi_${purchase.id}` }
-      );
-
-      await prisma.purchase.update({
-        where: { id: purchase.id },
-        data: { stripePaymentIntentId: paymentIntent.id },
       });
 
-      res.json({
-        clientSecret: paymentIntent.client_secret,
-        purchaseId: purchase.id,
-        amount: priceInCents,
-        itemName,
-      });
+      try {
+        const paymentIntent = await stripe.paymentIntents.create(
+          {
+            amount: priceInCents,
+            currency: 'usd',
+            automatic_payment_methods: { enabled: true },
+            description: `ALIAS — ${itemName}`,
+            metadata: { purchaseId: purchase.id, userId, itemType, itemId },
+          },
+          { idempotencyKey: `pi_${purchase.id}` }
+        );
+
+        await prisma.purchase.update({
+          where: { id: purchase.id },
+          data: { stripePaymentIntentId: paymentIntent.id },
+        });
+
+        res.json({
+          clientSecret: paymentIntent.client_secret,
+          purchaseId: purchase.id,
+          amount: priceInCents,
+          itemName,
+        });
+      } catch (err) {
+        console.warn('[Stripe] paymentIntents.create failed:', (err as Error).message);
+        await prisma.purchase.delete({ where: { id: purchase.id } }).catch(() => {});
+        res.status(502).json({ error: 'Payment provider unavailable' });
+      }
     } catch (err) {
-      console.warn('[Stripe] paymentIntents.create failed:', (err as Error).message);
-      await prisma.purchase.delete({ where: { id: purchase.id } }).catch(() => {});
-      res.status(502).json({ error: 'Payment provider unavailable' });
+      console.error('[Purchases] POST /payment-intent error:', err);
+      if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -423,43 +431,49 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const purchaseId = session.metadata?.purchaseId;
-      if (purchaseId) {
-        const { count } = await prisma.purchase.updateMany({
-          where: { id: purchaseId, status: 'pending' },
-          data: { status: 'completed' },
-        });
-        if (count > 0) console.log(`[Purchase] Checkout completed: ${purchaseId}`);
+    try {
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const purchaseId = session.metadata?.purchaseId;
+        if (purchaseId) {
+          const { count } = await prisma.purchase.updateMany({
+            where: { id: purchaseId, status: 'pending' },
+            data: { status: 'completed' },
+          });
+          if (count > 0) console.log(`[Purchase] Checkout completed: ${purchaseId}`);
+        }
       }
-    }
 
-    if (event.type === 'payment_intent.succeeded') {
-      const pi = event.data.object as Stripe.PaymentIntent;
-      const purchaseId = pi.metadata?.purchaseId;
-      if (purchaseId) {
-        const { count } = await prisma.purchase.updateMany({
-          where: { id: purchaseId, status: 'pending' },
-          data: { status: 'completed' },
-        });
-        if (count > 0) console.log(`[Purchase] PaymentIntent succeeded: ${purchaseId}`);
+      if (event.type === 'payment_intent.succeeded') {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const purchaseId = pi.metadata?.purchaseId;
+        if (purchaseId) {
+          const { count } = await prisma.purchase.updateMany({
+            where: { id: purchaseId, status: 'pending' },
+            data: { status: 'completed' },
+          });
+          if (count > 0) console.log(`[Purchase] PaymentIntent succeeded: ${purchaseId}`);
+        }
       }
-    }
 
-    if (event.type === 'checkout.session.expired') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      await abandonPendingById(session.metadata?.purchaseId);
-    }
+      if (event.type === 'checkout.session.expired') {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await abandonPendingById(session.metadata?.purchaseId);
+      }
 
-    if (event.type === 'checkout.session.async_payment_failed') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      await abandonPendingById(session.metadata?.purchaseId);
-    }
+      if (event.type === 'checkout.session.async_payment_failed') {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await abandonPendingById(session.metadata?.purchaseId);
+      }
 
-    if (event.type === 'payment_intent.canceled') {
-      const pi = event.data.object as Stripe.PaymentIntent;
-      await abandonPendingById(pi.metadata?.purchaseId);
+      if (event.type === 'payment_intent.canceled') {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        await abandonPendingById(pi.metadata?.purchaseId);
+      }
+    } catch (err) {
+      console.error('[Purchases] webhook Prisma error:', err);
+      res.status(500).send('Internal server error');
+      return;
     }
 
     res.json({ received: true });
@@ -482,64 +496,69 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    let isFree = false;
-    if (itemType === 'wordPack') {
-      const pack = await prisma.wordPack.findUnique({
-        where: { id: itemId },
-        select: { isFree: true },
-      });
-      if (!pack) {
-        res.status(404).json({ error: 'Not found' });
+    try {
+      let isFree = false;
+      if (itemType === 'wordPack') {
+        const pack = await prisma.wordPack.findUnique({
+          where: { id: itemId },
+          select: { isFree: true },
+        });
+        if (!pack) {
+          res.status(404).json({ error: 'Not found' });
+          return;
+        }
+        isFree = pack.isFree;
+      } else if (itemType === 'theme') {
+        const theme = await prisma.theme.findUnique({
+          where: { id: itemId },
+          select: { isFree: true },
+        });
+        if (!theme) {
+          res.status(404).json({ error: 'Not found' });
+          return;
+        }
+        isFree = theme.isFree;
+      } else if (itemType === 'soundPack') {
+        const sp = await prisma.soundPack.findUnique({
+          where: { id: itemId },
+          select: { isFree: true },
+        });
+        if (!sp) {
+          res.status(404).json({ error: 'Not found' });
+          return;
+        }
+        isFree = sp.isFree;
+      }
+
+      if (!isFree) {
+        res.status(400).json({ error: 'Item is not free' });
         return;
       }
-      isFree = pack.isFree;
-    } else if (itemType === 'theme') {
-      const theme = await prisma.theme.findUnique({
-        where: { id: itemId },
-        select: { isFree: true },
+
+      const st = itemType as StoreItemType;
+      const existing = await prisma.purchase.findFirst({
+        where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
       });
-      if (!theme) {
-        res.status(404).json({ error: 'Not found' });
-        return;
+
+      if (!existing) {
+        await prisma.purchase.create({
+          data: {
+            userId,
+            amount: 0,
+            paymentProvider: 'free',
+            status: 'completed',
+            wordPackId: itemType === 'wordPack' ? itemId : null,
+            themeId: itemType === 'theme' ? itemId : null,
+            soundPackId: itemType === 'soundPack' ? itemId : null,
+          },
+        });
       }
-      isFree = theme.isFree;
-    } else if (itemType === 'soundPack') {
-      const sp = await prisma.soundPack.findUnique({
-        where: { id: itemId },
-        select: { isFree: true },
-      });
-      if (!sp) {
-        res.status(404).json({ error: 'Not found' });
-        return;
-      }
-      isFree = sp.isFree;
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error('[Purchases] POST /claim error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    if (!isFree) {
-      res.status(400).json({ error: 'Item is not free' });
-      return;
-    }
-
-    const st = itemType as StoreItemType;
-    const existing = await prisma.purchase.findFirst({
-      where: { userId, status: 'completed', ...purchaseRefWhere(st, itemId) },
-    });
-
-    if (!existing) {
-      await prisma.purchase.create({
-        data: {
-          userId,
-          amount: 0,
-          paymentProvider: 'free',
-          status: 'completed',
-          wordPackId: itemType === 'wordPack' ? itemId : null,
-          themeId: itemType === 'theme' ? itemId : null,
-          soundPackId: itemType === 'soundPack' ? itemId : null,
-        },
-      });
-    }
-
-    res.json({ success: true });
   });
 
   // ─── My purchases ───────────────────────────────────────────────────────
@@ -552,17 +571,21 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
     const userId = requireAuth(req, res);
     if (!userId) return;
 
-    const purchases = await prisma.purchase.findMany({
-      where: { userId, status: 'completed' },
-      include: {
-        wordPack: { select: { id: true, slug: true, name: true } },
-        theme: { select: { id: true, slug: true, name: true } },
-        soundPack: { select: { id: true, slug: true, name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    res.json(purchases);
+    try {
+      const purchases = await prisma.purchase.findMany({
+        where: { userId, status: 'completed' },
+        include: {
+          wordPack: { select: { id: true, slug: true, name: true } },
+          theme: { select: { id: true, slug: true, name: true } },
+          soundPack: { select: { id: true, slug: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json(purchases);
+    } catch (err) {
+      console.error('[Purchases] GET /my error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;

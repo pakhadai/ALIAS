@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky || echo 'husky not found, skipping prepare script'",
     "dev:client": "pnpm --filter @alias/client dev",
     "dev:server": "pnpm --filter @alias/server dev",
     "dev": "pnpm run --parallel dev:client dev:server",
@@ -23,8 +23,7 @@
     "test:e2e": "pnpm --filter @alias/e2e run test",
     "test:e2e:multiplayer": "pnpm --filter @alias/e2e run test -- tests/multiplayer.spec.ts --project=chromium",
     "test:e2e:ui": "pnpm --filter @alias/e2e run test:ui",
-    "test:e2e:report": "pnpm --filter @alias/e2e run test:report",
-    "prepare": "husky || echo 'husky not found, skipping prepare script'"
+    "test:e2e:report": "pnpm --filter @alias/e2e run test:report"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

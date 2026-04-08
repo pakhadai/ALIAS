@@ -438,6 +438,7 @@ export class GameEngine {
                 ...p,
                 stats: {
                   ...p.stats,
+                  explained: p.stats.explained + (p.id === explainerId ? correctCount : 0),
                   guessed: p.stats.guessed + (p.id !== explainerId ? correctCount : 0),
                 },
               }));

@@ -12,9 +12,7 @@ type UserCustomDeckListRow = {
   createdAt: Date;
   words: unknown;
 };
-import { AuthService } from '../services/AuthService';
-
-const authService = new AuthService();
+import { authService } from '../services/AuthService';
 
 /** Require authenticated JWT → returns userId or null */
 function requireAuth(req: Request, res: Response): string | null {
@@ -94,26 +92,31 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    // Ensure unique access code
-    const code = accessCode?.toUpperCase() || generateAccessCode();
-    const existing = await prisma.customDeck.findUnique({ where: { accessCode: code } });
-    if (existing) {
-      res.status(409).json({ error: 'Access code already taken' });
-      return;
+    try {
+      // Ensure unique access code
+      const code = accessCode?.toUpperCase() || generateAccessCode();
+      const existing = await prisma.customDeck.findUnique({ where: { accessCode: code } });
+      if (existing) {
+        res.status(409).json({ error: 'Access code already taken' });
+        return;
+      }
+
+      const deck = await prisma.customDeck.create({
+        data: {
+          userId,
+          name: name.trim().slice(0, 80),
+          words: sanitized,
+          branding: branding ?? undefined,
+          accessCode: code,
+          status: 'approved', // self-created decks are auto-approved
+        },
+      });
+
+      res.status(201).json(deck);
+    } catch (err) {
+      console.error('[CustomDecks] POST / error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    const deck = await prisma.customDeck.create({
-      data: {
-        userId,
-        name: name.trim().slice(0, 80),
-        words: sanitized,
-        branding: branding ?? undefined,
-        accessCode: code,
-        status: 'approved', // self-created decks are auto-approved
-      },
-    });
-
-    res.status(201).json(deck);
   });
 
   // ─── Upload CSV ───────────────────────────────────────────────────────
@@ -165,18 +168,22 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const code = generateAccessCode();
-    const deck = await prisma.customDeck.create({
-      data: {
-        userId,
-        name,
-        words: sanitized,
-        accessCode: code,
-        status: 'approved',
-      },
-    });
-
-    res.status(201).json(deck);
+    try {
+      const code = generateAccessCode();
+      const deck = await prisma.customDeck.create({
+        data: {
+          userId,
+          name,
+          words: sanitized,
+          accessCode: code,
+          status: 'approved',
+        },
+      });
+      res.status(201).json(deck);
+    } catch (err) {
+      console.error('[CustomDecks] POST /upload error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   // ─── My decks ─────────────────────────────────────────────────────────
@@ -187,28 +194,33 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
     const userId = requireAuth(req, res);
     if (!userId) return;
 
-    const decks = await prisma.customDeck.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        name: true,
-        accessCode: true,
-        status: true,
-        branding: true,
-        createdAt: true,
-        words: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      const decks = await prisma.customDeck.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          name: true,
+          accessCode: true,
+          status: true,
+          branding: true,
+          createdAt: true,
+          words: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
 
-    // Return wordCount instead of full array for list view
-    const result = decks.map((d: UserCustomDeckListRow) => ({
-      ...d,
-      wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
-      words: undefined,
-    }));
+      // Return wordCount instead of full array for list view
+      const result = decks.map((d: UserCustomDeckListRow) => ({
+        ...d,
+        wordCount: Array.isArray(d.words) ? (d.words as string[]).length : 0,
+        words: undefined,
+      }));
 
-    res.json(result);
+      res.json(result);
+    } catch (err) {
+      console.error('[CustomDecks] GET /my error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   // ─── Get by access code (public) ──────────────────────────────────────
@@ -217,32 +229,37 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
    * Used by clients to load a deck before game start
    */
   router.get('/access/:code', async (req, res) => {
-    const deck = await prisma.customDeck.findUnique({
-      where: { accessCode: req.params.code.toUpperCase() },
-      select: {
-        id: true,
-        name: true,
-        accessCode: true,
-        status: true,
-        branding: true,
-        words: true,
-      },
-    });
+    try {
+      const deck = await prisma.customDeck.findUnique({
+        where: { accessCode: req.params.code.toUpperCase() },
+        select: {
+          id: true,
+          name: true,
+          accessCode: true,
+          status: true,
+          branding: true,
+          words: true,
+        },
+      });
 
-    if (!deck) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
+      if (!deck) {
+        res.status(404).json({ error: 'Deck not found' });
+        return;
+      }
+
+      if (deck.status !== 'approved') {
+        res.status(403).json({ error: 'Deck is not approved yet' });
+        return;
+      }
+
+      res.json({
+        ...deck,
+        wordCount: Array.isArray(deck.words) ? (deck.words as string[]).length : 0,
+      });
+    } catch (err) {
+      console.error('[CustomDecks] GET /access/:code error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    if (deck.status !== 'approved') {
-      res.status(403).json({ error: 'Deck is not approved yet' });
-      return;
-    }
-
-    res.json({
-      ...deck,
-      wordCount: Array.isArray(deck.words) ? (deck.words as string[]).length : 0,
-    });
   });
 
   // ─── Delete own deck ──────────────────────────────────────────────────
@@ -253,14 +270,19 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
     const userId = requireAuth(req, res);
     if (!userId) return;
 
-    const deck = await prisma.customDeck.findUnique({ where: { id: req.params.id } });
-    if (!deck || deck.userId !== userId) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    try {
+      const deck = await prisma.customDeck.findUnique({ where: { id: req.params.id } });
+      if (!deck || deck.userId !== userId) {
+        res.status(404).json({ error: 'Deck not found' });
+        return;
+      }
 
-    await prisma.customDeck.delete({ where: { id: req.params.id } });
-    res.json({ success: true });
+      await prisma.customDeck.delete({ where: { id: req.params.id } });
+      res.json({ success: true });
+    } catch (err) {
+      console.error('[CustomDecks] DELETE /:id error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;

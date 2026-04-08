@@ -105,6 +105,9 @@ const gameSettingsPartialSchema = z
   })
   .partial();
 
+/** Exported for lobby-settings endpoint validation */
+export { gameSettingsPartialSchema };
+
 // --- Game action validation ---
 
 const validActions = new Set([
@@ -156,11 +159,12 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
       return { action, data: result.data as GameSettingsUpdate };
     }
     case 'KICK_PLAYER': {
-      if (typeof obj.data !== 'string' || obj.data.length === 0 || obj.data.length > 100) {
-        console.warn('[Validation] Invalid KICK_PLAYER data');
+      const uuidResult = z.string().uuid().safeParse(obj.data);
+      if (!uuidResult.success) {
+        console.warn('[Validation] Invalid KICK_PLAYER data: must be a UUID');
         return null;
       }
-      return { action, data: obj.data };
+      return { action, data: uuidResult.data };
     }
     case 'GUESS_OPTION': {
       if (!obj.data || typeof obj.data !== 'object') {

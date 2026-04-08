@@ -2,9 +2,7 @@ import { Router, type IRouter } from 'express';
 import type { PrismaClient } from '@prisma/client';
 import webpush from 'web-push';
 import { config } from '../config';
-import { AuthService } from '../services/AuthService';
-
-const authService = new AuthService();
+import { authService } from '../services/AuthService';
 
 export function createPushRoutes(prisma: PrismaClient): IRouter {
   const router: IRouter = Router();
@@ -39,13 +37,17 @@ export function createPushRoutes(prisma: PrismaClient): IRouter {
       if (payload?.sub) userId = payload.sub;
     }
 
-    await prisma.pushSubscription.upsert({
-      where: { endpoint },
-      update: { p256dh: keys.p256dh, auth: keys.auth, ...(userId && { userId }) },
-      create: { endpoint, p256dh: keys.p256dh, auth: keys.auth, userId },
-    });
-
-    res.json({ ok: true });
+    try {
+      await prisma.pushSubscription.upsert({
+        where: { endpoint },
+        update: { p256dh: keys.p256dh, auth: keys.auth, ...(userId && { userId }) },
+        create: { endpoint, p256dh: keys.p256dh, auth: keys.auth, userId },
+      });
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('[Push] subscribe error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   /** DELETE /api/push/unsubscribe — remove push subscription */
@@ -55,8 +57,13 @@ export function createPushRoutes(prisma: PrismaClient): IRouter {
       res.status(400).json({ error: 'endpoint required' });
       return;
     }
-    await prisma.pushSubscription.deleteMany({ where: { endpoint } });
-    res.json({ ok: true });
+    try {
+      await prisma.pushSubscription.deleteMany({ where: { endpoint } });
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('[Push] unsubscribe error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;
@@ -79,9 +86,12 @@ export async function broadcastPush(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           JSON.stringify(payload)
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
         // 410 Gone = subscription expired, clean up
-        if (err.statusCode === 410 || err.statusCode === 404) dead.push(sub.endpoint);
+        const webPushErr = err as { statusCode?: number };
+        if (webPushErr.statusCode === 410 || webPushErr.statusCode === 404) {
+          dead.push(sub.endpoint);
+        }
       }
     })
   );

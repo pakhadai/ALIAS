@@ -28,7 +28,7 @@ import { executeGameActionPipeline, broadcastRoomState } from './game/gameAction
 import { wireGraceAfterMarkDisconnected } from './socket/disconnectFlow';
 import { socketAuthMiddleware } from './middleware/socketAuth';
 import { applyRateLimit } from './middleware/rateLimit';
-import { authLimiter, storeLimiter, pushLimiter } from './middleware/httpRateLimit';
+import { authLimiter, storeLimiter, pushLimiter, adminLimiter } from './middleware/httpRateLimit';
 import { createAuthRoutes } from './routes/auth';
 import { createAdminRoutes } from './routes/admin';
 import { createStoreRoutes } from './routes/store';
@@ -70,7 +70,7 @@ app.get('/health', (_req, res) => {
   });
 });
 app.use('/api/auth', authLimiter, createAuthRoutes(prisma));
-app.use('/api/admin', createAdminRoutes(prisma, redisStore));
+app.use('/api/admin', adminLimiter, createAdminRoutes(prisma, redisStore));
 app.use('/api/store', storeLimiter, createStoreRoutes(prisma));
 app.use('/api/purchases', storeLimiter, createPurchaseRoutes(prisma));
 app.use('/api/custom-decks', createCustomDeckRoutes(prisma));

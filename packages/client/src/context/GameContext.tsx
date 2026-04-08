@@ -36,228 +36,21 @@ import { ToastNotification } from '../components/Shared';
 import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
-
-function parseHexColor(hex: string): { r: number; g: number; b: number } | null {
-  const raw = hex.trim().replace(/^#/, '');
-  if (!/^[0-9a-fA-F]{6}$/.test(raw)) return null;
-  const r = Number.parseInt(raw.slice(0, 2), 16);
-  const g = Number.parseInt(raw.slice(2, 4), 16);
-  const b = Number.parseInt(raw.slice(4, 6), 16);
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
-  return { r, g, b };
-}
-
-function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
-  const srgb = [r, g, b].map((v) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * srgb[0]! + 0.7152 * srgb[1]! + 0.0722 * srgb[2]!;
-}
-
-function bestTextOnColor(hex: string): '#FFFFFF' | '#0B0F19' {
-  const rgb = parseHexColor(hex);
-  if (!rgb) return '#FFFFFF';
-  // Choose dark text for light accents (e.g., champagne), white otherwise.
-  return relativeLuminance(rgb) > 0.6 ? '#0B0F19' : '#FFFFFF';
-}
-
-function buildOfflineTask(
-  rawWord: string,
-  remainingDeck: string[],
-  mode: GameMode | undefined,
-  taskId: string
-): GameTask {
-  const m = mode ?? GameMode.CLASSIC;
-  if (m === GameMode.TRANSLATION) {
-    const parts = rawWord.split('|');
-    return {
-      id: taskId,
-      prompt: parts[0]?.trim() || rawWord,
-      answer: parts[1]?.trim(),
-    };
-  }
-  if (m === GameMode.QUIZ) {
-    const correct = rawWord;
-    const shuffled = [...remainingDeck].sort(() => Math.random() - 0.5);
-    const distractors: string[] = [];
-    for (const w of shuffled) {
-      if (w !== correct && distractors.length < 3) distractors.push(w);
-    }
-    const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
-    return { id: taskId, prompt: correct, answer: correct, options };
-  }
-  return { id: taskId, prompt: rawWord };
-}
-
-export const AVATARS = [
-  '🐶',
-  '🐱',
-  '🐭',
-  '🐹',
-  '🐰',
-  '🦊',
-  '🐻',
-  '🐼',
-  '🐨',
-  '🐯',
-  '🦁',
-  '🐮',
-  '🐷',
-  '🐸',
-  '🐵',
-  '🐔',
-];
-
-const SESSION_KEY = 'alias_active_session';
-const PREFS_KEY = 'alias_preferences';
-
-// States that are safe to restore (no active timers/countdowns)
-const SAVABLE_STATES = new Set([
-  GameState.LOBBY,
-  GameState.SETTINGS,
-  GameState.TEAMS,
-  GameState.VS_SCREEN,
-  GameState.PRE_ROUND,
-  GameState.COUNTDOWN,
-  GameState.PLAYING,
-  GameState.ROUND_SUMMARY,
-  GameState.SCOREBOARD,
-  GameState.GAME_OVER,
-]);
-
-type Action =
-  | { type: 'SET_STATE'; payload: Partial<AppState> }
-  | { type: 'UPDATE_PLAYERS'; payload: Player[] }
-  | { type: 'SHOW_NOTIF'; payload: { message: string; type: 'info' | 'error' | 'success' } | null };
-
-const initialState: AppState = {
-  gameState: GameState.MENU,
-  gameMode: 'ONLINE',
-  settings: {
-    general: {
-      language: Language.UA,
-      scoreToWin: 30,
-      skipPenalty: true,
-      categories: [Category.GENERAL],
-      soundEnabled: true,
-      soundPreset: SoundPreset.FUN,
-      teamCount: 2,
-      theme: AppTheme.PREMIUM_DARK,
-    },
-    mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
-  },
-  roomCode: '',
-  isHost: false,
-  myPlayerId: '',
-  players: [],
-  teams: [],
-  currentTeamIndex: 0,
-  wordDeck: [],
-  currentWord: '',
-  currentTask: null,
-  currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: '', explainerName: '' },
-  timeLeft: 0,
-  isPaused: false,
-  isConnected: false,
-  notification: null,
-  connectionError: null,
-  connectionErrorCode: null,
-
-  imposterPhase: undefined,
-  imposterPlayerId: undefined,
-  revealedPlayerIds: [],
-  imposterSecret: null,
-  imposterOfflineRevealIndex: 0,
-  imposterWord: null,
-};
-
-function gameReducer(state: AppState, action: Action): AppState {
-  switch (action.type) {
-    case 'SET_STATE':
-      return { ...state, ...action.payload };
-    case 'UPDATE_PLAYERS':
-      return { ...state, players: action.payload };
-    case 'SHOW_NOTIF':
-      return { ...state, notification: action.payload };
-    default:
-      return state;
-  }
-}
+import { bestTextOnColor } from '../utils/color';
+import { buildOfflineTask } from '../utils/gameTask';
+import { AVATARS } from '../utils/avatars';
+export { AVATARS };
+import {
+  SESSION_KEY,
+  PREFS_KEY,
+  SAVABLE_STATES,
+  type Action,
+  initialState,
+  gameReducer,
+  restoreSession,
+} from './gameReducer';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
-
-function restoreSession(init: AppState): AppState {
-  // Always restore user preferences (theme, sound) regardless of active session
-  try {
-    const rawPrefs = localStorage.getItem(PREFS_KEY);
-    if (rawPrefs) {
-      const prefs = JSON.parse(rawPrefs);
-      // Backward-compatible prefs: either flat {theme, language, ...} or nested {general:{...}}
-      const generalFromPrefs =
-        prefs && typeof prefs === 'object' && 'general' in prefs
-          ? (prefs.general as Partial<GameSettings['general']>)
-          : (prefs as Partial<GameSettings['general']>);
-      // Lobby-synced: language. Device-only: theme/sound.
-      const { language: _omitLanguage, ...prefsGeneral } = generalFromPrefs ?? {};
-      init = {
-        ...init,
-        settings: { ...init.settings, general: { ...init.settings.general, ...prefsGeneral } },
-      };
-    }
-  } catch {}
-
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return init;
-    const saved = JSON.parse(raw);
-    if (!saved || !saved.isHost || !saved.roomCode) return init;
-
-    // Map timer-dependent states to safe restore points
-    let gameState = saved.gameState;
-    if (gameState === GameState.PLAYING || gameState === GameState.COUNTDOWN) {
-      gameState = GameState.PRE_ROUND;
-    }
-    if (!SAVABLE_STATES.has(gameState)) return init;
-
-    return {
-      ...init,
-      gameState,
-      gameMode: saved.gameMode || 'ONLINE',
-      settings: {
-        ...init.settings,
-        ...(saved.settings?.general
-          ? (() => {
-              const { theme, soundEnabled, soundPreset, ...syncedGeneral } =
-                (saved.settings.general as Partial<GameSettings['general']>) ?? {};
-              return { general: { ...init.settings.general, ...syncedGeneral } };
-            })()
-          : {}),
-        ...(saved.settings?.mode
-          ? { mode: { ...init.settings.mode, ...saved.settings.mode } }
-          : {}),
-      },
-      roomCode: saved.roomCode,
-      isHost: true,
-      myPlayerId: saved.myPlayerId || '',
-      players: Array.isArray(saved.players) ? saved.players : [],
-      teams: Array.isArray(saved.teams) ? saved.teams : [],
-      currentTeamIndex: typeof saved.currentTeamIndex === 'number' ? saved.currentTeamIndex : 0,
-      wordDeck: Array.isArray(saved.wordDeck) ? saved.wordDeck : [],
-      currentWord: gameState === GameState.ROUND_SUMMARY ? saved.currentWord || '' : '',
-      currentTask: gameState === GameState.ROUND_SUMMARY ? saved.currentTask || null : null,
-      currentRoundStats:
-        gameState === GameState.ROUND_SUMMARY
-          ? saved.currentRoundStats || init.currentRoundStats
-          : init.currentRoundStats,
-      timeLeft: 0,
-      isPaused: false,
-      isConnected: false,
-    };
-  } catch {
-    return init;
-  }
-}
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState, restoreSession);
@@ -268,13 +61,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const { play: playSound } = useAudio(state.settings);
 
+  const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const showNotification = useCallback(
     (message: string, type: 'info' | 'error' | 'success' = 'info') => {
+      if (notifTimerRef.current !== null) {
+        clearTimeout(notifTimerRef.current);
+      }
       dispatch({ type: 'SHOW_NOTIF', payload: { message, type } });
-      setTimeout(() => dispatch({ type: 'SHOW_NOTIF', payload: null }), 3000);
+      notifTimerRef.current = setTimeout(() => {
+        notifTimerRef.current = null;
+        dispatch({ type: 'SHOW_NOTIF', payload: null });
+      }, 3000);
     },
     []
   );
+
+  useEffect(() => {
+    return () => {
+      if (notifTimerRef.current !== null) clearTimeout(notifTimerRef.current);
+    };
+  }, []);
 
   // Handle URL parameters on mount (room join, custom deck deep link, Stripe redirects)
   useEffect(() => {

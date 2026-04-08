@@ -229,6 +229,27 @@ describe('handleDisconnect', () => {
     expect(rm.handleDisconnect('unknown')).toBeNull();
   });
 
+  it('prefers connected player over first-in-socket-map when migrating host', async () => {
+    // Regression: old handleDisconnect() re-migrated using socketToPlayer.entries() which
+    // could pick a different (disconnected) player than removePlayer()'s find(isConnected).
+    const room = await rm.createRoom('socket-host');
+    rm.addPlayer(room.code, 'socket-host', 'Host', '🦁');
+    // guest1 added first → first in socketToPlayer Map, but will be marked disconnected
+    const guest1 = rm.addPlayer(room.code, 'socket-guest1', 'Guest1', '🐺')!;
+    const guest2 = rm.addPlayer(room.code, 'socket-guest2', 'Guest2', '🐸')!;
+
+    // Simulate guest1 being in grace period (disconnected but still in room)
+    guest1.isConnected = false;
+    // Also update in socketToPlayer to reflect reality: guest1 socket is gone
+    room.socketToPlayer.delete('socket-guest1');
+
+    rm.handleDisconnect('socket-host');
+
+    // removePlayer should pick guest2 (connected), not guest1 (disconnected + no socket)
+    expect(room.hostPlayerId).toBe(guest2.id);
+    expect(room.players.find((p) => p.isHost)?.id).toBe(guest2.id);
+  });
+
   it('updates isHost flag in teams during host migration', async () => {
     const room = await rm.createRoom('socket-host');
     const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;

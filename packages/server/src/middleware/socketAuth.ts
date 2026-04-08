@@ -1,7 +1,5 @@
 import type { Socket } from 'socket.io';
-import { AuthService } from '../services/AuthService';
-
-const authService = new AuthService();
+import { authService } from '../services/AuthService';
 
 /**
  * Socket.io middleware that verifies JWT from handshake auth.

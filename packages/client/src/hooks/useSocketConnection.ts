@@ -7,7 +7,7 @@ import type {
   Player,
   RoomErrorPayload,
 } from '@alias/shared';
-import { getAuthToken, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
+import { getAuthToken, getApiBaseUrl, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -30,16 +30,8 @@ function prepareSocketForRoomHandshake(socket: AppSocket): void {
   }
 }
 
-function normalizeBaseUrl(url: string): string {
-  return url.replace(/\/+$/, '');
-}
-
 // Prefer same-origin by default so Socket.IO works behind nginx gateway/NPM without CORS/host mismatch.
-const SERVER_URL =
-  (import.meta.env.VITE_SERVER_URL && normalizeBaseUrl(import.meta.env.VITE_SERVER_URL)) ||
-  (typeof window !== 'undefined' && window.location?.origin
-    ? window.location.origin
-    : 'http://localhost:3001');
+const SERVER_URL = getApiBaseUrl();
 
 interface UseSocketConnectionOptions {
   onStateSync: (state: GameSyncState) => void;

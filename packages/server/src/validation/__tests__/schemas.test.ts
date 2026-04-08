@@ -345,12 +345,19 @@ describe('validateGameAction', () => {
 
   // KICK_PLAYER
   describe('KICK_PLAYER', () => {
-    it('accepts valid player id string', () => {
-      const result = validateGameAction({ action: 'KICK_PLAYER', data: 'player-uuid-123' });
+    const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('accepts a valid UUID as player id', () => {
+      const result = validateGameAction({ action: 'KICK_PLAYER', data: validUuid });
       expect(result?.action).toBe('KICK_PLAYER');
       if (result?.action === 'KICK_PLAYER') {
-        expect(result.data).toBe('player-uuid-123');
+        expect(result.data).toBe(validUuid);
       }
+    });
+
+    it('rejects non-UUID strings', () => {
+      expect(validateGameAction({ action: 'KICK_PLAYER', data: 'player-uuid-123' })).toBeNull();
+      expect(validateGameAction({ action: 'KICK_PLAYER', data: 'not-a-uuid' })).toBeNull();
     });
 
     it('rejects empty string', () => {
