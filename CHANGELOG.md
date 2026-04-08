@@ -44,6 +44,12 @@
 
 - **`imposterWord` губився після рестарту сервера:** `room.imposterWord` виключений з `GameSyncState` (секрет). `restoreRoomFromRedis()` не відновлював його, тому `RESULTS` показував `null`. Вирішено через окремий Redis-ключ `alias:imposter:<code>` — `persistRoom` зберігає/видаляє, `restoreRoomFromRedis` завантажує паралельно із станом кімнати. **Бонус:** виправлено також відсутність відновлення `imposterPhase`, `imposterPlayerId`, `revealedPlayerIds`.
 
+- **Google sign-in “не завжди відкриває” (критично):** додано завантаження Google Identity Services (`https://accounts.google.com/gsi/client`) у `packages/client/index.html` і переведено логін з `prompt()` на офіційну кнопку через `google.accounts.id.renderButton()` у `LoginModal`/`ProfileModal` (прибирає флейки і проблему “білий квадрат” під шітом). Файли: `packages/client/index.html`, `packages/client/src/components/Auth/LoginModal.tsx`, `packages/client/src/components/Auth/ProfileModal.tsx`, `packages/client/src/utils/googleIdentity.ts`.
+
+- **Неконсистентні анімації модалок:** прибрано конфліктні keyframe-анімації (`animate-pop-in`, `animate-fade-in`) і стандартизовано slide-up/slide-down через transition-класи. Файл: `packages/client/src/components/Shared.tsx` (+ застосування у `AppSettingsModal`).
+
+- **Хедер/тема “інколи не встигає” перемкнутись:** застосування CSS-змінних теми перенесено на `useLayoutEffect`, а конфліктний `transition-colors` на кореневому контейнері прибрано. Файли: `packages/client/src/context/GameContext.tsx`, `packages/client/src/App.tsx`.
+
 ### Security
 
 - **`PUT /api/auth/lobby-settings` без валідації:** будь-який авторизований користувач міг зберегти довільний JSON напряму у БД. Тепер запит перевіряється через `gameSettingsPartialSchema` (Zod). Файл: `routes/auth.ts`.
@@ -61,6 +67,8 @@
 - **`defaultSettings` — structuredClone:** `createRoom()` тепер використовує `structuredClone(defaultSettings)` замість `{ ...defaultSettings }`, щоб кожна кімната мала ізольований об'єкт налаштувань. Файл: `services/RoomManager.ts`.
 
 - **`normalizeBaseUrl` дублювалась:** `useSocketConnection.ts` мав власну копію функції. Тепер хук використовує `getApiBaseUrl()` з `services/api.ts`. Файл: `hooks/useSocketConnection.ts`.
+
+- **UI language vs room language:** додано окремий `uiLanguage` (локальна перевага інтерфейсу), а `settings.general.language` лишається мовою слів/колоди для кімнати. Створення нової кімнати тепер дефолтиться на `uiLanguage`. Файли: `packages/client/src/types.ts`, `packages/client/src/context/gameReducer.ts`, `packages/client/src/context/GameContext.tsx`.
 
 ### Refactored
 
@@ -89,6 +97,10 @@
 - **`server/src/utils/asyncRoute.ts`:** Express 4 wrapper для async route handlers.
 
 - **`server/src/services/__tests__/RedisRoomStore.test.ts`:** unit-тести нових Redis-методів (mock ioredis).
+
+- **`client/src/hooks/useT.ts`:** спрощений доступ до перекладів через `TRANSLATIONS[uiLanguage]` замість прямого звернення до `settings.general.language`. Файл: `packages/client/src/hooks/useT.ts`.
+
+- **Негайний фідбек в налаштуваннях:** при увімкненні звуку — програється тестовий ефект, при увімкненні хаптиків — виконується коротка вібрація; вибір пресету звуків відтворює демо-звук. Файл: `packages/client/src/components/Settings/AppSettingsModal.tsx`.
 
 ### Removed
 
