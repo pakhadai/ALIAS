@@ -5,6 +5,7 @@ import { THEME_CONFIG, TRANSLATIONS, UI_THEME_IDS } from '../../constants';
 import { useGame } from '../../context/GameContext';
 import { getHapticsEnabled, setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 type Props = {
   isOpen: boolean;
@@ -43,15 +44,12 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col justify-end transition-all duration-300
-        ${visible ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in' : 'bg-transparent'}`}
+      className={bottomSheetBackdropClass(visible, 'z-50')}
       onClick={handleClose}
       role="presentation"
     >
       <div
-        className={`relative w-full max-w-sm md:max-w-md mx-auto flex max-h-[90dvh] flex-col overflow-hidden rounded-t-4xl
-          bg-(--ui-card) border border-(--ui-border) transition-transform duration-300 ease-out
-          ${visible ? 'translate-y-0 animate-pop-in' : 'translate-y-full'}`}
+        className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col')}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

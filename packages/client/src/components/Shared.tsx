@@ -55,29 +55,37 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 /**
- * Bottom sheet overlay (same motion as guest ProfileModal): blur dim + panel slides from bottom.
- * @param visible When false, backdrop clears and panel moves off-screen (close animation).
- * @param zIndexClass e.g. z-50, z-600 for stacking above game UI.
- * @param position fixed (default) or absolute for in-screen overlays (e.g. pause).
+ * Bottom sheet backdrop: dims + blurs the background while the sheet is open.
+ *
+ * Animation: opacity CSS transition (duration-300).
+ * NOTE: `animate-fade-in` and `animate-pop-in` are intentionally NOT used here —
+ * those keyframe animations override the transform/opacity CSS transitions on the
+ * same property, breaking the slide animation. Pure CSS transitions are used instead.
  */
 export const bottomSheetBackdropClass = (
   visible: boolean,
   zIndex = 'z-50',
   position: 'fixed' | 'absolute' = 'fixed'
 ) =>
-  `${position} inset-0 ${zIndex} flex flex-col justify-end transition-all duration-300 ${
+  `${position} inset-0 ${zIndex} flex flex-col justify-end transition-[opacity,background-color] duration-300 ${
     visible
-      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl animate-fade-in opacity-100'
+      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl opacity-100'
       : 'bg-transparent opacity-0 pointer-events-none'
   }`;
 
-/** Panel shell: rounded top, translate + pop-in when `open` is true. */
+/**
+ * Bottom sheet panel: slides up from bottom when open, slides down when closed.
+ *
+ * Animation: translateY CSS transition (duration-300 ease-out).
+ * NOTE: `animate-pop-in` is intentionally NOT used — it runs a scale(0.8→1) keyframe
+ * that overrides the translateY transition, causing the panel to pop instead of slide.
+ */
 export function bottomSheetPanelClass(open: boolean, extraClassName = ''): string {
   return [
     'relative w-full max-w-md mx-auto rounded-t-4xl overflow-hidden',
     'bg-(--ui-card) border border-(--ui-border)',
-    'transition-transform duration-300 ease-out',
-    open ? 'translate-y-0 animate-pop-in' : 'translate-y-full',
+    'transition-transform duration-300 ease-out will-change-transform',
+    open ? 'translate-y-0' : 'translate-y-full',
     extraClassName,
   ]
     .filter(Boolean)

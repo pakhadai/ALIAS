@@ -3,6 +3,7 @@ import React, {
   useContext,
   useReducer,
   useEffect,
+  useLayoutEffect,
   useRef,
   useCallback,
   useMemo,
@@ -935,8 +936,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [state.settings.general.theme]);
 
-  // Apply per-theme design tokens via CSS custom properties
-  useEffect(() => {
+  // Apply per-theme design tokens via CSS custom properties.
+  // useLayoutEffect runs synchronously BEFORE the browser paints, ensuring CSS
+  // variables are in sync with the Tailwind class changes from the same render.
+  // Using useEffect (post-paint) caused a one-frame mismatch where Tailwind classes
+  // showed the new theme but CSS vars still reflected the old one — visible as a
+  // flash of the wrong header/background color.
+  useLayoutEffect(() => {
     const r = document.documentElement;
     r.style.setProperty('--font-heading', currentTheme.fonts.heading);
     r.style.setProperty('--font-body', currentTheme.fonts.body);
