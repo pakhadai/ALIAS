@@ -10,11 +10,10 @@ import { playSoundEffect } from '../../utils/audio';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 type Props = {
-  isOpen: boolean;
   onClose: () => void;
 };
 
-export function AppSettingsModal({ isOpen, onClose }: Props) {
+export function AppSettingsModal({ onClose }: Props) {
   const { settings, currentTheme, setPreferences, showNotification, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
   const [haptics, setHaptics] = useState<boolean>(() => {
@@ -28,24 +27,14 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
     }
   });
   const t = useT();
-  const [shouldRender, setShouldRender] = useState(isOpen);
   const [visible, setVisible] = useState(false);
 
   const themes = useMemo(() => UI_THEME_IDS, []);
 
   useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true);
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    }
-    if (!shouldRender) return;
-    setVisible(false);
-    const timer = setTimeout(() => setShouldRender(false), 280);
-    return () => clearTimeout(timer);
-  }, [isOpen, shouldRender]);
-
-  if (!shouldRender) return null;
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
   const handleClose = () => {

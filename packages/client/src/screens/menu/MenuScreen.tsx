@@ -233,7 +233,7 @@ export const MenuScreen = () => {
       )}
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
-      <AppSettingsModal isOpen={showAppSettings} onClose={() => setShowAppSettings(false)} />
+      {showAppSettings && <AppSettingsModal onClose={() => setShowAppSettings(false)} />}
     </div>
   );
 };
