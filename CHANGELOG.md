@@ -28,6 +28,76 @@
 - Чому (контекст, причина)
 ```
 
+## [2026-04-08] — Глибокий аудит: критичні баги, безпека, розбиття монолітів, нова адмінка
+
+### Fixed
+
+- **Unhandled Promise Rejections (ризик краша сервера):** всі 30+ async Express-хендлерів у `routes/auth.ts`, `routes/purchases.ts`, `routes/store.ts`, `routes/custom-decks.ts`, `routes/push.ts`, `routes/admin.ts` не мали `try/catch`. У Node.js ≥ 15 + Express 4 це призводить до краша процесу. Додано `try/catch` до кожного хендлера, а для `admin.ts` (20+ маршрутів) введено `utils/asyncRoute.ts` — обгортку для async handlers.
+
+- **Подвійна міграція хоста (Data Corruption):** виявлено два незалежні баги в `services/RoomManager.ts`.
+  - **Баг А:** `room.hostPlayerId` ніколи не синхронізувався з реальним `player.id` — `createRoom()` генерував placeholder UUID, а `addPlayer()` — інший. Наслідок: `removePlayer()` ніколи не детектував хоста при добровільному виході (`room:leave`). Виправлення: в `addPlayer()` додано `if (isHostSocket) room.hostPlayerId = playerId`.
+  - **Баг Б:** `handleDisconnect()` виконував міграцію двічі — спочатку через `removePlayer()`, потім власну — з різною логікою вибору нового хоста. Прибрано дублікат.
+
+- **`stats.explained` ніколи не інкрементувався:** у `CONFIRM_ROUND` (`services/GameEngine.ts`) для пояснювача оновлювалось лише `stats.guessed`. Додано `explained: p.stats.explained + (p.id === explainerId ? correctCount : 0)`.
+
+- **`showNotification` — накопичення таймерів:** кожен виклик у `context/GameContext.tsx` створював новий `setTimeout` без очищення попереднього. Старий таймер міг очистити нове повідомлення достроково. Виправлено через `notifTimerRef` + `clearTimeout` перед кожним новим таймером + cleanup на unmount.
+
+- **`imposterWord` губився після рестарту сервера:** `room.imposterWord` виключений з `GameSyncState` (секрет). `restoreRoomFromRedis()` не відновлював його, тому `RESULTS` показував `null`. Вирішено через окремий Redis-ключ `alias:imposter:<code>` — `persistRoom` зберігає/видаляє, `restoreRoomFromRedis` завантажує паралельно із станом кімнати. **Бонус:** виправлено також відсутність відновлення `imposterPhase`, `imposterPlayerId`, `revealedPlayerIds`.
+
+### Security
+
+- **`PUT /api/auth/lobby-settings` без валідації:** будь-який авторизований користувач міг зберегти довільний JSON напряму у БД. Тепер запит перевіряється через `gameSettingsPartialSchema` (Zod). Файл: `routes/auth.ts`.
+
+- **TOCTOU race у `POST /api/auth/google`:** два паралельних запити з одним email проходили `findUnique → null`, потім один падав з P2002 без `try/catch`. Замінено `findUnique + create` на атомарний `upsert`. Файл: `routes/auth.ts`.
+
+- **Rate limit відсутній на `/api/admin`:** всі інші роути мали rate limiters, admin — ні. Доданий `adminLimiter` (30 req/хв у prod). Файли: `middleware/httpRateLimit.ts`, `src/index.ts`.
+
+- **`KICK_PLAYER` приймав будь-який рядок:** замість довільного рядка до 100 символів тепер перевіряється `z.string().uuid()`. Файл: `validation/schemas.ts`.
+
+### Changed
+
+- **`AuthService` singleton:** замість `new AuthService()` у 6 окремих route-файлах і middleware — єдиний `export const authService = new AuthService()` у `services/AuthService.ts`. Файли: всі route-файли, `middleware/socketAuth.ts`.
+
+- **`defaultSettings` — structuredClone:** `createRoom()` тепер використовує `structuredClone(defaultSettings)` замість `{ ...defaultSettings }`, щоб кожна кімната мала ізольований об'єкт налаштувань. Файл: `services/RoomManager.ts`.
+
+- **`normalizeBaseUrl` дублювалась:** `useSocketConnection.ts` мав власну копію функції. Тепер хук використовує `getApiBaseUrl()` з `services/api.ts`. Файл: `hooks/useSocketConnection.ts`.
+
+### Refactored
+
+- **`GameContext.tsx` → `context/gameReducer.ts`:** витягнуто `Action` type, `initialState`, `gameReducer`, `SESSION_KEY`, `PREFS_KEY`, `SAVABLE_STATES`, `restoreSession`. Файл: `context/gameReducer.ts` (новий).
+
+- **Клієнтські утиліти:** витягнуто з `GameContext.tsx` у нові файли:
+  - `utils/color.ts` — `parseHexColor`, `relativeLuminance`, `bestTextOnColor`
+  - `utils/gameTask.ts` — `buildOfflineTask`
+  - `utils/avatars.ts` — `AVATARS: string[]`
+
+- **`LobbyFlow.tsx` (1262 рядки) → `screens/lobby/`:** розбито на `LobbyScreen.tsx`, `TeamSetupScreen.tsx`, `SettingsScreen.tsx`. `LobbyFlow.tsx` — barrel re-export (4 рядки). Backward compatibility збережено.
+
+- **`MenuFlow.tsx` (2740 рядків) → `screens/menu/`:** розбито на 11 компонентів: `RulesScreen`, `MenuScreen`, `EnterNameScreen`, `JoinInputScreen`, `ProfileScreen`, `ProfileSettingsScreen`, `LobbySettingsScreen`, `MyWordPacksScreen`, `MyDecksScreen`, `StoreScreen`, `PlayerStatsScreen`. `MenuFlow.tsx` — barrel re-export (13 рядків).
+
+### Added
+
+- **Нова адмінка (`screens/admin/`):** повне переписування `AdminPanel.tsx` (1254 рядки видалено):
+  - `AdminApp.tsx` — auth gate + layout + Toast + ConfirmModal
+  - `adminApi.ts` — typed API layer з `AdminAuthError`
+  - `tabs/StatsTab.tsx`, `tabs/DecksTab.tsx`, `tabs/PacksTab.tsx`, `tabs/ThemesTab.tsx`
+  - **Auth:** JWT auto-detect з `alias_auth_token` → `/api/auth/me` → `isAdmin`. Без API-ключів.
+  - **Toast notifications** замість `alert()`; **ConfirmModal** замість `confirm()`
+  - **`Set<string>`** для незалежного відстеження стану окремих операцій
+  - Таби кешують дані — немає перезавантаження при переключенні
+
+- **`server/src/utils/asyncRoute.ts`:** Express 4 wrapper для async route handlers.
+
+- **`server/src/services/__tests__/RedisRoomStore.test.ts`:** unit-тести нових Redis-методів (mock ioredis).
+
+### Removed
+
+- **`client/src/screens/AdminPanel.tsx`:** видалено (замінено `screens/admin/`).
+- **`NetworkMessage`** видалено з `client/src/types.ts` — мертвий ре-експорт.
+- **Дублікат `prepare`** у root `package.json` виправлено.
+
+---
+
 ## [2026-04-07] — Pre-commit hooks for code quality
 
 ### Added
