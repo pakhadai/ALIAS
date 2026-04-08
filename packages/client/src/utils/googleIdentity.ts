@@ -1,16 +1,5 @@
 export type GoogleIdCredentialResponse = { credential?: string };
 
-type PromptNotification = {
-  isDisplayed(): boolean;
-  isNotDisplayed(): boolean;
-  getNotDisplayedReason(): string;
-  isSkippedMoment(): boolean;
-  getSkippedReason(): string;
-  isDismissedMoment(): boolean;
-  getDismissedReason(): string;
-  getMomentType(): string;
-};
-
 type GoogleId = {
   initialize(opts: {
     client_id: string;
@@ -18,10 +7,18 @@ type GoogleId = {
     auto_select?: boolean;
     locale?: string;
     color_scheme?: 'light' | 'dark' | string;
-    ux_mode?: 'popup' | 'redirect';
-    context?: 'signin' | 'signup' | 'use';
   }): void;
-  prompt(cb?: (notification: PromptNotification) => void): void;
+  renderButton(
+    parent: HTMLElement,
+    opts: {
+      theme?: 'outline' | 'filled_blue' | 'filled_black';
+      size?: 'large' | 'medium' | 'small';
+      width?: number;
+      shape?: 'rectangular' | 'pill' | 'circle' | 'square';
+      text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+      locale?: string;
+    }
+  ): void;
 };
 
 function getGoogleId(): GoogleId | null {
@@ -29,45 +26,50 @@ function getGoogleId(): GoogleId | null {
   return win?.google?.accounts?.id ?? null;
 }
 
-export type GoogleSignInResult = { ok: true } | { ok: false; reason: 'unavailable' | 'suppressed' };
+export type GoogleSignInResult = { ok: true } | { ok: false; reason: 'unavailable' };
 
 /**
- * Initialize Google Identity Services and trigger the sign-in prompt.
+ * Initialize GSI and render Google's official sign-in button inside `container`.
  *
- * Design decisions:
- * - Always re-initializes on every call. Caching (the old `initializedKey`) caused
- *   stale-closure bugs: if the modal was re-opened with the same locale/theme,
- *   initialize() was skipped and the callback still pointed to the FIRST
- *   (already unmounted) modal instance. The credential then fired into the void.
- * - `use_fedcm_for_prompt` is intentionally omitted. It is designed for auto
- *   One-Tap prompts, NOT for explicit button-triggered sign-ins. Enabling it
- *   caused intermittent silent suppression with no feedback to the user.
- * - A `notification` callback is passed to `prompt()` so we can detect when
- *   Google suppresses the popup (browser cooldown, third-party cookie restrictions,
- *   etc.) and call `onSuppressed` instead of spinning indefinitely.
+ * Using renderButton() instead of prompt() because:
+ * - prompt() shows Google's One Tap bottom sheet on mobile — it appears as a
+ *   bright white overlay ON TOP of our dark modal, creating a "white square" effect.
+ * - renderButton() renders Google's button (theme: filled_black) inside our modal
+ *   container. Clicking it opens Google's sign-in flow natively in the browser —
+ *   no visual clash with our dark UI.
+ * - Always re-initializes so the callback is always fresh. Caching caused stale-
+ *   closure bugs where credentials fired into already-unmounted components.
  */
-export function initAndPromptGoogleSignIn(params: {
-  clientId: string;
-  locale: string;
-  colorScheme: 'light' | 'dark';
-  onCredential: (res: GoogleIdCredentialResponse) => void;
-  onSuppressed: () => void;
-}): GoogleSignInResult {
+export function renderGoogleSignInButton(
+  container: HTMLElement,
+  params: {
+    clientId: string;
+    locale: string;
+    colorScheme: 'light' | 'dark';
+    onCredential: (res: GoogleIdCredentialResponse) => void;
+  }
+): GoogleSignInResult {
   const googleId = getGoogleId();
   if (!googleId) return { ok: false, reason: 'unavailable' };
 
+  // Always re-initialize so the callback is fresh (avoids stale closure bugs
+  // that occur when the modal is opened multiple times).
   googleId.initialize({
     client_id: params.clientId,
     callback: params.onCredential,
     auto_select: false,
     locale: params.locale,
-    color_scheme: params.colorScheme,
   });
 
-  googleId.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      params.onSuppressed();
-    }
+  googleId.renderButton(container, {
+    // filled_black looks great on dark backgrounds, outline for light themes
+    theme: params.colorScheme === 'dark' ? 'filled_black' : 'outline',
+    size: 'large',
+    // Match container width so Google's button fills our modal row naturally
+    width: container.offsetWidth || 320,
+    shape: 'rectangular',
+    text: 'signin_with',
+    locale: params.locale,
   });
 
   return { ok: true };

@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { X, LogIn, Loader2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import { X, LogIn } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
 import { Language } from '../../types';
 import {
-  initAndPromptGoogleSignIn,
+  renderGoogleSignInButton,
   type GoogleIdCredentialResponse,
 } from '../../utils/googleIdentity';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
@@ -27,8 +27,10 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { settings, currentTheme } = useGame();
   const t = TRANSLATIONS[settings.general.language];
   const [visible, setVisible] = useState(false);
-  const [loading, setLoading] = useState<'google' | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Container that Google's renderButton() will paint its button into. */
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setVisible(true));
@@ -48,7 +50,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const handleGoogleSuccess = useCallback(
     async (credentialResponse: GoogleIdCredentialResponse) => {
       if (!credentialResponse.credential) return;
-      setLoading('google');
+      setLoading(true);
       setError(null);
       try {
         await loginWithGoogle(credentialResponse.credential);
@@ -56,42 +58,31 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         handleClose();
       } catch (e) {
         setError((e as Error).message);
-        setLoading(null);
+        setLoading(false);
       }
     },
     [loginWithGoogle, onSuccess, handleClose]
   );
 
-  const handleGoogleClick = useCallback(() => {
+  // Render (or re-render) Google's official button whenever locale/theme/callback changes.
+  // renderButton() replaces prompt() — avoids One Tap bottom sheet that clashes
+  // with our own dark bottom sheet UI.
+  useEffect(() => {
+    if (!googleButtonRef.current) return;
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
-    if (!clientId) {
-      setError(t.loginGoogleFailed);
-      return;
-    }
+    if (!clientId) return;
 
-    setLoading('google');
-    setError(null);
-
-    const result = initAndPromptGoogleSignIn({
+    const result = renderGoogleSignInButton(googleButtonRef.current, {
       clientId,
       locale,
       colorScheme: currentTheme.isDark ? 'dark' : 'light',
-      // Passing handleGoogleSuccess directly (no extra wrapper arrow) keeps the
-      // reference stable across re-renders and avoids stale closure issues.
       onCredential: handleGoogleSuccess,
-      onSuppressed: () => {
-        // Google silently blocked the popup (cooldown, browser restrictions, FedCM
-        // not available, etc.). Show a meaningful error so the user isn't stuck.
-        setLoading(null);
-        setError(t.loginGoogleSuppressed ?? t.loginGoogleFailed);
-      },
     });
 
     if (!result.ok) {
-      setLoading(null);
       setError(t.loginGoogleFailed);
     }
-  }, [currentTheme.isDark, handleGoogleSuccess, locale, t]);
+  }, [locale, currentTheme.isDark, handleGoogleSuccess, t.loginGoogleFailed]);
 
   return (
     <div
@@ -106,7 +97,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         role="dialog"
         aria-modal="true"
       >
-        {/* Close */}
+        {/* Drag handle */}
         <div className="flex justify-center pt-0 pb-2">
           <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
         </div>
@@ -134,45 +125,19 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         {/* Anonymous note */}
         <p className="text-xs mb-5 text-center text-(--ui-fg-muted)">{t.loginAnonymousNote}</p>
 
-        {/* Google */}
+        {/* Google Sign-In button — rendered by Google's SDK, fills this container.
+            Using renderButton() instead of a custom button avoids the One Tap bottom
+            sheet that overlays our own dark bottom sheet with a white square. */}
         <div className="mb-3">
-          {loading === 'google' ? (
+          {loading ? (
             <div className="flex items-center justify-center gap-2 h-11 rounded-xl bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg-muted)">
-              <Loader2 size={18} className="animate-spin" />
+              <span className="w-4 h-4 border-2 border-(--ui-accent) border-t-transparent rounded-full animate-spin" />
               <span className="text-sm">{t.loginGoogleLoading}</span>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={handleGoogleClick}
-              className="w-full h-11 rounded-xl bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)
-                text-(--ui-fg) font-sans font-semibold text-sm flex items-center justify-center gap-3 transition-all active:scale-[0.99]"
-            >
-              <span
-                aria-hidden
-                className="h-6 w-6 rounded-md bg-(--ui-card) border border-(--ui-border) flex items-center justify-center"
-              >
-                <svg width="14" height="14" viewBox="0 0 48 48" fill="none">
-                  <path
-                    fill="#FFC107"
-                    d="M43.611 20.083H42V20H24v8h11.303C33.656 32.657 29.146 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.566 6.053 29.529 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.65-.389-3.917z"
-                  />
-                  <path
-                    fill="#FF3D00"
-                    d="M6.306 14.691 12.87 19.51C14.654 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.566 6.053 29.529 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
-                  />
-                  <path
-                    fill="#4CAF50"
-                    d="M24 44c5.422 0 10.36-2.005 14.073-5.273l-6.497-5.5C29.533 34.723 26.86 36 24 36c-5.125 0-9.622-3.317-11.285-7.946l-6.514 5.02C9.522 39.556 16.227 44 24 44z"
-                  />
-                  <path
-                    fill="#1976D2"
-                    d="M43.611 20.083H42V20H24v8h11.303c-.792 2.258-2.348 4.158-4.427 5.227l.003-.002 6.497 5.5C36.922 39.1 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
-                  />
-                </svg>
-              </span>
-              <span>{t.loginGoogle}</span>
-            </button>
+            /* Google renders its button into this div.
+               min-h prevents layout shift while GSI script loads. */
+            <div ref={googleButtonRef} className="w-full min-h-[44px]" />
           )}
         </div>
 
