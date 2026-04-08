@@ -14,6 +14,7 @@ import {
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { buildDeckShareUrl } from '../../utils/deckShare';
 import { LoginModal } from '../Auth/LoginModal';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
@@ -67,7 +68,7 @@ function DeckItem({
 }) {
   const [deleting, setDeleting] = useState(false);
   const { showNotification, settings } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();

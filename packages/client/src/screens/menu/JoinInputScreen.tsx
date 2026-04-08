@@ -4,14 +4,15 @@ import { Button } from '../../components/Button';
 import { Logo } from '../../components/Shared';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
-import { TRANSLATIONS, ROOM_CODE_LENGTH } from '../../constants';
+import { ROOM_CODE_LENGTH } from '../../constants';
+import { useT } from '../../hooks/useT';
 
 export const JoinInputScreen = () => {
   const { setGameState, settings, currentTheme, setRoomCode, checkRoomExists, showNotification } =
     useGame();
   const [code, setCode] = useState('');
   const [checking, setChecking] = useState(false);
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   const handleJoinRoom = async () => {
     if (code.length !== ROOM_CODE_LENGTH) return;

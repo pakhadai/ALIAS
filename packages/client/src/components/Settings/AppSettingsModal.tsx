@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'lucide-react';
 import { AppTheme, Language, SoundPreset } from '../../types';
-import { THEME_CONFIG, TRANSLATIONS, UI_THEME_IDS } from '../../constants';
+import { THEME_CONFIG, UI_THEME_IDS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { useGame } from '../../context/GameContext';
 import { setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export function AppSettingsModal({ isOpen, onClose }: Props) {
-  const { settings, currentTheme, setPreferences, showNotification } = useGame();
+  const { settings, currentTheme, setPreferences, showNotification, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
   const [haptics, setHaptics] = useState<boolean>(() => {
     try {
@@ -26,7 +27,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
       return true;
     }
   });
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [visible, setVisible] = useState(false);
 
@@ -109,7 +110,7 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                     type="button"
                     onClick={() => setPreferences({ language: l })}
                     className={`flex-1 py-3 rounded-xl border transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                      settings.general.language === l
+                      uiLanguage === l
                         ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
                         : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
                     }`}
@@ -127,9 +128,8 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
             <div className="grid grid-cols-2 gap-3">
               {themes.map((themeId) => {
                 const theme = THEME_CONFIG[themeId];
-                const lang = settings.general.language;
-                const themeName = theme.labels?.[lang]?.name ?? theme.name;
-                const themeDesc = theme.labels?.[lang]?.description ?? theme.description;
+                const themeName = theme.labels?.[uiLanguage]?.name ?? theme.name;
+                const themeDesc = theme.labels?.[uiLanguage]?.description ?? theme.description;
                 const isActive = settings.general.theme === themeId;
                 const locked = themeId !== AppTheme.PREMIUM_DARK && !isAuthenticated;
                 return (

@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Confetti, MilestoneNotification } from '../../../components/Shared';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 
 export const RoundSummaryScreen = () => {
   const {
@@ -15,7 +15,7 @@ export const RoundSummaryScreen = () => {
     isHost,
     sendAction,
   } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [milestone, setMilestone] = useState<{ points: number; team: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const processingRef = useRef(false);

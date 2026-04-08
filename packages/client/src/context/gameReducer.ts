@@ -26,6 +26,7 @@ export type Action =
 export const initialState: AppState = {
   gameState: GameState.MENU,
   gameMode: 'ONLINE',
+  uiLanguage: Language.UA,
   settings: {
     general: {
       language: Language.UA,
@@ -78,7 +79,7 @@ export function gameReducer(state: AppState, action: Action): AppState {
 }
 
 export function restoreSession(init: AppState): AppState {
-  // Always restore user preferences (theme, sound) regardless of active session
+  // Always restore user preferences (theme, sound, uiLanguage) regardless of active session
   try {
     const rawPrefs = localStorage.getItem(PREFS_KEY);
     if (rawPrefs) {
@@ -88,10 +89,17 @@ export function restoreSession(init: AppState): AppState {
         prefs && typeof prefs === 'object' && 'general' in prefs
           ? (prefs.general as Partial<GameSettings['general']>)
           : (prefs as Partial<GameSettings['general']>);
-      // Lobby-synced: language. Device-only: theme/sound.
-      const { language: _omitLanguage, ...prefsGeneral } = generalFromPrefs ?? {};
+      // uiLanguage is stored at the top level of prefs (not inside 'general').
+      // settings.general.language = word deck language (room-synced, not device-stored).
+      const { language: _omitLang, ...prefsGeneral } = generalFromPrefs ?? {};
+      const uiLang =
+        (prefs?.uiLanguage as Language | undefined) ??
+        // Legacy: if old prefs had language at top level, migrate it
+        (generalFromPrefs?.language as Language | undefined) ??
+        Language.UA;
       init = {
         ...init,
+        uiLanguage: uiLang,
         settings: { ...init.settings, general: { ...init.settings.general, ...prefsGeneral } },
       };
     }

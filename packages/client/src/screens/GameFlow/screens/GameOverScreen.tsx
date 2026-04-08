@@ -3,13 +3,13 @@ import { Trophy } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Confetti } from '../../../components/Shared';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { usePlayerStats } from '../../../hooks/usePlayerStats';
 
 export const GameOverScreen = () => {
   const { teams, currentTheme, settings, resetGame, rematch, leaveRoom, isHost } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);

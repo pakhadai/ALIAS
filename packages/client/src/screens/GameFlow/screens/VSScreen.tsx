@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 
 export const VSScreen = () => {
   const { teams, currentTheme, settings, sendAction, isHost } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [showButton, setShowButton] = useState(false);
 
   const totalDelay = teams.length * 2 * 0.6;

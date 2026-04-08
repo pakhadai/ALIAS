@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 
 export const ScoreboardScreen = () => {
   const { teams, settings, currentTheme, handleNextRound, isHost } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [mounted, setMounted] = useState(false);
 
   const bgColor = currentTheme.bg;

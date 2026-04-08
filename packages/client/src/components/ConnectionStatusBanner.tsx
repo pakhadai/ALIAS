@@ -1,12 +1,12 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { useGame } from '../context/GameContext';
-import { TRANSLATIONS } from '../constants';
+import { useT } from '../hooks/useT';
 
 /** Fixed top banner while socket is restoring session (room:rejoin in flight). */
 export function ConnectionStatusBanner() {
   const { isReconnecting, settings } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   if (!isReconnecting) return null;
 

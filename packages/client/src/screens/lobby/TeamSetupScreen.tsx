@@ -4,7 +4,7 @@ import { Button } from '../../components/Button';
 import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 
 function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
   return p.isConnected !== false;
@@ -12,7 +12,7 @@ function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
 
 export const TeamSetupScreen = () => {
   const { teams, settings, currentTheme, sendAction, setGameState, isHost, gameMode } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   const allTeamsHavePlayers = teams.every((team) => team.players.length > 0);
 

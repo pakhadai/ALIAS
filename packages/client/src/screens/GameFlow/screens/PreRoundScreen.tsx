@@ -4,7 +4,7 @@ import { Button } from '../../../components/Button';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { GameState } from '../../../types';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 
 export const PreRoundScreen = () => {
   const {
@@ -19,7 +19,7 @@ export const PreRoundScreen = () => {
     gameMode,
     leaveRoom,
   } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const activeTeam = teams[currentTeamIndex];
 
   if (!activeTeam || activeTeam.players.length === 0) {

@@ -6,7 +6,7 @@ import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import versionData from '../../version.json';
 import { RulesModal } from './RulesScreen';
@@ -27,7 +27,7 @@ export const MenuScreen = () => {
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const [fullscreenHintVisible, setFullscreenHintVisible] = useState(false);
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   void setSettings;
 

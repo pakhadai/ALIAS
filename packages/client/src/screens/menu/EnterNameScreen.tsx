@@ -5,7 +5,7 @@ import { Logo } from '../../components/Shared';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { AVATARS } from '../../utils/avatars';
 import { PRESET_AVATARS } from '../../components/AvatarDisplay';
 
@@ -27,7 +27,7 @@ export const EnterNameScreen = () => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [isEntering, setIsEntering] = useState(false);
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
 
   const stableId = useRef(`player-${generateUUID()}`);
 

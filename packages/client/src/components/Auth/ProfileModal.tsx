@@ -6,7 +6,7 @@ import { fetchStore, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 import { GameState } from '../../types';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import {
   renderGoogleSignInButton,
@@ -35,8 +35,8 @@ function AvatarIcon() {
 
 export function ProfileModal({ onClose }: ProfileModalProps) {
   const { authState, profile, loginWithGoogle, logout } = useAuthContext();
-  const { currentTheme, settings, setGameState } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const { currentTheme, settings, setGameState, uiLanguage } = useGame();
+  const t = useT();
   const { get: getStats } = usePlayerStats();
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
@@ -67,10 +67,10 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   };
 
   const locale = useMemo(() => {
-    if (settings.general.language === 'DE') return 'de';
-    if (settings.general.language === 'EN') return 'en';
+    if (uiLanguage === 'DE') return 'de';
+    if (uiLanguage === 'EN') return 'en';
     return 'uk';
-  }, [settings.general.language]);
+  }, [uiLanguage]);
 
   /** Container that Google's renderButton() paints into. */
   const googleButtonRef = useRef<HTMLDivElement>(null);

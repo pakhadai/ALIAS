@@ -100,6 +100,11 @@ export interface ThemeConfig {
 export interface AppState {
   gameState: GameState;
   gameMode: 'ONLINE' | 'OFFLINE';
+  /**
+   * Personal UI display language — stored locally, never synced to the room.
+   * Separate from settings.general.language (word deck language, room-controlled).
+   */
+  uiLanguage: Language;
   settings: GameSettings;
   roomCode: string;
   isHost: boolean;

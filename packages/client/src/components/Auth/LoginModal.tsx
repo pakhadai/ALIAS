@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react'
 import { X, LogIn } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import { Language } from '../../types';
 import {
   renderGoogleSignInButton,
@@ -24,8 +24,8 @@ function googleLocale(lang: Language): string {
 
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
-  const { settings, currentTheme } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const { settings, currentTheme, uiLanguage } = useGame();
+  const t = useT();
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,10 +42,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     setTimeout(onClose, 280);
   }, [onClose]);
 
-  const locale = useMemo(
-    () => googleLocale(settings.general.language),
-    [settings.general.language]
-  );
+  const locale = useMemo(() => googleLocale(uiLanguage), [uiLanguage]);
 
   const handleGoogleSuccess = useCallback(
     async (credentialResponse: GoogleIdCredentialResponse) => {

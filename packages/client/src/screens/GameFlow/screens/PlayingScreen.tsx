@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FloatingParticle } from '../../../components/Shared';
 import { GameState, GameMode } from '../../../types';
 import { useGame } from '../../../context/GameContext';
-import { TRANSLATIONS } from '../../../constants';
+import { useT } from '../../../hooks/useT';
 import { usePlayerStats } from '../../../hooks/usePlayerStats';
 import { HAPTIC } from '../../../utils/haptics';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
@@ -34,7 +34,7 @@ export const PlayingScreen = () => {
     sendAction,
   } = useGame();
   const haptic = useHapticFeedback();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number; text: string; color: string }[]
   >([]);

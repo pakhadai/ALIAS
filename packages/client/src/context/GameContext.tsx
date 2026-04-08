@@ -115,7 +115,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (code.length >= 4) {
           try {
             const deck = await fetchDeckByCode(code);
-            const lang = stateRef.current.settings.general.language;
             dispatch({
               type: 'SET_STATE',
               payload: {
@@ -130,12 +129,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               },
             });
             showNotification(
-              TRANSLATIONS[lang].customDeckDeepLinkSuccess.replace('{name}', deck.name),
+              TRANSLATIONS[stateRef.current.uiLanguage].customDeckDeepLinkSuccess.replace(
+                '{name}',
+                deck.name
+              ),
               'success'
             );
           } catch {
-            const lang = stateRef.current.settings.general.language;
-            showNotification(TRANSLATIONS[lang].customDeckDeepLinkError, 'error');
+            showNotification(
+              TRANSLATIONS[stateRef.current.uiLanguage].customDeckDeepLinkError,
+              'error'
+            );
           }
         }
         stripKeys.push('deck');
@@ -449,7 +453,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         }
         case 'GENERATE_TEAMS': {
-          const teamNames = TRANSLATIONS[stateRef.current.settings.general.language].teamNames;
+          const teamNames = TRANSLATIONS[stateRef.current.uiLanguage].teamNames;
           const teamCount = Math.min(
             stateRef.current.settings.general.teamCount,
             stateRef.current.players.length
@@ -720,7 +724,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: `local-${playerNum}-${Date.now()}`,
             name:
               payload.data?.name ||
-              `${TRANSLATIONS[stateRef.current.settings.general.language].playerN} ${playerNum}`,
+              `${TRANSLATIONS[stateRef.current.uiLanguage].playerN} ${playerNum}`,
             avatar: payload.data?.avatar || AVATARS[playerNum % AVATARS.length],
             isHost: false,
             stats: { explained: 0, guessed: 0 },
@@ -1072,18 +1076,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   }, [currentTheme]);
 
-  // Sync <html lang> with app language setting
+  // <html lang> is now synced in the uiLanguage persistence effect above
+
+  // Sync <html lang> with the user's personal UI language (not the room word-deck language)
   useEffect(() => {
     const lang =
-      state.settings.general.language === Language.UA
-        ? 'uk'
-        : state.settings.general.language === Language.DE
-          ? 'de'
-          : 'en';
+      state.uiLanguage === Language.UA ? 'uk' : state.uiLanguage === Language.DE ? 'de' : 'en';
     document.documentElement.lang = lang;
-  }, [state.settings.general.language]);
+  }, [state.uiLanguage]);
 
-  // Persist user preferences (theme, sound) across sessions
+  // Persist user preferences (theme, sound, uiLanguage) across sessions.
+  // uiLanguage is the personal display language — separate from settings.general.language
+  // (word deck language, which is a room setting synced between players).
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -1092,6 +1096,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           theme: state.settings.general.theme,
           soundEnabled: state.settings.general.soundEnabled,
           soundPreset: state.settings.general.soundPreset,
+          uiLanguage: state.uiLanguage,
         })
       );
     } catch {}
@@ -1099,6 +1104,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     state.settings.general.theme,
     state.settings.general.soundEnabled,
     state.settings.general.soundPreset,
+    state.uiLanguage,
   ]);
 
   const contextValue = useMemo(
@@ -1140,7 +1146,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             theme: stateRef.current.settings.general.theme,
                             soundEnabled: stateRef.current.settings.general.soundEnabled,
                             soundPreset: stateRef.current.settings.general.soundPreset,
-                            language: stateRef.current.settings.general.language,
+                            // Default word deck language to the user's personal UI language
+                            language: stateRef.current.uiLanguage,
                           },
                         }
                       : {}),
@@ -1159,13 +1166,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .slice(0, 20);
         const safeAvatar = truncateUtf16Safe(String(avatar ?? '').trim(), 12);
         if (!sanitizedName) {
-          const lang = stateRef.current.settings.general.language;
-          showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Name is required', 'error');
+          showNotification(
+            TRANSLATIONS[stateRef.current.uiLanguage].enterNameRequired ?? 'Name is required',
+            'error'
+          );
           return false;
         }
         if (!safeAvatar) {
-          const lang = stateRef.current.settings.general.language;
-          showNotification(TRANSLATIONS[lang].chooseAvatar ?? 'Choose an avatar', 'error');
+          showNotification(
+            TRANSLATIONS[stateRef.current.uiLanguage].chooseAvatar ?? 'Choose an avatar',
+            'error'
+          );
           return false;
         }
         let playerData: { persistentId?: string; name?: string; avatar?: string } = {};
@@ -1188,8 +1199,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           localStorage.setItem('alias_player', JSON.stringify(playerData));
         } catch {
-          const lang = stateRef.current.settings.general.language;
-          showNotification(TRANSLATIONS[lang].enterNameRequired ?? 'Storage error', 'error');
+          showNotification(
+            TRANSLATIONS[stateRef.current.uiLanguage].enterNameRequired ?? 'Storage error',
+            'error'
+          );
           return false;
         }
 
@@ -1197,7 +1210,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
 
         if (state.gameMode === 'ONLINE') {
-          const lang = state.settings.general.language;
+          const uiLang = state.uiLanguage;
           try {
             if (state.isHost) {
               await socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
@@ -1213,7 +1226,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e);
             if (msg === 'ROOM_OPERATION_TIMEOUT' || msg === 'NO_SOCKET') {
-              showNotification(TRANSLATIONS[lang].connectionFailed ?? 'Connection failed', 'error');
+              showNotification(
+                TRANSLATIONS[uiLang].connectionFailed ?? 'Connection failed',
+                'error'
+              );
             }
             return false;
           }
@@ -1263,15 +1279,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       },
       setPreferences: (patch: Partial<GameSettings['general']>) => {
-        dispatch({
-          type: 'SET_STATE',
-          payload: {
-            settings: {
-              ...stateRef.current.settings,
-              general: { ...stateRef.current.settings.general, ...patch },
-            },
-          },
-        });
+        const { language, ...settingsPatch } = patch;
+        const updates: Partial<AppState> = {};
+
+        // language → personal UI language (not synced to room word deck)
+        if (language !== undefined) {
+          updates.uiLanguage = language;
+        }
+        // Other prefs (theme, sound, etc.) → settings only
+        if (Object.keys(settingsPatch).length > 0) {
+          updates.settings = {
+            ...stateRef.current.settings,
+            general: { ...stateRef.current.settings.general, ...settingsPatch },
+          };
+        }
+        if (Object.keys(updates).length > 0) {
+          dispatch({ type: 'SET_STATE', payload: updates });
+        }
       },
       startOfflineGame: () => {
         // Ensure a clean slate when starting offline mode (prevents "host clones" after re-entry).

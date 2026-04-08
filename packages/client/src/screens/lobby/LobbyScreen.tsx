@@ -23,6 +23,7 @@ import { useGame } from '../../context/GameContext';
 import { AVATARS } from '../../utils/avatars';
 import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 import QRCode from 'qrcode';
 
 const ROOM_UNAVAILABLE_CODES: RoomErrorCode[] = [
@@ -60,7 +61,7 @@ export const LobbyScreen = () => {
     showNotification,
   } = useGame();
   const general = settings.general;
-  const t = TRANSLATIONS[general.language];
+  const t = useT();
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);

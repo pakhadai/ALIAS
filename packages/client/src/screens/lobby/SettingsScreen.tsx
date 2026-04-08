@@ -9,11 +9,12 @@ import { useAuthContext } from '../../context/AuthContext';
 import { fetchStore } from '../../services/api';
 import type { WordPackItem } from '../../services/api';
 import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 
 export const SettingsScreen = () => {
   const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
   const { isAuthenticated } = useAuthContext();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
   const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
 

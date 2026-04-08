@@ -4,7 +4,7 @@ import { Button } from '../../components/Button';
 import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 import { GameState, GameMode } from '../../types';
 import { useGame } from '../../context/GameContext';
-import { TRANSLATIONS } from '../../constants';
+import { useT } from '../../hooks/useT';
 
 const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];
@@ -291,7 +291,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) 
 
 export const RulesScreen = () => {
   const { setGameState, settings, currentTheme } = useGame();
-  const t = TRANSLATIONS[settings.general.language];
+  const t = useT();
   return (
     <div
       className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
