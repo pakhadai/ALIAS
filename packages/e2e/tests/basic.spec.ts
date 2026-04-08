@@ -35,14 +35,20 @@ test.describe('ALIAS — basic smoke tests', () => {
 
   test('language toggle cycles through UA→DE→EN', async ({ page }) => {
     await page.goto('/');
-    // Find language button (shows current language code)
-    const langBtn = page.locator('button').filter({ hasText: /^(UA|DE|EN)$/ });
-    await expect(langBtn).toHaveText('UA');
-    await langBtn.click();
-    await expect(langBtn).toHaveText('DE');
-    await langBtn.click();
-    await expect(langBtn).toHaveText('EN');
-    await langBtn.click();
-    await expect(langBtn).toHaveText('UA');
+    // Language selector is inside the app settings modal
+    await page.getByRole('button', { name: 'Settings' }).click();
+
+    const ua = page.getByRole('button', { name: 'UA', exact: true });
+    const de = page.getByRole('button', { name: 'DE', exact: true });
+    const en = page.getByRole('button', { name: 'EN', exact: true });
+
+    await expect(ua).toBeVisible();
+    await expect(de).toBeVisible();
+    await expect(en).toBeVisible();
+
+    await ua.click();
+    await de.click();
+    await en.click();
+    await ua.click();
   });
 });

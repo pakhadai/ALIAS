@@ -11,7 +11,7 @@ const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3001';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-function createClient(name: string): AppSocket {
+function createClient(_name: string): AppSocket {
   return io(SERVER_URL, {
     autoConnect: false,
     transports: ['websocket'],
@@ -21,7 +21,8 @@ function createClient(name: string): AppSocket {
 function waitForEvent<T>(socket: AppSocket, event: string, timeout = 5000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`Timeout waiting for ${event}`)), timeout);
-    (socket as any).once(event, (data: T) => {
+    const s = socket as unknown as { once: (ev: string, cb: (data: T) => void) => void };
+    s.once(event, (data: T) => {
       clearTimeout(timer);
       resolve(data);
     });
@@ -38,11 +39,15 @@ function waitForState(
     const handler = (state: GameSyncState) => {
       if (predicate(state)) {
         clearTimeout(timer);
-        (socket as any).off('game:state-sync', handler);
+        const s = socket as unknown as {
+          off: (ev: string, cb: (data: GameSyncState) => void) => void;
+        };
+        s.off('game:state-sync', handler);
         resolve(state);
       }
     };
-    (socket as any).on('game:state-sync', handler);
+    const s = socket as unknown as { on: (ev: string, cb: (data: GameSyncState) => void) => void };
+    s.on('game:state-sync', handler);
   });
 }
 

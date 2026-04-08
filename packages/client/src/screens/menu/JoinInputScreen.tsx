@@ -8,8 +8,7 @@ import { ROOM_CODE_LENGTH } from '../../constants';
 import { useT } from '../../hooks/useT';
 
 export const JoinInputScreen = () => {
-  const { setGameState, settings, currentTheme, setRoomCode, checkRoomExists, showNotification } =
-    useGame();
+  const { setGameState, currentTheme, setRoomCode, checkRoomExists, showNotification } = useGame();
   const [code, setCode] = useState('');
   const [checking, setChecking] = useState(false);
   const t = useT();

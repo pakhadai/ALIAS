@@ -1,6 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Language } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+function parseCsvList(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
 
 // ─── Word data per language/category ───────────────────────────────────
 
@@ -3269,7 +3277,7 @@ async function main() {
           translations: {
             create: [
               {
-                language: pack.language as any,
+                language: pack.language as Language,
                 word: text,
               },
             ],
@@ -3329,13 +3337,22 @@ async function main() {
     console.log(`  [SoundPack] ${sp.slug}`);
   }
 
-  // Set admin by email
-  const adminResult = await prisma.user.updateMany({
-    where: { email: 'mrdemianpahaday@gmail.com' },
-    data: { isAdmin: true },
-  });
-  if (adminResult.count > 0) {
-    console.log(`  [Admin] mrdemianpahaday@gmail.com set as admin`);
+  // Optional: Set admins by email for local/dev convenience.
+  // DO NOT hardcode admins in seed (security risk).
+  // Usage: SEED_ADMIN_EMAILS="admin1@example.com,admin2@example.com"
+  const seedAdminEmails = parseCsvList(process.env.SEED_ADMIN_EMAILS).map((e) => e.toLowerCase());
+  if (seedAdminEmails.length > 0) {
+    if ((process.env.NODE_ENV || 'development') === 'production') {
+      console.warn(
+        '  [Admin] SEED_ADMIN_EMAILS is set but NODE_ENV=production — skipping admin seeding'
+      );
+    } else {
+      const adminResult = await prisma.user.updateMany({
+        where: { email: { in: seedAdminEmails } },
+        data: { isAdmin: true },
+      });
+      console.log(`  [Admin] ${adminResult.count} user(s) set as admin (SEED_ADMIN_EMAILS)`);
+    }
   }
 
   // Summary

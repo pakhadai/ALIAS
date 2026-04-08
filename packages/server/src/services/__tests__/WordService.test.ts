@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WordService } from '../WordService';
 import { Language, Category, SoundPreset, AppTheme, GameMode, MOCK_WORDS } from '@alias/shared';
 import type { GameSettings } from '@alias/shared';
+import type { PrismaClient } from '@prisma/client';
 
 const baseSettings: GameSettings = {
   general: {
@@ -161,7 +162,7 @@ describe('buildDeck (with Prisma)', () => {
       customDeck: {
         findUnique: vi.fn().mockResolvedValue(null),
       },
-    } as any;
+    } as unknown as PrismaClient;
 
     service.setPrisma(mockPrisma);
     const deck = await service.buildDeck(baseSettings);
@@ -180,7 +181,7 @@ describe('buildDeck (with Prisma)', () => {
     const mockPrisma = {
       wordTranslation: { findMany: vi.fn().mockResolvedValue([]) },
       customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
-    } as any;
+    } as unknown as PrismaClient;
 
     service.setPrisma(mockPrisma);
     const deck = await service.buildDeck(baseSettings);
@@ -192,7 +193,7 @@ describe('buildDeck (with Prisma)', () => {
     const mockPrisma = {
       wordTranslation: { findMany: vi.fn().mockResolvedValue([{ word: 'PackWord' }]) },
       customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
-    } as any;
+    } as unknown as PrismaClient;
 
     service.setPrisma(mockPrisma);
     const settings: GameSettings = {
@@ -220,7 +221,7 @@ describe('buildDeck (with Prisma)', () => {
         }),
       },
       wordTranslation: { findMany: vi.fn() },
-    } as any;
+    } as unknown as PrismaClient;
 
     service.setPrisma(mockPrisma);
     const settings: GameSettings = {
@@ -239,7 +240,7 @@ describe('buildDeck (with Prisma)', () => {
         findUnique: vi.fn().mockResolvedValue({ words: ['X'], status: 'pending' }),
       },
       wordTranslation: { findMany: vi.fn().mockResolvedValue([{ word: 'DBWord' }]) },
-    } as any;
+    } as unknown as PrismaClient;
 
     service.setPrisma(mockPrisma);
     const settings: GameSettings = {

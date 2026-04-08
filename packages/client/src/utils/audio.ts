@@ -5,7 +5,11 @@ let audioCtx: AudioContext | null = null;
 
 const getAudioContext = () => {
   if (!audioCtx) {
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    const win = window as Window & {
+      AudioContext?: typeof AudioContext;
+      webkitAudioContext?: typeof AudioContext;
+    };
+    const Ctx = win.AudioContext ?? win.webkitAudioContext;
     if (Ctx) {
       audioCtx = new Ctx();
     }
@@ -137,7 +141,7 @@ export const playSoundEffect = (type: GameSoundId, preset: SoundPreset = SoundPr
             createOsc(ctx, 'sawtooth', 150, now, 0.15, 0.2);
             createOsc(ctx, 'sawtooth', 100, now + 0.15, 0.2, 0.2);
             break;
-          case 'start':
+          case 'start': {
             const oscStart = ctx.createOscillator();
             const gainStart = ctx.createGain();
             oscStart.frequency.setValueAtTime(400, now);
@@ -149,6 +153,7 @@ export const playSoundEffect = (type: GameSoundId, preset: SoundPreset = SoundPr
             oscStart.start();
             oscStart.stop(now + 0.3);
             break;
+          }
           case 'end':
             createOsc(ctx, 'sawtooth', 300, now, 0.4, 0.1);
             createOsc(ctx, 'sawtooth', 80, now + 0.1, 0.4, 0.1);

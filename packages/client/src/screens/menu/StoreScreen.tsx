@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, Check, ShieldCheck, Loader2 } from 'lucide-react';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -34,22 +34,27 @@ export const StoreScreen = () => {
     itemId: string;
   } | null>(null);
 
-  const purchaseResult = (() => {
+  const purchaseResult = useMemo(() => {
     const p = new URLSearchParams(window.location.search).get('purchase');
     return p === 'success' ? 'success' : p === 'cancelled' ? 'cancelled' : null;
-  })();
+  }, []);
   const [banner, setBanner] = useState<'success' | 'cancelled' | null>(purchaseResult);
 
   void isDark;
 
-  const loadStore = () =>
-    fetchStore()
-      .then((data) => {
-        setWordPacks(data.wordPacks);
-        setThemes(data.themes);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const loadStore = useCallback(
+    () =>
+      fetchStore()
+        .then((data) => {
+          setWordPacks(data.wordPacks);
+          setThemes(data.themes);
+        })
+        .catch((_err) => {
+          void _err;
+        })
+        .finally(() => setLoading(false)),
+    []
+  );
 
   useEffect(() => {
     loadStore();
@@ -58,7 +63,7 @@ export const StoreScreen = () => {
       const t = setTimeout(() => setBanner(null), 4000);
       return () => clearTimeout(t);
     }
-  }, []);
+  }, [loadStore, purchaseResult]);
 
   const handleAddFree = async (itemType: 'wordPack' | 'theme', itemId: string) => {
     if (!isAuthenticated) {
@@ -73,7 +78,9 @@ export const StoreScreen = () => {
       } else {
         setThemes((prev) => prev.map((t) => (t.id === itemId ? { ...t, owned: true } : t)));
       }
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
     setActing(null);
   };
 

@@ -18,7 +18,41 @@ export const UI_THEME_IDS = (Object.values(AppTheme) as AppTheme[]).filter(
   (id) => id !== AppTheme.PREMIUM_LIGHT
 );
 
-export const TRANSLATIONS: Record<Language, Record<string, any>> = {
+export type TranslationValue = string;
+export const TEAM_NAMES: Record<Language, string[]> = {
+  [Language.UA]: [
+    'Ракети',
+    'Ніндзя',
+    'Кіберпанки',
+    'Чемпіони',
+    'Котики',
+    'Блискавки',
+    'Зірки',
+    'Титани',
+  ],
+  [Language.DE]: [
+    'Raketen',
+    'Ninjas',
+    'Cyberpunks',
+    'Champions',
+    'Kätzchen',
+    'Blitze',
+    'Sterne',
+    'Titanen',
+  ],
+  [Language.EN]: [
+    'Rockets',
+    'Ninjas',
+    'Cyberpunks',
+    'Champions',
+    'Kittens',
+    'Thunders',
+    'Stars',
+    'Titans',
+  ],
+};
+
+export const TRANSLATIONS: Record<Language, Record<string, TranslationValue>> = {
   [Language.UA]: {
     slogan: 'Говори швидко, грай яскраво.',
     createGame: 'Створити гру',
@@ -149,16 +183,6 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     rule4: '4. Пропустили — натисніть «Пропуск» (-1).',
     rule5: '5. Перемагає той, хто швидше набере бали.',
     close: 'Закрити',
-    teamNames: [
-      'Ракети',
-      'Ніндзя',
-      'Кіберпанки',
-      'Чемпіони',
-      'Котики',
-      'Блискавки',
-      'Зірки',
-      'Титани',
-    ],
     cat_general: 'Загальне',
     cat_food: 'Їжа',
     cat_travel: 'Подорожі',
@@ -437,16 +461,6 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     rule4: '4. Übersprungen — tippe auf «Überspringen» (-1).',
     rule5: '5. Wer zuerst die Punkte hat, gewinnt.',
     close: 'Schließen',
-    teamNames: [
-      'Raketen',
-      'Ninjas',
-      'Cyberpunks',
-      'Champions',
-      'Kätzchen',
-      'Blitze',
-      'Sterne',
-      'Titanen',
-    ],
     cat_general: 'Allgemein',
     cat_food: 'Essen',
     cat_travel: 'Reisen',
@@ -724,16 +738,6 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     rule4: '4. Skip — tap "Skip" (-1).',
     rule5: '5. First to reach score wins.',
     close: 'Close',
-    teamNames: [
-      'Rockets',
-      'Ninjas',
-      'Cyberpunks',
-      'Champions',
-      'Kittens',
-      'Thunders',
-      'Stars',
-      'Titans',
-    ],
     cat_general: 'General',
     cat_food: 'Food',
     cat_travel: 'Travel',

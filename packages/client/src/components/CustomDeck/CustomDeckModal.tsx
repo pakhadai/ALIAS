@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { TRANSLATIONS } from '../../constants';
 import { useT } from '../../hooks/useT';
 import { buildDeckShareUrl } from '../../utils/deckShare';
 import { LoginModal } from '../Auth/LoginModal';
@@ -67,7 +66,7 @@ function DeckItem({
   onSelect?: (code: string, name: string) => void;
 }) {
   const [deleting, setDeleting] = useState(false);
-  const { showNotification, settings } = useGame();
+  const { showNotification } = useGame();
   const t = useT();
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -174,8 +173,12 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
         ...(accessCode.trim() ? { accessCode: accessCode.trim() } : {}),
       });
       onCreated(deck);
-    } catch (e: any) {
-      setError(e.message || 'Помилка');
+    } catch (e: unknown) {
+      const msg =
+        e && typeof e === 'object' && 'message' in e
+          ? String((e as { message?: unknown }).message)
+          : '';
+      setError(msg || 'Помилка');
     } finally {
       setSaving(false);
     }
@@ -278,8 +281,12 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
     try {
       const deck = await uploadCustomDeckFile(file, name.trim());
       onCreated(deck);
-    } catch (e: any) {
-      setError(e.message || 'Помилка завантаження');
+    } catch (e: unknown) {
+      const msg =
+        e && typeof e === 'object' && 'message' in e
+          ? String((e as { message?: unknown }).message)
+          : '';
+      setError(msg || 'Помилка завантаження');
     } finally {
       setSaving(false);
     }

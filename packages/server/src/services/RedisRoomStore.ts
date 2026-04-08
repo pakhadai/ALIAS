@@ -29,7 +29,8 @@ export class RedisRoomStore {
 
       await this.redis.ping();
       console.log('[Redis] Connected');
-    } catch (err) {
+    } catch (_err) {
+      void _err;
       console.warn('[Redis] Not available, running without persistence');
       this.redis = null;
     }
@@ -56,7 +57,9 @@ export class RedisRoomStore {
         pipe.set(`${ROOM_WRITER_PREFIX}${roomCode}`, writerInstanceId, 'EX', ROOM_TTL);
       }
       await pipe.exec();
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   async getRoomState(roomCode: string): Promise<GameSyncState | null> {
@@ -64,7 +67,8 @@ export class RedisRoomStore {
     try {
       const data = await this.redis.get(`${ROOM_PREFIX}${roomCode}`);
       return data ? JSON.parse(data) : null;
-    } catch {
+    } catch (_err) {
+      void _err;
       return null;
     }
   }
@@ -74,7 +78,8 @@ export class RedisRoomStore {
     if (!this.redis) return null;
     try {
       return await this.redis.get(`${ROOM_WRITER_PREFIX}${roomCode}`);
-    } catch {
+    } catch (_err) {
+      void _err;
       return null;
     }
   }
@@ -87,7 +92,9 @@ export class RedisRoomStore {
         `${ROOM_WRITER_PREFIX}${roomCode}`,
         `${IMPOSTER_WORD_PREFIX}${roomCode}`
       );
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   /** Persist the IMPOSTER secret word (stored separately — never in GameSyncState). */
@@ -95,7 +102,9 @@ export class RedisRoomStore {
     if (!this.redis) return;
     try {
       await this.redis.set(`${IMPOSTER_WORD_PREFIX}${roomCode}`, word, 'EX', ROOM_TTL);
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   /** Load the IMPOSTER secret word, or null if not found. */
@@ -103,7 +112,8 @@ export class RedisRoomStore {
     if (!this.redis) return null;
     try {
       return await this.redis.get(`${IMPOSTER_WORD_PREFIX}${roomCode}`);
-    } catch {
+    } catch (_err) {
+      void _err;
       return null;
     }
   }
@@ -113,14 +123,17 @@ export class RedisRoomStore {
     if (!this.redis) return;
     try {
       await this.redis.del(`${IMPOSTER_WORD_PREFIX}${roomCode}`);
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   async roomExists(roomCode: string): Promise<boolean> {
     if (!this.redis) return false;
     try {
       return (await this.redis.exists(`${ROOM_PREFIX}${roomCode}`)) === 1;
-    } catch {
+    } catch (_err) {
+      void _err;
       return false;
     }
   }
@@ -135,7 +148,9 @@ export class RedisRoomStore {
         'EX',
         ROOM_TTL
       );
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   async getSocketRoom(socketId: string): Promise<{ roomCode: string; playerId: string } | null> {
@@ -143,7 +158,8 @@ export class RedisRoomStore {
     try {
       const data = await this.redis.get(`${SOCKET_KEY_PREFIX}${socketId}`);
       return data ? JSON.parse(data) : null;
-    } catch {
+    } catch (_err) {
+      void _err;
       return null;
     }
   }
@@ -152,7 +168,9 @@ export class RedisRoomStore {
     if (!this.redis) return;
     try {
       await this.redis.del(`${SOCKET_KEY_PREFIX}${socketId}`);
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }
 
   /**
@@ -199,7 +217,8 @@ export class RedisRoomStore {
       } while (cursor !== '0');
 
       return { activeRooms, playersOnline, redisConnected: true };
-    } catch {
+    } catch (_err) {
+      void _err;
       return { activeRooms: 0, playersOnline: 0, redisConnected: false };
     }
   }

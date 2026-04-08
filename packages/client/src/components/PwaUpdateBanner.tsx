@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useGame } from '../context/GameContext';
 import { useT } from '../hooks/useT';
 import { applyPwaUpdate } from '../pwa-client';
 
 export const PwaUpdateBanner: React.FC = () => {
-  const { settings, currentTheme } = useGame();
   const t = useT();
   const [visible, setVisible] = useState(false);
 

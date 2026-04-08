@@ -28,12 +28,16 @@ export function ThemesTab({ showToast, confirm }: Props) {
     setLoading(true);
     try {
       setThemes(await api.getThemes());
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     load();
@@ -53,8 +57,12 @@ export function ThemesTab({ showToast, confirm }: Props) {
       setThemes((t) => t.filter((x) => x.id !== theme.id));
       if (editingId === theme.id) setEditingId(null);
       showToast(`«${theme.name}» видалено`, 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(`del-${theme.id}`);
     }
@@ -204,8 +212,12 @@ function EditThemePanel({
         isFree: form.isFree,
       });
       onSaved(updated);
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(key);
     }

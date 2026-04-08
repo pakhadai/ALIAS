@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void> | void;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+};
+
 export function useInstallPrompt() {
-  const [prompt, setPrompt] = useState<any>(null);
+  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
-      setPrompt(e);
+      setPrompt(e as BeforeInstallPromptEvent);
     };
     const installedHandler = () => setInstalled(true);
 

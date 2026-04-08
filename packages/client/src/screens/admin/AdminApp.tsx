@@ -250,6 +250,10 @@ export function AdminApp() {
     window.location.href = '/';
   };
 
+  const handleBackToApp = () => {
+    window.location.href = '/';
+  };
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   if (authState === 'loading') return <LoadingScreen />;
@@ -279,6 +283,13 @@ export function AdminApp() {
           </span>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={handleBackToApp}
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-[#666] hover:text-white transition-colors"
+            title="Повернутися в додаток"
+          >
+            <ExternalLink size={13} />В додаток
+          </button>
           {user?.email && (
             <span className="text-[11px] text-[#666] hidden sm:block">{user.email}</span>
           )}

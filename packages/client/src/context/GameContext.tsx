@@ -13,13 +13,10 @@ import {
   Language,
   Team,
   GameSettings,
-  GameTask,
   Category,
-  RoundStats,
   Player,
   AppTheme,
   GameActionPayload,
-  SoundPreset,
   AppState,
   GameContextType,
   GameMode,
@@ -29,6 +26,7 @@ import {
   TEAM_COLORS,
   THEME_CONFIG,
   TRANSLATIONS,
+  TEAM_NAMES,
   ROOM_CODE_LENGTH,
 } from '../constants';
 import { useAudio } from '../hooks/useAudio';
@@ -45,7 +43,6 @@ import {
   SESSION_KEY,
   PREFS_KEY,
   SAVABLE_STATES,
-  type Action,
   initialState,
   gameReducer,
   restoreSession,
@@ -181,11 +178,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           currentWord: state.currentWord,
           currentTask: state.currentTask,
           currentRoundStats: state.currentRoundStats,
-          timeLeft: state.timeLeft,
+          // Use ref to avoid persisting every second tick.
+          timeLeft: stateRef.current.timeLeft,
           isPaused: state.isPaused,
         })
       );
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }, [
     state.isHost,
     state.gameMode,
@@ -201,7 +201,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     state.currentTask,
     state.currentRoundStats,
     state.isPaused,
-    // intentionally omit state.timeLeft — see comment above
   ]);
 
   // Warn host before closing/refreshing during active game
@@ -418,7 +417,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           break;
         }
-        case 'START_PLAYING':
+        case 'START_PLAYING': {
           playSound('start');
           const roundTime =
             'classicRoundTime' in stateRef.current.settings.mode
@@ -435,6 +434,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           nextWordLogic();
           break;
+        }
         case 'START_DUEL': {
           const duelPlayers = stateRef.current.players;
           const duelTeams: Team[] = duelPlayers.map((p, i) => ({
@@ -453,7 +453,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         }
         case 'GENERATE_TEAMS': {
-          const teamNames = TRANSLATIONS[stateRef.current.uiLanguage].teamNames;
+          const teamNames = TEAM_NAMES[stateRef.current.uiLanguage];
           const teamCount = Math.min(
             stateRef.current.settings.general.teamCount,
             stateRef.current.players.length
@@ -700,7 +700,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           const activeTeam = teams[currentTeamIndex];
           const updatedTeams = teams.map((t) => {
-            let updated = { ...t };
+            const updated = { ...t };
             if (t.id === currentRoundStats.teamId) {
               updated.score = Math.max(0, t.score + points);
             }
@@ -740,7 +740,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     },
-    [playSound, nextWordLogic]
+    [playSound, nextWordLogic, nextOfflineImposterWord]
   );
 
   // Socket.io connection for server-based online mode
@@ -779,7 +779,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       // Критично: isHost має оновлюватися з сервера при кожному sync (наприклад після міграції хоста)
-      const myId = socketApi.myPlayerIdRef.current ?? stateRef.current.myPlayerId;
+      const myId = stateRef.current.myPlayerId;
       const me = syncState.players.find((p) => p.id === myId);
       const isHostFromSync = me?.isHost ?? stateRef.current.isHost;
 
@@ -825,7 +825,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       [showNotification]
     ),
     onPlayerLeft: useCallback(
-      (playerId: string) => {
+      (_playerId: string) => {
+        void _playerId;
         showNotification('Гравець вийшов', 'info');
       },
       [showNotification]
@@ -893,17 +894,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       /* ignore */
     }
-  }, [socketApi.connect]);
+  }, [socketApi]);
 
+  const sendGameAction = socketApi.sendGameAction;
   const sendAction = useCallback(
     (action: GameActionPayload) => {
       if (state.gameMode === 'ONLINE') {
-        socketApi.sendGameAction(action);
+        sendGameAction(action);
       } else {
         handleGameAction(action);
       }
     },
-    [state.gameMode, handleGameAction, socketApi.sendGameAction]
+    [state.gameMode, handleGameAction, sendGameAction]
   );
 
   // Sync socket connection state back to app state
@@ -915,7 +917,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (socketApi.roomCode && socketApi.roomCode !== state.roomCode) {
       dispatch({ type: 'SET_STATE', payload: { roomCode: socketApi.roomCode } });
     }
-  }, [socketApi.myPlayerId, socketApi.roomCode, state.gameMode]);
+  }, [socketApi.myPlayerId, socketApi.roomCode, state.gameMode, state.myPlayerId, state.roomCode]);
 
   const currentTheme = useMemo(() => {
     const fallback = THEME_CONFIG[AppTheme.PREMIUM_DARK];
@@ -1099,7 +1101,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           uiLanguage: state.uiLanguage,
         })
       );
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
   }, [
     state.settings.general.theme,
     state.settings.general.soundEnabled,
@@ -1151,7 +1155,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                           },
                         }
                       : {}),
-                    ...(roomSettings.mode ? { mode: roomSettings.mode as any } : {}),
+                    ...(roomSettings.mode
+                      ? { mode: roomSettings.mode as unknown as GameSettings['mode'] }
+                      : {}),
                   },
                 },
               });
@@ -1303,7 +1309,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem(SESSION_KEY);
           localStorage.removeItem(ROOM_CODE_KEY);
           localStorage.removeItem(PLAYER_ID_KEY);
-        } catch {}
+        } catch (_err) {
+          void _err;
+        }
         dispatch({
           type: 'SET_STATE',
           payload: {
@@ -1351,7 +1359,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem(SESSION_KEY);
           localStorage.removeItem(ROOM_CODE_KEY);
           localStorage.removeItem(PLAYER_ID_KEY);
-        } catch {}
+        } catch (_err) {
+          void _err;
+        }
         socketApi.leaveRoom();
         dispatch({
           type: 'SET_STATE',

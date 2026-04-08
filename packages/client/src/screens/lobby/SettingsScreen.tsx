@@ -8,7 +8,6 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { fetchStore } from '../../services/api';
 import type { WordPackItem } from '../../services/api';
-import { TRANSLATIONS } from '../../constants';
 import { useT } from '../../hooks/useT';
 
 export const SettingsScreen = () => {
@@ -66,7 +65,10 @@ export const SettingsScreen = () => {
       gameState !== GameState.SETTINGS
     )
       return;
-    sendAction({ action: 'UPDATE_SETTINGS', data: { mode: patch as any } });
+    sendAction({
+      action: 'UPDATE_SETTINGS',
+      data: { mode: patch as unknown as GameSettings['mode'] },
+    });
   };
 
   const clearCustomDeck = () => {

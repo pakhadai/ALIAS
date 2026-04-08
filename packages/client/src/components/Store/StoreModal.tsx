@@ -217,16 +217,6 @@ export function StoreModal({ onClose }: StoreModalProps) {
     loadStore();
   }, [loadStore]);
 
-  // After login, re-load store and proceed with pending purchase
-  const handleLoginSuccess = useCallback(async () => {
-    await loadStore();
-    if (pendingBuyId) {
-      const { itemType, id } = pendingBuyId;
-      setPendingBuyId(null);
-      handleBuy(itemType, id);
-    }
-  }, [pendingBuyId, loadStore]);
-
   const handleBuy = useCallback(
     async (itemType: 'wordPack' | 'theme' | 'soundPack', itemId: string) => {
       if (!isAuthenticated) {
@@ -247,6 +237,16 @@ export function StoreModal({ onClose }: StoreModalProps) {
     },
     [isAuthenticated]
   );
+
+  // After login, re-load store and proceed with pending purchase
+  const handleLoginSuccess = useCallback(async () => {
+    await loadStore();
+    if (pendingBuyId) {
+      const { itemType, id } = pendingBuyId;
+      setPendingBuyId(null);
+      handleBuy(itemType, id);
+    }
+  }, [pendingBuyId, loadStore, handleBuy]);
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'packs', label: 'Словники', icon: <BookOpen size={15} /> },

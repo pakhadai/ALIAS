@@ -184,19 +184,27 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         localStorage.removeItem(PLAYER_ID_KEY);
 
         let detached = false;
-        let tid: number | undefined;
-        let onCreated: (d: { roomCode: string; playerId: string }) => void;
-        let onErr: (p: RoomErrorPayload) => void;
+        const tid: { current?: number } = {};
+        const onCreatedRef: {
+          current?: (d: { roomCode: string; playerId: string }) => void;
+        } = {};
+        const onErrRef: { current?: (p: RoomErrorPayload) => void } = {};
 
         const detach = () => {
           if (detached) return;
           detached = true;
-          if (tid !== undefined) clearTimeout(tid);
-          socket.off('room:created', onCreated);
-          socket.off('room:error', onErr);
+          if (tid.current !== undefined) clearTimeout(tid.current);
+          if (onCreatedRef.current) socket.off('room:created', onCreatedRef.current);
+          if (onErrRef.current) socket.off('room:error', onErrRef.current);
         };
 
-        onCreated = ({ roomCode: code, playerId }) => {
+        const onCreated = ({
+          roomCode: code,
+          playerId,
+        }: {
+          roomCode: string;
+          playerId: string;
+        }) => {
           detach();
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
@@ -206,12 +214,14 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           resolve({ roomCode: code, playerId });
         };
 
-        onErr = (payload: RoomErrorPayload) => {
+        const onErr = (payload: RoomErrorPayload) => {
           detach();
           reject(Object.assign(new Error(payload.message), { code: payload.code }));
         };
+        onCreatedRef.current = onCreated;
+        onErrRef.current = onErr;
 
-        tid = window.setTimeout(() => {
+        tid.current = window.setTimeout(() => {
           detach();
           reject(new Error('ROOM_OPERATION_TIMEOUT'));
         }, 45_000);
@@ -250,19 +260,25 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         localStorage.removeItem(PLAYER_ID_KEY);
 
         let detached = false;
-        let tid: number | undefined;
-        let onJoined: (d: { roomCode: string; playerId: string }) => void;
-        let onErr: (p: RoomErrorPayload) => void;
+        const tid: { current?: number } = {};
+        const onJoinedRef: { current?: (d: { roomCode: string; playerId: string }) => void } = {};
+        const onErrRef: { current?: (p: RoomErrorPayload) => void } = {};
 
         const detach = () => {
           if (detached) return;
           detached = true;
-          if (tid !== undefined) clearTimeout(tid);
-          socket.off('room:joined', onJoined);
-          socket.off('room:error', onErr);
+          if (tid.current !== undefined) clearTimeout(tid.current);
+          if (onJoinedRef.current) socket.off('room:joined', onJoinedRef.current);
+          if (onErrRef.current) socket.off('room:error', onErrRef.current);
         };
 
-        onJoined = ({ roomCode: joinedCode, playerId }) => {
+        const onJoined = ({
+          roomCode: joinedCode,
+          playerId,
+        }: {
+          roomCode: string;
+          playerId: string;
+        }) => {
           detach();
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
@@ -272,12 +288,14 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           resolve({ roomCode: joinedCode, playerId });
         };
 
-        onErr = (payload: RoomErrorPayload) => {
+        const onErr = (payload: RoomErrorPayload) => {
           detach();
           reject(Object.assign(new Error(payload.message), { code: payload.code }));
         };
+        onJoinedRef.current = onJoined;
+        onErrRef.current = onErr;
 
-        tid = window.setTimeout(() => {
+        tid.current = window.setTimeout(() => {
           detach();
           reject(new Error('ROOM_OPERATION_TIMEOUT'));
         }, 45_000);

@@ -55,7 +55,7 @@ export function StatsTab({ showToast }: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showToast]);
 
   // Live stats poll every 15s
   useEffect(() => {
@@ -89,8 +89,12 @@ export function StatsTab({ showToast }: Props) {
       );
       showToast('Push-розсилку надіслано', 'success');
       setBroadcastForm({ title: '', body: '', url: '' });
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       setBroadcasting(false);
     }

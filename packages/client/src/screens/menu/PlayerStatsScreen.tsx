@@ -8,7 +8,7 @@ import { LoginModal } from '../../components/Auth/LoginModal';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 
 export const PlayerStatsScreen = () => {
-  const { setGameState, currentTheme, settings, uiLanguage } = useGame();
+  const { setGameState, currentTheme, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
   const [showLogin, setShowLogin] = useState(false);
   const { get: getStats } = usePlayerStats();

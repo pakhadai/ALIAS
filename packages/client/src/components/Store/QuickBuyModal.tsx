@@ -13,11 +13,10 @@ const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
 interface PayFormProps {
   amount: number;
   itemName: string;
-  isDark: boolean;
   onSuccess: () => void;
 }
 
-function PayForm({ amount, itemName, isDark, onSuccess }: PayFormProps) {
+function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [paying, setPaying] = useState(false);
@@ -194,12 +193,7 @@ export function QuickBuyModal({
           </div>
         ) : (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-            <PayForm
-              amount={amount}
-              itemName={itemName}
-              isDark={isDark}
-              onSuccess={handleSuccess}
-            />
+            <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
           </Elements>
         )}
       </div>

@@ -212,8 +212,10 @@ export async function uploadCsvToPack(packId: string, file: File, token: string)
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((err as any).error || `Failed to upload CSV: HTTP ${res.status}`);
+    const err = (await res.json().catch(() => ({ error: res.statusText }))) as { error?: unknown };
+    throw new Error(
+      (typeof err.error === 'string' && err.error) || `Failed to upload CSV: HTTP ${res.status}`
+    );
   }
 }
 

@@ -16,7 +16,7 @@ export const LobbySettingsScreen = () => {
   useEffect(() => {
     fetchLobbySettings()
       .then((s) => {
-        if (s) setLocal((prev) => ({ ...prev, ...(s as any) }));
+        if (s) setLocal((prev) => ({ ...prev, ...(s as Partial<typeof gameSettings>) }));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -28,22 +28,32 @@ export const LobbySettingsScreen = () => {
   ) => setLocal((prev) => ({ ...prev, general: { ...prev.general, [key]: value } }));
 
   const setMode = (patch: Partial<typeof gameSettings.mode>) =>
-    setLocal((prev) => ({ ...prev, mode: { ...(prev as any).mode, ...(patch as any) } }));
+    setLocal((prev) => ({ ...prev, mode: { ...prev.mode, ...patch } as typeof prev.mode }));
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { theme, soundEnabled, soundPreset, ...syncedGeneral } = (local as any).general ?? {};
-      const syncedOnly = { ...(local as any), general: syncedGeneral };
-      await saveLobbySettings(syncedOnly as any);
+      const {
+        theme: _theme,
+        soundEnabled: _soundEnabled,
+        soundPreset: _soundPreset,
+        ...syncedGeneral
+      } = local.general ?? {};
+      const syncedOnly: Record<string, unknown> = {
+        ...(local as unknown as Record<string, unknown>),
+        general: syncedGeneral as unknown as Record<string, unknown>,
+      };
+      await saveLobbySettings(syncedOnly);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
     setSaving(false);
   };
 
   const handleReset = async () => {
-    await saveLobbySettings({} as any).catch(() => {});
+    await saveLobbySettings({}).catch(() => {});
     setLocal({ ...gameSettings });
   };
 
@@ -126,7 +136,11 @@ export const LobbySettingsScreen = () => {
                 max="180"
                 step="10"
                 value={'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 0}
-                onChange={(e) => setMode({ classicRoundTime: parseInt(e.target.value) } as any)}
+                onChange={(e) =>
+                  setMode({ classicRoundTime: parseInt(e.target.value) } as Partial<
+                    typeof gameSettings.mode
+                  >)
+                }
                 className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
@@ -151,7 +165,7 @@ export const LobbySettingsScreen = () => {
                 max="100"
                 step="5"
                 value={local.general.scoreToWin}
-                onChange={(e) => setGeneral('scoreToWin', parseInt(e.target.value) as any)}
+                onChange={(e) => setGeneral('scoreToWin', parseInt(e.target.value))}
                 className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
@@ -165,7 +179,7 @@ export const LobbySettingsScreen = () => {
                 </p>
               </div>
               <button
-                onClick={() => setGeneral('skipPenalty', !local.general.skipPenalty as any)}
+                onClick={() => setGeneral('skipPenalty', !local.general.skipPenalty)}
                 className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'}`}
               >
                 <span
@@ -178,14 +192,14 @@ export const LobbySettingsScreen = () => {
               <p className={sectionLabel}>Категорії слів</p>
               <div className="grid grid-cols-2 gap-2">
                 {cats.map((cat) => {
-                  const active = ((local.general.categories as string[]) || []).includes(cat);
+                  const active = (local.general.categories ?? []).includes(cat);
                   return (
                     <button
                       key={cat}
                       onClick={() => {
-                        const curr = (local.general.categories as string[]) || [];
+                        const curr = local.general.categories ?? [];
                         const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
-                        if (next.length > 0) setGeneral('categories', next as any);
+                        if (next.length > 0) setGeneral('categories', next);
                       }}
                       className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
                         active

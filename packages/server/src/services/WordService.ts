@@ -1,4 +1,4 @@
-import { Category, Language, MOCK_WORDS } from '@alias/shared';
+import { Category, MOCK_WORDS } from '@alias/shared';
 // Absolute minimum fallback — shown only if the DB is down AND MOCK_WORDS is empty
 const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'Вода', 'Сонце', 'Книга', 'Місяць'];
 import type { GameSettings } from '@alias/shared';

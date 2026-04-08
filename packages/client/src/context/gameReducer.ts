@@ -103,7 +103,9 @@ export function restoreSession(init: AppState): AppState {
         settings: { ...init.settings, general: { ...init.settings.general, ...prefsGeneral } },
       };
     }
-  } catch {}
+  } catch (_err) {
+    void _err;
+  }
 
   try {
     const raw = localStorage.getItem(SESSION_KEY);
@@ -126,8 +128,12 @@ export function restoreSession(init: AppState): AppState {
         ...init.settings,
         ...(saved.settings?.general
           ? (() => {
-              const { theme, soundEnabled, soundPreset, ...syncedGeneral } =
-                (saved.settings.general as Partial<GameSettings['general']>) ?? {};
+              const {
+                theme: _theme,
+                soundEnabled: _soundEnabled,
+                soundPreset: _soundPreset,
+                ...syncedGeneral
+              } = (saved.settings.general as Partial<GameSettings['general']>) ?? {};
               return { general: { ...init.settings.general, ...syncedGeneral } };
             })()
           : {}),
@@ -152,7 +158,8 @@ export function restoreSession(init: AppState): AppState {
       isPaused: false,
       isConnected: false,
     };
-  } catch {
+  } catch (_err) {
+    void _err;
     return init;
   }
 }

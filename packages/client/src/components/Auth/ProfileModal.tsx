@@ -35,7 +35,7 @@ function AvatarIcon() {
 
 export function ProfileModal({ onClose }: ProfileModalProps) {
   const { authState, profile, loginWithGoogle, logout } = useAuthContext();
-  const { currentTheme, settings, setGameState, uiLanguage } = useGame();
+  const { currentTheme, setGameState, uiLanguage } = useGame();
   const t = useT();
   const { get: getStats } = usePlayerStats();
   const [storeData, setStoreData] = useState<StoreData | null>(null);

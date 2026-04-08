@@ -6,9 +6,21 @@ import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { usePlayerStats } from '../../../hooks/usePlayerStats';
+import type { Player, Team } from '../../../types';
+
+type PlayerWithTeamName = Player & { teamName: string };
+type CanvasRenderingContext2DWithRoundRect = CanvasRenderingContext2D & {
+  roundRect?: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    radii?: number | DOMPointInit | (number | DOMPointInit)[]
+  ) => void;
+};
 
 export const GameOverScreen = () => {
-  const { teams, currentTheme, settings, resetGame, rematch, leaveRoom, isHost } = useGame();
+  const { teams, currentTheme, resetGame, rematch, leaveRoom, isHost } = useGame();
   const t = useT();
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
@@ -25,12 +37,15 @@ export const GameOverScreen = () => {
   }, [gameStats]);
 
   // Collect top guessers across all teams
-  const allPlayers = teams.flatMap((team) =>
-    team.players.map((p: any) => ({ ...p, teamName: team.name }))
+  const allPlayers = teams.flatMap((team: Team) =>
+    team.players.map((p: Player) => ({ ...p, teamName: team.name }))
   );
   const topGuessers = [...allPlayers]
-    .filter((p: any) => (p.stats?.guessed ?? 0) > 0)
-    .sort((a: any, b: any) => (b.stats?.guessed ?? 0) - (a.stats?.guessed ?? 0))
+    .filter((p: PlayerWithTeamName) => (p.stats?.guessed ?? 0) > 0)
+    .sort(
+      (a: PlayerWithTeamName, b: PlayerWithTeamName) =>
+        (b.stats?.guessed ?? 0) - (a.stats?.guessed ?? 0)
+    )
     .slice(0, 5);
 
   const buildShareImage = async (): Promise<Blob | null> => {
@@ -116,7 +131,7 @@ export const GameOverScreen = () => {
             ? 'color-mix(in_srgb,var(--ui-accent)_14%,transparent)'
             : 'color-mix(in_srgb,var(--ui-fg)_6%,transparent)';
         ctx.beginPath();
-        (ctx as any).roundRect?.(40, y - 30, W - 80, 44, 10);
+        (ctx as CanvasRenderingContext2DWithRoundRect).roundRect?.(40, y - 30, W - 80, 44, 10);
         ctx.fill();
 
         // Medal / number
@@ -145,7 +160,8 @@ export const GameOverScreen = () => {
       ctx.fillText('aliasmaster.app', W / 2, H - 18);
 
       return await new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), 'image/png'));
-    } catch {
+    } catch (_err) {
+      void _err;
       return null;
     }
   };
@@ -158,7 +174,9 @@ export const GameOverScreen = () => {
         try {
           await navigator.share({ files: [file], title: `ALIAS — ${t.finalResults}` });
           return;
-        } catch {}
+        } catch (_err) {
+          void _err;
+        }
       }
       // Fallback: download
       const url = URL.createObjectURL(blob);
@@ -178,7 +196,9 @@ export const GameOverScreen = () => {
       try {
         await navigator.share({ text });
         return;
-      } catch {}
+      } catch (_err) {
+        void _err;
+      }
     }
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -221,7 +241,7 @@ export const GameOverScreen = () => {
               <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{team.name}</p>
               {team.players.length > 0 && (
                 <p className={`text-[10px] truncate opacity-40 ${currentTheme.textMain}`}>
-                  {team.players.map((p: any) => p.name).join(', ')}
+                  {team.players.map((p: Player) => p.name).join(', ')}
                 </p>
               )}
             </div>
@@ -242,7 +262,7 @@ export const GameOverScreen = () => {
           >
             {t.topGuessers ?? 'Top Guessers'}
           </p>
-          {topGuessers.map((p: any, i) => (
+          {topGuessers.map((p: PlayerWithTeamName, i) => (
             <div
               key={p.id}
               className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${cardBg}`}

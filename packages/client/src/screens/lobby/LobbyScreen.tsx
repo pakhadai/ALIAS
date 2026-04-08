@@ -17,14 +17,14 @@ import {
   bottomSheetBackdropClass,
   bottomSheetPanelClass,
 } from '../../components/Shared';
-import { GameState, Language, GameMode } from '../../types';
+import { GameState, GameMode } from '../../types';
 import type { RoomErrorCode } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { AVATARS } from '../../utils/avatars';
 import { AvatarDisplay } from '../../components/AvatarDisplay';
-import { TRANSLATIONS } from '../../constants';
 import { useT } from '../../hooks/useT';
 import QRCode from 'qrcode';
+import type { Player } from '../../types';
 
 const ROOM_UNAVAILABLE_CODES: RoomErrorCode[] = [
   'ROOM_NOT_FOUND',
@@ -374,7 +374,7 @@ export const LobbyScreen = () => {
               {t.players} ({players.length})
             </h3>
             <div className="space-y-3">
-              {players.map((p: any) => {
+              {players.map((p: Player) => {
                 const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
                 return (
                   <div

@@ -3,9 +3,14 @@ import { Button } from '../../../components/Button';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
+import type { Player, Team } from '../../../types';
+
+type VsElement =
+  | { type: 'vs'; delay: number }
+  | { type: 'player'; player: Player | undefined; team: Team; delay: number };
 
 export const VSScreen = () => {
-  const { teams, currentTheme, settings, sendAction, isHost } = useGame();
+  const { teams, currentTheme, sendAction, isHost } = useGame();
   const t = useT();
   const [showButton, setShowButton] = useState(false);
 
@@ -15,8 +20,8 @@ export const VSScreen = () => {
     return () => clearTimeout(timer);
   }, [totalDelay]);
 
-  const elements: { type: 'player' | 'vs'; player?: any; team?: any; delay: number }[] = [];
-  teams.forEach((team, i) => {
+  const elements: VsElement[] = [];
+  teams.forEach((team: Team, i) => {
     if (i > 0) {
       elements.push({ type: 'vs', delay: (i * 2 - 1) * 0.6 });
     }
@@ -45,7 +50,7 @@ export const VSScreen = () => {
           const isFromLeft = elements.filter((e) => e.type === 'player').indexOf(el) % 2 === 0;
           return (
             <div
-              key={el.player?.id || i}
+              key={el.type === 'player' ? el.player?.id || i : i}
               className={`${isFromLeft ? 'animate-vs-from-left' : 'animate-vs-from-right'} opacity-0 w-full`}
               style={{ animationDelay: `${el.delay}s`, animationFillMode: 'forwards' }}
             >
@@ -54,16 +59,20 @@ export const VSScreen = () => {
               >
                 {isFromLeft ? (
                   <>
-                    <div className={`w-4 h-4 rounded-full ${el.team?.color}`} />
-                    {el.player?.avatarId != null ? (
+                    <div
+                      className={`w-4 h-4 rounded-full ${el.type === 'player' ? el.team.color : ''}`}
+                    />
+                    {el.type === 'player' && el.player?.avatarId != null ? (
                       <AvatarDisplay avatarId={el.player.avatarId} size={56} />
                     ) : (
-                      <span className="text-5xl">{el.player?.avatar}</span>
+                      <span className="text-5xl">
+                        {el.type === 'player' ? el.player?.avatar : null}
+                      </span>
                     )}
                     <span
                       className={`text-3xl font-serif font-bold tracking-wide ${currentTheme.textMain}`}
                     >
-                      {el.player?.name}
+                      {el.type === 'player' ? el.player?.name : null}
                     </span>
                   </>
                 ) : (
@@ -71,14 +80,18 @@ export const VSScreen = () => {
                     <span
                       className={`text-3xl font-serif font-bold tracking-wide ${currentTheme.textMain}`}
                     >
-                      {el.player?.name}
+                      {el.type === 'player' ? el.player?.name : null}
                     </span>
-                    {el.player?.avatarId != null ? (
+                    {el.type === 'player' && el.player?.avatarId != null ? (
                       <AvatarDisplay avatarId={el.player.avatarId} size={56} />
                     ) : (
-                      <span className="text-5xl">{el.player?.avatar}</span>
+                      <span className="text-5xl">
+                        {el.type === 'player' ? el.player?.avatar : null}
+                      </span>
                     )}
-                    <div className={`w-4 h-4 rounded-full ${el.team?.color}`} />
+                    <div
+                      className={`w-4 h-4 rounded-full ${el.type === 'player' ? el.team.color : ''}`}
+                    />
                   </>
                 )}
               </div>

@@ -5,13 +5,14 @@ import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
+import type { Player, Team } from '../../types';
 
 function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
   return p.isConnected !== false;
 }
 
 export const TeamSetupScreen = () => {
-  const { teams, settings, currentTheme, sendAction, setGameState, isHost, gameMode } = useGame();
+  const { teams, currentTheme, sendAction, setGameState, isHost, gameMode } = useGame();
   const t = useT();
 
   const allTeamsHavePlayers = teams.every((team) => team.players.length > 0);
@@ -34,7 +35,7 @@ export const TeamSetupScreen = () => {
       </header>
 
       <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar">
-        {teams.map((team: any) => (
+        {teams.map((team: Team) => (
           <div
             key={team.id}
             className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface)"
@@ -48,7 +49,7 @@ export const TeamSetupScreen = () => {
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {team.players.map((p: any) => {
+              {team.players.map((p: Player) => {
                 const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
                 return (
                   <div

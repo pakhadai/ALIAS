@@ -41,7 +41,9 @@ export const MyDecksScreen = () => {
     try {
       await deleteCustomDeck(id);
       setDecks((prev) => prev.filter((d) => d.id !== id));
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
     setDeleting(null);
   };
 
@@ -73,8 +75,12 @@ export const MyDecksScreen = () => {
       setDeckName('');
       setWordsText('');
       setView('list');
-    } catch (err: any) {
-      setCreateError(err.message || 'Failed to create deck');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      setCreateError(msg || 'Failed to create deck');
     }
     setCreating(false);
   };

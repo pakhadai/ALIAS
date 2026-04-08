@@ -47,7 +47,9 @@ export const ProfileSettingsScreen = () => {
       await refreshProfile();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
     setSaving(false);
   };
 

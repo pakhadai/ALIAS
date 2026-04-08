@@ -335,6 +335,10 @@ function handleInboundRoomDisconnect(msg: RoomDisconnectRpcInbound): void {
 redisStore
   .connect(config.redis.url)
   .then(async () => {
+    if (!redisStore.isConnected) {
+      console.warn('[Redis] Not available, skipping adapter and action relay');
+      return;
+    }
     roomManager.setRedisStore(redisStore);
 
     try {
@@ -351,6 +355,8 @@ redisStore
     try {
       const pubClient = new Redis(config.redis.url, { maxRetriesPerRequest: 3 });
       const subClient = pubClient.duplicate();
+      pubClient.on('error', (err) => console.warn('[Redis] Adapter pub error:', err.message));
+      subClient.on('error', (err) => console.warn('[Redis] Adapter sub error:', err.message));
       io.adapter(createAdapter(pubClient, subClient));
       console.log('[Redis] Socket.io adapter configured');
     } catch (err) {

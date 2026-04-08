@@ -67,7 +67,9 @@ export const MyWordPacksScreen = () => {
     try {
       await deleteCustomDeck(id);
       setDecks((prev) => prev.filter((d) => d.id !== id));
-    } catch {}
+    } catch (_err) {
+      void _err;
+    }
     setDeleting(null);
   };
 
@@ -82,7 +84,7 @@ export const MyWordPacksScreen = () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setWordsText(ev.target?.result as string);
+      setWordsText(typeof ev.target?.result === 'string' ? ev.target.result : '');
     };
     reader.readAsText(file, 'UTF-8');
     e.target.value = '';
@@ -114,8 +116,12 @@ export const MyWordPacksScreen = () => {
       setDeckName('');
       setWordsText('');
       setView('list');
-    } catch (err: any) {
-      setCreateError(err.message || 'Помилка створення');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      setCreateError(msg || 'Помилка створення');
     }
     setCreating(false);
   };

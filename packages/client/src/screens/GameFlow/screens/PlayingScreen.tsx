@@ -115,12 +115,11 @@ export const PlayingScreen = () => {
     if (isPaused || actionProcessingRef.current) return;
     actionProcessingRef.current = true;
 
-    const teamColor =
-      activeTeam && typeof (activeTeam as any).colorHex === 'string' && (activeTeam as any).colorHex
-        ? (activeTeam as any).colorHex
-        : type === 'correct'
-          ? 'var(--ui-success)'
-          : 'var(--ui-danger)';
+    const teamColor = activeTeam.colorHex
+      ? activeTeam.colorHex
+      : type === 'correct'
+        ? 'var(--ui-success)'
+        : 'var(--ui-danger)';
 
     setWordExit(type === 'correct' ? 'right' : 'left');
     if (type === 'correct') haptic(HAPTIC.correct);
@@ -258,7 +257,7 @@ export const PlayingScreen = () => {
               guesserListenHint: t.guesserListenHint,
               skippedWord: t.skippedWord,
             }}
-            teamColorHex={(activeTeam as any)?.colorHex}
+            teamColorHex={activeTeam.colorHex}
           />
         )}
       </main>

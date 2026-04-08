@@ -127,8 +127,6 @@ const GameRouter = () => {
 };
 
 const AppContent = () => {
-  const { currentTheme } = useGame();
-
   return (
     <div className="min-h-screen w-full bg-(--ui-bg) text-(--ui-fg) font-sans selection:bg-(--ui-accent) selection:text-(--ui-accent-contrast)">
       <ConnectionStatusBanner />

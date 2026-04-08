@@ -1,5 +1,5 @@
 import type { GameMode } from './enums';
-import type { GeneralSettings, GameSettings } from './models';
+import type { GeneralSettings } from './models';
 
 /** Partial settings patch sent with `UPDATE_SETTINGS`. */
 export type ModeSettingsUpdate = Partial<{

@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../components/Button';
-import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
+import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 import { GameState, GameMode } from '../../types';
+import type { GameSettings, ThemeConfig } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 
 const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];
 
-export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) => {
+type RulesModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  t: ReturnType<typeof useT>;
+  currentTheme: ThemeConfig;
+  settings: GameSettings;
+};
+
+export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: RulesModalProps) => {
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
   const [visible, setVisible] = useState(false);
@@ -116,7 +125,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) 
           <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {settings?.mode?.classicRoundTime ?? '—'}s
+              {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
             </p>
           </div>
           <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
@@ -142,7 +151,10 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) 
           <div className="mt-3 rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {settings?.mode?.imposterDiscussionTime ?? '—'}s
+              {'imposterDiscussionTime' in settings.mode
+                ? settings.mode.imposterDiscussionTime
+                : '—'}
+              s
             </p>
           </div>
         )}
@@ -290,7 +302,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: any) 
 };
 
 export const RulesScreen = () => {
-  const { setGameState, settings, currentTheme } = useGame();
+  const { setGameState, currentTheme } = useGame();
   const t = useT();
   return (
     <div

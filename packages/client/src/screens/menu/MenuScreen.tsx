@@ -50,7 +50,7 @@ export const MenuScreen = () => {
       setShowProfile(false);
       setGameState(GameState.PROFILE);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showProfile, setGameState]);
 
   const handleProfileClick = () => {
     if (isAuthenticated) {

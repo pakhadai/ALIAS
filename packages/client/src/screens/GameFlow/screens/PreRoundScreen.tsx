@@ -11,7 +11,6 @@ export const PreRoundScreen = () => {
     currentTheme,
     teams,
     currentTeamIndex,
-    settings,
     handleStartRound,
     setGameState,
     isHost,

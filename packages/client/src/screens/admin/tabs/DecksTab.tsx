@@ -48,12 +48,16 @@ export function DecksTab({ showToast, confirm }: Props) {
     setLoading(true);
     try {
       setDecks(await api.getDecks());
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     load();
@@ -68,8 +72,12 @@ export function DecksTab({ showToast, confirm }: Props) {
         prev.map((d) => (d.id === deck.id ? { ...d, status: updated.status } : d))
       );
       showToast(`«${deck.name}» схвалено`, 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delActing(key);
     }
@@ -84,8 +92,12 @@ export function DecksTab({ showToast, confirm }: Props) {
         prev.map((d) => (d.id === deck.id ? { ...d, status: updated.status } : d))
       );
       showToast(`«${deck.name}» відхилено`, 'info');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delActing(key);
     }
@@ -105,8 +117,12 @@ export function DecksTab({ showToast, confirm }: Props) {
       await api.deleteDeck(deck.id);
       setDecks((prev) => prev.filter((d) => d.id !== deck.id));
       showToast(`«${deck.name}» видалено`, 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delActing(key);
     }

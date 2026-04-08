@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { roomCreateSchema, roomJoinSchema, validatePayload, validateGameAction } from '../schemas';
-import { Language, Category, SoundPreset, AppTheme } from '@alias/shared';
+import { Language, Category } from '@alias/shared';
 
 // ─── roomCreateSchema ────────────────────────────────────────────────────────
 

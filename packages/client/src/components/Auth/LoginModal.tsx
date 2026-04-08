@@ -24,7 +24,7 @@ function googleLocale(lang: Language): string {
 
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
-  const { settings, currentTheme, uiLanguage } = useGame();
+  const { currentTheme, uiLanguage } = useGame();
   const t = useT();
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);

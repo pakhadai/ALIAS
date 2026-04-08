@@ -32,26 +32,40 @@ export default async function globalSetup(): Promise<void> {
   const repoRoot = getRepoRoot();
   const databaseUrl = resolveDatabaseUrl();
 
+  let dockerOk = true;
   try {
     execSync('docker compose up -d redis postgres', {
       cwd: repoRoot,
       stdio: 'inherit',
     });
   } catch {
+    dockerOk = false;
     console.warn(
       '[e2e] docker compose up failed — using existing Postgres/Redis on localhost (if any)'
     );
   }
 
-  await waitForPort(6379, 10_000).catch(() => {
-    console.warn(
-      '[e2e] Redis port 6379 not ready within 10s — ensure redis is up (docker compose up -d redis)'
-    );
+  // Redis is optional for tests (server can run without persistence / relay).
+  await waitForPort(6379, 5_000).catch(() => {
+    console.warn('[e2e] Redis not detected on 127.0.0.1:6379 (continuing without Redis)');
   });
-  await waitForPort(5432, 90_000);
+
+  // Postgres is optional when Docker is unavailable (server falls back for word list).
+  // BUT the web app auth flow requires Prisma (DB) to be reachable, so we fail fast if Postgres is missing.
+  // If Docker is available, we wait longer because compose may still be starting up.
+  const pgTimeout = dockerOk ? 90_000 : 10_000;
+  const pgReady = await waitForPort(5432, pgTimeout)
+    .then(() => true)
+    .catch(() => false);
+
+  if (!pgReady) {
+    throw new Error(
+      '[e2e] Postgres is required but not reachable at 127.0.0.1:5432. Start it (e.g. `docker compose up -d postgres`) or set E2E_DATABASE_URL to a reachable DB.'
+    );
+  }
 
   const serverDir = path.join(repoRoot, 'packages', 'server');
-  execSync('pnpm exec prisma db push', {
+  execSync('pnpm exec prisma db push --skip-generate', {
     cwd: serverDir,
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: databaseUrl },

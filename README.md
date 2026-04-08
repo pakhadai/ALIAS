@@ -837,6 +837,27 @@ cp packages/server/.env.example packages/server/.env
    pnpm run dev
    ```
 
+**Windows (PowerShell) еквівалент:**
+
+```powershell
+# 1. Встановити залежності
+pnpm install
+
+# 2. Скопіювати env
+Copy-Item packages/server/.env.example packages/server/.env
+# Відредагувати packages/server/.env
+
+# 3. Запустити Redis + PostgreSQL
+docker compose up -d redis postgres
+
+# 4. Застосувати міграції та seed
+pnpm --filter @alias/server db:migrate
+pnpm --filter @alias/server db:seed
+
+# 5. Запустити dev-сервер (клієнт + сервер паралельно)
+pnpm dev
+```
+
 **Після запуску:**
 - Клієнт: `http://localhost:5173`
 - Сервер: `http://localhost:3001`
@@ -1001,7 +1022,10 @@ Seed створює:
 `fun` (free), `minimal` (free), `eight-bit` (free)
 
 ### Admin
-Seed встановлює `isAdmin: true` для `mrdemianpahaday@gmail.com`.
+Seed **не** повинен “вшивати” адмінів (це ризик безпеки). Якщо для локальної розробки треба швидко дати комусь адмінку — використовуйте:
+
+- `ADMIN_ALLOWED_EMAILS` (рекомендовано; не вимагає змін у БД)
+- або (лише dev) `SEED_ADMIN_EMAILS` при запуску seed, щоб опційно проставити `User.isAdmin=true` для вказаних email
 
 ---
 

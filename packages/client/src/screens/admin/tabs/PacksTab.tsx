@@ -30,12 +30,16 @@ export function PacksTab({ showToast, confirm }: Props) {
     setLoading(true);
     try {
       setPacks(await api.getPacks());
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     load();
@@ -56,8 +60,12 @@ export function PacksTab({ showToast, confirm }: Props) {
       if (expandedId === pack.id) setExpandedId(null);
       if (editingId === pack.id) setEditingId(null);
       showToast(`«${pack.name}» видалено`, 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(`del-${pack.id}`);
     }
@@ -175,10 +183,14 @@ function CreatePackForm({
         price: Number(form.price),
         isFree: form.isFree,
         description: form.description || null,
-      } as any);
+      });
       onCreated(created);
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA('create-pack');
     }
@@ -412,8 +424,12 @@ function EditPackPanel({
         description: form.description || undefined,
       });
       onSaved(updated);
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(key);
     }
@@ -514,8 +530,12 @@ function WordsPanel({
       .then((d) => {
         if (!cancelled) setWords(d.words);
       })
-      .catch((err: any) => {
-        if (!cancelled) showToast(err.message, 'error');
+      .catch((err: unknown) => {
+        const msg =
+          err && typeof err === 'object' && 'message' in err
+            ? String((err as { message?: unknown }).message)
+            : '';
+        if (!cancelled) showToast(msg || 'Помилка', 'error');
       })
       .finally(() => {
         if (!cancelled) setWordsLoading(false);
@@ -523,7 +543,7 @@ function WordsPanel({
     return () => {
       cancelled = true;
     };
-  }, [pack.id]);
+  }, [pack.id, showToast]);
 
   const refresh = async () => {
     const d = await api.getPack(pack.id);
@@ -543,8 +563,12 @@ function WordsPanel({
       setNewWords('');
       await refresh();
       showToast(`Додано ${list.length} слів`, 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA('add-words');
     }
@@ -556,8 +580,12 @@ function WordsPanel({
       const res = await api.deleteWord(pack.id, word.id);
       setWords((w) => w.filter((x) => x.id !== word.id));
       onWordsChanged(res.totalWords);
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(`del-word-${word.id}`);
     }
@@ -571,8 +599,12 @@ function WordsPanel({
       const result = await api.uploadCsv(pack.id, file);
       await refresh();
       showToast(result.message || 'CSV завантажено', 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      showToast(msg || 'Помилка', 'error');
     } finally {
       delA(`csv-${pack.id}`);
       e.target.value = '';

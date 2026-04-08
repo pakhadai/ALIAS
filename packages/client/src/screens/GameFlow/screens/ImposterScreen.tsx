@@ -32,6 +32,7 @@ export function ImposterScreen() {
 
   const isOffline = gameMode === 'OFFLINE';
   const isDark = currentTheme.isDark;
+  void isDark;
   const activeRevealPlayer = useMemo(
     () =>
       isOffline ? players[imposterOfflineRevealIndex] : players.find((p) => p.id === myPlayerId),

@@ -13,7 +13,7 @@ const imReadyRe = /Я ГОТОВИЙ|I'M READY|ICH BIN BEREIT/i;
 
 test.describe.configure({ mode: 'serial' });
 
-test.beforeEach((_fixtures, testInfo) => {
+test.beforeEach(({ page: _page }, testInfo) => {
   test.skip(
     testInfo.project.name === 'Mobile Chrome',
     'Multiplayer flows use two desktop contexts; skip mobile project.'
@@ -26,7 +26,7 @@ async function submitName(page: Page, name: string): Promise<void> {
 }
 
 async function readRoomCode(hostPage: Page): Promise<string> {
-  const codeLocator = hostPage.locator('span.text-4xl.font-serif').filter({ hasText: /^\d{5}$/ });
+  const codeLocator = hostPage.locator('.text-4xl.font-serif').filter({ hasText: /^\d{5}$/ });
   await expect(codeLocator).toBeVisible({ timeout: 60_000 });
   const text = (await codeLocator.textContent())?.trim() ?? '';
   expect(text).toMatch(/^\d{5}$/);
@@ -117,7 +117,7 @@ test.describe('Multiplayer (2 players)', () => {
         timeout: 45_000,
       });
       await expect(
-        guestPage.locator('span.text-4xl.font-serif').filter({ hasText: roomCode })
+        guestPage.locator('.text-4xl.font-serif').filter({ hasText: roomCode })
       ).toBeVisible({
         timeout: 15_000,
       });

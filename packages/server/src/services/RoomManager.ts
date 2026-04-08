@@ -6,8 +6,6 @@ import {
   SoundPreset,
   AppTheme,
   GameMode,
-  ROOM_CODE_LENGTH,
-  TEAM_COLORS,
   MAX_PLAYERS,
 } from '@alias/shared';
 import type {
