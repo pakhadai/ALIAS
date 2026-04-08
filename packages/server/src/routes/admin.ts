@@ -38,7 +38,16 @@ export function createAdminRoutes(
   // check is disabled for local development.
   router.use(ipWhitelist(config.adminAllowedIps));
 
-  // Admin auth: only authenticated user whose email is whitelisted and has isAdmin in DB.
+  /**
+   * Admin authentication middleware.
+   *
+   * Priority order:
+   * 1. ADMIN_ALLOWED_EMAILS (.env) — if configured, email match is sufficient.
+   *    No need to set isAdmin=true in the database. This is the recommended approach.
+   * 2. isAdmin flag in DB — fallback when no email whitelist is configured.
+   *
+   * This means you can grant admin access purely via .env without any DB changes.
+   */
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const auth = req.headers.authorization;
@@ -59,14 +68,15 @@ export function createAdminRoutes(
         select: { email: true, isAdmin: true },
       });
 
-      if (!user?.isAdmin) {
-        res.status(403).json({ error: 'Access denied. Admin role required.' });
+      if (!user) {
+        res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
-      const email = user?.email?.toLowerCase() ?? null;
+      const email = user.email?.toLowerCase() ?? null;
 
-      // Перевірка списку email-ів
+      // ── Priority 1: ADMIN_ALLOWED_EMAILS whitelist (.env) ──────────────────
+      // If configured, email match alone is enough — no DB isAdmin flag required.
       if (config.adminAllowedEmails.length > 0) {
         if (email && config.adminAllowedEmails.includes(email)) {
           next();
@@ -76,12 +86,19 @@ export function createAdminRoutes(
         return;
       }
 
-      // Захист від порожнього списку в продакшені
+      // ── Priority 2: isAdmin flag in DB (fallback when whitelist is empty) ──
+      if (user.isAdmin) {
+        next();
+        return;
+      }
+
+      // No whitelist configured and no isAdmin flag — deny in production
       if (config.nodeEnv === 'production') {
         res.status(403).json({ error: 'Admin access is not configured.' });
         return;
       }
 
+      // Dev fallback (no whitelist, no isAdmin, not production) — allow
       next();
     } catch (err) {
       next(err);

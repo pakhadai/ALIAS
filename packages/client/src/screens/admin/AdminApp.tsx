@@ -209,21 +209,31 @@ export function AdminApp() {
     setConfirmState(null);
   };
 
-  // Check auth on mount
+  // Check auth on mount.
+  // Strategy: 1) identify the user via /api/auth/me, 2) verify admin access by
+  // probing /api/admin/live. The server enforces ADMIN_ALLOWED_EMAILS (.env) and
+  // the isAdmin DB flag — if the probe returns 200 the user is allowed in.
+  // We deliberately do NOT check u.isAdmin on the client: the source of truth is
+  // the server (email whitelist takes priority over the DB flag).
   useEffect(() => {
     const token = localStorage.getItem('alias_auth_token');
     if (!token) {
       setAuthState('unauthorized');
       return;
     }
+
+    let resolvedUser: AdminUser | null = null;
+
     api
       .getMe()
       .then((u) => {
-        if (!u.isAdmin) {
-          setAuthState('not_admin');
-          return;
-        }
-        setUser(u);
+        resolvedUser = u;
+        // Verify admin access by hitting a lightweight admin endpoint.
+        // The server checks: email whitelist (.env) OR isAdmin=true (DB).
+        return api.getLiveStats();
+      })
+      .then(() => {
+        setUser(resolvedUser);
         setAuthState('ok');
       })
       .catch((err) => {
