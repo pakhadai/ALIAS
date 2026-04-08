@@ -3,8 +3,9 @@ import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'luci
 import { AppTheme, Language, SoundPreset } from '../../types';
 import { THEME_CONFIG, TRANSLATIONS, UI_THEME_IDS } from '../../constants';
 import { useGame } from '../../context/GameContext';
-import { getHapticsEnabled, setHapticsEnabled } from '../../utils/haptics';
+import { setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
+import { playSoundEffect } from '../../utils/audio';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 type Props = {
@@ -15,7 +16,16 @@ type Props = {
 export function AppSettingsModal({ isOpen, onClose }: Props) {
   const { settings, currentTheme, setPreferences, showNotification } = useGame();
   const { isAuthenticated } = useAuthContext();
-  const [haptics, setHaptics] = useState<boolean>(() => getHapticsEnabled());
+  const [haptics, setHaptics] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('alias_preferences');
+      if (!raw) return true;
+      const prefs = JSON.parse(raw);
+      return prefs?.hapticsEnabled !== false;
+    } catch {
+      return true;
+    }
+  });
   const t = TRANSLATIONS[settings.general.language];
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [visible, setVisible] = useState(false);
@@ -198,7 +208,16 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => setPreferences({ soundEnabled: !settings.general.soundEnabled })}
+                onClick={() => {
+                  const next = !settings.general.soundEnabled;
+                  setPreferences({ soundEnabled: next });
+                  if (next) {
+                    // Play a demo sound so the user immediately hears that sound works.
+                    // Called directly (not via useAudio) because the state update is
+                    // async — soundEnabled is still false when this handler runs.
+                    playSoundEffect('click', settings.general.soundPreset);
+                  }
+                }}
                 className={`w-12 h-6 rounded-full transition-all relative ${
                   settings.general.soundEnabled ? 'bg-(--ui-accent)' : 'bg-(--ui-surface)'
                 }`}
@@ -219,7 +238,11 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                   return (
                     <button
                       key={preset}
-                      onClick={() => setPreferences({ soundPreset: preset })}
+                      onClick={() => {
+                        setPreferences({ soundPreset: preset });
+                        // Play demo with the selected preset so user can compare
+                        playSoundEffect('correct', preset);
+                      }}
                       className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${
                         active
                           ? 'border-(--ui-accent) bg-(--ui-accent) text-(--ui-accent-contrast)'
@@ -247,6 +270,12 @@ export function AppSettingsModal({ isOpen, onClose }: Props) {
                   const next = !haptics;
                   setHaptics(next);
                   setHapticsEnabled(next);
+                  if (next) {
+                    // Confirm vibration immediately. setHapticsEnabled already wrote
+                    // to localStorage synchronously, so navigator.vibrate fires right away.
+                    // Three short pulses — noticeable but not annoying.
+                    navigator.vibrate?.([40, 40, 40]);
+                  }
                 }}
                 className={`w-12 h-6 rounded-full transition-all relative ${
                   haptics ? 'bg-(--ui-accent)' : 'bg-(--ui-surface)'
