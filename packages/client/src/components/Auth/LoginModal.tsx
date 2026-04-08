@@ -4,7 +4,10 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { TRANSLATIONS } from '../../constants';
 import { Language } from '../../types';
-import { ensureGoogleInitialized, promptGoogleSignIn } from '../../utils/googleIdentity';
+import {
+  initAndPromptGoogleSignIn,
+  type GoogleIdCredentialResponse,
+} from '../../utils/googleIdentity';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 
 interface LoginModalProps {
@@ -19,8 +22,6 @@ function googleLocale(lang: Language): string {
   return 'uk';
 }
 
-type GoogleIdCredentialResponse = { credential?: string };
-
 export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
   const { settings, currentTheme } = useGame();
@@ -34,33 +35,35 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setVisible(false);
     setTimeout(onClose, 280);
-  };
+  }, [onClose]);
 
   const locale = useMemo(
     () => googleLocale(settings.general.language),
     [settings.general.language]
   );
 
-  const handleGoogleSuccess = async (credentialResponse: GoogleIdCredentialResponse) => {
-    if (!credentialResponse.credential) return;
-    setLoading('google');
-    setError(null);
-    try {
-      await loginWithGoogle(credentialResponse.credential);
-      onSuccess?.();
-      handleClose();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(null);
-    }
-  };
+  const handleGoogleSuccess = useCallback(
+    async (credentialResponse: GoogleIdCredentialResponse) => {
+      if (!credentialResponse.credential) return;
+      setLoading('google');
+      setError(null);
+      try {
+        await loginWithGoogle(credentialResponse.credential);
+        onSuccess?.();
+        handleClose();
+      } catch (e) {
+        setError((e as Error).message);
+        setLoading(null);
+      }
+    },
+    [loginWithGoogle, onSuccess, handleClose]
+  );
 
   const handleGoogleClick = useCallback(() => {
-    const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
     if (!clientId) {
       setError(t.loginGoogleFailed);
       return;
@@ -68,23 +71,27 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
 
     setLoading('google');
     setError(null);
-    const init = ensureGoogleInitialized({
+
+    const result = initAndPromptGoogleSignIn({
       clientId,
       locale,
       colorScheme: currentTheme.isDark ? 'dark' : 'light',
-      onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
+      // Passing handleGoogleSuccess directly (no extra wrapper arrow) keeps the
+      // reference stable across re-renders and avoids stale closure issues.
+      onCredential: handleGoogleSuccess,
+      onSuppressed: () => {
+        // Google silently blocked the popup (cooldown, browser restrictions, FedCM
+        // not available, etc.). Show a meaningful error so the user isn't stuck.
+        setLoading(null);
+        setError(t.loginGoogleSuppressed ?? t.loginGoogleFailed);
+      },
     });
-    if (!init.ok) {
-      setLoading(null);
-      setError(t.loginGoogleFailed);
-      return;
-    }
-    const promptRes = promptGoogleSignIn();
-    if (!promptRes.ok) {
+
+    if (!result.ok) {
       setLoading(null);
       setError(t.loginGoogleFailed);
     }
-  }, [currentTheme.isDark, handleGoogleSuccess, locale, t.loginGoogleFailed]);
+  }, [currentTheme.isDark, handleGoogleSuccess, locale, t]);
 
   return (
     <div
@@ -170,7 +177,9 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
         </div>
 
         {/* Error */}
-        {error && <p className="mt-3 text-xs text-(--ui-danger) text-center">{error}</p>}
+        {error && (
+          <p className="mt-3 text-xs text-(--ui-danger) text-center leading-relaxed">{error}</p>
+        )}
 
         {/* Divider */}
         <div className="mt-5 pt-4 border-t border-(--ui-border)">

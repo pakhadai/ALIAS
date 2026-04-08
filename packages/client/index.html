@@ -1,9 +1,11 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Alias Premium</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#1A1A1A" />
@@ -12,14 +14,22 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Alias" />
     <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Lato:wght@300;400;700;900&family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&family=Exo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Lato:wght@300;400;700;900&family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&family=Exo+2:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Identity Services — loaded here so it is available before any sign-in attempt -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Tailwind is built via PostCSS (no CDN in production) -->
-</head>
+  </head>
   <body class="overflow-hidden fixed inset-0 font-sans">
     <div id="root" class="h-full w-full overflow-y-auto no-scrollbar"></div>
     <script type="module" src="/src/index.tsx"></script>

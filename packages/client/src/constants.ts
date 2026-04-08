@@ -306,6 +306,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginGoogleLoading: 'Вхід через Google...',
     loginContinueWithout: 'Продовжити без входу',
     loginGoogleFailed: 'Помилка входу через Google',
+    loginGoogleSuppressed:
+      'Браузер заблокував спливаюче вікно Google. Спробуйте ще раз або перевірте налаштування браузера.',
   },
   [Language.DE]: {
     slogan: 'Erkläre schnell, spiel brillant.',
@@ -592,6 +594,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginGoogleLoading: 'Google-Anmeldung...',
     loginContinueWithout: 'Ohne Anmeldung fortfahren',
     loginGoogleFailed: 'Google-Anmeldung fehlgeschlagen',
+    loginGoogleSuppressed:
+      'Browser hat das Google-Popup blockiert. Versuche es erneut oder überprüfe die Browser-Einstellungen.',
   },
   [Language.EN]: {
     slogan: 'Think fast, play bold.',
@@ -874,6 +878,8 @@ export const TRANSLATIONS: Record<Language, Record<string, any>> = {
     loginGoogleLoading: 'Signing in with Google...',
     loginContinueWithout: 'Continue without signing in',
     loginGoogleFailed: 'Google sign-in failed',
+    loginGoogleSuppressed:
+      'Browser blocked the Google popup. Please try again or check your browser settings.',
   },
 };
 

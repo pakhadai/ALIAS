@@ -8,7 +8,10 @@ import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
 import { GameState } from '../../types';
 import { TRANSLATIONS } from '../../constants';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
-import { ensureGoogleInitialized, promptGoogleSignIn } from '../../utils/googleIdentity';
+import {
+  initAndPromptGoogleSignIn,
+  type GoogleIdCredentialResponse,
+} from '../../utils/googleIdentity';
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -63,30 +66,33 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     handleClose();
   };
 
-  type GoogleIdCredentialResponse = { credential?: string };
-
   const locale = useMemo(() => {
     if (settings.general.language === 'DE') return 'de';
     if (settings.general.language === 'EN') return 'en';
     return 'uk';
   }, [settings.general.language]);
 
-  const handleGoogleSuccess = async (cred: GoogleIdCredentialResponse) => {
-    if (!cred.credential) return;
-    await loginWithGoogle(cred.credential);
-  };
+  const handleGoogleSuccess = useCallback(
+    async (cred: GoogleIdCredentialResponse) => {
+      if (!cred.credential) return;
+      await loginWithGoogle(cred.credential);
+    },
+    [loginWithGoogle]
+  );
 
   const handleGoogleClick = useCallback(() => {
-    const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
     if (!clientId) return;
-    const init = ensureGoogleInitialized({
+    initAndPromptGoogleSignIn({
       clientId,
       locale,
       colorScheme: currentTheme.isDark ? 'dark' : 'light',
-      onCredential: (res: GoogleIdCredentialResponse) => void handleGoogleSuccess(res),
+      onCredential: handleGoogleSuccess,
+      onSuppressed: () => {
+        // Google silently suppressed the popup — nothing to do in ProfileModal,
+        // the button will simply re-enable so the user can try again.
+      },
     });
-    if (!init.ok) return;
-    promptGoogleSignIn();
   }, [currentTheme.isDark, handleGoogleSuccess, locale]);
 
   const isAnonymous = authState.status === 'anonymous' || authState.status === 'loading';

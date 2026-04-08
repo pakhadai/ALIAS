@@ -1,58 +1,74 @@
-type GoogleIdCredentialResponse = { credential?: string };
+export type GoogleIdCredentialResponse = { credential?: string };
+
+type PromptNotification = {
+  isDisplayed(): boolean;
+  isNotDisplayed(): boolean;
+  getNotDisplayedReason(): string;
+  isSkippedMoment(): boolean;
+  getSkippedReason(): string;
+  isDismissedMoment(): boolean;
+  getDismissedReason(): string;
+  getMomentType(): string;
+};
 
 type GoogleId = {
-  initialize: (opts: {
+  initialize(opts: {
     client_id: string;
     callback: (res: GoogleIdCredentialResponse) => void;
     auto_select?: boolean;
     locale?: string;
     color_scheme?: 'light' | 'dark' | string;
-    use_fedcm_for_prompt?: boolean; // Оновлений параметр для FedCM
-  }) => void;
-  prompt: (cb?: (notification: any) => void) => void;
+    ux_mode?: 'popup' | 'redirect';
+    context?: 'signin' | 'signup' | 'use';
+  }): void;
+  prompt(cb?: (notification: PromptNotification) => void): void;
 };
 
 function getGoogleId(): GoogleId | null {
-  return ((window as any)?.google?.accounts?.id as GoogleId | undefined) ?? null;
+  const win = window as unknown as { google?: { accounts?: { id?: GoogleId } } };
+  return win?.google?.accounts?.id ?? null;
 }
 
-let initializedKey: string | null = null;
+export type GoogleSignInResult = { ok: true } | { ok: false; reason: 'unavailable' | 'suppressed' };
 
-export type GooglePromptResult =
-  | { ok: true }
-  | { ok: false; reason: 'unavailable' | 'blocked' | 'skipped' };
-
-export function ensureGoogleInitialized(params: {
+/**
+ * Initialize Google Identity Services and trigger the sign-in prompt.
+ *
+ * Design decisions:
+ * - Always re-initializes on every call. Caching (the old `initializedKey`) caused
+ *   stale-closure bugs: if the modal was re-opened with the same locale/theme,
+ *   initialize() was skipped and the callback still pointed to the FIRST
+ *   (already unmounted) modal instance. The credential then fired into the void.
+ * - `use_fedcm_for_prompt` is intentionally omitted. It is designed for auto
+ *   One-Tap prompts, NOT for explicit button-triggered sign-ins. Enabling it
+ *   caused intermittent silent suppression with no feedback to the user.
+ * - A `notification` callback is passed to `prompt()` so we can detect when
+ *   Google suppresses the popup (browser cooldown, third-party cookie restrictions,
+ *   etc.) and call `onSuppressed` instead of spinning indefinitely.
+ */
+export function initAndPromptGoogleSignIn(params: {
   clientId: string;
   locale: string;
+  colorScheme: 'light' | 'dark';
   onCredential: (res: GoogleIdCredentialResponse) => void;
-  colorScheme?: 'light' | 'dark';
-}): GooglePromptResult {
+  onSuppressed: () => void;
+}): GoogleSignInResult {
   const googleId = getGoogleId();
   if (!googleId) return { ok: false, reason: 'unavailable' };
 
-  const scheme = params.colorScheme ?? 'dark';
-  const key = `${params.clientId}::${params.locale}::${scheme}`;
-  if (initializedKey !== key) {
-    googleId.initialize({
-      client_id: params.clientId,
-      callback: params.onCredential,
-      auto_select: false,
-      locale: params.locale,
-      color_scheme: scheme,
-      use_fedcm_for_prompt: true, // УВІМКНЕНО НАЙНОВІШИЙ СТАНДАРТ GOOGLE
-    });
-    initializedKey = key;
-  }
-  return { ok: true };
-}
+  googleId.initialize({
+    client_id: params.clientId,
+    callback: params.onCredential,
+    auto_select: false,
+    locale: params.locale,
+    color_scheme: params.colorScheme,
+  });
 
-export function promptGoogleSignIn(): GooglePromptResult {
-  const googleId = getGoogleId();
-  if (!googleId) return { ok: false, reason: 'unavailable' };
-
-  // Викликаємо вікно авторизації без старих колбеків (які викликали попередження GSI_LOGGER)
-  googleId.prompt();
+  googleId.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      params.onSuppressed();
+    }
+  });
 
   return { ok: true };
 }

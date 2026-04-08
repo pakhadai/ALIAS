@@ -1,5 +1,4 @@
 import React from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GameProvider, useGame } from './context/GameContext';
 import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
@@ -22,7 +21,6 @@ import {
 import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
 import { GameFlow } from './screens/GameFlow';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const GameRouter = () => {
   const { gameState } = useGame();
 
@@ -144,13 +142,11 @@ const AppContent = () => {
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <GameProvider>
-          <AppContent />
-        </GameProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <AuthProvider>
+      <GameProvider>
+        <AppContent />
+      </GameProvider>
+    </AuthProvider>
   );
 };
 
