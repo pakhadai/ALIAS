@@ -42,6 +42,11 @@
 - **`ToastNotification` (in-app, не push):** вирівнювання тексту зліва, кнопка закриття абсолютно справа, `leading-relaxed`, відступ зверху з урахуванням safe-area — `packages/client/src/components/Shared.tsx`.
 - **`bottomSheetPanelClass`:** `max-h-[85svh] overflow-y-auto` — щоб панелі (QR тощо) не обрізались знизу на мобільних — `packages/client/src/components/Shared.tsx`.
 - **`LobbyScreen`:** safe-area для QR-sheet; секція team builder **прихована** в Solo — `packages/client/src/screens/lobby/LobbyScreen.tsx`.
+- **`ImposterScreen` (режим Імпостер):** рефакторинг на фазові компоненти (`REVEAL` / `DISCUSSION` / `RESULTS`) — `packages/client/src/screens/GameFlow/screens/ImposterScreen.tsx`.
+  - **REVEAL:** міні-хедер лише з лічильником готових і іконкою паузи; офлайн — двокроковий флоу «передай телефон → підтвердження імені → картка»; картка ~60% висоти в’юпорта; для імпостера — повноекранний темно-червоний акцент, іконка `Ghost`, вібрація (`vibrate`, з повагою до `prefers-reduced-motion`); для звичайного гравця — дуже велике секретне слово.
+  - **DISCUSSION:** великий центральний таймер з `role="timer"` / `aria-live`; при ≤10 с — червоний колір і пульс (`motion-reduce:animate-none`); завершення гру через приховану дію + `alertdialog` з підтвердженням і фокусом на «Скасувати».
+  - **RESULTS:** окремо аватар/заголовок імпостера та блок «Секретне слово»; fallback тексту, якщо гравця не знайдено в списку.
+  - **Надійність:** `useRef`-захист від подвійного `IMPOSTER_END_GAME` при автозавершенні таймера в офлайні (React Strict Mode).
 
 ### Fixed
 
