@@ -136,6 +136,7 @@ export const MenuScreen = () => {
           <div className="w-full space-y-6 flex flex-col items-center mt-12 animate-slide-up">
             <button
               onClick={createNewRoom}
+              data-testid="menu-create-game"
               className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl`}
             >
               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
@@ -144,6 +145,7 @@ export const MenuScreen = () => {
             </button>
             <button
               onClick={() => setGameState(GameState.JOIN_INPUT)}
+              data-testid="menu-join-game"
               className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)"
             >
               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
@@ -157,7 +159,11 @@ export const MenuScreen = () => {
             style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
           >
             <div className="h-px w-12 bg-(--ui-border)" />
-            <button onClick={startOfflineGame} className="inline-flex items-center gap-2 group h-6">
+            <button
+              onClick={startOfflineGame}
+              data-testid="menu-offline"
+              className="inline-flex items-center gap-2 group h-6"
+            >
               <WifiOff
                 size={14}
                 className={`shrink-0 ${currentTheme.iconColor} opacity-40 group-hover:opacity-100 transition-opacity`}

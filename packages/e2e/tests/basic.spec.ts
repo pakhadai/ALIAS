@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ALIAS — basic smoke tests', () => {
+test.describe('@smoke ALIAS — basic smoke tests', () => {
   test('home page loads with ALIAS branding', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/ALIAS/i);

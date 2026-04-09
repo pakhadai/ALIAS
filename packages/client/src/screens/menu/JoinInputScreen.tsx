@@ -61,6 +61,7 @@ export const JoinInputScreen = () => {
             maxLength={ROOM_CODE_LENGTH}
             value={code}
             onChange={handleInputChange}
+            data-testid="join-room-code"
             placeholder="00000"
             className="w-full bg-transparent border-b border-(--ui-border) text-(--ui-fg) text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-(--ui-accent) transition-all pb-8"
           />
@@ -72,6 +73,7 @@ export const JoinInputScreen = () => {
             size="xl"
             onClick={handleJoinRoom}
             disabled={code.length !== ROOM_CODE_LENGTH || checking}
+            data-testid="join-submit"
           >
             {checking ? (
               <span className="inline-flex items-center justify-center gap-2">
@@ -84,6 +86,7 @@ export const JoinInputScreen = () => {
           </Button>
           <button
             onClick={() => setGameState(GameState.MENU)}
+            data-testid="join-cancel"
             className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
           >
             {t.cancel}

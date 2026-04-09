@@ -933,10 +933,18 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 
 ## Тести
 
+Критичні сценарії (must-not-break) зафіксовані в [`docs/TESTING_ACCEPTANCE.md`](./docs/TESTING_ACCEPTANCE.md).
+
 ### Серверні (Vitest)
 
 ```bash
 pnpm test:server
+```
+
+Coverage (risk-based, з порогами для core-модулів `services/validation/modes`):
+
+```bash
+pnpm --filter @alias/server test:coverage
 ```
 
 Файли тестів: `packages/server/src/services/__tests__/`
@@ -951,6 +959,14 @@ pnpm test:server
 pnpm test:e2e         # headless
 pnpm test:e2e:ui      # з UI
 pnpm test:e2e:report  # відкрити звіт
+```
+
+Запуск за тегами (рекомендовано для CI):
+
+```bash
+pnpm --filter @alias/e2e run test -- --grep "@smoke"
+pnpm --filter @alias/e2e run test -- --grep "@core"
+pnpm --filter @alias/e2e run test -- --grep "@extended"
 ```
 
 ---

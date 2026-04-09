@@ -95,6 +95,7 @@ export const EnterNameScreen = () => {
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
+          data-testid="enter-name"
           placeholder={t.namePlaceholder}
           className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) rounded-2xl px-6 py-4 focus:outline-none focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
         />
@@ -120,6 +121,7 @@ export const EnterNameScreen = () => {
             size="xl"
             onClick={() => void handleSubmit()}
             disabled={!name.trim() || isEntering}
+            data-testid="enter-name-submit"
           >
             {t.next}
           </Button>

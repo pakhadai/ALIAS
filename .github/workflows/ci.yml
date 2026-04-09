@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality gate (TS/Lint/Unit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @alias/server exec prisma generate
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Server tests + coverage thresholds
+        run: pnpm --filter @alias/server test:coverage
+
+      - name: Client tests
+        run: pnpm --filter @alias/client test
+
+  e2e_smoke:
+    name: E2E smoke (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @alias/e2e run install:browsers
+
+      - name: Run smoke tests only
+        run: pnpm --filter @alias/e2e run test -- --grep "@smoke"
+
+      - name: Upload Playwright report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: packages/e2e/playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload Playwright traces (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: packages/e2e/test-results
+          if-no-files-found: ignore
+
+  e2e_core:
+    name: E2E core (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @alias/e2e run install:browsers
+
+      # Run @core suite for each project separately (faster feedback / clearer failures).
+      - name: Run @core on Desktop Chrome
+        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project=chromium
+
+      - name: Run @core on Mobile Chrome
+        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project="Mobile Chrome"
+
+      - name: Upload Playwright report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-core
+          path: packages/e2e/playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload Playwright traces (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-core
+          path: packages/e2e/test-results
+          if-no-files-found: ignore
+

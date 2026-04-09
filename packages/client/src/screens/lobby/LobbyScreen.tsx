@@ -270,7 +270,10 @@ export const LobbyScreen = () => {
               >
                 {t.roomCode}
               </p>
-              <div className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}>
+              <div
+                data-testid="lobby-room-code"
+                className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}
+              >
                 {roomCode}
               </div>
 

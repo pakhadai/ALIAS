@@ -9,8 +9,17 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/services/**', 'src/validation/**'],
-      exclude: ['src/**/*.test.ts'],
+      // Focus on core logic & contracts (not bootstrap glue / large route surface).
+      include: ['src/services/**', 'src/validation/**', 'src/modes/**'],
+      exclude: ['src/**/*.test.ts', 'src/modes/IGameModeHandler.ts'],
+      thresholds: {
+        // Risk-based minimums for core server logic.
+        // Keep these realistic to avoid "coverage gaming".
+        statements: 75,
+        lines: 75,
+        branches: 70,
+        functions: 80,
+      },
     },
   },
   resolve: {
