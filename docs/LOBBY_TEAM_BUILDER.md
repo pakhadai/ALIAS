@@ -11,6 +11,13 @@ Key UX goals:
 - **OFFLINE host assignment**: tap any player chip → bottom sheet → assign/unassign.
 - **Start validation**: host can start only when all players are assigned and every team has at least one player.
 
+### Team mode: **Solo** (`general.teamMode === 'SOLO'`)
+
+- **Lobby UI**: the unassigned pool + team cards + shuffle/lock row are **hidden** in Solo (`LobbyScreen`). Host needs at least **2 players** to start (same minimum as teams mode).
+- **Settings**: toggle **Teams / Solo** in `SettingsScreen`; `teamCount` slider is disabled in Solo (ignored for start layout).
+- **Server `START_GAME`**: builds `teams` as **one team per player** (player name as team name, single player in `players[]`). Gameplay still uses the existing team-based pipeline (semantically FFA).
+- **Model**: optional `teamMode?: 'TEAMS' | 'SOLO'` on `GeneralSettings` in `packages/shared/src/models.ts` (defaults to `TEAMS` when omitted).
+
 ---
 
 ## High-level flow
@@ -83,7 +90,8 @@ Key UX goals:
 
 ### Engine handling
 `packages/server/src/services/GameEngine.ts`
-- Ensures team shells exist for the configured `teamCount`
+- Ensures team shells exist for the configured `teamCount` (**TEAMS** mode)
+- On **`START_GAME`** with **`teamMode === 'SOLO'`**, replaces `teams` with **one shell per player** (see above) instead of `ensureTeamShells` layout
 - `TEAM_JOIN`:
   - if `playerId` provided → assigns that player
   - else → assigns sender
@@ -134,6 +142,7 @@ The goal of this refactor was **behavioral equivalence** with better readability
   - Shuffle unassigned affects only unassigned
   - Shuffle all reassigns everyone (confirmation shown)
   - Start game disabled until valid
+  - **Solo mode**: no team builder in lobby; start with 2+ players; after start, one team per player on sync
 - OFFLINE:
   - Tap a chip opens assign bottom sheet
   - Assign/unassign works for any player

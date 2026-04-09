@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { Button } from '../../components/Button';
-import { Logo } from '../../components/Shared';
+import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
@@ -26,9 +26,21 @@ export const EnterNameScreen = () => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [isEntering, setIsEntering] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const t = useT();
 
   const stableId = useRef(`player-${generateUUID()}`);
+
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setSheetOpen(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+
+  const handleCancel = () => {
+    if (isEntering) return;
+    if (gameMode === 'OFFLINE') leaveRoom();
+    else setGameState(GameState.MENU);
+  };
 
   useEffect(() => {
     const displayName = profile?.displayName;
@@ -81,66 +93,96 @@ export const EnterNameScreen = () => {
 
   return (
     <div
-      className={`relative flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
+      className={`relative flex flex-col min-h-screen ${currentTheme.bg} overflow-hidden`}
       aria-busy={isEntering}
     >
-      <Logo theme={currentTheme} />
-      <div
-        className={`w-full max-w-2xl mt-12 space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}
-      >
-        <h2 className={`text-2xl font-serif text-center tracking-wide ${currentTheme.textMain}`}>
-          {t.whoAreYou}
-        </h2>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
-          data-testid="enter-name"
-          placeholder={t.namePlaceholder}
-          className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) rounded-2xl px-6 py-4 focus:outline-none focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
-        />
-        <div className="grid grid-cols-4 gap-4">
-          {AVATARS.slice(0, 12).map((a) => (
-            <button
-              key={a}
-              onClick={() => setAvatar(a)}
-              className={`text-3xl p-3 rounded-2xl transition-all ${
-                avatar === a
-                  ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                  : 'hover:bg-(--ui-surface) opacity-50 hover:opacity-100'
-              }`}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-        <div className="pt-4 space-y-6">
-          <Button
-            themeClass={currentTheme.button}
-            fullWidth
-            size="xl"
-            onClick={() => void handleSubmit()}
-            disabled={!name.trim() || isEntering}
-            data-testid="enter-name-submit"
-          >
-            {t.next}
-          </Button>
-          <button
-            type="button"
-            disabled={isEntering}
-            onClick={() => {
-              if (gameMode === 'OFFLINE') leaveRoom();
-              else setGameState(GameState.MENU);
-            }}
-            className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity disabled:opacity-15 disabled:pointer-events-none ${currentTheme.textMain}`}
-          >
-            {t.cancel}
-          </button>
+      <div className="absolute top-0 left-0 right-0 z-60 flex justify-center pointer-events-none pt-[max(20px,env(safe-area-inset-top))] px-6">
+        <div className="pointer-events-auto scale-90 origin-top opacity-90">
+          <Logo theme={currentTheme} />
         </div>
       </div>
+
+      <div
+        className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+        onClick={handleCancel}
+        role="presentation"
+      >
+        <div
+          className={`relative ${bottomSheetPanelClass(sheetOpen, 'p-8 pt-10')}`}
+          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="enter-name-title"
+        >
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isEntering}
+            className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity disabled:opacity-20 disabled:pointer-events-none"
+            aria-label={t.cancel}
+          >
+            <X size={24} className={currentTheme.iconColor} />
+          </button>
+          <div className="flex justify-center mb-4">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+          </div>
+          <h2
+            id="enter-name-title"
+            className={`text-2xl font-serif mb-8 text-center tracking-wide ${currentTheme.textMain}`}
+          >
+            {t.whoAreYou}
+          </h2>
+          <div className="space-y-6">
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
+              data-testid="enter-name"
+              placeholder={t.namePlaceholder}
+              className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
+            />
+            <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+              {AVATARS.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setAvatar(a)}
+                  className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
+                    avatar === a
+                      ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                      : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
+            <Button
+              themeClass={currentTheme.button}
+              fullWidth
+              size="lg"
+              onClick={() => void handleSubmit()}
+              disabled={!name.trim() || isEntering}
+              data-testid="enter-name-submit"
+            >
+              {t.next}
+            </Button>
+            <button
+              type="button"
+              disabled={isEntering}
+              onClick={handleCancel}
+              className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity disabled:opacity-15 disabled:pointer-events-none ${currentTheme.textMain}`}
+            >
+              {t.cancel}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {isEntering && (
         <div
-          className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-5 bg-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] backdrop-blur-md px-8"
+          className="fixed inset-0 z-80 flex flex-col items-center justify-center gap-5 bg-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] backdrop-blur-md px-8"
           role="status"
           aria-live="polite"
         >

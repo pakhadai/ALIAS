@@ -15,6 +15,7 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
+import { useT } from '../../hooks/useT';
 import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 
 export function ProviderBadge({ provider }: { provider: string }) {
@@ -35,6 +36,7 @@ export const ProfileScreen = () => {
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
   const isDark = currentTheme.isDark;
   const { get: getStats } = usePlayerStats();
+  const t = useT();
 
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
@@ -115,7 +117,7 @@ export const ProfileScreen = () => {
                 }`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
-                  Зіграно
+                  {t.profileStatsCardGames ?? t.statsRowGamesPlayed ?? 'Played'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
                   {stats.gamesPlayed}
@@ -127,7 +129,7 @@ export const ProfileScreen = () => {
                 }`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
-                  Вгадано
+                  {t.profileStatsCardGuessed ?? t.statsRowWordsGuessed ?? 'Guessed'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
                   {stats.wordsGuessed}
@@ -139,7 +141,7 @@ export const ProfileScreen = () => {
                 }`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
-                  Вінрейт
+                  {t.profileStatsCardAccuracy ?? t.statsRowAccuracy ?? 'Accuracy'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
                   {accuracy}%
@@ -149,19 +151,21 @@ export const ProfileScreen = () => {
             <p
               className={`mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-40 ${currentTheme.textMain}`}
             >
-              Натисніть для деталей
+              {t.profileTapForDetails ?? 'Tap for details'}
             </p>
           </button>
         </div>
 
         <div className="flex-1 px-6 md:px-8 space-y-6">
           <div>
-            <p className={sectionTitle}>ІГРОВЕ</p>
+            <p className={sectionTitle}>{t.profileSectionGame ?? t.game ?? 'GAME'}</p>
             <div className="mt-3 space-y-3">
               <button onClick={() => setGameState(GameState.PLAYER_STATS)} className={navBtn}>
                 <div className="flex items-center gap-3">
                   <ShieldCheck size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>Моя статистика</span>
+                  <span className={navLabel}>
+                    {t.profileNavMyStats ?? t.profileStatsDetailLink ?? 'Statistics'}
+                  </span>
                 </div>
                 <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
               </button>
@@ -185,11 +189,13 @@ export const ProfileScreen = () => {
                   />
                   <div className="text-left">
                     <span className={navLabel}>
-                      {hasCustomPacks ? 'Мої паки слів' : 'Відкрити власні паки'}
+                      {hasCustomPacks
+                        ? (t.profileNavMyPacks ?? 'My word packs')
+                        : (t.profileNavUnlockPacks ?? 'Unlock custom packs')}
                     </span>
                     {!hasCustomPacks && (
                       <p className="text-[9px] mt-0.5 uppercase tracking-widest text-(--ui-fg-muted)">
-                        Доступно у магазині
+                        {t.profileNavUnlockPacksSub ?? 'Available in the store'}
                       </p>
                     )}
                   </div>
@@ -207,12 +213,14 @@ export const ProfileScreen = () => {
           </div>
 
           <div>
-            <p className={sectionTitle}>НАЛАШТУВАННЯ</p>
+            <p className={sectionTitle}>{t.profileSectionSettings ?? t.settings ?? 'SETTINGS'}</p>
             <div className="mt-3 space-y-3">
               <button onClick={() => setGameState(GameState.PROFILE_SETTINGS)} className={navBtn}>
                 <div className="flex items-center gap-3">
                   <Settings size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>Налаштування профілю</span>
+                  <span className={navLabel}>
+                    {t.profileNavProfileSettings ?? 'Profile settings'}
+                  </span>
                 </div>
                 <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
               </button>
@@ -220,7 +228,7 @@ export const ProfileScreen = () => {
               <button onClick={() => setGameState(GameState.LOBBY_SETTINGS)} className={navBtn}>
                 <div className="flex items-center gap-3">
                   <Settings size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>Налаштування лоббі</span>
+                  <span className={navLabel}>{t.profileNavLobbySettings ?? 'Lobby settings'}</span>
                 </div>
                 <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
               </button>
@@ -228,7 +236,7 @@ export const ProfileScreen = () => {
           </div>
 
           <div>
-            <p className={sectionTitle}>ЕКСТРА</p>
+            <p className={sectionTitle}>{t.profileSectionExtra ?? 'EXTRA'}</p>
             <div className="mt-3 space-y-3">
               <button
                 onClick={() => setGameState(GameState.STORE)}
@@ -237,7 +245,7 @@ export const ProfileScreen = () => {
                 <div className="flex items-center gap-3">
                   <ShoppingBag size={16} />
                   <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em]">
-                    Магазин
+                    {t.profileNavStore ?? t.store ?? 'Store'}
                   </span>
                 </div>
                 <ChevronRight size={16} className="opacity-60" />
@@ -265,7 +273,11 @@ export const ProfileScreen = () => {
             disabled={loggingOut}
             className="w-full text-center text-(--ui-danger) font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
           >
-            {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'ВИЙТИ З АКАУНТУ'}
+            {loggingOut ? (
+              <Loader2 size={14} className="animate-spin inline" />
+            ) : (
+              (t.profileLogout ?? 'LOG OUT')
+            )}
           </button>
         </div>
       </div>
@@ -291,13 +303,13 @@ export const ProfileScreen = () => {
                 id="logout-confirm-title"
                 className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
               >
-                Ви впевнені, що хочете вийти?
+                {t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
               </p>
               <button
                 type="button"
                 onClick={closeLogoutConfirm}
                 className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
-                aria-label="Закрити"
+                aria-label={t.close ?? 'Close'}
               >
                 <X size={18} />
               </button>
@@ -309,7 +321,7 @@ export const ProfileScreen = () => {
                 onClick={closeLogoutConfirm}
                 className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
               >
-                Скасувати
+                {t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
               </button>
               <button
                 type="button"
@@ -320,10 +332,10 @@ export const ProfileScreen = () => {
                 {loggingOut ? (
                   <span className="inline-flex items-center justify-center gap-2">
                     <Loader2 size={16} className="animate-spin" />
-                    Вихід...
+                    {t.profileLogoutLoading ?? 'Logging out...'}
                   </span>
                 ) : (
-                  'Вийти'
+                  (t.profileLogoutConfirm ?? 'Log out')
                 )}
               </button>
             </div>

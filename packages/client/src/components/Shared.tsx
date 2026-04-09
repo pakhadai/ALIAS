@@ -82,7 +82,9 @@ export const bottomSheetBackdropClass = (
  */
 export function bottomSheetPanelClass(open: boolean, extraClassName = ''): string {
   return [
-    'relative w-full max-w-md mx-auto rounded-t-4xl overflow-hidden',
+    // Use a scrollable panel to avoid sheets being cut off below the viewport
+    // (common on mobile with browser chrome / safe areas).
+    'relative w-full max-w-md mx-auto rounded-t-4xl max-h-[85svh] overflow-y-auto overscroll-contain',
     'bg-(--ui-card) border border-(--ui-border)',
     'transition-transform duration-300 ease-out will-change-transform',
     open ? 'translate-y-0' : 'translate-y-full',
@@ -172,22 +174,23 @@ export const ToastNotification: React.FC<{
         : 'text-(--ui-fg)';
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-1000 flex justify-center pt-4 px-4 pointer-events-none">
-      <div className="pointer-events-auto w-[min(92vw,28rem)] animate-slide-up">
+    <div
+      className="fixed top-0 left-0 right-0 z-1000 flex justify-center px-4 pointer-events-none"
+      style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
+    >
+      <div className="pointer-events-auto w-full max-w-md animate-slide-up">
         <div
-          className={`${shell[type]} flex items-start gap-3 rounded-3xl border-2 px-5 py-4 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
+          className={`${shell[type]} relative rounded-2xl border px-4 py-3.5 pr-11 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
         >
-          <div className="min-w-0 flex-1 text-center">
-            <p
-              className={`text-sm font-sans font-semibold leading-snug tracking-wide ${messageClass}`}
-            >
-              {message}
-            </p>
-          </div>
+          <p
+            className={`min-w-0 text-left text-sm font-sans font-medium leading-relaxed ${messageClass}`}
+          >
+            {message}
+          </p>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-lg p-1 text-(--ui-fg-muted) opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-(--ui-fg-muted) opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
             aria-label="Close"
           >
             <X size={18} strokeWidth={2.25} />

@@ -28,6 +28,27 @@
 - Чому (контекст, причина)
 ```
 
+## [2026-04-09] — Режим Solo, i18n профілю, join-sheet, тости та bottom sheets
+
+### Added
+
+- **`general.teamMode` (`TEAMS` | `SOLO`)** у `packages/shared/src/models.ts`: у режимі **Solo** кожен гравець грає сам за себе; на сервері при `START_GAME` будується по одній «команді» на гравця (`packages/server/src/services/GameEngine.ts`). Дефолт і дефолт кімнати: `TEAMS` (`packages/client/src/context/gameReducer.ts`, `packages/server/src/services/RoomManager.ts`). Валідація PATCH налаштувань: `packages/server/src/validation/schemas.ts`.
+- **Перемикач у лобі-налаштуваннях:** `packages/client/src/screens/lobby/SettingsScreen.tsx` + ключі `teamMode`, `teamModeTeams`, `teamModeSolo`, `teamModeSoloHint` у `packages/client/src/constants.ts`. У Solo слайдер `teamCount` вимкнено (лічильник команд не використовується для старту).
+- **Переклади профілю:** ключі `profileStatsCard*`, `profileSection*`, `profileNav*`, `profileLogout*` (UA/EN/DE) у `packages/client/src/constants.ts`; `ProfileScreen` переведено на `useT()` — `packages/client/src/screens/menu/ProfileScreen.tsx`.
+
+### Changed
+
+- **`EnterNameScreen`:** введення ніку/аватара у **bottom sheet** (як офлайн «Додати гравця»), анімація відкриття, safe-area — `packages/client/src/screens/menu/EnterNameScreen.tsx`. Потік join без змін: `checkRoomExists` лишається **до** переходу на цей екран (`JoinInputScreen`, Quick Join у `MenuScreen`).
+- **`ToastNotification` (in-app, не push):** вирівнювання тексту зліва, кнопка закриття абсолютно справа, `leading-relaxed`, відступ зверху з урахуванням safe-area — `packages/client/src/components/Shared.tsx`.
+- **`bottomSheetPanelClass`:** `max-h-[85svh] overflow-y-auto` — щоб панелі (QR тощо) не обрізались знизу на мобільних — `packages/client/src/components/Shared.tsx`.
+- **`LobbyScreen`:** safe-area для QR-sheet; секція team builder **прихована** в Solo — `packages/client/src/screens/lobby/LobbyScreen.tsx`.
+
+### Fixed
+
+- Візуально «криві» in-app нотифікації через `text-center` поруч із кнопкою закриття в одному flex-рядку.
+
+---
+
 ## [2026-04-08] — Глибокий аудит: критичні баги, безпека, розбиття монолітів, нова адмінка
 
 ### Fixed

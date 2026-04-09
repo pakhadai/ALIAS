@@ -44,6 +44,8 @@ export interface GeneralSettings {
   categories: Category[];
   soundEnabled: boolean;
   soundPreset: SoundPreset;
+  /** TEAMS = players play in teams, SOLO = each player is their own "team". */
+  teamMode?: 'TEAMS' | 'SOLO';
   teamCount: number;
   theme: AppTheme;
   customWords?: string;

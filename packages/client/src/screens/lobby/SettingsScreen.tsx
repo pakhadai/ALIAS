@@ -799,6 +799,41 @@ export const SettingsScreen = () => {
                         {settings.general.teamCount}
                       </span>
                     </div>
+                    <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-3">
+                      <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-(--ui-fg-muted) mb-2">
+                        {t.teamMode ?? 'Team mode'}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateGeneral('teamMode', 'TEAMS')}
+                          className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                            (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
+                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-fg)'
+                              : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:bg-(--ui-surface-hover)'
+                          }`}
+                        >
+                          {t.teamModeTeams ?? 'Teams'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateGeneral('teamMode', 'SOLO')}
+                          className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                            (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
+                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-fg)'
+                              : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:bg-(--ui-surface-hover)'
+                          }`}
+                        >
+                          {t.teamModeSolo ?? 'Solo'}
+                        </button>
+                      </div>
+                      {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
+                        <p className="mt-2 text-[10px] text-(--ui-fg-muted) opacity-80">
+                          {t.teamModeSoloHint ??
+                            'Teams are disabled — each player plays for themselves.'}
+                        </p>
+                      )}
+                    </div>
                     <input
                       type="range"
                       min="2"
@@ -815,6 +850,7 @@ export const SettingsScreen = () => {
                       }}
                       onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
                       onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
+                      disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                       className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
                     />
                     <div className="flex items-center justify-between gap-3">
@@ -825,6 +861,7 @@ export const SettingsScreen = () => {
                           setLocalTeamCount(next);
                           updateGeneral('teamCount', next);
                         }}
+                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                         className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
                       >
                         −
@@ -845,6 +882,7 @@ export const SettingsScreen = () => {
                           setLocalTeamCount(clamped);
                           updateGeneral('teamCount', clamped);
                         }}
+                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                         className="w-28 text-center rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg) px-3 py-2 outline-none focus:border-(--ui-accent)"
                       />
                       <button
@@ -854,6 +892,7 @@ export const SettingsScreen = () => {
                           setLocalTeamCount(next);
                           updateGeneral('teamCount', next);
                         }}
+                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                         className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
                       >
                         +

@@ -58,6 +58,7 @@ export const LobbyScreen = () => {
   } = useGame();
   const general = settings.general;
   const t = useT();
+  const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -194,6 +195,7 @@ export const LobbyScreen = () => {
   };
 
   const teamShells = useMemo(() => {
+    if (isSolo) return [];
     const desiredCount = Math.max(2, Math.min(settings.general.teamCount, 8));
     if (teams.length === desiredCount) return teams;
     const names = TEAM_NAMES[settings.general.language] ?? TEAM_NAMES.EN;
@@ -206,7 +208,7 @@ export const LobbyScreen = () => {
       players: teams[i]?.players ?? [],
       nextPlayerIndex: 0,
     }));
-  }, [settings.general.language, settings.general.teamCount, teams]);
+  }, [isSolo, settings.general.language, settings.general.teamCount, teams]);
 
   const assignedPlayerIds = useMemo(() => {
     const s = new Set<string>();
@@ -232,11 +234,12 @@ export const LobbyScreen = () => {
   const startValidation = useMemo(() => {
     if (!isHost) return { ok: false, reason: '' };
     if (players.length < 2) return { ok: false, reason: 'Потрібно мінімум 2 гравці' };
+    if (isSolo) return { ok: true, reason: '' };
     if (unassigned.length > 0) return { ok: false, reason: 'Розподіліть усіх гравців по командах' };
     if (teamShells.some((t) => t.players.length === 0))
       return { ok: false, reason: 'У кожній команді має бути гравець' };
     return { ok: true, reason: '' };
-  }, [isHost, players.length, teamShells, unassigned.length]);
+  }, [isHost, isSolo, players.length, teamShells, unassigned.length]);
 
   return (
     <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
@@ -296,6 +299,7 @@ export const LobbyScreen = () => {
           >
             <div
               className={bottomSheetPanelClass(qrSheetOpen, 'p-6 flex flex-col items-center gap-5')}
+              style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -511,87 +515,88 @@ export const LobbyScreen = () => {
             </div>
           )}
 
-          {/* Team builder (Lobby as team setup) */}
-          <div className="w-full max-w-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{t.teams}</h3>
-              {isHost && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => sendAction({ action: 'TEAM_SHUFFLE_UNASSIGNED' })}
-                    className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
-                    disabled={players.length < 2}
-                  >
-                    {t.shuffle}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowShuffleAllConfirm(true)}
-                    className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
-                    disabled={players.length < 2}
-                  >
-                    Shuffle all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
-                    }
-                    className="p-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
-                    aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
-                    title={teamsLocked ? 'Unlock' : 'Lock'}
-                  >
-                    {teamsLocked ? (
-                      <Lock size={16} className={`${currentTheme.iconColor} opacity-70`} />
-                    ) : (
-                      <Unlock size={16} className={`${currentTheme.iconColor} opacity-70`} />
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+          {!isSolo && (
+            <div className="w-full max-w-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{t.teams}</h3>
+                {isHost && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => sendAction({ action: 'TEAM_SHUFFLE_UNASSIGNED' })}
+                      className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                      disabled={players.length < 2}
+                    >
+                      {t.shuffle}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowShuffleAllConfirm(true)}
+                      className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                      disabled={players.length < 2}
+                    >
+                      Shuffle all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
+                      }
+                      className="p-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                      aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
+                      title={teamsLocked ? 'Unlock' : 'Lock'}
+                    >
+                      {teamsLocked ? (
+                        <Lock size={16} className={`${currentTheme.iconColor} opacity-70`} />
+                      ) : (
+                        <Unlock size={16} className={`${currentTheme.iconColor} opacity-70`} />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
 
-            <UnassignedPool
-              unassigned={unassigned}
-              canHostAssignOffline={canHostAssignOffline}
-              onPick={(p) => {
-                setAssignTarget(p);
-                setShowAssignPlayer(true);
-              }}
-            />
+              <UnassignedPool
+                unassigned={unassigned}
+                canHostAssignOffline={canHostAssignOffline}
+                onPick={(p) => {
+                  setAssignTarget(p);
+                  setShowAssignPlayer(true);
+                }}
+              />
 
-            <div className="space-y-3">
-              {teamShells.map((team) => {
-                const isMine = myTeamId === team.id;
-                const joinDisabled = !canSelfSwitch || (!!teamsLocked && !isHost);
-                return (
-                  <TeamCard
-                    key={team.id}
-                    team={team}
-                    teamCount={teamShells.length}
-                    playersTotal={players.length}
-                    t={t}
-                    theme={currentTheme}
-                    isHost={isHost}
-                    myPlayerId={myPlayerId}
-                    isMine={isMine}
-                    joinDisabled={joinDisabled}
-                    canHostAssignOffline={canHostAssignOffline}
-                    onAssignPick={(p) => {
-                      setAssignTarget(p);
-                      setShowAssignPlayer(true);
-                    }}
-                    editingTeamId={editingTeamId}
-                    teamNameDraft={teamNameDraft}
-                    setEditingTeamId={setEditingTeamId}
-                    setTeamNameDraft={setTeamNameDraft}
-                    sendAction={sendAction}
-                  />
-                );
-              })}
+              <div className="space-y-3">
+                {teamShells.map((team) => {
+                  const isMine = myTeamId === team.id;
+                  const joinDisabled = !canSelfSwitch || (!!teamsLocked && !isHost);
+                  return (
+                    <TeamCard
+                      key={team.id}
+                      team={team}
+                      teamCount={teamShells.length}
+                      playersTotal={players.length}
+                      t={t}
+                      theme={currentTheme}
+                      isHost={isHost}
+                      myPlayerId={myPlayerId}
+                      isMine={isMine}
+                      joinDisabled={joinDisabled}
+                      canHostAssignOffline={canHostAssignOffline}
+                      onAssignPick={(p) => {
+                        setAssignTarget(p);
+                        setShowAssignPlayer(true);
+                      }}
+                      editingTeamId={editingTeamId}
+                      teamNameDraft={teamNameDraft}
+                      setEditingTeamId={setEditingTeamId}
+                      setTeamNameDraft={setTeamNameDraft}
+                      sendAction={sendAction}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </main>
 
         <footer className="w-full max-w-sm mx-auto py-8">

@@ -92,7 +92,11 @@ export class GameEngine {
   }
 
   private ensureTeamShells(room: Room): void {
-    const teamCount = Math.max(2, Math.min(room.settings.general.teamCount, 8));
+    const teamMode = room.settings.general.teamMode ?? 'TEAMS';
+    const teamCount =
+      teamMode === 'SOLO'
+        ? Math.max(1, Math.min(room.players.length, 16))
+        : Math.max(2, Math.min(room.settings.general.teamCount, 8));
     const existing = room.teams ?? [];
     if (existing.length === teamCount) return;
     const names = [
@@ -318,7 +322,19 @@ export class GameEngine {
       }
 
       case 'START_GAME': {
-        this.ensureTeamShells(room);
+        if ((room.settings.general.teamMode ?? 'TEAMS') === 'SOLO') {
+          room.teams = room.players.map((p, i) => ({
+            id: `team-${i}`,
+            name: p.name,
+            score: 0,
+            color: TEAM_COLORS[i % TEAM_COLORS.length].class,
+            colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+            players: [p],
+            nextPlayerIndex: 0,
+          }));
+        } else {
+          this.ensureTeamShells(room);
+        }
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.roundsPlayed = 0;

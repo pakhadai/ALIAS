@@ -63,6 +63,7 @@ const defaultSettings: GameSettings = {
     categories: [Category.GENERAL],
     soundEnabled: true,
     soundPreset: SoundPreset.FUN,
+    teamMode: 'TEAMS',
     teamCount: 2,
     theme: AppTheme.PREMIUM_DARK,
   },
