@@ -257,7 +257,7 @@ Tests run on multiple browsers by default:
 - PASS: Chromium (Desktop Chrome)
 - PASS: Firefox (Desktop)
 - PASS: WebKit (Desktop Safari)
-- PASS: Mobile Chrome (optional)
+- PASS: mobile-chrome (optional; Pixel 5 profile)
 
 Configure in `playwright.config.ts` to adjust browsers.
 

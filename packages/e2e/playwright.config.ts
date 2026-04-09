@@ -26,7 +26,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'Mobile Chrome',
+      // No spaces: shells / pnpm argument forwarding break "--project=Mobile Chrome".
+      name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
     },
   ],

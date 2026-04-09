@@ -15,7 +15,7 @@ test.describe.configure({ mode: 'serial' });
 
 test.beforeEach(({ page: _page }, testInfo) => {
   test.skip(
-    testInfo.project.name === 'Mobile Chrome',
+    testInfo.project.name === 'mobile-chrome',
     'Multiplayer flows use two desktop contexts; skip mobile project.'
   );
 });

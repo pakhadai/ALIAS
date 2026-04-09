@@ -126,8 +126,8 @@ jobs:
       - name: Run @core on Desktop Chrome
         run: pnpm --filter @alias/e2e run test -- --grep "@core" --project=chromium
 
-      - name: Run @core on Mobile Chrome
-        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project="Mobile Chrome"
+      - name: Run @core on Mobile Chrome (Pixel 5)
+        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project=mobile-chrome
 
       - name: Upload Playwright report (always)
         if: always()
