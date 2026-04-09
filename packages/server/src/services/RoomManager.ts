@@ -7,6 +7,7 @@ import {
   AppTheme,
   GameMode,
   MAX_PLAYERS,
+  TEAM_COLORS,
 } from '@alias/shared';
 import type {
   Player,
@@ -50,6 +51,8 @@ export interface Room {
   imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';
   /** Players who already revealed their card (ids). */
   revealedPlayerIds?: string[];
+  /** Lobby/team builder: when true, players cannot self-switch teams (host can still edit). */
+  teamsLocked?: boolean;
 }
 
 const defaultSettings: GameSettings = {
@@ -181,6 +184,8 @@ export class RoomManager {
   async createRoom(hostSocketId: string): Promise<Room> {
     const code = await this.generateRoomCode();
     const hostPlayerId = uuidv4();
+    const teamCount = defaultSettings.general.teamCount;
+    const teamNames = ['Rockets', 'Ninjas', 'Cyberpunks', 'Champions', 'Kittens', 'Thunders', 'Stars', 'Titans'];
     const room: Room = {
       code,
       hostSocketId,
@@ -188,7 +193,15 @@ export class RoomManager {
       gameState: GameState.LOBBY,
       settings: structuredClone(defaultSettings),
       players: [],
-      teams: [],
+      teams: Array.from({ length: teamCount }, (_, i) => ({
+        id: `team-${i}`,
+        name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
+        score: 0,
+        color: TEAM_COLORS[i % TEAM_COLORS.length].class,
+        colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        players: [],
+        nextPlayerIndex: 0,
+      })),
       currentTeamIndex: 0,
       wordDeck: [],
       currentWord: '',
@@ -205,6 +218,7 @@ export class RoomManager {
       imposterWord: undefined,
       imposterPhase: undefined,
       revealedPlayerIds: [],
+      teamsLocked: false,
     };
     this.rooms.set(code, room);
     this.persistRoom(room);
@@ -315,6 +329,10 @@ export class RoomManager {
     const wasHost = room.hostPlayerId === playerId; // Перевіряємо чи був це хост
 
     room.players = room.players.filter((p) => p.id !== playerId);
+    const keepEmptyTeams =
+      room.gameState === GameState.LOBBY ||
+      room.gameState === GameState.SETTINGS ||
+      room.gameState === GameState.TEAMS;
     room.teams = room.teams
       .map((team) => {
         const newPlayers = team.players.filter((p) => p.id !== playerId);
@@ -327,7 +345,7 @@ export class RoomManager {
               : team.nextPlayerIndex,
         };
       })
-      .filter((team) => team.players.length > 0); // drop now-empty teams
+      .filter((team) => keepEmptyTeams || team.players.length > 0); // drop empty teams only during active game
     // Clamp currentTeamIndex in case a team was removed
     if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
@@ -466,6 +484,10 @@ export class RoomManager {
     const wasHost = room.hostPlayerId === playerId;
 
     room.players = room.players.filter((p) => p.id !== playerId);
+    const keepEmptyTeams =
+      room.gameState === GameState.LOBBY ||
+      room.gameState === GameState.SETTINGS ||
+      room.gameState === GameState.TEAMS;
     room.teams = room.teams
       .map((team) => {
         const newPlayers = team.players.filter((p) => p.id !== playerId);
@@ -478,7 +500,7 @@ export class RoomManager {
               : team.nextPlayerIndex,
         };
       })
-      .filter((team) => team.players.length > 0);
+      .filter((team) => keepEmptyTeams || team.players.length > 0);
     if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
     }
@@ -599,6 +621,7 @@ export class RoomManager {
       imposterPhase: room.imposterPhase,
       imposterPlayerId: room.imposterPlayerId,
       revealedPlayerIds: room.revealedPlayerIds ?? [],
+      teamsLocked: room.teamsLocked ?? false,
     };
   }
 

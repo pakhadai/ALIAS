@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize, X } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize, X, ArrowRight } from 'lucide-react';
 import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 import { ProfileModal } from '../../components/Auth/ProfileModal';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
@@ -10,6 +10,7 @@ import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import versionData from '../../version.json';
 import { RulesModal } from './RulesScreen';
+import { ROOM_CODE_LENGTH } from '../../constants';
 
 export const MenuScreen = () => {
   const {
@@ -20,6 +21,9 @@ export const MenuScreen = () => {
     createNewRoom,
     startOfflineGame,
     connectionError,
+    setRoomCode,
+    checkRoomExists,
+    showNotification,
   } = useGame();
   const { isAuthenticated } = useAuthContext();
   const [showRules, setShowRules] = useState(false);
@@ -27,6 +31,10 @@ export const MenuScreen = () => {
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const [fullscreenHintVisible, setFullscreenHintVisible] = useState(false);
+  const [showQuickJoin, setShowQuickJoin] = useState(false);
+  const [quickJoinVisible, setQuickJoinVisible] = useState(false);
+  const [quickJoinCode, setQuickJoinCode] = useState('');
+  const [quickJoinChecking, setQuickJoinChecking] = useState(false);
   const t = useT();
 
   void setSettings;
@@ -39,9 +47,22 @@ export const MenuScreen = () => {
     setFullscreenHintVisible(false);
   }, [showFullscreenHint]);
 
+  useEffect(() => {
+    if (showQuickJoin) {
+      const r = requestAnimationFrame(() => setQuickJoinVisible(true));
+      return () => cancelAnimationFrame(r);
+    }
+    setQuickJoinVisible(false);
+  }, [showQuickJoin]);
+
   const closeFullscreenHint = () => {
     setFullscreenHintVisible(false);
     setTimeout(() => setShowFullscreenHint(false), 280);
+  };
+
+  const closeQuickJoin = () => {
+    setQuickJoinVisible(false);
+    setTimeout(() => setShowQuickJoin(false), 280);
   };
 
   // After sign-in inside the modal → close it and go to ProfileScreen
@@ -76,6 +97,26 @@ export const MenuScreen = () => {
     'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90';
   const menuHeaderIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
 
+  const showProfileBadge = !isAuthenticated;
+  const canQuickJoin = quickJoinCode.length === ROOM_CODE_LENGTH && /^\d+$/.test(quickJoinCode);
+  const quickJoinLabel = useMemo(() => t.joinGame, [t.joinGame]);
+
+  const handleQuickJoin = async () => {
+    if (!canQuickJoin || quickJoinChecking) return;
+    setQuickJoinChecking(true);
+    try {
+      const exists = await checkRoomExists(quickJoinCode);
+      if (!exists) {
+        showNotification(t.roomNotFound.replace('{0}', quickJoinCode), 'error');
+        return;
+      }
+      setRoomCode(quickJoinCode);
+      setGameState(GameState.ENTER_NAME);
+    } finally {
+      setQuickJoinChecking(false);
+    }
+  };
+
   return (
     <div
       className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
@@ -90,7 +131,15 @@ export const MenuScreen = () => {
           className={menuHeaderIconBtn}
           aria-label="Profile"
         >
-          <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+          <span className="relative inline-flex">
+            <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+            {showProfileBadge && (
+              <span
+                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-(--ui-danger) ring-2 ring-(--ui-bg)"
+                aria-hidden
+              />
+            )}
+          </span>
         </button>
         <button
           type="button"
@@ -137,19 +186,40 @@ export const MenuScreen = () => {
             <button
               onClick={createNewRoom}
               data-testid="menu-create-game"
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl`}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl relative overflow-hidden`}
             >
+              <span
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background:
+                    'radial-gradient(70% 60% at 50% 0%, color-mix(in_srgb, var(--ui-accent) 28%, transparent) 0%, transparent 60%)',
+                }}
+                aria-hidden
+              />
               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
                 {t.createGame}
               </span>
             </button>
             <button
-              onClick={() => setGameState(GameState.JOIN_INPUT)}
+              onClick={() => setShowQuickJoin(true)}
               data-testid="menu-join-game"
               className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)"
             >
               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
-                {t.joinGame}
+                {quickJoinLabel}
+              </span>
+            </button>
+
+            <button
+              onClick={startOfflineGame}
+              data-testid="menu-offline"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] w-full"
+            >
+              <WifiOff size={16} className={`${currentTheme.iconColor} opacity-70`} strokeWidth={2} />
+              <span
+                className={`font-sans font-bold text-[10px] uppercase tracking-[0.35em] opacity-80 ${currentTheme.textMain}`}
+              >
+                {t.playOffline}
               </span>
             </button>
           </div>
@@ -159,22 +229,6 @@ export const MenuScreen = () => {
             style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
           >
             <div className="h-px w-12 bg-(--ui-border)" />
-            <button
-              onClick={startOfflineGame}
-              data-testid="menu-offline"
-              className="inline-flex items-center gap-2 group h-6"
-            >
-              <WifiOff
-                size={14}
-                className={`shrink-0 ${currentTheme.iconColor} opacity-40 group-hover:opacity-100 transition-opacity`}
-                strokeWidth={2}
-              />
-              <span
-                className={`font-sans font-medium text-[9px] uppercase tracking-[0.5em] border-b border-transparent group-hover:border-current pb-2 transition-all opacity-30 group-hover:opacity-100 leading-none ${currentTheme.textMain}`}
-              >
-                {t.playOffline}
-              </span>
-            </button>
             <span
               className={`font-sans text-[8px] uppercase tracking-widest opacity-20 ${currentTheme.textMain}`}
             >
@@ -233,6 +287,87 @@ export const MenuScreen = () => {
               className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
             >
               {t.close}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showQuickJoin && (
+        <div
+          className={bottomSheetBackdropClass(quickJoinVisible, 'z-50')}
+          onClick={closeQuickJoin}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quick-join-title"
+        >
+          <div
+            className={bottomSheetPanelClass(quickJoinVisible, 'px-5 pt-5 pb-8 max-w-sm')}
+            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center pb-3">
+              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+            </div>
+
+            <div className="flex justify-between items-start mb-4">
+              <p
+                id="quick-join-title"
+                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+              >
+                {t.enterCode}
+              </p>
+              <button
+                type="button"
+                onClick={closeQuickJoin}
+                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                aria-label={t.close}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="rounded-3xl bg-(--ui-surface) border border-(--ui-border) px-4 py-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={quickJoinCode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    if (val.length <= ROOM_CODE_LENGTH) setQuickJoinCode(val);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleQuickJoin();
+                  }}
+                  placeholder="00000"
+                  data-testid="menu-quick-join-code"
+                  className="flex-1 bg-transparent text-(--ui-fg) font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-(--ui-fg-muted)"
+                  aria-label={t.enterCode}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleQuickJoin()}
+                  disabled={!canQuickJoin || quickJoinChecking}
+                  data-testid="menu-quick-join-submit"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) transition-all active:scale-95 disabled:opacity-40"
+                  aria-label={t.enter}
+                >
+                  {quickJoinChecking ? (
+                    <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                  ) : (
+                    <ArrowRight size={18} strokeWidth={2.5} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={closeQuickJoin}
+              className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]`}
+            >
+              {t.cancel}
             </button>
           </div>
         </div>

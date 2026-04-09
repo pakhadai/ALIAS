@@ -32,7 +32,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm --filter @alias/server dev',
+      // Server runtime imports @alias/shared from dist, so ensure shared is built first (CI + fresh clones).
+      command: 'pnpm --filter @alias/shared build && pnpm --filter @alias/server dev',
       cwd: repoRoot,
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,

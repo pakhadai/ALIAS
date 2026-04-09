@@ -28,6 +28,7 @@ import {
   TRANSLATIONS,
   TEAM_NAMES,
   ROOM_CODE_LENGTH,
+  MAX_PLAYERS,
 } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
@@ -293,6 +294,95 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!stateRef.current.isHost && payload.action !== 'PAUSE_GAME') return;
 
       switch (payload.action) {
+        case 'TEAM_LOCK': {
+          dispatch({ type: 'SET_STATE', payload: { teamsLocked: payload.data.locked } });
+          break;
+        }
+        case 'TEAM_RENAME': {
+          const { teamId, name } = payload.data;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              teams: stateRef.current.teams.map((t) => (t.id === teamId ? { ...t, name } : t)),
+            },
+          });
+          break;
+        }
+        case 'TEAM_LEAVE': {
+          const actorId =
+            payload.data && 'playerId' in payload.data && payload.data.playerId
+              ? payload.data.playerId
+              : stateRef.current.myPlayerId;
+          if (!actorId) break;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              teams: stateRef.current.teams.map((t) => ({
+                ...t,
+                players: t.players.filter((p) => p.id !== actorId),
+                nextPlayerIndex:
+                  t.nextPlayerIndex >= t.players.filter((p) => p.id !== actorId).length
+                    ? 0
+                    : t.nextPlayerIndex,
+              })),
+            },
+          });
+          break;
+        }
+        case 'TEAM_JOIN': {
+          const actorId =
+            'playerId' in payload.data && payload.data.playerId
+              ? payload.data.playerId
+              : stateRef.current.myPlayerId;
+          if (!actorId) break;
+          const me = stateRef.current.players.find((p) => p.id === actorId);
+          if (!me) break;
+          const { teamId } = payload.data;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              teams: stateRef.current.teams.map((t) => ({
+                ...t,
+                players:
+                  t.id === teamId
+                    ? [...t.players.filter((p) => p.id !== actorId), me]
+                    : t.players.filter((p) => p.id !== actorId),
+              })),
+            },
+          });
+          break;
+        }
+        case 'TEAM_SHUFFLE_UNASSIGNED': {
+          const assigned = new Set<string>();
+          stateRef.current.teams.forEach((t) => t.players.forEach((p) => assigned.add(p.id)));
+          const unassigned = stateRef.current.players.filter((p) => !assigned.has(p.id));
+          const shuffled = shuffleArray(unassigned);
+          const nextTeams = stateRef.current.teams.map((t) => ({ ...t, players: [...t.players] }));
+          shuffled.forEach((p) => {
+            const smallestIdx = nextTeams
+              .map((t, i) => ({ i, n: t.players.length }))
+              .sort((a, b) => a.n - b.n)[0]?.i;
+            if (smallestIdx == null) return;
+            nextTeams[smallestIdx].players.push(p);
+          });
+          dispatch({ type: 'SET_STATE', payload: { teams: nextTeams } });
+          break;
+        }
+        case 'TEAM_SHUFFLE_ALL': {
+          const teamCount = Math.max(1, stateRef.current.teams.length);
+          const shuffled = shuffleArray([...stateRef.current.players]);
+          const nextTeams: Team[] = stateRef.current.teams.map((t) => ({
+            ...t,
+            players: [],
+            nextPlayerIndex: 0,
+          }));
+          shuffled.forEach((p, i) => {
+            const idx = i % teamCount;
+            nextTeams[idx].players.push(p);
+          });
+          dispatch({ type: 'SET_STATE', payload: { teams: nextTeams } });
+          break;
+        }
         case 'CORRECT': {
           playSound('correct');
           const taskPrompt = stateRef.current.currentTask?.prompt ?? stateRef.current.currentWord;
@@ -497,7 +587,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             dispatch({
               type: 'SET_STATE',
-              payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0 },
+              payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0, teamsLocked: true },
             });
           }
           break;
@@ -616,6 +706,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             payload: {
               gameState: GameState.LOBBY,
               teams: [],
+              teamsLocked: false,
               currentTeamIndex: 0,
               currentWord: '',
               currentTask: null,
@@ -719,6 +810,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         case 'ADD_OFFLINE_PLAYER': {
           const { players } = stateRef.current;
+          if (players.length >= MAX_PLAYERS) {
+            dispatch({
+              type: 'SHOW_NOTIF',
+              payload: {
+                message: `Ліміт гравців: ${MAX_PLAYERS}`,
+                type: 'error',
+              },
+            });
+            break;
+          }
           const playerNum = players.length + 1;
           const newPlayer: Player = {
             id: `local-${playerNum}-${Date.now()}`,
@@ -788,6 +889,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         roomCode: syncState.roomCode,
         players: syncState.players,
         teams: syncState.teams,
+        teamsLocked: syncState.teamsLocked ?? false,
         currentTeamIndex: syncState.currentTeamIndex,
         currentWord: syncState.currentWord,
         currentTask: syncState.currentTask ?? null,

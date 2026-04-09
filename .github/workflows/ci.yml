@@ -73,6 +73,9 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter @alias/e2e run install:browsers
 
+      - name: Build shared package (required by server runtime)
+        run: pnpm --filter @alias/shared build
+
       - name: Run smoke tests only
         run: pnpm --filter @alias/e2e run test -- --grep "@smoke"
 
@@ -115,6 +118,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm --filter @alias/e2e run install:browsers
+
+      - name: Build shared package (required by server runtime)
+        run: pnpm --filter @alias/shared build
 
       # Run @core suite for each project separately (faster feedback / clearer failures).
       - name: Run @core on Desktop Chrome

@@ -121,6 +121,12 @@ const validActions = new Set([
   'RESET_GAME',
   'REMATCH',
   'GENERATE_TEAMS',
+  'TEAM_JOIN',
+  'TEAM_LEAVE',
+  'TEAM_SHUFFLE_UNASSIGNED',
+  'TEAM_SHUFFLE_ALL',
+  'TEAM_LOCK',
+  'TEAM_RENAME',
   'PAUSE_GAME',
   'TIME_UP',
   'CONFIRM_ROUND',
@@ -181,6 +187,49 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
         return null;
       }
       return { action, data: { selectedOption: d.selectedOption } };
+    }
+    case 'TEAM_JOIN': {
+      if (!obj.data || typeof obj.data !== 'object') return null;
+      const d = obj.data as Record<string, unknown>;
+      const teamIdRes = z.string().min(1).max(32).safeParse(d.teamId);
+      if (!teamIdRes.success) return null;
+      const playerIdRes =
+        d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
+      if (playerIdRes && !playerIdRes.success) return null;
+      return {
+        action,
+        data:
+          playerIdRes && playerIdRes.success
+            ? { teamId: teamIdRes.data, playerId: playerIdRes.data }
+            : { teamId: teamIdRes.data },
+      };
+    }
+    case 'TEAM_LEAVE': {
+      // Allow no data (self-leave) or optional { playerId } (host unassign).
+      if (obj.data === undefined) return { action };
+      if (!obj.data || typeof obj.data !== 'object') return null;
+      const d = obj.data as Record<string, unknown>;
+      const playerIdRes =
+        d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
+      if (playerIdRes && !playerIdRes.success) return null;
+      return playerIdRes && playerIdRes.success
+        ? { action, data: { playerId: playerIdRes.data } }
+        : { action };
+    }
+    case 'TEAM_LOCK': {
+      if (!obj.data || typeof obj.data !== 'object') return null;
+      const d = obj.data as Record<string, unknown>;
+      const lockedRes = z.boolean().safeParse(d.locked);
+      if (!lockedRes.success) return null;
+      return { action, data: { locked: lockedRes.data } };
+    }
+    case 'TEAM_RENAME': {
+      if (!obj.data || typeof obj.data !== 'object') return null;
+      const d = obj.data as Record<string, unknown>;
+      const teamIdRes = z.string().min(1).max(32).safeParse(d.teamId);
+      const nameRes = z.string().min(1).max(18).safeParse(d.name);
+      if (!teamIdRes.success || !nameRes.success) return null;
+      return { action, data: { teamId: teamIdRes.data, name: nameRes.data } };
     }
     default:
       // Actions that don't need payload data on the wire (offline-only actions are rejected upstream).

@@ -45,6 +45,7 @@ export const initialState: AppState = {
   myPlayerId: '',
   players: [],
   teams: [],
+  teamsLocked: false,
   currentTeamIndex: 0,
   wordDeck: [],
   currentWord: '',

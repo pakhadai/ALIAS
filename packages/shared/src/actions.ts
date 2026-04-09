@@ -25,6 +25,12 @@ export type GameActionType =
   | 'REMATCH'
   | 'UPDATE_SETTINGS'
   | 'GENERATE_TEAMS'
+  | 'TEAM_JOIN'
+  | 'TEAM_LEAVE'
+  | 'TEAM_SHUFFLE_UNASSIGNED'
+  | 'TEAM_SHUFFLE_ALL'
+  | 'TEAM_LOCK'
+  | 'TEAM_RENAME'
   | 'PAUSE_GAME'
   | 'KICK_PLAYER'
   | 'TIME_UP'
@@ -46,6 +52,8 @@ type NoDataAction =
   | 'RESET_GAME'
   | 'REMATCH'
   | 'GENERATE_TEAMS'
+  | 'TEAM_SHUFFLE_UNASSIGNED'
+  | 'TEAM_SHUFFLE_ALL'
   | 'PAUSE_GAME'
   | 'TIME_UP'
   | 'CONFIRM_ROUND'
@@ -62,6 +70,12 @@ export type GameActionPayload =
   | GameActionPayloadNoData
   | { action: 'UPDATE_SETTINGS'; data: GameSettingsUpdate }
   | { action: 'KICK_PLAYER'; data: string }
+  /** Join a team. If `playerId` is provided, only host may assign that player. */
+  | { action: 'TEAM_JOIN'; data: { teamId: string; playerId?: string } }
+  /** Leave all teams. If `playerId` is provided, only host may unassign that player. */
+  | { action: 'TEAM_LEAVE'; data?: { playerId?: string } }
+  | { action: 'TEAM_LOCK'; data: { locked: boolean } }
+  | { action: 'TEAM_RENAME'; data: { teamId: string; name: string } }
   | { action: 'GUESS_OPTION'; data: { selectedOption: string } }
   | { action: 'IMPOSTER_READY' }
   | { action: 'IMPOSTER_END_GAME' }

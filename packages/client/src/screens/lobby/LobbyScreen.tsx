@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   X,
   Settings as SettingsIcon,
-  Plus,
-  Minus,
-  FileText,
   Loader2,
-  Timer,
-  Trophy,
-  Gamepad2,
-  BookOpen,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import {
@@ -21,10 +16,15 @@ import { GameState, GameMode } from '../../types';
 import type { RoomErrorCode } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { AVATARS } from '../../utils/avatars';
-import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { useT } from '../../hooks/useT';
+import { MAX_PLAYERS, TEAM_COLORS, TEAM_NAMES } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
+import { AssignPlayerSheet } from './components/AssignPlayerSheet';
+import { PlayersSection } from './components/PlayersSection';
+import { TeamCard } from './components/TeamCard';
+import { UnassignedPool } from './components/UnassignedPool';
+import { OnlineLobbyIntro } from './components/OnlineLobbyIntro';
 
 const ROOM_UNAVAILABLE_CODES: RoomErrorCode[] = [
   'ROOM_NOT_FOUND',
@@ -51,6 +51,8 @@ export const LobbyScreen = () => {
     isHost,
     gameMode,
     myPlayerId,
+    teams,
+    teamsLocked,
     connectionError,
     connectionErrorCode,
     isConnected,
@@ -71,14 +73,48 @@ export const LobbyScreen = () => {
   const [kickTarget, setKickTarget] = useState<{ id: string; name: string } | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(AVATARS[0]);
+  const [kickMenuPlayerId, setKickMenuPlayerId] = useState<string | null>(null);
+  const [recentlyJoinedIds, setRecentlyJoinedIds] = useState<Set<string>>(new Set());
+  const [showAssignPlayer, setShowAssignPlayer] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<Player | null>(null);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [teamNameDraft, setTeamNameDraft] = useState('');
+  const [showShuffleAllConfirm, setShowShuffleAllConfirm] = useState(false);
 
   const joinUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?room=${roomCode}`;
+  const prevPlayerIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (gameMode === 'ONLINE' && roomCode) {
       QRCode.toDataURL(joinUrl, { margin: 1 }).then(setQrCodeData).catch(console.error);
     }
   }, [joinUrl, gameMode, roomCode]);
+
+  useEffect(() => {
+    const prev = new Set(prevPlayerIdsRef.current);
+    const current = players.map((p) => p.id);
+    prevPlayerIdsRef.current = current;
+    const additions = current.filter((id) => !prev.has(id));
+    if (additions.length === 0) return;
+    setRecentlyJoinedIds((s) => {
+      const next = new Set(s);
+      additions.forEach((id) => next.add(id));
+      return next;
+    });
+    const t = setTimeout(() => {
+      setRecentlyJoinedIds((s) => {
+        const next = new Set(s);
+        additions.forEach((id) => next.delete(id));
+        return next;
+      });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [players]);
+
+  const closeAssignSheet = () => {
+    setShowAssignPlayer(false);
+    setAssignTarget(null);
+  };
 
   useEffect(() => {
     if (showQrModal && qrCodeData) {
@@ -96,6 +132,15 @@ export const LobbyScreen = () => {
     setAddPlayerSheetOpen(false);
   }, [showAddPlayer]);
 
+  // Defensive: if we reach the cap while the modal is open, close it.
+  useEffect(() => {
+    if (!showAddPlayer) return;
+    if (gameMode !== 'OFFLINE') return;
+    if (players.length < MAX_PLAYERS) return;
+    showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+    setShowAddPlayer(false);
+  }, [showAddPlayer, players.length, gameMode, showNotification]);
+
   const closeQrModal = () => {
     setQrSheetOpen(false);
     setTimeout(() => setShowQrModal(false), 280);
@@ -106,7 +151,7 @@ export const LobbyScreen = () => {
     setTimeout(() => setShowAddPlayer(false), 280);
   };
 
-  const canCreateTeams = players.length >= 2;
+  const canAddOfflinePlayer = isHost && gameMode === 'OFFLINE' && players.length < MAX_PLAYERS;
   const categoriesPreview = useMemo(() => {
     const cats = general.categories ?? [];
     const names = cats
@@ -119,8 +164,81 @@ export const LobbyScreen = () => {
     return rest > 0 ? `${names.join(', ')} +${rest}` : names.join(', ');
   }, [general.categories, t]);
 
-  // suppress unused-var lint on showNotification (available via context, may be used by parent)
-  void showNotification;
+  const modeLabel =
+    (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.CLASSIC
+      ? (t.gameModeClassic ?? 'Classic')
+      : (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION
+        ? (t.gameModeTranslation ?? 'Translation')
+        : (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.SYNONYMS
+          ? (t.gameModeSynonyms ?? 'Synonyms')
+          : (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ
+            ? (t.gameModeQuiz ?? 'Quiz')
+            : (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.HARDCORE
+              ? (t.gameModeHardcore ?? 'Hardcore')
+              : (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.IMPOSTER
+                ? (t.gameModeImposter ?? 'Imposter')
+                : '—';
+
+  const shareJoinLink = async () => {
+    if (!roomCode) return;
+    const title = t.lobby ?? 'Lobby';
+    const text = `${t.roomCode}: ${roomCode}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url: joinUrl });
+        return;
+      }
+    } catch {
+      // ignore share cancellation / errors
+    }
+    try {
+      await navigator.clipboard.writeText(joinUrl);
+      showNotification(t.linkCopied ?? 'Посилання скопійовано', 'success');
+    } catch {
+      showNotification(t.copyFailed ?? 'Не вдалося скопіювати', 'error');
+    }
+  };
+
+  const teamShells = useMemo(() => {
+    const desiredCount = Math.max(2, Math.min(settings.general.teamCount, 8));
+    if (teams.length === desiredCount) return teams;
+    const names = TEAM_NAMES[settings.general.language] ?? TEAM_NAMES.EN;
+    return Array.from({ length: desiredCount }, (_, i) => ({
+      id: `team-${i}`,
+      name: names[i % names.length] ?? `Team ${i + 1}`,
+      score: 0,
+      color: TEAM_COLORS[i % TEAM_COLORS.length].class,
+      colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+      players: teams[i]?.players ?? [],
+      nextPlayerIndex: 0,
+    }));
+  }, [settings.general.language, settings.general.teamCount, teams]);
+
+  const assignedPlayerIds = useMemo(() => {
+    const s = new Set<string>();
+    teamShells.forEach((t) => t.players.forEach((p) => s.add(p.id)));
+    return s;
+  }, [teamShells]);
+  const unassigned = useMemo(() => players.filter((p) => !assignedPlayerIds.has(p.id)), [players, assignedPlayerIds]);
+
+  const myTeamId = useMemo(() => {
+    if (!myPlayerId) return null;
+    for (const t of teamShells) {
+      if (t.players.some((p) => p.id === myPlayerId)) return t.id;
+    }
+    return null;
+  }, [myPlayerId, teamShells]);
+
+  const canSelfSwitch = !teamsLocked || isHost || gameMode === 'OFFLINE';
+  const canHostAssignOffline = isHost && gameMode === 'OFFLINE';
+
+  const startValidation = useMemo(() => {
+    if (!isHost) return { ok: false, reason: '' };
+    if (players.length < 2) return { ok: false, reason: 'Потрібно мінімум 2 гравці' };
+    if (unassigned.length > 0) return { ok: false, reason: 'Розподіліть усіх гравців по командах' };
+    if (teamShells.some((t) => t.players.length === 0)) return { ok: false, reason: 'У кожній команді має бути гравець' };
+    return { ok: true, reason: '' };
+  }, [isHost, players.length, teamShells, unassigned.length]);
 
   return (
     <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
@@ -157,6 +275,21 @@ export const LobbyScreen = () => {
           cancelText={t.goBack}
         />
 
+        <ConfirmationModal
+          isOpen={showShuffleAllConfirm}
+          title="Перемішати всіх?"
+          message="Це перерозподілить усіх гравців по командах заново."
+          isDanger
+          theme={currentTheme}
+          onCancel={() => setShowShuffleAllConfirm(false)}
+          onConfirm={() => {
+            setShowShuffleAllConfirm(false);
+            sendAction({ action: 'TEAM_SHUFFLE_ALL' });
+          }}
+          confirmText="Так, перемішати"
+          cancelText={t.goBack}
+        />
+
         {showQrModal && qrCodeData && (
           <div
             className={bottomSheetBackdropClass(qrSheetOpen, 'z-120')}
@@ -190,6 +323,7 @@ export const LobbyScreen = () => {
           <button
             onClick={() => setShowExitConfirm(true)}
             className="p-2 opacity-30 hover:opacity-100 transition-opacity"
+            aria-label={t.confirmExit ?? 'Exit'}
           >
             <X size={20} className={currentTheme.iconColor} />
           </button>
@@ -202,6 +336,7 @@ export const LobbyScreen = () => {
             <button
               onClick={() => setGameState(GameState.SETTINGS)}
               className="p-2 opacity-30 hover:opacity-100 transition-opacity"
+              aria-label={t.settings ?? 'Settings'}
             >
               <SettingsIcon size={20} className={currentTheme.iconColor} />
             </button>
@@ -252,223 +387,45 @@ export const LobbyScreen = () => {
         )}
 
         <main className="flex-1 flex flex-col items-center space-y-10">
-          {gameMode === 'ONLINE' && qrCodeData && (
-            <div className="w-full max-w-xs text-center space-y-4">
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => setShowQrModal(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') setShowQrModal(true);
-                }}
-                className="p-4 rounded-3xl inline-block shadow-2xl bg-(--ui-card) ring-1 ring-(--ui-border) transition-transform duration-150 ease-out active:scale-95 cursor-pointer"
-              >
-                <img src={qrCodeData} alt="QR" className="w-32 h-32 rounded-lg" />
-              </div>
-              <p
-                className={`text-[8px] uppercase tracking-[0.5em] font-bold ${currentTheme.textSecondary}`}
-              >
-                {t.roomCode}
-              </p>
-              <div
-                data-testid="lobby-room-code"
-                className={`text-4xl font-serif tracking-[0.2em] ${currentTheme.textMain}`}
-              >
-                {roomCode}
-              </div>
-
-              {settings.general.customDeckCode && (
-                <div className="mt-1 mx-auto max-w-xs rounded-2xl border border-(--ui-border) bg-(--ui-surface) px-4 py-3 text-left">
-                  <p
-                    className={`text-[8px] uppercase tracking-[0.25em] font-bold mb-1 ${currentTheme.textSecondary}`}
-                  >
-                    {t.customDeckLobbyLabel}
-                  </p>
-                  <p className={`text-sm font-semibold leading-snug ${currentTheme.textMain}`}>
-                    {settings.general.customDeckName || settings.general.customDeckCode}
-                  </p>
-                  <p
-                    className={`text-[10px] font-mono mt-0.5 opacity-60 ${currentTheme.textSecondary}`}
-                  >
-                    {settings.general.customDeckCode}
-                  </p>
-                </div>
-              )}
-
-              {!isHost && (
-                <div className="flex flex-wrap justify-center gap-2 pt-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                      currentTheme.isDark
-                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
-                        : 'border-(--ui-border) text-(--ui-fg-muted)'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <Timer size={12} className={currentTheme.iconColor} />
-                      {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 0}s
-                    </span>
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                      currentTheme.isDark
-                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
-                        : 'border-(--ui-border) text-(--ui-fg-muted)'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <Trophy size={12} className={currentTheme.iconColor} />
-                      {settings.general.scoreToWin} {t.pts}
-                    </span>
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                      currentTheme.isDark
-                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
-                        : 'border-(--ui-border) text-(--ui-fg-muted)'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <Gamepad2 size={12} className={currentTheme.iconColor} />
-                      {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.CLASSIC &&
-                        (t.gameModeClassic ?? 'Classic')}
-                      {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION &&
-                        (t.gameModeTranslation ?? 'Translation')}
-                      {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.SYNONYMS &&
-                        (t.gameModeSynonyms ?? 'Synonyms')}
-                      {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ &&
-                        (t.gameModeQuiz ?? 'Quiz')}
-                      {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.HARDCORE &&
-                        (t.gameModeHardcore ?? 'Hardcore')}
-                    </span>
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                      currentTheme.isDark
-                        ? 'border-(--ui-border) text-(--ui-fg-muted)'
-                        : 'border-(--ui-border) text-(--ui-fg-muted)'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <BookOpen size={12} className={currentTheme.iconColor} />
-                      {categoriesPreview || '—'}
-                    </span>
-                  </span>
-                  {settings.general.customDeckCode && (
-                    <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wide border max-w-[220px] truncate ${'border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)'}`}
-                      title={settings.general.customDeckName || settings.general.customDeckCode}
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        <FileText size={12} className="shrink-0" />
-                        <span className="truncate">
-                          {settings.general.customDeckName || settings.general.customDeckCode}
-                        </span>
-                      </span>
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+          {gameMode === 'ONLINE' && (
+            <OnlineLobbyIntro
+              theme={currentTheme}
+              t={t}
+              roomCode={roomCode}
+              settings={settings}
+              modeLabel={modeLabel}
+              categoriesPreview={categoriesPreview}
+              qrCodeData={qrCodeData}
+              isHost={isHost}
+              onShare={() => void shareJoinLink()}
+              onShowQr={() => (qrCodeData ? setShowQrModal(true) : null)}
+              onOpenSettings={() => setGameState(GameState.SETTINGS)}
+            />
           )}
 
-          <div className="w-full max-w-sm space-y-6">
-            <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>
-              {t.players} ({players.length})
-            </h3>
-            <div className="space-y-3">
-              {players.map((p: Player) => {
-                const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
-                return (
-                  <div
-                    key={p.id}
-                    className={`flex items-center p-4 rounded-2xl border transition-opacity ${
-                      currentTheme.isDark
-                        ? 'bg-(--ui-surface) border-(--ui-border)'
-                        : 'bg-(--ui-card) border-(--ui-border)'
-                    } ${
-                      !online
-                        ? 'opacity-75 border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]'
-                        : ''
-                    }`}
-                  >
-                    {p.avatarId != null ? (
-                      <AvatarDisplay avatarId={p.avatarId} size={36} />
-                    ) : (
-                      <span className="text-2xl">{p.avatar}</span>
-                    )}
-                    <div className="ml-4 flex flex-col min-w-0 flex-1">
-                      <span className={`font-bold truncate ${currentTheme.textMain}`}>
-                        {p.name}
-                      </span>
-                      {gameMode === 'ONLINE' && !online && (
-                        <span
-                          className={`text-[9px] uppercase tracking-widest font-bold mt-0.5 ${currentTheme.textSecondary}`}
-                        >
-                          {t.playerDisconnected}
-                        </span>
-                      )}
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 shrink-0">
-                      {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
-                        <button
-                          type="button"
-                          onClick={() => setKickTarget({ id: p.id, name: p.name })}
-                          className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-colors group"
-                          title={t.kickPlayerTitle}
-                        >
-                          <X
-                            size={14}
-                            className="text-(--ui-danger) opacity-80 group-hover:opacity-100"
-                          />
-                        </button>
-                      )}
-                      {isHost && gameMode === 'OFFLINE' && !p.isHost && (
-                        <button
-                          type="button"
-                          onClick={() => removeOfflinePlayer(p.id)}
-                          className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-colors group"
-                        >
-                          <Minus
-                            size={14}
-                            className="text-(--ui-danger) opacity-80 group-hover:opacity-100"
-                          />
-                        </button>
-                      )}
-                      {gameMode === 'ONLINE' && online && (
-                        <div
-                          className="w-3.5 h-3.5 rounded-full bg-(--ui-success) shadow-[0_0_6px_color-mix(in_srgb,var(--ui-success)_60%,transparent)]"
-                          title={t.playerOnlineHint}
-                        />
-                      )}
-                      {gameMode === 'ONLINE' && !online && (
-                        <div
-                          className="w-3.5 h-3.5 rounded-full bg-(--ui-warning) shadow-[0_0_6px_color-mix(in_srgb,var(--ui-warning)_60%,transparent)] animate-pulse"
-                          title={t.playerDisconnected}
-                        />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Add Player button for offline mode */}
-            {isHost && gameMode === 'OFFLINE' && (
-              <button
-                onClick={() => {
-                  setNewPlayerName('');
-                  setNewPlayerAvatar(AVATARS[(players.length + 1) % AVATARS.length]);
-                  setShowAddPlayer(true);
-                }}
-                className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${currentTheme.isDark ? 'border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-(--ui-border)' : 'border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-(--ui-border)'}`}
-              >
-                <Plus size={18} />
-                <span className="text-[10px] uppercase tracking-widest font-bold">
-                  {t.addPlayer}
-                </span>
-              </button>
-            )}
+          <PlayersSection
+            theme={currentTheme}
+            t={t}
+            players={players}
+            gameMode={gameMode}
+            isHost={isHost}
+            myPlayerId={myPlayerId}
+            recentlyJoinedIds={recentlyJoinedIds}
+            kickMenuPlayerId={kickMenuPlayerId}
+            setKickMenuPlayerId={setKickMenuPlayerId}
+            onKick={(p) => setKickTarget(p)}
+            onRemoveOffline={(id) => removeOfflinePlayer(id)}
+            canAddOfflinePlayer={canAddOfflinePlayer}
+            onAddOfflineClick={() => {
+              if (!canAddOfflinePlayer) {
+                showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+                return;
+              }
+              setNewPlayerName('');
+              setNewPlayerAvatar(AVATARS[(players.length + 1) % AVATARS.length]);
+              setShowAddPlayer(true);
+            }}
+          />
 
             {/* Add Player Modal */}
             {showAddPlayer && (
@@ -496,6 +453,16 @@ export const LobbyScreen = () => {
                   <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
                     {t.addPlayerTitle}
                   </h2>
+                  {players.length >= MAX_PLAYERS && (
+                    <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
+                      <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
+                        Ліміт гравців досягнуто
+                      </p>
+                      <p className="text-[11px] text-(--ui-fg-muted) mt-2">
+                        Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
+                      </p>
+                    </div>
+                  )}
                   <div className="space-y-6">
                     <input
                       autoFocus
@@ -506,12 +473,17 @@ export const LobbyScreen = () => {
                       placeholder={t.namePlaceholder}
                       className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
                     />
-                    <div className="grid grid-cols-6 gap-2">
-                      {AVATARS.slice(0, 12).map((a) => (
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+                      {AVATARS.map((a) => (
                         <button
                           key={a}
+                          type="button"
                           onClick={() => setNewPlayerAvatar(a)}
-                          className={`text-2xl p-2 rounded-xl transition-all ${newPlayerAvatar === a ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg' : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'}`}
+                          className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
+                            newPlayerAvatar === a
+                              ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                              : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                          }`}
                         >
                           {a}
                         </button>
@@ -522,13 +494,17 @@ export const LobbyScreen = () => {
                       fullWidth
                       size="lg"
                       onClick={() => {
+                        if (players.length >= MAX_PLAYERS) {
+                          showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+                          return;
+                        }
                         const name = newPlayerName.trim();
                         if (name) {
                           addOfflinePlayer(name, newPlayerAvatar);
                           closeAddPlayerModal();
                         }
                       }}
-                      disabled={!newPlayerName.trim()}
+                      disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
                     >
                       {t.add}
                     </Button>
@@ -536,34 +512,107 @@ export const LobbyScreen = () => {
                 </div>
               </div>
             )}
+
+          {/* Team builder (Lobby as team setup) */}
+          <div className="w-full max-w-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className={`font-serif text-xl ${currentTheme.textMain}`}>{t.teams}</h3>
+              {isHost && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => sendAction({ action: 'TEAM_SHUFFLE_UNASSIGNED' })}
+                    className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                    disabled={players.length < 2}
+                  >
+                    {t.shuffle}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowShuffleAllConfirm(true)}
+                    className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                    disabled={players.length < 2}
+                  >
+                    Shuffle all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })}
+                    className="p-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                    aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
+                    title={teamsLocked ? 'Unlock' : 'Lock'}
+                  >
+                    {teamsLocked ? (
+                      <Lock size={16} className={`${currentTheme.iconColor} opacity-70`} />
+                    ) : (
+                      <Unlock size={16} className={`${currentTheme.iconColor} opacity-70`} />
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <UnassignedPool
+              unassigned={unassigned}
+              canHostAssignOffline={canHostAssignOffline}
+              onPick={(p) => {
+                setAssignTarget(p);
+                setShowAssignPlayer(true);
+              }}
+            />
+
+            <div className="space-y-3">
+              {teamShells.map((team) => {
+                const isMine = myTeamId === team.id;
+                const joinDisabled = !canSelfSwitch || (!!teamsLocked && !isHost);
+                return (
+                  <TeamCard
+                    key={team.id}
+                    team={team}
+                    teamCount={teamShells.length}
+                    playersTotal={players.length}
+                    t={t}
+                    theme={currentTheme}
+                    isHost={isHost}
+                    myPlayerId={myPlayerId}
+                    isMine={isMine}
+                    joinDisabled={joinDisabled}
+                    canHostAssignOffline={canHostAssignOffline}
+                    onAssignPick={(p) => {
+                      setAssignTarget(p);
+                      setShowAssignPlayer(true);
+                    }}
+                    editingTeamId={editingTeamId}
+                    teamNameDraft={teamNameDraft}
+                    setEditingTeamId={setEditingTeamId}
+                    setTeamNameDraft={setTeamNameDraft}
+                    sendAction={sendAction}
+                  />
+                );
+              })}
+            </div>
           </div>
         </main>
 
         <footer className="w-full max-w-sm mx-auto py-8">
           {isHost ? (
-            players.length <= 3 ? (
+            <div className="space-y-3">
+              {!startValidation.ok && startValidation.reason && (
+                <p className="text-center text-[10px] font-sans text-(--ui-fg-muted) opacity-80">
+                  {startValidation.reason}
+                </p>
+              )}
               <Button
                 themeClass={currentTheme.button}
                 fullWidth
                 size="xl"
-                onClick={() => sendAction({ action: 'START_DUEL' })}
-                disabled={!canCreateTeams}
-                className={canCreateTeams ? 'animate-pulse' : ''}
+                onClick={() => sendAction({ action: 'START_GAME' })}
+                disabled={!startValidation.ok}
+                className={startValidation.ok ? 'animate-pulse' : ''}
               >
                 {t.startGame}
               </Button>
-            ) : (
-              <Button
-                themeClass={currentTheme.button}
-                fullWidth
-                size="xl"
-                onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-                disabled={!canCreateTeams}
-                className={canCreateTeams ? 'animate-pulse' : ''}
-              >
-                {t.createTeams}
-              </Button>
-            )
+            </div>
           ) : (
             <div className="flex items-center justify-center gap-3 text-center text-[10px] uppercase tracking-widest opacity-60">
               <Loader2 size={16} className={`animate-spin ${currentTheme.iconColor}`} />
@@ -572,6 +621,15 @@ export const LobbyScreen = () => {
           )}
         </footer>
       </div>
+
+      <AssignPlayerSheet
+        isOpen={showAssignPlayer}
+        target={assignTarget}
+        teamShells={teamShells}
+        t={t}
+        onClose={closeAssignSheet}
+        sendAction={sendAction}
+      />
     </div>
   );
 };

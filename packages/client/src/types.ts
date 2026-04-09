@@ -111,6 +111,8 @@ export interface AppState {
   myPlayerId: string;
   players: Player[];
   teams: Team[];
+  /** Lobby/team builder: when true, players cannot self-switch teams (host can still edit). */
+  teamsLocked?: boolean;
   currentTeamIndex: number;
   wordDeck: string[];
   currentWord: string;

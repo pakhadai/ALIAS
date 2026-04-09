@@ -91,8 +91,99 @@ export class GameEngine {
     return getHandler(room.settings.mode.gameMode);
   }
 
+  private ensureTeamShells(room: Room): void {
+    const teamCount = Math.max(2, Math.min(room.settings.general.teamCount, 8));
+    const existing = room.teams ?? [];
+    if (existing.length === teamCount) return;
+    const names = ['Rockets', 'Ninjas', 'Cyberpunks', 'Champions', 'Kittens', 'Thunders', 'Stars', 'Titans'];
+    room.teams = Array.from({ length: teamCount }, (_, i) => {
+      const prev = existing[i];
+      return {
+        id: prev?.id ?? `team-${i}`,
+        name: prev?.name ?? names[i % names.length] ?? `Team ${i + 1}`,
+        score: prev?.score ?? 0,
+        color: prev?.color ?? TEAM_COLORS[i % TEAM_COLORS.length].class,
+        colorHex: prev?.colorHex ?? TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        players: prev?.players ?? [],
+        nextPlayerIndex: prev?.nextPlayerIndex ?? 0,
+      };
+    });
+  }
+
+  private removePlayerFromTeams(room: Room, playerId: string): void {
+    room.teams = (room.teams ?? []).map((t) => {
+      const filtered = t.players.filter((p) => p.id !== playerId);
+      return {
+        ...t,
+        players: filtered,
+        nextPlayerIndex: t.nextPlayerIndex >= filtered.length ? 0 : t.nextPlayerIndex,
+      };
+    });
+  }
+
   async handleAction(room: Room, payload: GameActionPayload, senderId?: string): Promise<void> {
     switch (payload.action) {
+      case 'TEAM_LOCK': {
+        room.teamsLocked = Boolean(payload.data.locked);
+        break;
+      }
+      case 'TEAM_RENAME': {
+        this.ensureTeamShells(room);
+        const { teamId, name } = payload.data;
+        room.teams = room.teams.map((t) => (t.id === teamId ? { ...t, name } : t));
+        break;
+      }
+      case 'TEAM_LEAVE': {
+        if (!senderId) break;
+        this.ensureTeamShells(room);
+        const targetId =
+          payload.data && 'playerId' in payload.data && payload.data.playerId
+            ? payload.data.playerId
+            : senderId;
+        this.removePlayerFromTeams(room, targetId);
+        break;
+      }
+      case 'TEAM_JOIN': {
+        if (!senderId) break;
+        this.ensureTeamShells(room);
+        const targetId =
+          payload.data && 'playerId' in payload.data && payload.data.playerId
+            ? payload.data.playerId
+            : senderId;
+        const me = room.players.find((p) => p.id === targetId);
+        if (!me) break;
+        const { teamId } = payload.data;
+        this.removePlayerFromTeams(room, me.id);
+        room.teams = room.teams.map((t) => (t.id === teamId ? { ...t, players: [...t.players, me] } : t));
+        break;
+      }
+      case 'TEAM_SHUFFLE_UNASSIGNED': {
+        this.ensureTeamShells(room);
+        const assigned = new Set<string>();
+        room.teams.forEach((t) => t.players.forEach((p) => assigned.add(p.id)));
+        const unassigned = room.players.filter((p) => !assigned.has(p.id));
+        const shuffled = this.shuffleArray(unassigned);
+        shuffled.forEach((p) => {
+          const smallestIdx = room.teams
+            .map((t, i) => ({ i, n: t.players.length }))
+            .sort((a, b) => a.n - b.n)[0]?.i;
+          if (smallestIdx == null) return;
+          const target = room.teams[smallestIdx];
+          room.teams[smallestIdx] = { ...target, players: [...target.players, p] };
+        });
+        break;
+      }
+      case 'TEAM_SHUFFLE_ALL': {
+        this.ensureTeamShells(room);
+        const shuffled = this.shuffleArray([...room.players]);
+        room.teams = room.teams.map((t) => ({ ...t, players: [], nextPlayerIndex: 0 }));
+        shuffled.forEach((p, i) => {
+          const idx = i % room.teams.length;
+          const target = room.teams[idx];
+          room.teams[idx] = { ...target, players: [...target.players, p] };
+        });
+        break;
+      }
       case 'CORRECT':
       case 'SKIP':
       case 'GUESS_OPTION': {
@@ -216,11 +307,13 @@ export class GameEngine {
       }
 
       case 'START_GAME': {
+        this.ensureTeamShells(room);
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
         room.roundsPlayed = 0;
         room.timeUp = false;
         room.isPaused = false;
+        room.teamsLocked = true;
         room.revealedPlayerIds = [];
         room.imposterPhase = undefined;
         room.imposterPlayerId = undefined;
@@ -354,6 +447,7 @@ export class GameEngine {
         await this.persistAbandonSession(room);
         room.gameState = GameState.LOBBY;
         room.teams = [];
+        room.teamsLocked = false;
         room.currentTeamIndex = 0;
         room.currentWord = '';
         room.currentTask = null;

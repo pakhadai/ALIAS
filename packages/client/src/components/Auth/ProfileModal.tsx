@@ -41,12 +41,22 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [visible, setVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
 
   /* ── Mount animation ── */
   useEffect(() => {
     const raf = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  useEffect(() => {
+    if (showLogoutConfirm) {
+      const raf = requestAnimationFrame(() => setLogoutConfirmVisible(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    setLogoutConfirmVisible(false);
+  }, [showLogoutConfirm]);
 
   /* ── Load store (profile comes from context) ── */
   useEffect(() => {
@@ -64,6 +74,11 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     setLoggingOut(true);
     await logout();
     handleClose();
+  };
+
+  const closeLogoutConfirm = () => {
+    setLogoutConfirmVisible(false);
+    setTimeout(() => setShowLogoutConfirm(false), 280);
   };
 
   const locale = useMemo(() => {
@@ -260,7 +275,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
         <div className="h-px bg-(--ui-border)" />
 
         {/* Purchases / benefits */}
-        <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
+        <div className="relative overflow-y-auto" style={{ maxHeight: '40vh' }}>
           <div className="px-6 pt-5 pb-2">
             <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
               {purchases.length > 0 ? t.profilePurchasesTitle : t.profileBenefitsTitle}
@@ -287,25 +302,50 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               ))}
             </div>
           ) : (
-            <div className="px-6 pb-2">
-              {benefits.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 py-3 border-b border-(--ui-border) last:border-0"
-                >
-                  <span className="text-[20px] leading-none w-7 text-center shrink-0">
-                    {item.emoji}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-sans font-medium text-(--ui-fg)">{item.label}</p>
-                    <p className="text-[11px] font-sans mt-0.5 leading-snug text-(--ui-fg-muted)">
+            <div className="px-6 pb-4">
+              <div className="grid grid-cols-2 gap-3">
+                {benefits.slice(0, 4).map((item, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-[18px] leading-none">{item.emoji}</span>
+                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                        {item.label}
+                      </p>
+                    </div>
+                    <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
                       {item.sub}
                     </p>
                   </div>
+                ))}
+              </div>
+              {benefits.length > 4 && (
+                <div className="mt-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[18px] leading-none">{benefits[4]?.emoji}</span>
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                      {benefits[4]?.label}
+                    </p>
+                  </div>
+                  <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
+                    {benefits[4]?.sub}
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           )}
+
+          {/* Scroll hint mask (fade-out) */}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-10"
+            style={{
+              background:
+                'linear-gradient(to bottom, transparent 0%, color-mix(in_srgb, var(--ui-bg) 92%, transparent) 85%, var(--ui-bg) 100%)',
+            }}
+            aria-hidden
+          />
         </div>
 
         {/* Divider */}
@@ -317,7 +357,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
         >
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             disabled={loggingOut}
             className="w-full text-center text-(--ui-danger) font-sans font-bold
               text-[10px] tracking-[0.3em] uppercase py-3
@@ -327,6 +367,68 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           </button>
         </div>
       </div>
+
+      {showLogoutConfirm && (
+        <div
+          className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-60')}
+          onClick={closeLogoutConfirm}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="profile-logout-confirm-title"
+        >
+          <div
+            className={bottomSheetPanelClass(logoutConfirmVisible, 'px-5 pt-5 pb-8 max-w-sm')}
+            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center pb-3">
+              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+            </div>
+
+            <div className="flex justify-between items-start mb-4">
+              <p
+                id="profile-logout-confirm-title"
+                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+              >
+                Ви впевнені, що хочете вийти?
+              </p>
+              <button
+                type="button"
+                onClick={closeLogoutConfirm}
+                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                aria-label={t.close}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={closeLogoutConfirm}
+                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                disabled={loggingOut}
+                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
+              >
+                {loggingOut ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Вихід...
+                  </span>
+                ) : (
+                  'Вийти'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -78,6 +78,8 @@ export interface GameSyncState {
   imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';
   imposterPlayerId?: string;
   revealedPlayerIds?: string[];
+  /** Lobby/team builder: when true, players cannot self-switch teams (host can still shuffle/rename). */
+  teamsLocked?: boolean;
 }
 
 // Inter-server events (for scaling)
