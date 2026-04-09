@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  X,
-  Settings as SettingsIcon,
-  Loader2,
-  Lock,
-  Unlock,
-} from 'lucide-react';
+import { X, Settings as SettingsIcon, Loader2, Lock, Unlock } from 'lucide-react';
 import { Button } from '../../components/Button';
 import {
   ConfirmationModal,
@@ -219,7 +213,10 @@ export const LobbyScreen = () => {
     teamShells.forEach((t) => t.players.forEach((p) => s.add(p.id)));
     return s;
   }, [teamShells]);
-  const unassigned = useMemo(() => players.filter((p) => !assignedPlayerIds.has(p.id)), [players, assignedPlayerIds]);
+  const unassigned = useMemo(
+    () => players.filter((p) => !assignedPlayerIds.has(p.id)),
+    [players, assignedPlayerIds]
+  );
 
   const myTeamId = useMemo(() => {
     if (!myPlayerId) return null;
@@ -236,7 +233,8 @@ export const LobbyScreen = () => {
     if (!isHost) return { ok: false, reason: '' };
     if (players.length < 2) return { ok: false, reason: 'Потрібно мінімум 2 гравці' };
     if (unassigned.length > 0) return { ok: false, reason: 'Розподіліть усіх гравців по командах' };
-    if (teamShells.some((t) => t.players.length === 0)) return { ok: false, reason: 'У кожній команді має бути гравець' };
+    if (teamShells.some((t) => t.players.length === 0))
+      return { ok: false, reason: 'У кожній команді має бути гравець' };
     return { ok: true, reason: '' };
   }, [isHost, players.length, teamShells, unassigned.length]);
 
@@ -427,91 +425,91 @@ export const LobbyScreen = () => {
             }}
           />
 
-            {/* Add Player Modal */}
-            {showAddPlayer && (
+          {/* Add Player Modal */}
+          {showAddPlayer && (
+            <div
+              className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
+              onClick={closeAddPlayerModal}
+              role="presentation"
+            >
               <div
-                className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
-                onClick={closeAddPlayerModal}
-                role="presentation"
+                className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10')}`}
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
               >
-                <div
-                  className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10')}`}
-                  onClick={(e) => e.stopPropagation()}
-                  role="dialog"
-                  aria-modal="true"
+                <button
+                  type="button"
+                  onClick={closeAddPlayerModal}
+                  className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
                 >
-                  <button
-                    type="button"
-                    onClick={closeAddPlayerModal}
-                    className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
-                  >
-                    <X size={24} className={currentTheme.iconColor} />
-                  </button>
-                  <div className="flex justify-center mb-4">
-                    <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                  <X size={24} className={currentTheme.iconColor} />
+                </button>
+                <div className="flex justify-center mb-4">
+                  <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                </div>
+                <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
+                  {t.addPlayerTitle}
+                </h2>
+                {players.length >= MAX_PLAYERS && (
+                  <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
+                    <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
+                      Ліміт гравців досягнуто
+                    </p>
+                    <p className="text-[11px] text-(--ui-fg-muted) mt-2">
+                      Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
+                    </p>
                   </div>
-                  <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
-                    {t.addPlayerTitle}
-                  </h2>
-                  {players.length >= MAX_PLAYERS && (
-                    <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
-                      <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
-                        Ліміт гравців досягнуто
-                      </p>
-                      <p className="text-[11px] text-(--ui-fg-muted) mt-2">
-                        Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
-                      </p>
-                    </div>
-                  )}
-                  <div className="space-y-6">
-                    <input
-                      autoFocus
-                      value={newPlayerName}
-                      onChange={(e) =>
-                        setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
+                )}
+                <div className="space-y-6">
+                  <input
+                    autoFocus
+                    value={newPlayerName}
+                    onChange={(e) =>
+                      setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
+                    }
+                    placeholder={t.namePlaceholder}
+                    className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
+                  />
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+                    {AVATARS.map((a) => (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => setNewPlayerAvatar(a)}
+                        className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
+                          newPlayerAvatar === a
+                            ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                            : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    themeClass={currentTheme.button}
+                    fullWidth
+                    size="lg"
+                    onClick={() => {
+                      if (players.length >= MAX_PLAYERS) {
+                        showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+                        return;
                       }
-                      placeholder={t.namePlaceholder}
-                      className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
-                    />
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
-                      {AVATARS.map((a) => (
-                        <button
-                          key={a}
-                          type="button"
-                          onClick={() => setNewPlayerAvatar(a)}
-                          className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
-                            newPlayerAvatar === a
-                              ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                              : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
-                          }`}
-                        >
-                          {a}
-                        </button>
-                      ))}
-                    </div>
-                    <Button
-                      themeClass={currentTheme.button}
-                      fullWidth
-                      size="lg"
-                      onClick={() => {
-                        if (players.length >= MAX_PLAYERS) {
-                          showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
-                          return;
-                        }
-                        const name = newPlayerName.trim();
-                        if (name) {
-                          addOfflinePlayer(name, newPlayerAvatar);
-                          closeAddPlayerModal();
-                        }
-                      }}
-                      disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
-                    >
-                      {t.add}
-                    </Button>
-                  </div>
+                      const name = newPlayerName.trim();
+                      if (name) {
+                        addOfflinePlayer(name, newPlayerAvatar);
+                        closeAddPlayerModal();
+                      }
+                    }}
+                    disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
+                  >
+                    {t.add}
+                  </Button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
           {/* Team builder (Lobby as team setup) */}
           <div className="w-full max-w-sm space-y-4">
@@ -537,7 +535,9 @@ export const LobbyScreen = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })}
+                    onClick={() =>
+                      sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
+                    }
                     className="p-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
                     aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
                     title={teamsLocked ? 'Unlock' : 'Lock'}

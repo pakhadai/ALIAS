@@ -146,7 +146,9 @@ export const ProfileScreen = () => {
                 </p>
               </div>
             </div>
-            <p className={`mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-40 ${currentTheme.textMain}`}>
+            <p
+              className={`mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-40 ${currentTheme.textMain}`}
+            >
               Натисніть для деталей
             </p>
           </button>
@@ -165,7 +167,11 @@ export const ProfileScreen = () => {
               </button>
 
               <button
-                onClick={() => (hasCustomPacks ? setGameState(GameState.MY_WORD_PACKS) : setGameState(GameState.STORE))}
+                onClick={() =>
+                  hasCustomPacks
+                    ? setGameState(GameState.MY_WORD_PACKS)
+                    : setGameState(GameState.STORE)
+                }
                 className={navBtn}
               >
                 <div className="flex items-center gap-3">
@@ -191,7 +197,10 @@ export const ProfileScreen = () => {
                 {hasCustomPacks ? (
                   <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
                 ) : (
-                  <Lock size={14} className="text-[color-mix(in_srgb,var(--ui-accent)_85%,#ffffff_15%)]" />
+                  <Lock
+                    size={14}
+                    className="text-[color-mix(in_srgb,var(--ui-accent)_85%,#ffffff_15%)]"
+                  />
                 )}
               </button>
             </div>

@@ -37,7 +37,10 @@ export function OnlineLobbyIntro(props: {
       <p className={`text-[8px] uppercase tracking-[0.5em] font-bold ${theme.textSecondary}`}>
         {t.roomCode}
       </p>
-      <div data-testid="lobby-room-code" className={`text-4xl font-serif tracking-[0.2em] ${theme.textMain}`}>
+      <div
+        data-testid="lobby-room-code"
+        className={`text-4xl font-serif tracking-[0.2em] ${theme.textMain}`}
+      >
         {roomCode}
       </div>
 
@@ -123,4 +126,3 @@ export function OnlineLobbyIntro(props: {
     </div>
   );
 }
-

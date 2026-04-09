@@ -141,7 +141,11 @@ export const LobbySettingsScreen = () => {
                     min="180"
                     max="600"
                     step="60"
-                    value={'imposterDiscussionTime' in local.mode ? local.mode.imposterDiscussionTime : 180}
+                    value={
+                      'imposterDiscussionTime' in local.mode
+                        ? local.mode.imposterDiscussionTime
+                        : 180
+                    }
                     onChange={(e) =>
                       setMode({ imposterDiscussionTime: parseInt(e.target.value) } as Partial<
                         typeof gameSettings.mode

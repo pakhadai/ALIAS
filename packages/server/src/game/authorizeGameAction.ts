@@ -74,7 +74,11 @@ export function authorizeGameAction(
   }
 
   // Team builder: if locked, non-hosts cannot join/leave.
-  if ((payload.action === 'TEAM_JOIN' || payload.action === 'TEAM_LEAVE') && room.teamsLocked && !isHost) {
+  if (
+    (payload.action === 'TEAM_JOIN' || payload.action === 'TEAM_LEAVE') &&
+    room.teamsLocked &&
+    !isHost
+  ) {
     return { ok: false, error: roomError('INVALID_ACTION', 'Teams are locked') };
   }
 

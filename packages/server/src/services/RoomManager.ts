@@ -185,7 +185,16 @@ export class RoomManager {
     const code = await this.generateRoomCode();
     const hostPlayerId = uuidv4();
     const teamCount = defaultSettings.general.teamCount;
-    const teamNames = ['Rockets', 'Ninjas', 'Cyberpunks', 'Champions', 'Kittens', 'Thunders', 'Stars', 'Titans'];
+    const teamNames = [
+      'Rockets',
+      'Ninjas',
+      'Cyberpunks',
+      'Champions',
+      'Kittens',
+      'Thunders',
+      'Stars',
+      'Titans',
+    ];
     const room: Room = {
       code,
       hostSocketId,

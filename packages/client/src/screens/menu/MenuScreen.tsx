@@ -1,5 +1,14 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize, X, ArrowRight } from 'lucide-react';
+import {
+  AlertCircle,
+  User,
+  Settings,
+  BookOpen,
+  WifiOff,
+  Maximize,
+  X,
+  ArrowRight,
+} from 'lucide-react';
 import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
 import { ProfileModal } from '../../components/Auth/ProfileModal';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
@@ -215,7 +224,11 @@ export const MenuScreen = () => {
               data-testid="menu-offline"
               className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] w-full"
             >
-              <WifiOff size={16} className={`${currentTheme.iconColor} opacity-70`} strokeWidth={2} />
+              <WifiOff
+                size={16}
+                className={`${currentTheme.iconColor} opacity-70`}
+                strokeWidth={2}
+              />
               <span
                 className={`font-sans font-bold text-[10px] uppercase tracking-[0.35em] opacity-80 ${currentTheme.textMain}`}
               >

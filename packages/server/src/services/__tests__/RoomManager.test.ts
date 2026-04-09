@@ -34,7 +34,9 @@ describe('createRoom', () => {
     expect(room.hostSocketId).toBe('socket-1');
     expect(room.gameState).toBe(GameState.LOBBY);
     expect(room.players).toHaveLength(0);
-    expect(room.teams).toHaveLength(0);
+    // Lobby team builder: initialize empty team shells (default teamCount=2)
+    expect(room.teams).toHaveLength(2);
+    expect(room.teams.every((t) => Array.isArray(t.players) && t.players.length === 0)).toBe(true);
     expect(room.settings).toBeDefined();
     expect('classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0).toBe(
       60
@@ -163,6 +165,8 @@ describe('removePlayer', () => {
         nextPlayerIndex: 0,
       },
     ];
+    // Empty teams are dropped only during active gameplay states (not in lobby).
+    room.gameState = GameState.PLAYING;
     rm.removePlayer(room.code, 's1');
     // Team becomes empty → filtered out entirely to prevent game-over hang
     expect(room.teams).toHaveLength(0);

@@ -193,8 +193,7 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
       const d = obj.data as Record<string, unknown>;
       const teamIdRes = z.string().min(1).max(32).safeParse(d.teamId);
       if (!teamIdRes.success) return null;
-      const playerIdRes =
-        d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
+      const playerIdRes = d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
       if (playerIdRes && !playerIdRes.success) return null;
       return {
         action,
@@ -209,8 +208,7 @@ export function validateGameAction(raw: unknown): GameActionPayload | null {
       if (obj.data === undefined) return { action };
       if (!obj.data || typeof obj.data !== 'object') return null;
       const d = obj.data as Record<string, unknown>;
-      const playerIdRes =
-        d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
+      const playerIdRes = d.playerId === undefined ? null : z.string().uuid().safeParse(d.playerId);
       if (playerIdRes && !playerIdRes.success) return null;
       return playerIdRes && playerIdRes.success
         ? { action, data: { playerId: playerIdRes.data } }

@@ -114,4 +114,3 @@ export function AssignPlayerSheet(props: {
     </div>
   );
 }
-

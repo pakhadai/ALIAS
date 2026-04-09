@@ -54,15 +54,25 @@ export function PlayersSection(props: {
             <div
               key={p.id}
               className={`flex items-center p-4 rounded-2xl border transition-opacity ${
-                theme.isDark ? 'bg-(--ui-surface) border-(--ui-border)' : 'bg-(--ui-card) border-(--ui-border)'
+                theme.isDark
+                  ? 'bg-(--ui-surface) border-(--ui-border)'
+                  : 'bg-(--ui-card) border-(--ui-border)'
               } ${
-                !online ? 'opacity-75 border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]' : ''
+                !online
+                  ? 'opacity-75 border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]'
+                  : ''
               } ${justJoined ? 'animate-fade-in' : ''}`}
             >
-              {p.avatarId != null ? <AvatarDisplay avatarId={p.avatarId} size={36} /> : <span className="text-2xl">{p.avatar}</span>}
+              {p.avatarId != null ? (
+                <AvatarDisplay avatarId={p.avatarId} size={36} />
+              ) : (
+                <span className="text-2xl">{p.avatar}</span>
+              )}
 
               <div className="ml-4 flex flex-col min-w-0 flex-1">
-                <span className={`font-bold truncate ${theme.textMain} inline-flex items-center gap-2`}>
+                <span
+                  className={`font-bold truncate ${theme.textMain} inline-flex items-center gap-2`}
+                >
                   {p.name}
                   {p.isHost && (
                     <Crown
@@ -74,7 +84,9 @@ export function PlayersSection(props: {
                 </span>
 
                 {gameMode === 'ONLINE' && !online && (
-                  <span className={`text-[9px] uppercase tracking-widest font-bold mt-0.5 ${theme.textSecondary}`}>
+                  <span
+                    className={`text-[9px] uppercase tracking-widest font-bold mt-0.5 ${theme.textSecondary}`}
+                  >
                     {t.playerDisconnected}
                   </span>
                 )}
@@ -94,7 +106,10 @@ export function PlayersSection(props: {
                         title={t.kickPlayerTitle}
                         aria-label={t.kickPlayerTitle ?? 'Kick player'}
                       >
-                        <X size={14} className="text-(--ui-danger) opacity-90 group-hover:opacity-100" />
+                        <X
+                          size={14}
+                          className="text-(--ui-danger) opacity-90 group-hover:opacity-100"
+                        />
                       </button>
                     ) : (
                       <button
@@ -117,7 +132,10 @@ export function PlayersSection(props: {
                     className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-colors group"
                     aria-label={t.removePlayer ?? 'Remove player'}
                   >
-                    <Minus size={14} className="text-(--ui-danger) opacity-80 group-hover:opacity-100" />
+                    <Minus
+                      size={14}
+                      className="text-(--ui-danger) opacity-80 group-hover:opacity-100"
+                    />
                   </button>
                 )}
 
@@ -162,4 +180,3 @@ export function PlayersSection(props: {
     </div>
   );
 }
-

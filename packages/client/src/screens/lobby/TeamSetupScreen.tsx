@@ -19,7 +19,10 @@ export const TeamSetupScreen = () => {
   const canEdit = isHost && gameMode === 'OFFLINE';
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [teamNameDraft, setTeamNameDraft] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState<{ playerId: string; fromTeamId: string } | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<{
+    playerId: string;
+    fromTeamId: string;
+  } | null>(null);
 
   const teamIndexById = useMemo(() => {
     const m = new Map<string, number>();
@@ -54,7 +57,8 @@ export const TeamSetupScreen = () => {
     if (!p) return;
 
     const next = teams.map((tm) => {
-      if (tm.id === fromTeam.id) return { ...tm, players: tm.players.filter((pp) => pp.id !== p.id) };
+      if (tm.id === fromTeam.id)
+        return { ...tm, players: tm.players.filter((pp) => pp.id !== p.id) };
       if (tm.id === toTeam.id) return { ...tm, players: [...tm.players, p] };
       return tm;
     });
@@ -108,7 +112,9 @@ export const TeamSetupScreen = () => {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <h3 className={`font-serif text-xl ${currentTheme.textMain} truncate`}>{team.name}</h3>
+                  <h3 className={`font-serif text-xl ${currentTheme.textMain} truncate`}>
+                    {team.name}
+                  </h3>
                   {canEdit && (
                     <button
                       type="button"
@@ -201,7 +207,9 @@ export const TeamSetupScreen = () => {
 
       <footer className="py-8 space-y-4">
         {canEdit && (
-          <p className={`text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 ${currentTheme.textMain}`}>
+          <p
+            className={`text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 ${currentTheme.textMain}`}
+          >
             Торкніться гравця, потім “Перемістити сюди”
           </p>
         )}

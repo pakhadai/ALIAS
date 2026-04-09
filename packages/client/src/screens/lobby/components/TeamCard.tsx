@@ -48,7 +48,9 @@ export function TeamCard(props: {
   return (
     <div
       className={`rounded-3xl border bg-(--ui-surface) p-4 ${
-        overfilled ? 'border-[color-mix(in_srgb,var(--ui-warning)_40%,var(--ui-border))]' : 'border-(--ui-border)'
+        overfilled
+          ? 'border-[color-mix(in_srgb,var(--ui-warning)_40%,var(--ui-border))]'
+          : 'border-(--ui-border)'
       }`}
       style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
     >
@@ -106,7 +108,9 @@ export function TeamCard(props: {
 
       <div className="flex flex-wrap gap-2 mt-3">
         {team.players.length === 0 ? (
-          <span className="text-[10px] italic text-(--ui-fg-muted) opacity-70">{t.noPlayersInTeam}</span>
+          <span className="text-[10px] italic text-(--ui-fg-muted) opacity-70">
+            {t.noPlayersInTeam}
+          </span>
         ) : (
           team.players.map((p) => (
             <button
@@ -120,7 +124,11 @@ export function TeamCard(props: {
                 p.id === myPlayerId ? 'ring-2 ring-(--ui-accent-ring)' : ''
               } ${canHostAssignOffline ? 'hover:bg-(--ui-surface-hover)' : ''}`}
             >
-              {p.avatarId != null ? <AvatarDisplay avatarId={p.avatarId} size={18} /> : <span>{p.avatar}</span>}
+              {p.avatarId != null ? (
+                <AvatarDisplay avatarId={p.avatarId} size={18} />
+              ) : (
+                <span>{p.avatar}</span>
+              )}
               <span className="max-w-[140px] truncate">{p.name}</span>
             </button>
           ))
@@ -161,4 +169,3 @@ export function TeamCard(props: {
     </div>
   );
 }
-

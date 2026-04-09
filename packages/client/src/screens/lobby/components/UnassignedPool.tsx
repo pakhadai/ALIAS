@@ -31,7 +31,11 @@ export function UnassignedPool(props: {
               }`}
               aria-label={`Assign ${p.name}`}
             >
-              {p.avatarId != null ? <AvatarDisplay avatarId={p.avatarId} size={18} /> : <span>{p.avatar}</span>}
+              {p.avatarId != null ? (
+                <AvatarDisplay avatarId={p.avatarId} size={18} />
+              ) : (
+                <span>{p.avatar}</span>
+              )}
               <span className="max-w-[140px] truncate">{p.name}</span>
             </button>
           ))
@@ -40,4 +44,3 @@ export function UnassignedPool(props: {
     </div>
   );
 }
-

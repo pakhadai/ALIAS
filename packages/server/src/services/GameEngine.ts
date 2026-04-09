@@ -95,7 +95,16 @@ export class GameEngine {
     const teamCount = Math.max(2, Math.min(room.settings.general.teamCount, 8));
     const existing = room.teams ?? [];
     if (existing.length === teamCount) return;
-    const names = ['Rockets', 'Ninjas', 'Cyberpunks', 'Champions', 'Kittens', 'Thunders', 'Stars', 'Titans'];
+    const names = [
+      'Rockets',
+      'Ninjas',
+      'Cyberpunks',
+      'Champions',
+      'Kittens',
+      'Thunders',
+      'Stars',
+      'Titans',
+    ];
     room.teams = Array.from({ length: teamCount }, (_, i) => {
       const prev = existing[i];
       return {
@@ -154,7 +163,9 @@ export class GameEngine {
         if (!me) break;
         const { teamId } = payload.data;
         this.removePlayerFromTeams(room, me.id);
-        room.teams = room.teams.map((t) => (t.id === teamId ? { ...t, players: [...t.players, me] } : t));
+        room.teams = room.teams.map((t) =>
+          t.id === teamId ? { ...t, players: [...t.players, me] } : t
+        );
         break;
       }
       case 'TEAM_SHUFFLE_UNASSIGNED': {
