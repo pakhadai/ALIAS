@@ -333,11 +333,136 @@ describe('validateGameAction', () => {
       ).toBeNull();
     });
 
+    it('accepts teamMode TEAMS and SOLO', () => {
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamMode: 'TEAMS' } } })
+      ).not.toBeNull();
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamMode: 'SOLO' } } })
+      ).not.toBeNull();
+    });
+
+    it('rejects invalid teamMode string', () => {
+      expect(
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamMode: 'FFA' } } })
+      ).toBeNull();
+    });
+
     it('rejects non-integer roundTime', () => {
       expect(
         validateGameAction({
           action: 'UPDATE_SETTINGS',
           data: { mode: { classicRoundTime: 60.5 } },
+        })
+      ).toBeNull();
+    });
+  });
+
+  describe('TEAM_JOIN', () => {
+    it('accepts teamId without playerId', () => {
+      const r = validateGameAction({ action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+      expect(r?.action).toBe('TEAM_JOIN');
+      if (r?.action === 'TEAM_JOIN') {
+        expect(r.data.teamId).toBe('team-0');
+        expect('playerId' in r.data).toBe(false);
+      }
+    });
+
+    it('accepts teamId with playerId uuid', () => {
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const r = validateGameAction({
+        action: 'TEAM_JOIN',
+        data: { teamId: 'team-1', playerId: uuid },
+      });
+      expect(r?.action).toBe('TEAM_JOIN');
+      if (r?.action === 'TEAM_JOIN' && 'playerId' in r.data) {
+        expect(r.data.playerId).toBe(uuid);
+      }
+    });
+
+    it('rejects invalid data', () => {
+      expect(validateGameAction({ action: 'TEAM_JOIN' })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_JOIN', data: {} })).toBeNull();
+      expect(
+        validateGameAction({
+          action: 'TEAM_JOIN',
+          data: { teamId: 'ok', playerId: 'not-a-uuid' },
+        })
+      ).toBeNull();
+    });
+  });
+
+  describe('TEAM_LEAVE', () => {
+    it('accepts no data', () => {
+      expect(validateGameAction({ action: 'TEAM_LEAVE' })?.action).toBe('TEAM_LEAVE');
+    });
+
+    it('accepts empty object or playerId uuid', () => {
+      expect(validateGameAction({ action: 'TEAM_LEAVE', data: {} })?.action).toBe('TEAM_LEAVE');
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const r = validateGameAction({ action: 'TEAM_LEAVE', data: { playerId: uuid } });
+      expect(r?.action).toBe('TEAM_LEAVE');
+      if (r?.action === 'TEAM_LEAVE' && r.data && 'playerId' in r.data) {
+        expect(r.data.playerId).toBe(uuid);
+      }
+    });
+
+    it('rejects invalid data', () => {
+      expect(validateGameAction({ action: 'TEAM_LEAVE', data: null })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_LEAVE', data: 'x' })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_LEAVE', data: { playerId: 'bad' } })).toBeNull();
+    });
+  });
+
+  describe('TEAM_LOCK', () => {
+    it('accepts locked true/false', () => {
+      const t = validateGameAction({ action: 'TEAM_LOCK', data: { locked: true } });
+      expect(t?.action).toBe('TEAM_LOCK');
+      if (t?.action === 'TEAM_LOCK') expect(t.data.locked).toBe(true);
+      const f = validateGameAction({ action: 'TEAM_LOCK', data: { locked: false } });
+      expect(f?.action).toBe('TEAM_LOCK');
+      if (f?.action === 'TEAM_LOCK') expect(f.data.locked).toBe(false);
+    });
+
+    it('rejects missing or invalid data', () => {
+      expect(validateGameAction({ action: 'TEAM_LOCK' })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_LOCK', data: null })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_LOCK', data: { locked: 'yes' } })).toBeNull();
+      expect(validateGameAction({ action: 'TEAM_LOCK', data: {} })).toBeNull();
+    });
+  });
+
+  describe('TEAM_RENAME', () => {
+    it('accepts teamId and name', () => {
+      const r = validateGameAction({
+        action: 'TEAM_RENAME',
+        data: { teamId: 'team-0', name: 'Rockets' },
+      });
+      expect(r?.action).toBe('TEAM_RENAME');
+      if (r?.action === 'TEAM_RENAME') {
+        expect(r.data.teamId).toBe('team-0');
+        expect(r.data.name).toBe('Rockets');
+      }
+    });
+
+    it('rejects invalid payload', () => {
+      expect(validateGameAction({ action: 'TEAM_RENAME' })).toBeNull();
+      expect(
+        validateGameAction({ action: 'TEAM_RENAME', data: { teamId: '', name: 'A' } })
+      ).toBeNull();
+      expect(
+        validateGameAction({ action: 'TEAM_RENAME', data: { teamId: 'team-0', name: '' } })
+      ).toBeNull();
+      expect(
+        validateGameAction({
+          action: 'TEAM_RENAME',
+          data: { teamId: 'team-0', name: 'x'.repeat(18) },
+        })
+      ).not.toBeNull();
+      expect(
+        validateGameAction({
+          action: 'TEAM_RENAME',
+          data: { teamId: 'team-0', name: 'x'.repeat(19) },
         })
       ).toBeNull();
     });

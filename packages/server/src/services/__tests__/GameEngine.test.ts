@@ -24,6 +24,7 @@ const defaultSettings: GameSettings = {
     categories: [Category.GENERAL],
     soundEnabled: true,
     soundPreset: SoundPreset.FUN,
+    teamMode: 'TEAMS',
     teamCount: 2,
     theme: AppTheme.PREMIUM_DARK,
   },
@@ -146,6 +147,74 @@ describe('START_GAME', () => {
     expect(room.gameState).toBe(GameState.PRE_ROUND);
     expect(room.currentTeamIndex).toBe(0);
     expect(room.roundsPlayed).toBe(0);
+  });
+
+  it('SOLO mode builds one team per player with player name as team name', async () => {
+    const p1 = makePlayer({ id: 'p1', name: 'Alice' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, teamMode: 'SOLO' },
+      },
+    });
+    await engine.handleAction(room, { action: 'START_GAME' });
+    expect(room.teams).toHaveLength(2);
+    expect(room.teams[0].name).toBe('Alice');
+    expect(room.teams[1].name).toBe('Bob');
+    expect(room.teams[0].players).toEqual([p1]);
+    expect(room.teams[1].players).toEqual([p2]);
+    expect(room.gameState).toBe(GameState.PRE_ROUND);
+    expect(room.teamsLocked).toBe(true);
+  });
+
+  it('IMPOSTER mode seeds reveal phase and secret word from WordService', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'SecretWord',
+      deck: ['Other'],
+      usedWords: ['Used'],
+      deckReshuffled: false,
+    });
+    const p1 = makePlayer({ id: 'p1', name: 'Ann' });
+    const p2 = makePlayer({ id: 'p2', name: 'Ben' });
+    const room = makeRoom({
+      players: [p1, p2],
+      settings: {
+        general: defaultSettings.general,
+        mode: { gameMode: GameMode.IMPOSTER, imposterDiscussionTime: 120 },
+      },
+    });
+    await engine.handleAction(room, { action: 'START_GAME' });
+    expect(room.imposterPhase).toBe('REVEAL');
+    expect(room.imposterWord).toBe('SecretWord');
+    expect([p1.id, p2.id]).toContain(room.imposterPlayerId);
+    expect(room.currentWord).toBe('');
+    expect(room.currentTask).toBeNull();
+    expect(room.wordDeck).toEqual(['Other']);
+    expect(room.usedWords).toEqual(['Used']);
+  });
+});
+
+describe('TEAM_RENAME + SOLO ensureTeamShells', () => {
+  it('creates team shells from player count when teamMode is SOLO', async () => {
+    const players = [makePlayer({ id: 'a', name: 'Ann' }), makePlayer({ id: 'b', name: 'Ben' })];
+    const room = makeRoom({
+      players,
+      teams: [],
+      settings: {
+        ...defaultSettings,
+        general: { ...defaultSettings.general, teamMode: 'SOLO' },
+      },
+    });
+    await engine.handleAction(
+      room,
+      { action: 'TEAM_RENAME', data: { teamId: 'team-0', name: 'RenamedA' } },
+      'socket-1'
+    );
+    expect(room.teams).toHaveLength(2);
+    expect(room.teams[0].name).toBe('RenamedA');
+    expect(room.teams[1].name).toBe('Ninjas');
   });
 });
 

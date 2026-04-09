@@ -38,6 +38,7 @@ describe('createRoom', () => {
     expect(room.teams).toHaveLength(2);
     expect(room.teams.every((t) => Array.isArray(t.players) && t.players.length === 0)).toBe(true);
     expect(room.settings).toBeDefined();
+    expect(room.settings.general.teamMode).toBe('TEAMS');
     expect('classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0).toBe(
       60
     );
