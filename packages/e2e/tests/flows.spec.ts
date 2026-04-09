@@ -19,7 +19,7 @@ test.describe('@core Game flows', () => {
     await page.goto('/');
     await page.getByTestId('menu-join-game').click();
 
-    const input = page.getByTestId('join-room-code');
+    const input = page.getByTestId('menu-quick-join-code');
     await expect(input).toBeVisible();
     await input.fill('12ab3');
     await expect(input).toHaveValue('123');
@@ -52,8 +52,8 @@ test.describe('@extended Multiplayer-ish flows', () => {
 
     await guest.goto('/');
     await guest.getByTestId('menu-join-game').click();
-    await guest.getByTestId('join-room-code').fill(roomCode);
-    await guest.getByTestId('join-submit').click();
+    await guest.getByTestId('menu-quick-join-code').fill(roomCode);
+    await guest.getByTestId('menu-quick-join-submit').click();
     await guest.getByTestId('enter-name').fill('Guest');
     await guest.getByTestId('enter-name-submit').click();
 
