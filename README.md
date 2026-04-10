@@ -44,7 +44,7 @@
 - [Шаблон локальних нотаток VPS](./docs/VPS-INFRASTRUCTURE.md.example) (`VPS-INFRASTRUCTURE.md` — у `.gitignore`)
 - [Тести](#тести)
 - [Конфігурація (env змінні)](#конфігурація-env-змінні)
-- [Seed даних](#seed-даних)
+- [Seed даних](#seed-даних) · [Дані слів і Prisma (детально)](./docs/PRISMA_WORD_DATA.md)
 - [Важливі файли (Quick Reference)](#важливі-файли-quick-reference)
 - [Довідник коду (модулі та API)](./CODE_REFERENCE.md) — окремий файл
 
@@ -139,7 +139,8 @@ ALIAS/                          ← Корінь монорепо
 │   │   ├── prisma/
 │   │   │   ├── schema.prisma   ← Моделі БД
 │   │   │   ├── migrations/     ← SQL міграції
-│   │   │   └── seed.ts         ← Seed: 15 паків слів, теми, звуки
+│   │   │   ├── seed.ts         ← Seed: паки слів, теми, звуки
+│   │   │   └── data/*.json     ← Дані категорій (див. docs/PRISMA_WORD_DATA.md)
 │   │   ├── src/
 │   │   │   ├── index.ts        ← Entry point: Express + Socket.IO + Redis + Prisma
 │   │   │   ├── config.ts       ← Env змінні
@@ -1006,7 +1007,16 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 
 ## Seed даних
 
-Файл: `packages/server/prisma/seed.ts`
+Файл: `packages/server/prisma/seed.ts`.
+
+**Детальна документація** (формати JSON у `prisma/data/`, поле `conceptKey`, ієрархія `WordPack` → `WordConcept` → `WordTranslation`): [`docs/PRISMA_WORD_DATA.md`](./docs/PRISMA_WORD_DATA.md).
+
+Словники категорій лежать у **`packages/server/prisma/data/*.json`**. Підтримуються два формати:
+
+- **Масив концептів** — `conceptId`, `difficulty`, `translations.UA|EN|DE` з `word`, `synonyms`, `antonyms`, `tabooWords`, `hint` (рекомендовано).
+- **Legacy** — об’єкт `{ "UA": ["..."], "EN": [...], "DE": [...] }` (тільки слова без метаданих).
+
+Після оновлень схеми з міграціями спочатку **`db:migrate`**, потім за потреби **`db:seed`**.
 
 Seed створює:
 

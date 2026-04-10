@@ -172,7 +172,8 @@ export function createAdminRoutes(
 
       // Форматуємо дані так, як очікує старий фронтенд адмінки (щоб не переписувати весь UI)
       const words = pack.concepts.map((c) => ({
-        id: c.id, // Це ID концепту
+        id: c.id, // UUID рядка в БД
+        conceptKey: c.conceptKey, // стабільний ключ з контенту (JSON conceptId), якщо є
         text: c.translations[0]?.word || `Концепт без UA перекладу (ID: ${c.id.slice(0, 4)})`,
       }));
 

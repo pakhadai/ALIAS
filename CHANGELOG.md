@@ -54,6 +54,20 @@
 
 ---
 
+## [2026-04-10] — Дані слів у JSON, `conceptKey`, документація seed
+
+### Added
+
+- **`WordConcept.conceptKey`** у `packages/server/prisma/schema.prisma` — стабільний ключ з контенту (відповідає `conceptId` у JSON); обмеження унікальності `(packId, conceptKey)`. Міграція: `packages/server/prisma/migrations/20260410193000_word_concept_concept_key/migration.sql`.
+- **Документація:** `docs/PRISMA_WORD_DATA.md` — ієрархія моделей, формати `prisma/data/*.json`, поведінка сидера, адмін API. У кореневому `README.md` оновлено секцію **Seed даних** і посилання зі змісту.
+
+### Changed
+
+- **`packages/server/prisma/seed.ts`** — імпорт категорій з `prisma/data/`; підтримка **масиву концептів** (повні переклади + табу/синоніми/антоніми/hint для відповідної мови пакета) та **legacy**-формату списків; запис `conceptKey` з поля `conceptId`.
+- **`GET /api/admin/packs/:id`** — у масиві `words` додано поле `conceptKey` (`packages/server/src/routes/admin.ts`).
+
+---
+
 ## [2026-04-10] — QUIZ: типи завдань, штрафи та таймери
 
 ### Added

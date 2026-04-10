@@ -57,12 +57,16 @@ model WordPack {
 model WordConcept {
   id         String   @id @default(uuid())
   packId     String?
+  /// Stable logical id from content (e.g. JSON `conceptId`: "general-cat"). Scoped to pack.
+  conceptKey String?
   difficulty Int      @default(1)
   isNsfw     Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   pack         WordPack?         @relation(fields: [packId], references: [id])
   translations WordTranslation[]
+
+  @@unique([packId, conceptKey])
 }
 
 model WordTranslation {

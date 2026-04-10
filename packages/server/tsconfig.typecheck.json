@@ -6,5 +6,5 @@
       "@alias/shared": ["../shared/src/index.ts"]
     }
   },
-  "include": ["src", "test", "prisma/seed.ts", "vitest.config.ts"]
+  "include": ["src", "test", "prisma/seed.ts", "prisma/data/**/*.json", "vitest.config.ts"]
 }
