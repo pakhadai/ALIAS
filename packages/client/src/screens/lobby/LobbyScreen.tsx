@@ -5,6 +5,7 @@ import {
   ConfirmationModal,
   bottomSheetBackdropClass,
   bottomSheetPanelClass,
+  ModalPortal,
 } from '../../components/Shared';
 import { GameState, GameMode } from '../../types';
 import type { RoomErrorCode } from '../../types';
@@ -250,6 +251,8 @@ export const LobbyScreen = () => {
           message={t.leaveLobbyMsg}
           isDanger
           theme={currentTheme}
+          variant="bottomSheet"
+          backdropExtraClassName="pb-20"
           onCancel={() => setShowExitConfirm(false)}
           onConfirm={() => {
             leaveRoom();
@@ -267,6 +270,8 @@ export const LobbyScreen = () => {
           )}
           isDanger
           theme={currentTheme}
+          variant="bottomSheet"
+          backdropExtraClassName="pb-20"
           onCancel={() => setKickTarget(null)}
           onConfirm={() => {
             if (kickTarget) sendAction({ action: 'KICK_PLAYER', data: kickTarget.id });
@@ -282,6 +287,8 @@ export const LobbyScreen = () => {
           message="Це перерозподілить усіх гравців по командах заново."
           isDanger
           theme={currentTheme}
+          variant="bottomSheet"
+          backdropExtraClassName="pb-20"
           onCancel={() => setShowShuffleAllConfirm(false)}
           onConfirm={() => {
             setShowShuffleAllConfirm(false);
@@ -292,33 +299,34 @@ export const LobbyScreen = () => {
         />
 
         {showQrModal && qrCodeData && (
-          <div
-            className={bottomSheetBackdropClass(qrSheetOpen, 'z-120')}
-            onClick={closeQrModal}
-            role="presentation"
-          >
+          <ModalPortal>
             <div
-              className={bottomSheetPanelClass(qrSheetOpen, 'p-6 flex flex-col items-center gap-5')}
-              style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
+              className={bottomSheetBackdropClass(qrSheetOpen, 'z-120', 'fixed', 'pb-20')}
+              onClick={closeQrModal}
+              role="presentation"
             >
-              <div className="flex justify-center w-full">
-                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              <div
+                className={bottomSheetPanelClass(
+                  qrSheetOpen,
+                  'px-6 py-6 pb-safe-bottom flex flex-col items-center gap-5'
+                )}
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+              >
+                <div className="bg-(--ui-surface) p-6 rounded-2xl border border-(--ui-border) w-full flex justify-center">
+                  <img
+                    src={qrCodeData}
+                    alt="QR"
+                    className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl"
+                  />
+                </div>
+                <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-2">
+                  {t.scanToJoin ?? 'Відскануйте для приєднання'}
+                </p>
               </div>
-              <div className="bg-(--ui-surface) p-6 rounded-2xl border border-(--ui-border) w-full flex justify-center">
-                <img
-                  src={qrCodeData}
-                  alt="QR"
-                  className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl"
-                />
-              </div>
-              <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-2">
-                {t.scanToJoin ?? 'Відскануйте для приєднання'}
-              </p>
             </div>
-          </div>
+          </ModalPortal>
         )}
 
         <header className="flex justify-between items-center py-6 mb-4 shrink-0">
@@ -431,88 +439,90 @@ export const LobbyScreen = () => {
 
           {/* Add Player Modal */}
           {showAddPlayer && (
-            <div
-              className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
-              onClick={closeAddPlayerModal}
-              role="presentation"
-            >
+            <ModalPortal>
               <div
-                className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10')}`}
-                onClick={(e) => e.stopPropagation()}
-                role="dialog"
-                aria-modal="true"
+                className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
+                onClick={closeAddPlayerModal}
+                role="presentation"
               >
-                <button
-                  type="button"
-                  onClick={closeAddPlayerModal}
-                  className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
+                <div
+                  className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10 pb-safe-bottom')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
                 >
-                  <X size={24} className={currentTheme.iconColor} />
-                </button>
-                <div className="flex justify-center mb-4">
-                  <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-                </div>
-                <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
-                  {t.addPlayerTitle}
-                </h2>
-                {players.length >= MAX_PLAYERS && (
-                  <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
-                    <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
-                      Ліміт гравців досягнуто
-                    </p>
-                    <p className="text-[11px] text-(--ui-fg-muted) mt-2">
-                      Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
-                    </p>
-                  </div>
-                )}
-                <div className="space-y-6">
-                  <input
-                    autoFocus
-                    value={newPlayerName}
-                    onChange={(e) =>
-                      setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
-                    }
-                    placeholder={t.namePlaceholder}
-                    className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
-                  />
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
-                    {AVATARS.map((a) => (
-                      <button
-                        key={a}
-                        type="button"
-                        onClick={() => setNewPlayerAvatar(a)}
-                        className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
-                          newPlayerAvatar === a
-                            ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                            : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
-                        }`}
-                      >
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                  <Button
-                    themeClass={currentTheme.button}
-                    fullWidth
-                    size="lg"
-                    onClick={() => {
-                      if (players.length >= MAX_PLAYERS) {
-                        showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
-                        return;
-                      }
-                      const name = newPlayerName.trim();
-                      if (name) {
-                        addOfflinePlayer(name, newPlayerAvatar);
-                        closeAddPlayerModal();
-                      }
-                    }}
-                    disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
+                  <button
+                    type="button"
+                    onClick={closeAddPlayerModal}
+                    className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
                   >
-                    {t.add}
-                  </Button>
+                    <X size={24} className={currentTheme.iconColor} />
+                  </button>
+                  <div className="flex justify-center mb-4">
+                    <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                  </div>
+                  <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
+                    {t.addPlayerTitle}
+                  </h2>
+                  {players.length >= MAX_PLAYERS && (
+                    <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
+                      <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
+                        Ліміт гравців досягнуто
+                      </p>
+                      <p className="text-[11px] text-(--ui-fg-muted) mt-2">
+                        Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
+                      </p>
+                    </div>
+                  )}
+                  <div className="space-y-6">
+                    <input
+                      autoFocus
+                      value={newPlayerName}
+                      onChange={(e) =>
+                        setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
+                      }
+                      placeholder={t.namePlaceholder}
+                      className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
+                    />
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+                      {AVATARS.map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => setNewPlayerAvatar(a)}
+                          className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
+                            newPlayerAvatar === a
+                              ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                              : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          {a}
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      themeClass={currentTheme.button}
+                      fullWidth
+                      size="lg"
+                      onClick={() => {
+                        if (players.length >= MAX_PLAYERS) {
+                          showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+                          return;
+                        }
+                        const name = newPlayerName.trim();
+                        if (name) {
+                          addOfflinePlayer(name, newPlayerAvatar);
+                          closeAddPlayerModal();
+                        }
+                      }}
+                      disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
+                    >
+                      {t.add}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ModalPortal>
           )}
 
           {!isSolo && (

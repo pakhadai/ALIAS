@@ -77,10 +77,7 @@ export const LobbySettingsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header
-          className="flex items-center justify-between px-6 md:px-8 pb-4"
-          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-        >
+        <header className="flex items-center justify-between px-6 md:px-8 pb-4 pt-safe-top">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setGameState(GameState.PROFILE)}
@@ -273,10 +270,7 @@ export const LobbySettingsScreen = () => {
           </div>
         )}
 
-        <div
-          className="px-6 md:px-8 py-4"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-        >
+        <div className="px-6 md:px-8 pt-4 pb-safe-bottom">
           <button
             onClick={handleSave}
             disabled={saving}

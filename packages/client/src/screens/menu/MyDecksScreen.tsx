@@ -94,10 +94,7 @@ export const MyDecksScreen = () => {
   if (view === 'create') {
     return (
       <div className="flex flex-col h-screen bg-(--ui-bg)">
-        <header
-          className="flex items-center px-6 pb-4 gap-3"
-          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-        >
+        <header className="flex items-center px-6 pb-4 pt-safe-top gap-3">
           <button
             onClick={() => {
               setView('list');
@@ -150,10 +147,7 @@ export const MyDecksScreen = () => {
           </div>
           {createError && <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>}
         </div>
-        <div
-          className="px-6 py-4"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-        >
+        <div className="px-6 pt-4 pb-safe-bottom">
           <button
             onClick={handleCreate}
             disabled={creating}
@@ -243,10 +237,7 @@ export const MyDecksScreen = () => {
           ))
         )}
       </div>
-      <div
-        className="absolute bottom-0 left-0 right-0 px-6 py-4 pointer-events-none"
-        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-      >
+      <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-safe-bottom pointer-events-none">
         <button
           onClick={() => setView('create')}
           className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}

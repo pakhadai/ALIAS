@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../../../context/GameContext';
+import { GameMode as ModeEnum } from '@alias/shared';
 
 export const CountdownScreen = () => {
   const {
@@ -11,8 +12,11 @@ export const CountdownScreen = () => {
     currentTeamIndex,
     myPlayerId,
     currentRoundStats,
+    settings,
   } = useGame();
   const [count, setCount] = useState(3);
+
+  const isQuiz = settings.mode.gameMode === ModeEnum.QUIZ;
 
   const explainerId =
     currentRoundStats.explainerId ||
@@ -28,10 +32,10 @@ export const CountdownScreen = () => {
       playSound('tick');
       const timer = setTimeout(() => setCount(count - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (isActualExplainer) {
+    } else if (isQuiz || isActualExplainer) {
       startGameplay();
     }
-  }, [count, startGameplay, playSound, isActualExplainer]);
+  }, [count, startGameplay, playSound, isActualExplainer, isQuiz]);
 
   return (
     <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>

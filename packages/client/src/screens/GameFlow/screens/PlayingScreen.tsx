@@ -13,6 +13,7 @@ import { PlayingPauseOverlay } from './PlayingPauseOverlay';
 export const PlayingScreen = () => {
   const {
     currentTheme,
+    players,
     teams,
     currentTeamIndex,
     playSound,
@@ -21,6 +22,7 @@ export const PlayingScreen = () => {
     settings,
     currentWord,
     currentTask,
+    currentTaskAnswered,
     handleCorrect,
     handleSkip,
     isHost,
@@ -60,6 +62,10 @@ export const PlayingScreen = () => {
   const canSeeClassicWord = gameMode === 'OFFLINE' || isActualExplainer;
   const canUseClassicButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const displayPrompt = currentTask?.prompt ?? currentWord;
+  const solvedBy = isQuizMode ? currentTaskAnswered : undefined;
+  const solvedByName =
+    isQuizMode && solvedBy ? (players.find((p) => p.id === solvedBy)?.name ?? null) : null;
+  const prevSolvedByRef = useRef<string | undefined>(undefined);
   const isCriticalTime = timeLeft <= 10;
   const isUrgentTime = timeLeft <= 5;
   const [wordExit, setWordExit] = useState<null | 'left' | 'right'>(null);
@@ -101,6 +107,24 @@ export const PlayingScreen = () => {
     }
     if (!timeUp) timeUpVibratedRef.current = false;
   }, [timeUp, isActualExplainer, haptic]);
+
+  // QUIZ micro-round audio: play when someone solves the current task (server-confirmed).
+  useEffect(() => {
+    if (!isQuizMode) return;
+    if (!currentTask?.id) return;
+    if (!currentTaskAnswered) {
+      prevSolvedByRef.current = undefined;
+      return;
+    }
+    if (prevSolvedByRef.current === currentTaskAnswered) return;
+    prevSolvedByRef.current = currentTaskAnswered;
+
+    if (currentTaskAnswered === myPlayerId) {
+      playSound('win');
+    } else {
+      playSound('click');
+    }
+  }, [isQuizMode, currentTask?.id, currentTaskAnswered, myPlayerId, playSound]);
 
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
@@ -158,11 +182,7 @@ export const PlayingScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors`}
-      style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} ${currentTheme.textMain} font-sans antialiased h-screen w-full overflow-hidden relative transition-colors pt-env-top pb-env-bottom`}
     >
       {particles.map((p) => (
         <FloatingParticle
@@ -181,10 +201,7 @@ export const PlayingScreen = () => {
       )}
 
       {/* Progress Bar Header */}
-      <header
-        className="w-full px-6 pb-2 flex flex-col gap-5 z-20"
-        style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-      >
+      <header className="w-full px-6 pb-2 pt-safe-top flex flex-col gap-5 z-20">
         {timeUp && canUseClassicButtons && !isQuizMode && (
           <p className="text-center text-(--ui-accent) text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
             {t.finishWord}
@@ -235,6 +252,8 @@ export const PlayingScreen = () => {
             task={currentTask}
             disabled={isPaused}
             currentTheme={currentTheme}
+            currentTaskAnswered={solvedBy}
+            solvedByName={solvedByName}
             onAction={sendAction}
           />
         ) : canSeeClassicWord ? (

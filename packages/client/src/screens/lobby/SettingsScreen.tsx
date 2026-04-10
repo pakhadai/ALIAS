@@ -68,6 +68,12 @@ export const SettingsScreen = () => {
   const [localRoundTime, setLocalRoundTime] = useState(
     'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 60
   );
+  const [localQuizRoundTime, setLocalQuizRoundTime] = useState(
+    settings.mode.gameMode === GameMode.QUIZ ? settings.mode.quizRoundTime : 60
+  );
+  const [localQuizQuestionTime, setLocalQuizQuestionTime] = useState(
+    settings.mode.gameMode === GameMode.QUIZ ? settings.mode.quizQuestionTime : 10
+  );
   const [localScoreToWin, setLocalScoreToWin] = useState(settings.general.scoreToWin);
   const [localTeamCount, setLocalTeamCount] = useState(settings.general.teamCount);
   const lastHapticRoundTime = useRef(localRoundTime);
@@ -77,6 +83,11 @@ export const SettingsScreen = () => {
   // Sync local state with server changes
   useEffect(() => {
     if ('classicRoundTime' in settings.mode) setLocalRoundTime(settings.mode.classicRoundTime);
+  }, [settings.mode]);
+  useEffect(() => {
+    if (settings.mode.gameMode !== GameMode.QUIZ) return;
+    setLocalQuizRoundTime(settings.mode.quizRoundTime);
+    setLocalQuizQuestionTime(settings.mode.quizQuestionTime);
   }, [settings.mode]);
 
   useEffect(() => {
@@ -626,6 +637,210 @@ export const SettingsScreen = () => {
                             </button>
                           );
                         })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (mode.gameMode === GameMode.QUIZ) {
+                  const types = mode.quizTypes ?? {
+                    synonyms: true,
+                    antonyms: true,
+                    taboo: true,
+                    translation: false,
+                  };
+                  const timerMode = mode.quizTimerMode ?? 'ROUND';
+
+                  return (
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <p
+                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                        >
+                          Quiz types
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(
+                            [
+                              ['synonyms', 'Синоніми'],
+                              ['antonyms', 'Антоніми'],
+                              ['taboo', 'Табу-підказки'],
+                              ['translation', 'Переклади'],
+                            ] as const
+                          ).map(([k, label]) => {
+                            const active = types[k];
+                            return (
+                              <button
+                                key={k}
+                                type="button"
+                                onClick={() =>
+                                  updateMode({ quizTypes: { ...types, [k]: !active } })
+                                }
+                                className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                  active
+                                    ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+                                    : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <p
+                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                        >
+                          Штраф за помилку
+                        </p>
+                        <button
+                          onClick={() =>
+                            updateMode({ quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled })
+                          }
+                          className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                            mode.quizWrongPenaltyEnabled
+                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                              : 'border-(--ui-border) bg-(--ui-surface) opacity-70'
+                          }`}
+                        >
+                          <span className={currentTheme.textMain}>
+                            {mode.quizWrongPenaltyEnabled
+                              ? 'Увімкнено (−1 за помилку)'
+                              : 'Вимкнено'}
+                          </span>
+                          <div
+                            className={`w-12 h-6 rounded-full transition-all relative ${
+                              mode.quizWrongPenaltyEnabled ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'
+                            }`}
+                          >
+                            <div
+                              className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
+                                mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
+                              }`}
+                            />
+                          </div>
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <p
+                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                        >
+                          Тип таймера
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(
+                            [
+                              ['ROUND', 'На весь раунд'],
+                              ['PER_TASK', 'На кожне питання'],
+                            ] as const
+                          ).map(([id, label]) => {
+                            const active = timerMode === id;
+                            return (
+                              <button
+                                key={id}
+                                type="button"
+                                onClick={() => updateMode({ quizTimerMode: id })}
+                                className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                  active
+                                    ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
+                                    : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <p
+                              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                            >
+                              {timerMode === 'PER_TASK' ? 'Час на питання' : 'Час раунду'}
+                            </p>
+                            <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                              {timerMode === 'PER_TASK'
+                                ? `${mode.quizQuestionTime}s`
+                                : `${mode.quizRoundTime}s`}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={timerMode === 'PER_TASK' ? 5 : 30}
+                            max={timerMode === 'PER_TASK' ? 30 : 180}
+                            step={timerMode === 'PER_TASK' ? 1 : 10}
+                            value={
+                              timerMode === 'PER_TASK' ? localQuizQuestionTime : localQuizRoundTime
+                            }
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value);
+                              if (timerMode === 'PER_TASK') setLocalQuizQuestionTime(v);
+                              else setLocalQuizRoundTime(v);
+                              vibrate(HAPTIC.nav);
+                            }}
+                            onMouseUp={() =>
+                              timerMode === 'PER_TASK'
+                                ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                : updateMode({
+                                    quizRoundTime: localQuizRoundTime,
+                                    classicRoundTime: localQuizRoundTime,
+                                  })
+                            }
+                            onTouchEnd={() =>
+                              timerMode === 'PER_TASK'
+                                ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                : updateMode({
+                                    quizRoundTime: localQuizRoundTime,
+                                    classicRoundTime: localQuizRoundTime,
+                                  })
+                            }
+                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                          />
+                        </div>
+
+                        {timerMode === 'PER_TASK' && (
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <p
+                                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                              >
+                                Загальний час раунду
+                              </p>
+                              <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                                {mode.quizRoundTime}s
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="30"
+                              max="180"
+                              step="10"
+                              value={localQuizRoundTime}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value);
+                                setLocalQuizRoundTime(v);
+                                vibrate(HAPTIC.nav);
+                              }}
+                              onMouseUp={() =>
+                                updateMode({
+                                  quizRoundTime: localQuizRoundTime,
+                                  classicRoundTime: localQuizRoundTime,
+                                })
+                              }
+                              onTouchEnd={() =>
+                                updateMode({
+                                  quizRoundTime: localQuizRoundTime,
+                                  classicRoundTime: localQuizRoundTime,
+                                })
+                              }
+                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

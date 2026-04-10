@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { api, AdminAuthError, type AdminUser } from './adminApi';
+import { ModalPortal } from '../../components/Shared';
 import { StatsTab } from './tabs/StatsTab';
 import { DecksTab } from './tabs/DecksTab';
 import { PacksTab } from './tabs/PacksTab';
@@ -85,41 +86,43 @@ function ConfirmModal({
   onCancel: () => void;
 }) {
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={onCancel}
-    >
+    <ModalPortal>
       <div
-        className="bg-[#1a1a1a] border border-[#333] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        onClick={onCancel}
       >
-        <div className="flex items-start gap-3 mb-4">
-          {opts.danger && <AlertCircle size={20} className="text-[#ff4444] shrink-0 mt-0.5" />}
-          <div>
-            <h3 className="text-white font-bold text-base">{opts.title}</h3>
-            <p className="text-[#888] text-sm mt-1 leading-relaxed">{opts.message}</p>
+        <div
+          className="bg-[#1a1a1a] border border-[#333] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start gap-3 mb-4">
+            {opts.danger && <AlertCircle size={20} className="text-[#ff4444] shrink-0 mt-0.5" />}
+            <div>
+              <h3 className="text-white font-bold text-base">{opts.title}</h3>
+              <p className="text-[#888] text-sm mt-1 leading-relaxed">{opts.message}</p>
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 rounded-xl text-sm font-bold text-[#888] bg-[#222] border border-[#333] hover:bg-[#2a2a2a] transition-colors"
+            >
+              Скасувати
+            </button>
+            <button
+              onClick={onConfirm}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                opts.danger
+                  ? 'bg-[#ff4444] text-white hover:bg-[#ff5555]'
+                  : 'bg-[#E3FF5B] text-black hover:brightness-110'
+              }`}
+            >
+              {opts.confirmLabel ?? 'Підтвердити'}
+            </button>
           </div>
         </div>
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-sm font-bold text-[#888] bg-[#222] border border-[#333] hover:bg-[#2a2a2a] transition-colors"
-          >
-            Скасувати
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-              opts.danger
-                ? 'bg-[#ff4444] text-white hover:bg-[#ff5555]'
-                : 'bg-[#E3FF5B] text-black hover:brightness-110'
-            }`}
-          >
-            {opts.confirmLabel ?? 'Підтвердити'}
-          </button>
-        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
 

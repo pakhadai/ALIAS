@@ -211,6 +211,8 @@ export class GameEngine {
           senderId,
         });
 
+        const isQuiz = room.settings.mode.gameMode === GameMode.QUIZ;
+
         if (result.isCorrect) {
           room.currentRoundStats = {
             ...room.currentRoundStats,
@@ -235,10 +237,58 @@ export class GameEngine {
           };
         }
 
+        // QUIZ scoring/penalties are per-player and can be non-correct (e.g. -1 on wrong).
+        if (isQuiz && payload.action === 'GUESS_OPTION' && senderId && result.points !== 0) {
+          room.teams = room.teams.map((t) => {
+            const hasPlayer = t.players.some((p) => p.id === senderId);
+            if (!hasPlayer) return t;
+            return { ...t, score: Math.max(0, t.score + result.points) };
+          });
+        }
+
+        if (isQuiz && payload.action === 'GUESS_OPTION' && senderId && result.isCorrect) {
+          room.players = room.players.map((p) =>
+            p.id === senderId ? { ...p, stats: { ...p.stats, guessed: p.stats.guessed + 1 } } : p
+          );
+          room.teams = room.teams.map((t) => ({
+            ...t,
+            players: t.players.map((p) =>
+              p.id === senderId ? { ...p, stats: { ...p.stats, guessed: p.stats.guessed + 1 } } : p
+            ),
+          }));
+        }
+
         if (result.nextWord) {
-          await this.nextWord(room);
-          if (room.timeUp) {
-            this.transitionToRoundSummary(room);
+          if (isQuiz) {
+            // Micro-round pause: keep currentTask visible briefly before advancing.
+            if (room.quizNextWordTimeout) {
+              clearTimeout(room.quizNextWordTimeout);
+              room.quizNextWordTimeout = null;
+            }
+            room.quizTaskLockUntil = Date.now() + 2500;
+            const lockedTaskId = room.currentTask.id;
+            room.quizNextWordTimeout = setTimeout(() => {
+              if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
+              if (room.gameState !== GameState.PLAYING) return;
+              if (!room.currentTask || room.currentTask.id !== lockedTaskId) return;
+              if (room.timeUp) return;
+              if (room.quizRoundTimeLeft !== undefined && room.quizRoundTimeLeft <= 0) return;
+              void this.nextWord(room).then(() => {
+                if (
+                  room.settings.mode.gameMode === GameMode.QUIZ &&
+                  room.settings.mode.quizTimerMode === 'PER_TASK'
+                ) {
+                  room.timeLeft = room.settings.mode.quizQuestionTime;
+                }
+              });
+              this.timerBroadcast?.(room);
+              this.roomManager.persistRoom(room);
+            }, 2500);
+          } else {
+            await this.nextWord(room);
+            if (room.timeUp) {
+              this.transitionToRoundSummary(room);
+            }
           }
         }
 
@@ -270,8 +320,21 @@ export class GameEngine {
 
       case 'START_PLAYING': {
         room.gameState = GameState.PLAYING;
-        room.timeLeft =
-          'classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0;
+        if (room.settings.mode.gameMode === GameMode.QUIZ) {
+          const mode = room.settings.mode;
+          const roundTime = mode.quizRoundTime ?? mode.classicRoundTime;
+          room.quizRoundTimeLeft = roundTime;
+          room.quizTaskLockUntil = undefined;
+          room.timeLeft =
+            mode.quizTimerMode === 'PER_TASK'
+              ? mode.quizQuestionTime
+              : (mode.quizRoundTime ?? roundTime);
+        } else {
+          room.timeLeft =
+            'classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0;
+          room.quizRoundTimeLeft = undefined;
+          room.quizTaskLockUntil = undefined;
+        }
         room.isPaused = false;
         room.timeUp = false;
         await this.nextWord(room);
@@ -367,6 +430,19 @@ export class GameEngine {
           room.timeLeft = 0;
         }
 
+        // QUIZ: no explainer concept. Start countdown immediately for everyone.
+        if (room.settings.mode.gameMode === GameMode.QUIZ) {
+          room.gameState = GameState.COUNTDOWN;
+          room.currentRoundStats = {
+            correct: 0,
+            skipped: 0,
+            words: [],
+            teamId: '',
+            explainerName: '',
+            explainerId: undefined,
+          };
+        }
+
         await this.persistNewGameSession(room);
         break;
       }
@@ -374,7 +450,8 @@ export class GameEngine {
       case 'NEXT_ROUND': {
         if (room.teams.length === 0) break;
         room.currentTeamIndex = (room.currentTeamIndex + 1) % room.teams.length;
-        room.gameState = GameState.PRE_ROUND;
+        room.gameState =
+          room.settings.mode.gameMode === GameMode.QUIZ ? GameState.COUNTDOWN : GameState.PRE_ROUND;
         break;
       }
 
@@ -444,13 +521,52 @@ export class GameEngine {
             }
             case GameMode.CLASSIC:
             case GameMode.TRANSLATION:
-            case GameMode.SYNONYMS:
-            case GameMode.QUIZ: {
+            case GameMode.SYNONYMS: {
               return {
                 gameMode: nextGameMode,
                 classicRoundTime:
                   patch.classicRoundTime ??
                   (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+              };
+            }
+            case GameMode.QUIZ: {
+              const prevQuiz =
+                prev.gameMode === GameMode.QUIZ
+                  ? prev
+                  : {
+                      gameMode: GameMode.QUIZ as const,
+                      classicRoundTime:
+                        prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60,
+                      quizTimerMode: 'ROUND' as const,
+                      quizRoundTime:
+                        prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60,
+                      quizQuestionTime: 10,
+                      quizTypes: {
+                        synonyms: true,
+                        antonyms: true,
+                        taboo: true,
+                        translation: false,
+                      },
+                      quizWrongPenaltyEnabled: false,
+                    };
+
+              const nextTypes = patch.quizTypes
+                ? { ...prevQuiz.quizTypes, ...patch.quizTypes }
+                : prevQuiz.quizTypes;
+
+              const nextRoundTime =
+                patch.quizRoundTime ?? patch.classicRoundTime ?? prevQuiz.quizRoundTime;
+
+              return {
+                ...prevQuiz,
+                gameMode: GameMode.QUIZ,
+                classicRoundTime: patch.classicRoundTime ?? prevQuiz.classicRoundTime,
+                quizTimerMode: patch.quizTimerMode ?? prevQuiz.quizTimerMode,
+                quizRoundTime: nextRoundTime,
+                quizQuestionTime: patch.quizQuestionTime ?? prevQuiz.quizQuestionTime,
+                quizTypes: nextTypes,
+                quizWrongPenaltyEnabled:
+                  patch.quizWrongPenaltyEnabled ?? prevQuiz.quizWrongPenaltyEnabled,
               };
             }
           }
@@ -471,6 +587,10 @@ export class GameEngine {
 
       case 'RESET_GAME': {
         this.stopTimer(room);
+        if (room.quizNextWordTimeout) {
+          clearTimeout(room.quizNextWordTimeout);
+          room.quizNextWordTimeout = null;
+        }
         await this.persistAbandonSession(room);
         room.gameState = GameState.LOBBY;
         room.teams = [];
@@ -478,6 +598,8 @@ export class GameEngine {
         room.currentTeamIndex = 0;
         room.currentWord = '';
         room.currentTask = null;
+        room.currentTaskAnswered = undefined;
+        room.currentTaskWrongAttempts = [];
         room.wordDeck = [];
         room.usedWords = [];
         room.timeLeft = 0;
@@ -494,6 +616,10 @@ export class GameEngine {
 
       case 'REMATCH': {
         await this.persistNewGameSession(room);
+        if (room.quizNextWordTimeout) {
+          clearTimeout(room.quizNextWordTimeout);
+          room.quizNextWordTimeout = null;
+        }
         room.teams = room.teams.map((t) => ({
           ...t,
           score: 0,
@@ -504,6 +630,8 @@ export class GameEngine {
         room.usedWords = [];
         room.currentWord = '';
         room.currentTask = null;
+        room.currentTaskAnswered = undefined;
+        room.currentTaskWrongAttempts = [];
         break;
       }
 
@@ -530,6 +658,10 @@ export class GameEngine {
       }
 
       case 'TIME_UP': {
+        if (room.quizNextWordTimeout) {
+          clearTimeout(room.quizNextWordTimeout);
+          room.quizNextWordTimeout = null;
+        }
         this.transitionToRoundSummary(room);
         break;
       }
@@ -579,6 +711,10 @@ export class GameEngine {
 
   private transitionToRoundSummary(room: Room): void {
     this.stopTimer(room);
+    if (room.quizNextWordTimeout) {
+      clearTimeout(room.quizNextWordTimeout);
+      room.quizNextWordTimeout = null;
+    }
     room.gameState = GameState.ROUND_SUMMARY;
     room.timeLeft = 0;
     room.timeUp = false;
@@ -601,6 +737,7 @@ export class GameEngine {
     room.currentTask = task;
     room.currentWord = task.prompt;
     room.currentTaskAnswered = undefined;
+    room.currentTaskWrongAttempts = [];
 
     if (deckReshuffled && room.currentRoundStats.words.length > 0) {
       this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
@@ -612,12 +749,68 @@ export class GameEngine {
     let ticksSinceSync = 0;
     room.timerInterval = setInterval(() => {
       if (room.isPaused) return;
-      room.timeLeft--;
+      const quizMode = room.settings.mode.gameMode === GameMode.QUIZ ? room.settings.mode : null;
+      const now = Date.now();
+      const quizLocked =
+        quizMode !== null && room.quizTaskLockUntil !== undefined && now < room.quizTaskLockUntil;
+
+      if (quizMode !== null && quizMode.quizTimerMode === 'PER_TASK') {
+        room.quizRoundTimeLeft = (room.quizRoundTimeLeft ?? quizMode.quizRoundTime) - 1;
+        if (!quizLocked) room.timeLeft--;
+      } else {
+        room.timeLeft--;
+      }
       ticksSinceSync++;
-      if (room.timeLeft <= 0) {
+
+      // QUIZ per-task: when question timer hits 0, reveal and advance (round continues).
+      if (quizMode !== null && quizMode.quizTimerMode === 'PER_TASK' && room.timeLeft <= 0) {
+        // If already solved/advanced, do nothing.
+        if (!room.currentTask || room.currentTaskAnswered) {
+          room.timeLeft = Math.max(0, room.timeLeft);
+        } else {
+          room.timeLeft = 0;
+          room.currentTaskAnswered = '__timeout__';
+          // Micro-round pause before next question.
+          if (room.quizNextWordTimeout) {
+            clearTimeout(room.quizNextWordTimeout);
+            room.quizNextWordTimeout = null;
+          }
+          room.quizTaskLockUntil = Date.now() + 2500;
+          const lockedTaskId = room.currentTask.id;
+          room.quizNextWordTimeout = setTimeout(() => {
+            if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
+            if (room.gameState !== GameState.PLAYING) return;
+            if (!room.currentTask || room.currentTask.id !== lockedTaskId) return;
+            if (room.quizRoundTimeLeft !== undefined && room.quizRoundTimeLeft <= 0) return;
+            void this.nextWord(room).then(() => {
+              if (room.settings.mode.gameMode === GameMode.QUIZ) {
+                const m = room.settings.mode;
+                if (m.quizTimerMode === 'PER_TASK') room.timeLeft = m.quizQuestionTime;
+              }
+            });
+            this.timerBroadcast?.(room);
+            this.roomManager.persistRoom(room);
+          }, 2500);
+        }
+        this.timerBroadcast?.(room);
+        this.roomManager.persistRoom(room);
+        return;
+      }
+
+      // Round end:
+      const roundExpired =
+        quizMode !== null && quizMode.quizTimerMode === 'PER_TASK'
+          ? (room.quizRoundTimeLeft ?? 0) <= 0
+          : room.timeLeft <= 0;
+
+      if (roundExpired) {
         room.timeUp = true;
         this.stopTimer(room);
         room.timeLeft = 0;
+        if (room.quizNextWordTimeout) {
+          clearTimeout(room.quizNextWordTimeout);
+          room.quizNextWordTimeout = null;
+        }
         if (
           room.settings.mode.gameMode === GameMode.IMPOSTER &&
           room.imposterPhase === 'DISCUSSION'
@@ -625,7 +818,12 @@ export class GameEngine {
           room.imposterPhase = 'RESULTS';
           room.timeUp = false;
         }
+        // QUIZ has no "explainer" to send TIME_UP; end the round immediately.
+        if (room.settings.mode.gameMode === GameMode.QUIZ && room.gameState === GameState.PLAYING) {
+          this.transitionToRoundSummary(room);
+        }
         this.timerBroadcast?.(room);
+        this.roomManager.persistRoom(room);
       } else if (ticksSinceSync >= 10) {
         ticksSinceSync = 0;
         this.timerBroadcast?.(room);

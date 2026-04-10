@@ -14,6 +14,9 @@ export interface QuizUIProps {
   disabled: boolean;
   currentTheme: ThemeConfig;
   promptLabel?: string;
+  solvedByName?: string | null;
+  /** From server sync: playerId who solved current task (if any). */
+  currentTaskAnswered?: string;
   onAction: (payload: GameActionPayload) => void;
 }
 
@@ -25,29 +28,45 @@ export const QuizUI: React.FC<QuizUIProps> = ({
   disabled,
   currentTheme,
   promptLabel,
+  solvedByName,
+  currentTaskAnswered,
   onAction,
 }) => {
   const haptic = useHapticFeedback();
   const [picked, setPicked] = useState<string | null>(null);
+  const [lockedOut, setLockedOut] = useState(false);
   const wrongClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lockoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const options = task.options ?? [];
 
   useEffect(() => {
     setPicked(null);
+    setLockedOut(false);
     if (wrongClearRef.current) {
       clearTimeout(wrongClearRef.current);
       wrongClearRef.current = null;
+    }
+    if (lockoutRef.current) {
+      clearTimeout(lockoutRef.current);
+      lockoutRef.current = null;
     }
   }, [task.id]);
 
   const handlePick = (opt: string) => {
     if (disabled) return;
+    if (lockedOut) return;
     if (picked !== null && picked === task.answer) return;
     const correct = opt === task.answer;
     if (correct) {
       setPicked(opt);
     } else {
       setPicked(opt);
+      setLockedOut(true);
+      if (lockoutRef.current) clearTimeout(lockoutRef.current);
+      lockoutRef.current = setTimeout(() => {
+        setLockedOut(false);
+        lockoutRef.current = null;
+      }, 2000);
       if (wrongClearRef.current) clearTimeout(wrongClearRef.current);
       wrongClearRef.current = setTimeout(() => {
         setPicked(null);
@@ -60,9 +79,31 @@ export const QuizUI: React.FC<QuizUIProps> = ({
 
   const reveal = picked !== null;
   const solved = picked !== null && picked === task.answer;
+  const solvedBySomeone = !!currentTaskAnswered;
+  const shouldRevealCorrect = solvedBySomeone || reveal;
+
+  const kindLabel =
+    task.kind === 'SYNONYM'
+      ? 'ЗНАЙДИ СИНОНІМ'
+      : task.kind === 'ANTONYM'
+        ? 'АНТОНІМ'
+        : task.kind === 'TRANSLATION'
+          ? 'ПЕРЕКЛАД'
+          : task.kind === 'TABOO'
+            ? 'ВГАДАЙ ЗА ПІДКАЗКАМИ'
+            : null;
 
   return (
     <div className="w-full max-w-sm flex flex-col gap-8 items-center pb-28">
+      {kindLabel && (
+        <div className="px-4 py-2 rounded-full border border-(--ui-border) bg-(--ui-surface) shadow-sm">
+          <span
+            className={`text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
+          >
+            {kindLabel}
+          </span>
+        </div>
+      )}
       <div className="w-full min-h-[140px] flex items-center justify-center p-8 rounded-4xl border border-(--ui-border) bg-(--ui-surface) shadow-2xl">
         <h2
           className={`${currentTheme.textMain} font-sans font-black text-3xl sm:text-4xl text-center leading-tight tracking-tight wrap-break-word w-full`}
@@ -71,16 +112,26 @@ export const QuizUI: React.FC<QuizUIProps> = ({
         </h2>
       </div>
 
+      {solvedBySomeone && (
+        <div className="w-full text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-(--ui-border) bg-(--ui-surface)">
+            <span className={`text-sm font-sans font-bold ${currentTheme.textMain}`}>
+              {solvedByName ? `${solvedByName} +1` : '+1'}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3 w-full">
         {options.slice(0, 4).map((opt, i) => {
-          const isCorrect = reveal && opt === task.answer;
+          const isCorrect = shouldRevealCorrect && opt === task.answer;
           const isWrongPick = reveal && picked === opt && opt !== task.answer;
           const mix = OPTION_MIX[i % OPTION_MIX.length];
           return (
             <button
               key={`${task.id}-${i}-${opt}`}
               type="button"
-              disabled={disabled || solved || isWrongPick}
+              disabled={disabled || solved || solvedBySomeone || lockedOut || isWrongPick}
               onClick={() => handlePick(opt)}
               className={`${OPTION_BTN} text-(--ui-accent-contrast) hover:brightness-105 ${
                 isCorrect ? 'ring-2 ring-(--ui-success) scale-[1.02]' : ''

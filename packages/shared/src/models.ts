@@ -28,6 +28,8 @@ export interface GameTask {
   prompt: string;
   answer?: string;
   options?: string[];
+  /** Optional mode-specific task kind (used by QUIZ UI for labels). */
+  kind?: string;
 }
 
 export interface GameSettings {
@@ -56,11 +58,38 @@ export interface GeneralSettings {
   targetLanguage?: Language;
 }
 
+export type QuizTimerMode = 'ROUND' | 'PER_TASK';
+
+export interface QuizTypesSettings {
+  synonyms: boolean;
+  antonyms: boolean;
+  taboo: boolean;
+  translation: boolean;
+}
+
 export type ModeSettings =
   | {
-      gameMode: GameMode.CLASSIC | GameMode.TRANSLATION | GameMode.SYNONYMS | GameMode.QUIZ;
+      gameMode: GameMode.CLASSIC | GameMode.TRANSLATION | GameMode.SYNONYMS;
       /** Round time for classic-like modes (seconds). */
       classicRoundTime: number;
+    }
+  | {
+      gameMode: GameMode.QUIZ;
+      /**
+       * Legacy/shared slider value.
+       * For QUIZ we prefer quizRoundTime / quizQuestionTime, but keep this for backward compatibility.
+       */
+      classicRoundTime: number;
+      /** Which timer drives gameplay. */
+      quizTimerMode: QuizTimerMode;
+      /** Round duration in seconds (used when quizTimerMode = 'ROUND', and always as the overall cap). */
+      quizRoundTime: number;
+      /** Per-question duration in seconds (used when quizTimerMode = 'PER_TASK'). */
+      quizQuestionTime: number;
+      /** Which types of quiz tasks to include from the deck. */
+      quizTypes: QuizTypesSettings;
+      /** If enabled: wrong answer gives -1 point (once per task per player). */
+      quizWrongPenaltyEnabled: boolean;
     }
   | {
       gameMode: GameMode.HARDCORE;

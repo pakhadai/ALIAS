@@ -9,7 +9,12 @@ import {
   X,
   ArrowRight,
 } from 'lucide-react';
-import { Logo, bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
+import {
+  Logo,
+  bottomSheetBackdropClass,
+  bottomSheetPanelClass,
+  ModalPortal,
+} from '../../components/Shared';
 import { ProfileModal } from '../../components/Auth/ProfileModal';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
 import { GameState } from '../../types';
@@ -130,10 +135,7 @@ export const MenuScreen = () => {
     <div
       className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
     >
-      <header
-        className="relative z-10 w-full px-6 md:px-8 pb-4 flex justify-end items-center gap-2 sm:gap-3 shrink-0"
-        style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-      >
+      <header className="relative z-10 w-full px-6 md:px-8 pb-4 pt-safe-top flex justify-end items-center gap-2 sm:gap-3 shrink-0">
         <button
           type="button"
           onClick={handleProfileClick}
@@ -237,10 +239,7 @@ export const MenuScreen = () => {
             </button>
           </div>
 
-          <div
-            className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-6 pt-4"
-            style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-          >
+          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pt-4 pb-safe-bottom">
             <div className="h-px w-12 bg-(--ui-border)" />
             <span
               className={`font-sans text-[8px] uppercase tracking-widest opacity-20 ${currentTheme.textMain}`}
@@ -260,130 +259,135 @@ export const MenuScreen = () => {
       />
 
       {showFullscreenHint && (
-        <div
-          className={bottomSheetBackdropClass(fullscreenHintVisible, 'z-50')}
-          onClick={closeFullscreenHint}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="fullscreen-hint-title"
-        >
+        <ModalPortal>
           <div
-            className={bottomSheetPanelClass(fullscreenHintVisible, 'px-5 pt-5 pb-8')}
-            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
+            className={bottomSheetBackdropClass(fullscreenHintVisible, 'z-50')}
+            onClick={closeFullscreenHint}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fullscreen-hint-title"
           >
-            <div className="flex justify-center pb-3">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-            </div>
-            <div className="flex justify-between items-start mb-4">
-              <p
-                id="fullscreen-hint-title"
-                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
-              >
-                {t.fullscreenUnavailableTitle}
+            <div
+              className={bottomSheetPanelClass(fullscreenHintVisible, 'px-5 pt-5 pb-safe-bottom-8')}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pb-3">
+                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              </div>
+              <div className="flex justify-between items-start mb-4">
+                <p
+                  id="fullscreen-hint-title"
+                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                >
+                  {t.fullscreenUnavailableTitle}
+                </p>
+                <button
+                  type="button"
+                  onClick={closeFullscreenHint}
+                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  aria-label={t.close}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <p className="text-(--ui-fg-muted) text-sm leading-relaxed font-sans mb-6">
+                {t.fullscreenUnavailableBody}
               </p>
               <button
                 type="button"
                 onClick={closeFullscreenHint}
-                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
-                aria-label={t.close}
+                className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
               >
-                <X size={18} />
+                {t.close}
               </button>
             </div>
-            <p className="text-(--ui-fg-muted) text-sm leading-relaxed font-sans mb-6">
-              {t.fullscreenUnavailableBody}
-            </p>
-            <button
-              type="button"
-              onClick={closeFullscreenHint}
-              className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
-            >
-              {t.close}
-            </button>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {showQuickJoin && (
-        <div
-          className={bottomSheetBackdropClass(quickJoinVisible, 'z-50')}
-          onClick={closeQuickJoin}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="quick-join-title"
-        >
+        <ModalPortal>
           <div
-            className={bottomSheetPanelClass(quickJoinVisible, 'px-5 pt-5 pb-8 max-w-sm')}
-            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
+            className={bottomSheetBackdropClass(quickJoinVisible, 'z-50')}
+            onClick={closeQuickJoin}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quick-join-title"
           >
-            <div className="flex justify-center pb-3">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-            </div>
+            <div
+              className={bottomSheetPanelClass(
+                quickJoinVisible,
+                'px-5 pt-5 pb-safe-bottom-8 max-w-sm'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pb-3">
+                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              </div>
 
-            <div className="flex justify-between items-start mb-4">
-              <p
-                id="quick-join-title"
-                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
-              >
-                {t.enterCode}
-              </p>
+              <div className="flex justify-between items-start mb-4">
+                <p
+                  id="quick-join-title"
+                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                >
+                  {t.enterCode}
+                </p>
+                <button
+                  type="button"
+                  onClick={closeQuickJoin}
+                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  aria-label={t.close}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="rounded-3xl bg-(--ui-surface) border border-(--ui-border) px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={quickJoinCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      if (val.length <= ROOM_CODE_LENGTH) setQuickJoinCode(val);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void handleQuickJoin();
+                    }}
+                    placeholder="00000"
+                    data-testid="menu-quick-join-code"
+                    className="flex-1 bg-transparent text-(--ui-fg) font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-(--ui-fg-muted)"
+                    aria-label={t.enterCode}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleQuickJoin()}
+                    disabled={!canQuickJoin || quickJoinChecking}
+                    data-testid="menu-quick-join-submit"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) transition-all active:scale-95 disabled:opacity-40"
+                    aria-label={t.enter}
+                  >
+                    {quickJoinChecking ? (
+                      <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                    ) : (
+                      <ArrowRight size={18} strokeWidth={2.5} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={closeQuickJoin}
-                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
-                aria-label={t.close}
+                className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]`}
               >
-                <X size={18} />
+                {t.cancel}
               </button>
             </div>
-
-            <div className="rounded-3xl bg-(--ui-surface) border border-(--ui-border) px-4 py-3">
-              <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={quickJoinCode}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    if (val.length <= ROOM_CODE_LENGTH) setQuickJoinCode(val);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') void handleQuickJoin();
-                  }}
-                  placeholder="00000"
-                  data-testid="menu-quick-join-code"
-                  className="flex-1 bg-transparent text-(--ui-fg) font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-(--ui-fg-muted)"
-                  aria-label={t.enterCode}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleQuickJoin()}
-                  disabled={!canQuickJoin || quickJoinChecking}
-                  data-testid="menu-quick-join-submit"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) transition-all active:scale-95 disabled:opacity-40"
-                  aria-label={t.enter}
-                >
-                  {quickJoinChecking ? (
-                    <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                  ) : (
-                    <ArrowRight size={18} strokeWidth={2.5} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={closeQuickJoin}
-              className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]`}
-            >
-              {t.cancel}
-            </button>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}

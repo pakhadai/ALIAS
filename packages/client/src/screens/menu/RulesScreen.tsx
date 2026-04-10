@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../components/Button';
-import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
+import {
+  bottomSheetBackdropClass,
+  bottomSheetPanelClass,
+  ModalPortal,
+} from '../../components/Shared';
 import { GameState, GameMode } from '../../types';
 import type { GameSettings, ThemeConfig } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -255,49 +259,51 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   };
 
   return (
-    <div
-      className={`${bottomSheetBackdropClass(visible, 'z-100')}`}
-      onClick={handleClose}
-      role="presentation"
-    >
+    <ModalPortal>
       <div
-        className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col min-h-0')}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t.rulesTitle}
+        className={`${bottomSheetBackdropClass(visible, 'z-100')}`}
+        onClick={handleClose}
+        role="presentation"
       >
-        <div className="flex justify-center pt-2 pb-0 shrink-0">
-          <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
-        </div>
-        <div className="shrink-0 px-7 pt-2 pb-3 flex items-center justify-between">
-          <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
-          <button
-            onClick={handleClose}
-            className="opacity-40 hover:opacity-100 transition-opacity p-2"
-          >
-            <X size={22} className={currentTheme.iconColor} />
-          </button>
-        </div>
-        <div className="shrink-0 px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-          {TABS.map((tab) => (
+        <div
+          className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col min-h-0')}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.rulesTitle}
+        >
+          <div className="flex justify-center pt-2 pb-0 shrink-0">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
+          </div>
+          <div className="shrink-0 px-7 pt-2 pb-3 flex items-center justify-between">
+            <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? `${currentTheme.button} shadow-lg` : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`}`}
+              onClick={handleClose}
+              className="opacity-40 hover:opacity-100 transition-opacity p-2"
             >
-              {tabLabels[tab]}
+              <X size={22} className={currentTheme.iconColor} />
             </button>
-          ))}
-        </div>
-        <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
-        <div className="shrink-0 px-8 pb-8 pt-4">
-          <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
-            {t.close}
-          </Button>
+          </div>
+          <div className="shrink-0 px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? `${currentTheme.button} shadow-lg` : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`}`}
+              >
+                {tabLabels[tab]}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
+          <div className="shrink-0 px-8 pb-8 pt-4">
+            <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
+              {t.close}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 };
 

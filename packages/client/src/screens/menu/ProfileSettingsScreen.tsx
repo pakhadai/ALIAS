@@ -59,10 +59,7 @@ export const ProfileSettingsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header
-          className="flex items-center px-6 md:px-8 pb-4 gap-3"
-          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-        >
+        <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
           <button
             onClick={() => setGameState(GameState.PROFILE)}
             className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
@@ -190,10 +187,7 @@ export const ProfileSettingsScreen = () => {
           )}
         </div>
 
-        <div
-          className="px-6 md:px-8 py-4"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-        >
+        <div className="px-6 md:px-8 pt-4 pb-safe-bottom">
           <button
             onClick={handleSave}
             disabled={saving}

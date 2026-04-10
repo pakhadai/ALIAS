@@ -4,6 +4,7 @@ const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'В
 import type { GameSettings } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import { randomInt } from 'crypto';
+import { GameMode } from '@alias/shared';
 
 export class WordService {
   private prisma: PrismaClient | null = null;
@@ -63,9 +64,27 @@ export class WordService {
             language: general.language,
             concept: { pack: { id: { in: selectedPackIds } } },
           },
-          select: { word: true },
+          select:
+            settings.mode.gameMode === GameMode.QUIZ
+              ? { word: true, conceptId: true, synonyms: true, antonyms: true, tabooWords: true }
+              : { word: true },
         });
-        dbWords = rows.map((r: { word: string }) => r.word);
+        if (settings.mode.gameMode === GameMode.QUIZ) {
+          const quizRows = rows as unknown as {
+            word: string;
+            conceptId: string;
+            synonyms: string[];
+            antonyms: string[];
+            tabooWords: string[];
+          }[];
+          const translationMap = await this.fetchTargetTranslations(settings, quizRows);
+          const quizTypes =
+            (settings.mode.gameMode === GameMode.QUIZ && settings.mode.quizTypes) ||
+            ({ synonyms: true, antonyms: true, taboo: true, translation: false } as const);
+          dbWords = this.buildQuizEntriesFromRows(quizRows, translationMap, quizTypes);
+        } else {
+          dbWords = (rows as unknown as { word: string }[]).map((r) => r.word);
+        }
       } else if (dbCategories.length > 0) {
         const rows = await this.prisma.wordTranslation.findMany({
           where: {
@@ -78,9 +97,27 @@ export class WordService {
               },
             },
           },
-          select: { word: true },
+          select:
+            settings.mode.gameMode === GameMode.QUIZ
+              ? { word: true, conceptId: true, synonyms: true, antonyms: true, tabooWords: true }
+              : { word: true },
         });
-        dbWords = rows.map((r: { word: string }) => r.word);
+        if (settings.mode.gameMode === GameMode.QUIZ) {
+          const quizRows = rows as unknown as {
+            word: string;
+            conceptId: string;
+            synonyms: string[];
+            antonyms: string[];
+            tabooWords: string[];
+          }[];
+          const translationMap = await this.fetchTargetTranslations(settings, quizRows);
+          const quizTypes =
+            (settings.mode.gameMode === GameMode.QUIZ && settings.mode.quizTypes) ||
+            ({ synonyms: true, antonyms: true, taboo: true, translation: false } as const);
+          dbWords = this.buildQuizEntriesFromRows(quizRows, translationMap, quizTypes);
+        } else {
+          dbWords = (rows as unknown as { word: string }[]).map((r) => r.word);
+        }
       }
     }
 
@@ -97,6 +134,100 @@ export class WordService {
       pool.length > 0 ? pool : generalFallback.length > 0 ? generalFallback : EMERGENCY_WORDS;
 
     return this.shuffleArray(finalPool);
+  }
+
+  private async fetchTargetTranslations(
+    settings: GameSettings,
+    rows: { conceptId: string }[]
+  ): Promise<Map<string, string>> {
+    const srcLang = settings.general.language;
+    const targetLang = settings.general.targetLanguage;
+    const needTranslation =
+      settings.mode.gameMode === GameMode.QUIZ &&
+      settings.mode.quizTypes?.translation !== false &&
+      !!targetLang &&
+      targetLang !== srcLang;
+
+    const map = new Map<string, string>();
+    if (!needTranslation) return map;
+    if (!this.prisma) return map;
+
+    const conceptIds = [...new Set(rows.map((r) => r.conceptId).filter(Boolean))];
+    if (conceptIds.length === 0) return map;
+
+    const targetRows = await this.prisma.wordTranslation.findMany({
+      where: { conceptId: { in: conceptIds }, language: targetLang },
+      select: { conceptId: true, word: true },
+    });
+    for (const r of targetRows) {
+      if (r.conceptId && r.word) map.set(r.conceptId, r.word);
+    }
+    return map;
+  }
+
+  private buildQuizEntriesFromRows(
+    rows: {
+      word: string;
+      conceptId: string;
+      synonyms: string[];
+      antonyms: string[];
+      tabooWords: string[];
+    }[],
+    targetByConceptId: Map<string, string>,
+    quizTypes: { synonyms: boolean; antonyms: boolean; taboo: boolean; translation: boolean }
+  ): string[] {
+    const buildEncoded = (payload: { kind: string; prompt: string; answer: string }) =>
+      JSON.stringify({ v: 1, ...payload });
+
+    const basicEntries: string[] = [];
+    const synonymEntries: string[] = [];
+    const antonymEntries: string[] = [];
+    const tabooEntries: string[] = [];
+    const translationEntries: string[] = [];
+
+    for (const r of rows) {
+      const word = (r.word ?? '').trim();
+      if (!word) continue;
+
+      // Always include a BASIC fallback task (word == answer) so the deck never becomes empty
+      basicEntries.push(buildEncoded({ kind: 'BASIC', prompt: word, answer: word }));
+
+      const syns = (r.synonyms ?? []).map((s) => s.trim()).filter(Boolean);
+      const ants = (r.antonyms ?? []).map((s) => s.trim()).filter(Boolean);
+      const taboos = (r.tabooWords ?? []).map((s) => s.trim()).filter(Boolean);
+
+      // Keep deck size reasonable: max 2 synonym/antonym tasks per word.
+      if (quizTypes.synonyms) {
+        for (const s of this.shuffleArray(syns).slice(0, 2)) {
+          synonymEntries.push(buildEncoded({ kind: 'SYNONYM', prompt: word, answer: s }));
+        }
+      }
+      if (quizTypes.antonyms) {
+        for (const a of this.shuffleArray(ants).slice(0, 2)) {
+          antonymEntries.push(buildEncoded({ kind: 'ANTONYM', prompt: word, answer: a }));
+        }
+      }
+
+      if (quizTypes.taboo && taboos.length >= 3) {
+        const hints = taboos.slice(0, 6).join(', ');
+        tabooEntries.push(buildEncoded({ kind: 'TABOO', prompt: hints, answer: word }));
+      }
+
+      const target = targetByConceptId.get(r.conceptId);
+      if (quizTypes.translation && target) {
+        translationEntries.push(
+          buildEncoded({ kind: 'TRANSLATION', prompt: word, answer: target })
+        );
+      }
+    }
+
+    return this.shuffleArray([
+      ...synonymEntries,
+      ...antonymEntries,
+      ...tabooEntries,
+      ...translationEntries,
+      ...basicEntries,
+    ]);
   }
 
   async nextWord(

@@ -4,7 +4,7 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { fetchStore, type StoreData } from '../../services/api';
 import { AvatarDisplay } from '../AvatarDisplay';
-import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
+import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
 import { GameState } from '../../types';
 import { useT } from '../../hooks/useT';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
@@ -198,237 +198,238 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   ];
 
   return (
-    <div className={bottomSheetBackdropClass(visible, 'z-50')} onClick={handleClose}>
-      <div
-        className={bottomSheetPanelClass(visible, 'max-w-sm')}
-        style={{ maxHeight: '90vh' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close */}
-        <div className="flex justify-end px-5 pt-5 pb-0">
-          <button
-            onClick={handleClose}
-            className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <ModalPortal>
+      <div className={bottomSheetBackdropClass(visible, 'z-50')} onClick={handleClose}>
+        <div
+          className={bottomSheetPanelClass(visible, 'max-w-sm')}
+          style={{ maxHeight: '90vh' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close */}
+          <div className="flex justify-end px-5 pt-5 pb-0">
+            <button
+              onClick={handleClose}
+              className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-        {/* Avatar + identity */}
-        <div className="flex flex-col items-center pt-2 pb-7 px-6">
-          <div className="relative">
-            {avatarId != null ? (
-              <AvatarDisplay avatarId={avatarId} size={76} />
-            ) : (
-              <div className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center">
-                <AvatarIcon />
-              </div>
-            )}
-            <span
-              className="absolute -bottom-3 left-1/2 -translate-x-1/2
+          {/* Avatar + identity */}
+          <div className="flex flex-col items-center pt-2 pb-7 px-6">
+            <div className="relative">
+              {avatarId != null ? (
+                <AvatarDisplay avatarId={avatarId} size={76} />
+              ) : (
+                <div className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center">
+                  <AvatarIcon />
+                </div>
+              )}
+              <span
+                className="absolute -bottom-3 left-1/2 -translate-x-1/2
               bg-(--ui-accent) text-(--ui-accent-contrast) text-[7px] font-bold tracking-[0.18em]
               uppercase px-3 py-[3px] rounded-full whitespace-nowrap shadow-md"
-            >
-              {badgeLabel}
-            </span>
-          </div>
+              >
+                {badgeLabel}
+              </span>
+            </div>
 
-          <h2 className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)">
-            {displayName}
-          </h2>
-          <p className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)">{displaySub}</p>
+            <h2 className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)">
+              {displayName}
+            </h2>
+            <p className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)">{displaySub}</p>
 
-          <p className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)">
-            {statsSummaryLine}
-          </p>
+            <p className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)">
+              {statsSummaryLine}
+            </p>
 
-          <button
-            type="button"
-            onClick={openDetailedStats}
-            className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:text-(--ui-accent-hover) transition-colors"
-          >
-            {t.profileStatsDetailLink}
-          </button>
-
-          {showAdminEntry && (
             <button
               type="button"
-              onClick={openAdminPanel}
-              className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
-                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) border border-(--ui-border)'}`}
+              onClick={openDetailedStats}
+              className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:text-(--ui-accent-hover) transition-colors"
             >
-              <Shield size={16} strokeWidth={2.25} aria-hidden />
-              {t.profileAdminPanel}
+              {t.profileStatsDetailLink}
             </button>
-          )}
-        </div>
 
-        {/* Google Sign-In (only for anonymous) — Google's button rendered via SDK */}
-        {isAnonymous && (
-          <div className="px-6 pb-6 flex justify-center">
-            {/* renderButton() paints here. min-h prevents layout shift while loading. */}
-            <div ref={googleButtonRef} className="w-full max-w-[320px] min-h-[44px]" />
-          </div>
-        )}
-
-        {/* Divider */}
-        <div className="h-px bg-(--ui-border)" />
-
-        {/* Purchases / benefits */}
-        <div className="relative overflow-y-auto" style={{ maxHeight: '40vh' }}>
-          <div className="px-6 pt-5 pb-2">
-            <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
-              {purchases.length > 0 ? t.profilePurchasesTitle : t.profileBenefitsTitle}
-            </p>
+            {showAdminEntry && (
+              <button
+                type="button"
+                onClick={openAdminPanel}
+                className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
+                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) border border-(--ui-border)'}`}
+              >
+                <Shield size={16} strokeWidth={2.25} aria-hidden />
+                {t.profileAdminPanel}
+              </button>
+            )}
           </div>
 
-          {purchases.length > 0 ? (
-            <div className="px-6 pb-2">
-              {purchases.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between py-3 border-b border-(--ui-border)"
-                >
-                  <div>
-                    <p className="text-[14px] font-sans text-(--ui-fg)">
-                      {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
-                    </p>
-                    <p className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)">
-                      {new Date(p.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Check size={14} className="text-(--ui-accent)" />
-                </div>
-              ))}
+          {/* Google Sign-In (only for anonymous) — Google's button rendered via SDK */}
+          {isAnonymous && (
+            <div className="px-6 pb-6 flex justify-center">
+              {/* renderButton() paints here. min-h prevents layout shift while loading. */}
+              <div ref={googleButtonRef} className="w-full max-w-[320px] min-h-[44px]" />
             </div>
-          ) : (
-            <div className="px-6 pb-4">
-              <div className="grid grid-cols-2 gap-3">
-                {benefits.slice(0, 4).map((item, i) => (
+          )}
+
+          {/* Divider */}
+          <div className="h-px bg-(--ui-border)" />
+
+          {/* Purchases / benefits */}
+          <div className="relative overflow-y-auto" style={{ maxHeight: '40vh' }}>
+            <div className="px-6 pt-5 pb-2">
+              <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
+                {purchases.length > 0 ? t.profilePurchasesTitle : t.profileBenefitsTitle}
+              </p>
+            </div>
+
+            {purchases.length > 0 ? (
+              <div className="px-6 pb-2">
+                {purchases.map((p) => (
                   <div
-                    key={i}
-                    className="rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4"
+                    key={p.id}
+                    className="flex items-center justify-between py-3 border-b border-(--ui-border)"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-[18px] leading-none">{item.emoji}</span>
-                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
-                        {item.label}
+                    <div>
+                      <p className="text-[14px] font-sans text-(--ui-fg)">
+                        {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
+                      </p>
+                      <p className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)">
+                        {new Date(p.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
-                      {item.sub}
-                    </p>
+                    <Check size={14} className="text-(--ui-accent)" />
                   </div>
                 ))}
               </div>
-              {benefits.length > 4 && (
-                <div className="mt-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[18px] leading-none">{benefits[4]?.emoji}</span>
-                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
-                      {benefits[4]?.label}
+            ) : (
+              <div className="px-6 pb-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {benefits.slice(0, 4).map((item, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-[18px] leading-none">{item.emoji}</span>
+                        <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                          {item.label}
+                        </p>
+                      </div>
+                      <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
+                        {item.sub}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {benefits.length > 4 && (
+                  <div className="mt-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[18px] leading-none">{benefits[4]?.emoji}</span>
+                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                        {benefits[4]?.label}
+                      </p>
+                    </div>
+                    <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
+                      {benefits[4]?.sub}
                     </p>
                   </div>
-                  <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
-                    {benefits[4]?.sub}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {/* Scroll hint mask (fade-out) */}
-          <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 h-10"
-            style={{
-              background:
-                'linear-gradient(to bottom, transparent 0%, color-mix(in_srgb, var(--ui-bg) 92%, transparent) 85%, var(--ui-bg) 100%)',
-            }}
-            aria-hidden
-          />
-        </div>
+            {/* Scroll hint mask (fade-out) */}
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-10"
+              style={{
+                background:
+                  'linear-gradient(to bottom, transparent 0%, color-mix(in_srgb, var(--ui-bg) 92%, transparent) 85%, var(--ui-bg) 100%)',
+              }}
+              aria-hidden
+            />
+          </div>
 
-        {/* Divider */}
-        <div className="h-px bg-(--ui-border)" />
+          {/* Divider */}
+          <div className="h-px bg-(--ui-border)" />
 
-        {/* Logout */}
-        <div
-          className="px-6 py-5"
-          style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
-        >
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            disabled={loggingOut}
-            className="w-full text-center text-(--ui-danger) font-sans font-bold
+          {/* Logout */}
+          <div className="px-6 pt-5 pb-safe-bottom-md">
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              disabled={loggingOut}
+              className="w-full text-center text-(--ui-danger) font-sans font-bold
               text-[10px] tracking-[0.3em] uppercase py-3
               hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
-          >
-            {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'LOGOUT'}
-          </button>
-        </div>
-      </div>
-
-      {showLogoutConfirm && (
-        <div
-          className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-60')}
-          onClick={closeLogoutConfirm}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="profile-logout-confirm-title"
-        >
-          <div
-            className={bottomSheetPanelClass(logoutConfirmVisible, 'px-5 pt-5 pb-8 max-w-sm')}
-            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center pb-3">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-            </div>
-
-            <div className="flex justify-between items-start mb-4">
-              <p
-                id="profile-logout-confirm-title"
-                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
-              >
-                Ви впевнені, що хочете вийти?
-              </p>
-              <button
-                type="button"
-                onClick={closeLogoutConfirm}
-                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
-                aria-label={t.close}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={closeLogoutConfirm}
-                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
-              >
-                {t.cancel}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                disabled={loggingOut}
-                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
-              >
-                {loggingOut ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    Вихід...
-                  </span>
-                ) : (
-                  'Вийти'
-                )}
-              </button>
-            </div>
+            >
+              {loggingOut ? <Loader2 size={14} className="animate-spin inline" /> : 'LOGOUT'}
+            </button>
           </div>
         </div>
-      )}
-    </div>
+
+        {showLogoutConfirm && (
+          <div
+            className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-60')}
+            onClick={closeLogoutConfirm}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-logout-confirm-title"
+          >
+            <div
+              className={bottomSheetPanelClass(
+                logoutConfirmVisible,
+                'px-5 pt-5 pb-safe-bottom-8 max-w-sm'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pb-3">
+                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              </div>
+
+              <div className="flex justify-between items-start mb-4">
+                <p
+                  id="profile-logout-confirm-title"
+                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                >
+                  Ви впевнені, що хочете вийти?
+                </p>
+                <button
+                  type="button"
+                  onClick={closeLogoutConfirm}
+                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  aria-label={t.close}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={closeLogoutConfirm}
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  disabled={loggingOut}
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
+                >
+                  {loggingOut ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 size={16} className="animate-spin" />
+                      Вихід...
+                    </span>
+                  ) : (
+                    'Вийти'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </ModalPortal>
   );
 }

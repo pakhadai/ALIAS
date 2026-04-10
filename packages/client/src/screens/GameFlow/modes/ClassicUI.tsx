@@ -57,10 +57,7 @@ export const ClassicActionFooter: React.FC<ClassicActionFooterProps> = ({
   onCorrect,
   onSkip,
 }) => (
-  <footer
-    className="w-full fixed bottom-0 left-0 z-20 flex"
-    style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-  >
+  <footer className="w-full fixed bottom-0 left-0 z-20 flex pb-env-bottom">
     <button
       type="button"
       onClick={onSkip}

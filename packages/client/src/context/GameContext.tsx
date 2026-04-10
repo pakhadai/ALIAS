@@ -684,7 +684,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                           case GameMode.CLASSIC:
                           case GameMode.TRANSLATION:
                           case GameMode.SYNONYMS:
-                          case GameMode.QUIZ:
                           default:
                             return {
                               gameMode: nextGameMode,
@@ -692,6 +691,48 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 patch.classicRoundTime ??
                                 (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
                             };
+                          case GameMode.QUIZ: {
+                            const prevQuiz =
+                              prev.gameMode === GameMode.QUIZ
+                                ? prev
+                                : {
+                                    gameMode: GameMode.QUIZ as const,
+                                    classicRoundTime:
+                                      prev.gameMode !== GameMode.IMPOSTER
+                                        ? prev.classicRoundTime
+                                        : 60,
+                                    quizTimerMode: 'ROUND' as const,
+                                    quizRoundTime:
+                                      prev.gameMode !== GameMode.IMPOSTER
+                                        ? prev.classicRoundTime
+                                        : 60,
+                                    quizQuestionTime: 10,
+                                    quizTypes: {
+                                      synonyms: true,
+                                      antonyms: true,
+                                      taboo: true,
+                                      translation: false,
+                                    },
+                                    quizWrongPenaltyEnabled: false,
+                                  };
+
+                            return {
+                              ...prevQuiz,
+                              gameMode: GameMode.QUIZ,
+                              classicRoundTime: patch.classicRoundTime ?? prevQuiz.classicRoundTime,
+                              quizTimerMode: patch.quizTimerMode ?? prevQuiz.quizTimerMode,
+                              quizRoundTime:
+                                patch.quizRoundTime ??
+                                patch.classicRoundTime ??
+                                prevQuiz.quizRoundTime,
+                              quizQuestionTime: patch.quizQuestionTime ?? prevQuiz.quizQuestionTime,
+                              quizTypes: patch.quizTypes
+                                ? { ...prevQuiz.quizTypes, ...patch.quizTypes }
+                                : prevQuiz.quizTypes,
+                              quizWrongPenaltyEnabled:
+                                patch.quizWrongPenaltyEnabled ?? prevQuiz.quizWrongPenaltyEnabled,
+                            };
+                          }
                         }
                       })(),
                     }
@@ -893,6 +934,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentTeamIndex: syncState.currentTeamIndex,
         currentWord: syncState.currentWord,
         currentTask: syncState.currentTask ?? null,
+        currentTaskAnswered: syncState.currentTaskAnswered,
         currentRoundStats: syncState.currentRoundStats,
         timeLeft: syncState.timeLeft,
         isPaused: syncState.isPaused,

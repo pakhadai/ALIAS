@@ -84,20 +84,32 @@ export const RoundSummaryScreen = () => {
             {points}
           </span>
           <p
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] opacity-40 ${currentTheme.textMain}`}
+            className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] ${currentTheme.textSecondary}`}
           >
             {t.roundPoints}
           </p>
         </div>
 
         <div className="w-full max-w-xs space-y-3">
-          <div className="flex justify-between items-center px-4 opacity-60">
-            <span className="text-[10px] font-bold uppercase tracking-widest">{t.guessed}</span>
-            <span className="font-serif text-xl">{currentRoundStats.correct}</span>
+          <div className="flex justify-between items-center px-4">
+            <span
+              className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+            >
+              {t.guessed}
+            </span>
+            <span className={`font-serif text-xl ${currentTheme.textMain}`}>
+              {currentRoundStats.correct}
+            </span>
           </div>
-          <div className="flex justify-between items-center px-4 opacity-60">
-            <span className="text-[10px] font-bold uppercase tracking-widest">{t.skippedWord}</span>
-            <span className="font-serif text-xl">{currentRoundStats.skipped}</span>
+          <div className="flex justify-between items-center px-4">
+            <span
+              className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+            >
+              {t.skippedWord}
+            </span>
+            <span className={`font-serif text-xl ${currentTheme.textMain}`}>
+              {currentRoundStats.skipped}
+            </span>
           </div>
         </div>
       </div>

@@ -47,7 +47,7 @@ export const PreRoundScreen = () => {
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="space-y-8 animate-pop-in w-full max-w-sm">
           <h2
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] opacity-40 ${currentTheme.textMain}`}
+            className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] ${currentTheme.textSecondary}`}
           >
             {t.playingNow}
           </h2>
@@ -78,7 +78,7 @@ export const PreRoundScreen = () => {
 
           {gameMode === 'OFFLINE' && (
             <div
-              className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] opacity-50 ${currentTheme.textSecondary}`}
+              className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] ${currentTheme.textSecondary}`}
             >
               {t.passPhoneTo.replace('{0}', explainer.name)}
             </div>
@@ -96,7 +96,7 @@ export const PreRoundScreen = () => {
               </Button>
             ) : (
               <p
-                className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}
+                className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
               >
                 {t.waitAdmin}
               </p>
@@ -105,7 +105,7 @@ export const PreRoundScreen = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] to-transparent pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-safe-bottom bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] to-transparent pointer-events-none">
         <div className="max-w-sm mx-auto pointer-events-auto">
           <Button
             themeClass={currentTheme.button}

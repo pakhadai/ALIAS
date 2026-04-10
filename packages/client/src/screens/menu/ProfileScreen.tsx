@@ -16,7 +16,11 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useT } from '../../hooks/useT';
-import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../../components/Shared';
+import {
+  bottomSheetBackdropClass,
+  bottomSheetPanelClass,
+  ModalPortal,
+} from '../../components/Shared';
 
 export function ProviderBadge({ provider }: { provider: string }) {
   const label =
@@ -83,10 +87,7 @@ export const ProfileScreen = () => {
       className={`flex flex-col min-h-screen items-center ${currentTheme.bg} transition-colors duration-500`}
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header
-          className="flex items-center px-6 pb-4 md:px-8"
-          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-        >
+        <header className="flex items-center px-6 pb-4 pt-safe-top md:px-8">
           <button
             onClick={() => setGameState(GameState.MENU)}
             className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
@@ -264,10 +265,7 @@ export const ProfileScreen = () => {
           )}
         </div>
 
-        <div
-          className="px-6 md:px-8 py-6"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
-        >
+        <div className="px-6 md:px-8 pt-6 pb-safe-bottom">
           <button
             onClick={() => setShowLogoutConfirm(true)}
             disabled={loggingOut}
@@ -283,64 +281,68 @@ export const ProfileScreen = () => {
       </div>
 
       {showLogoutConfirm && (
-        <div
-          className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-50')}
-          onClick={closeLogoutConfirm}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logout-confirm-title"
-        >
+        <ModalPortal>
           <div
-            className={bottomSheetPanelClass(logoutConfirmVisible, 'px-5 pt-5 pb-8 max-w-sm')}
-            style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
+            className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-50')}
+            onClick={closeLogoutConfirm}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-confirm-title"
           >
-            <div className="flex justify-center pb-3">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-            </div>
-            <div className="flex justify-between items-start mb-4">
-              <p
-                id="logout-confirm-title"
-                className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
-              >
-                {t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
-              </p>
-              <button
-                type="button"
-                onClick={closeLogoutConfirm}
-                className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
-                aria-label={t.close ?? 'Close'}
-              >
-                <X size={18} />
-              </button>
-            </div>
+            <div
+              className={bottomSheetPanelClass(
+                logoutConfirmVisible,
+                'px-5 pt-5 pb-safe-bottom-8 max-w-sm'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pb-3">
+                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              </div>
+              <div className="flex justify-between items-start mb-4">
+                <p
+                  id="logout-confirm-title"
+                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                >
+                  {t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
+                </p>
+                <button
+                  type="button"
+                  onClick={closeLogoutConfirm}
+                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  aria-label={t.close ?? 'Close'}
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={closeLogoutConfirm}
-                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
-              >
-                {t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                disabled={loggingOut}
-                className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
-              >
-                {loggingOut ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    {t.profileLogoutLoading ?? 'Logging out...'}
-                  </span>
-                ) : (
-                  (t.profileLogoutConfirm ?? 'Log out')
-                )}
-              </button>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={closeLogoutConfirm}
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                >
+                  {t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  disabled={loggingOut}
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
+                >
+                  {loggingOut ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 size={16} className="animate-spin" />
+                      {t.profileLogoutLoading ?? 'Logging out...'}
+                    </span>
+                  ) : (
+                    (t.profileLogoutConfirm ?? 'Log out')
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

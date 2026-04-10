@@ -91,6 +91,19 @@ const modeSettingsPartialSchema = z
   .object({
     gameMode: z.nativeEnum(GameMode),
     classicRoundTime: z.number().int().min(10).max(300),
+    quizTimerMode: z.enum(['ROUND', 'PER_TASK']).optional(),
+    quizRoundTime: z.number().int().min(10).max(300).optional(),
+    quizQuestionTime: z.number().int().min(3).max(60).optional(),
+    quizTypes: z
+      .object({
+        synonyms: z.boolean(),
+        antonyms: z.boolean(),
+        taboo: z.boolean(),
+        translation: z.boolean(),
+      })
+      .partial()
+      .optional(),
+    quizWrongPenaltyEnabled: z.boolean().optional(),
     imposterDiscussionTime: z
       .number()
       .int()

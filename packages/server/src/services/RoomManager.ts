@@ -33,6 +33,14 @@ export interface Room {
   currentWord: string;
   currentTask: GameTask | null;
   currentTaskAnswered?: string;
+  /** QUIZ: wrong guessers locked out until task changes (server-side anti-spam). */
+  currentTaskWrongAttempts?: string[];
+  /** QUIZ: scheduled advance to next task (micro-round pause). */
+  quizNextWordTimeout?: ReturnType<typeof setTimeout> | null;
+  /** QUIZ (PER_TASK timer): overall round countdown in seconds. */
+  quizRoundTimeLeft?: number;
+  /** QUIZ: when set, per-task timer should not tick until this timestamp (ms). */
+  quizTaskLockUntil?: number;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;
@@ -224,6 +232,10 @@ export class RoomManager {
       roundsPlayed: 0,
       createdAt: Date.now(),
       usedWords: [],
+      currentTaskWrongAttempts: [],
+      quizNextWordTimeout: null,
+      quizRoundTimeLeft: undefined,
+      quizTaskLockUntil: undefined,
       imposterPlayerId: undefined,
       imposterWord: undefined,
       imposterPhase: undefined,
@@ -272,6 +284,7 @@ export class RoomManager {
       wordDeck: syncState.wordDeck,
       currentWord: syncState.currentWord,
       currentTask: syncState.currentTask ?? null,
+      currentTaskAnswered: syncState.currentTaskAnswered,
       currentRoundStats: syncState.currentRoundStats,
       timeLeft: syncState.timeLeft,
       isPaused: true, // always pause on restore — server timer was lost
@@ -280,6 +293,10 @@ export class RoomManager {
       roundsPlayed: 0,
       createdAt: Date.now(),
       usedWords: [], // can't restore from Redis; new deck will be built fresh
+      currentTaskWrongAttempts: [],
+      quizNextWordTimeout: null,
+      quizRoundTimeLeft: undefined,
+      quizTaskLockUntil: undefined,
       // Restore IMPOSTER secret word — it was stored separately to keep it out of GameSyncState.
       // Without this, the RESULTS screen would show null after a server restart.
       imposterWord: imposterWord ?? undefined,
@@ -623,6 +640,7 @@ export class RoomManager {
       currentTeamIndex: room.currentTeamIndex,
       currentWord: room.currentTask?.prompt ?? room.currentWord,
       currentTask: room.currentTask,
+      currentTaskAnswered: room.currentTaskAnswered,
       currentRoundStats: room.currentRoundStats,
       timeLeft: room.timeLeft,
       isPaused: room.isPaused,

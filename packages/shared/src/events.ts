@@ -69,6 +69,8 @@ export interface GameSyncState {
   currentTeamIndex: number;
   currentWord: string;
   currentTask: GameTask | null;
+  /** QUIZ: playerId who solved currentTask first (server-side concurrency guard). */
+  currentTaskAnswered?: string;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;

@@ -4,6 +4,19 @@ export default {
   content: ['./index.html', './admin.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      padding: {
+        'safe-bottom': 'max(1.5rem, env(safe-area-inset-bottom))',
+        'safe-top': 'max(1.5rem, env(safe-area-inset-top))',
+        /** Fixed footers that previously used ~pb-8 */
+        'safe-bottom-8': 'max(2rem, env(safe-area-inset-bottom))',
+        'safe-top-sm': 'max(0.75rem, env(safe-area-inset-top))',
+        'safe-top-md': 'max(1.25rem, env(safe-area-inset-top))',
+        'safe-bottom-sm': 'max(1rem, env(safe-area-inset-bottom))',
+        'safe-bottom-md': 'max(1.25rem, env(safe-area-inset-bottom))',
+        /** Raw env() only (no minimum padding) */
+        'env-top': 'env(safe-area-inset-top)',
+        'env-bottom': 'env(safe-area-inset-bottom)',
+      },
       fontFamily: {
         sans: ['Lato', 'sans-serif'],
         serif: ["'Playfair Display'", 'serif'],

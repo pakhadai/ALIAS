@@ -5,6 +5,16 @@ import type { GeneralSettings } from './models';
 export type ModeSettingsUpdate = Partial<{
   gameMode: GameMode;
   classicRoundTime: number;
+  quizTimerMode: 'ROUND' | 'PER_TASK';
+  quizRoundTime: number;
+  quizQuestionTime: number;
+  quizTypes: Partial<{
+    synonyms: boolean;
+    antonyms: boolean;
+    taboo: boolean;
+    translation: boolean;
+  }>;
+  quizWrongPenaltyEnabled: boolean;
   imposterDiscussionTime: number;
 }>;
 

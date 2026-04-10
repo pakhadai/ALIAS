@@ -117,6 +117,8 @@ export interface AppState {
   wordDeck: string[];
   currentWord: string;
   currentTask: GameTask | null;
+  /** QUIZ: playerId who solved currentTask first (server sync). */
+  currentTaskAnswered?: string;
   currentRoundStats: RoundStats;
   timeLeft: number;
   isPaused: boolean;

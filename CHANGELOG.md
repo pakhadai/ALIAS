@@ -54,6 +54,21 @@
 
 ---
 
+## [2026-04-10] — QUIZ: типи завдань, штрафи та таймери
+
+### Added
+
+- **Розширені налаштування QUIZ у лобі:** вибір типів завдань (**синоніми / антоніми / табу / переклади**), тумблер **штрафу −1 за помилку**, та вибір таймера (**на раунд** або **на кожне питання**) — `packages/client/src/screens/lobby/SettingsScreen.tsx`, `packages/shared/src/models.ts`.
+- **PER_TASK таймер (“10 секунд на питання”):** авто-показ правильної відповіді та перехід до наступного питання після паузи; при цьому діє **загальний ліміт часу раунду** — `packages/server/src/services/GameEngine.ts`.
+
+### Changed
+
+- **QUIZ-дека** тепер збирається з метаданих (`synonyms`/`antonyms`/`tabooWords` + переклади за `targetLanguage`) і фільтрується згідно `quizTypes` — `packages/server/src/services/WordService.ts`, `packages/server/src/modes/QuizModeHandler.ts`.
+
+### Fixed
+
+- **Нарахування балів у QUIZ**: бал (або штраф) застосовується **до `senderId`**, не до “пояснювача”; додано мікро-паузу перед наступним завданням — `packages/server/src/services/GameEngine.ts`.
+
 ## [2026-04-08] — Глибокий аудит: критичні баги, безпека, розбиття монолітів, нова адмінка
 
 ### Fixed

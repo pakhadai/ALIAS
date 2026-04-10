@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
+const LADDER_TRACK_PX = 280;
+
 export const ScoreboardScreen = () => {
   const { teams, settings, currentTheme, handleNextRound, isHost } = useGame();
   const t = useT();
@@ -24,10 +26,7 @@ export const ScoreboardScreen = () => {
       className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}
     >
       {/* Header */}
-      <header
-        className="relative z-20 w-full px-6 pb-2 flex justify-center items-center bg-transparent backdrop-blur-lg"
-        style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-      >
+      <header className="relative z-20 w-full px-6 pb-2 pt-safe-top flex justify-center items-center bg-transparent backdrop-blur-lg">
         <div className="text-center">
           <h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>
         </div>
@@ -36,14 +35,14 @@ export const ScoreboardScreen = () => {
       <main className="flex-1 flex flex-col w-full relative overflow-y-auto no-scrollbar pb-32">
         {/* Visual Ladder/Path */}
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
-          <div className="absolute top-4 flex flex-col items-center z-0 opacity-40">
+          <div className="absolute top-4 flex flex-col items-center z-0 text-(--ui-fg-muted)">
             <span className="material-symbols-outlined mb-1 text-(--ui-accent)">emoji_events</span>
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-(--ui-accent)">
               {t.goal}: {goal}
             </span>
           </div>
 
-          <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10">
+          <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10 overflow-visible">
             <div className="absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 bg-(--ui-border)"></div>
 
             <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-(--ui-surface-hover) border-(--ui-bg)"></div>
@@ -56,13 +55,14 @@ export const ScoreboardScreen = () => {
             {teams.map((team, idx) => {
               const progress = Math.min(1, team.score / goal);
               const topPos = 100 - progress * 100;
+              const translateY = (topPos / 100) * LADDER_TRACK_PX;
               const isEven = idx % 2 === 0;
 
               return (
                 <div
                   key={team.id}
-                  className="absolute w-full h-0 z-20 flex justify-center transition-all duration-1000 ease-out"
-                  style={{ top: `${topPos}%` }}
+                  className="absolute top-0 left-0 right-0 h-0 z-20 flex justify-center transition-transform duration-1000 ease-out will-change-transform"
+                  style={{ transform: `translateY(${translateY}px)` }}
                 >
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-(--ui-border) transition-transform hover:scale-110"
@@ -144,7 +144,7 @@ export const ScoreboardScreen = () => {
       </main>
 
       {/* Footer Button */}
-      <footer className="fixed bottom-0 w-full pt-8 pb-8 px-6 z-30 pointer-events-auto bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent">
+      <footer className="fixed bottom-0 w-full pt-8 px-6 z-30 pointer-events-auto pb-safe-bottom-8 bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent">
         {isHost ? (
           <button
             onClick={handleNextRound}
@@ -156,7 +156,7 @@ export const ScoreboardScreen = () => {
           </button>
         ) : (
           <p
-            className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${textColor}`}
+            className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${subTextColor}`}
           >
             {t.waitAdmin}
           </p>

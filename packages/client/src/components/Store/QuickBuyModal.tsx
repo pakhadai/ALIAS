@@ -3,7 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import { createPaymentIntent } from '../../services/api';
-import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
+import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
@@ -152,51 +152,52 @@ export function QuickBuyModal({
   const sheetOpen = !isClosing;
 
   return (
-    <div
-      className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
-      onClick={requestClose}
-      role="presentation"
-    >
+    <ModalPortal>
       <div
-        className={bottomSheetPanelClass(sheetOpen, 'px-6 pt-5 pb-8')}
-        style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
+        className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+        onClick={requestClose}
+        role="presentation"
       >
-        {/* Handle */}
-        <div className="flex justify-center mb-5">
-          <div className="w-10 h-1 rounded-full bg-(--ui-border)" />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-serif text-xl tracking-wide text-(--ui-fg)">Швидка оплата</h2>
-          <button
-            onClick={requestClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
-          >
-            <X size={16} className="text-(--ui-fg-muted)" />
-          </button>
-        </div>
-
-        {/* Content */}
-        {loadError ? (
-          <p className="text-(--ui-danger) text-[13px] text-center py-8">{loadError}</p>
-        ) : !stripePromise ? (
-          <p className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)">
-            Платіжна система не налаштована
-          </p>
-        ) : !clientSecret ? (
-          <div className="flex justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-(--ui-fg-muted)" />
+        <div
+          className={bottomSheetPanelClass(sheetOpen, 'px-6 pt-5 pb-safe-bottom-8')}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Handle */}
+          <div className="flex justify-center mb-5">
+            <div className="w-10 h-1 rounded-full bg-(--ui-border)" />
           </div>
-        ) : (
-          <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-            <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
-          </Elements>
-        )}
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-serif text-xl tracking-wide text-(--ui-fg)">Швидка оплата</h2>
+            <button
+              onClick={requestClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
+            >
+              <X size={16} className="text-(--ui-fg-muted)" />
+            </button>
+          </div>
+
+          {/* Content */}
+          {loadError ? (
+            <p className="text-(--ui-danger) text-[13px] text-center py-8">{loadError}</p>
+          ) : !stripePromise ? (
+            <p className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)">
+              Платіжна система не налаштована
+            </p>
+          ) : !clientSecret ? (
+            <div className="flex justify-center py-12">
+              <Loader2 size={24} className="animate-spin text-(--ui-fg-muted)" />
+            </div>
+          ) : (
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+              <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
+            </Elements>
+          )}
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

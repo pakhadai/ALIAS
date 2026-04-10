@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Trophy } from 'lucide-react';
+import { Loader2, Trophy } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Confetti } from '../../../components/Shared';
 import { useGame } from '../../../context/GameContext';
@@ -19,12 +19,31 @@ type CanvasRenderingContext2DWithRoundRect = CanvasRenderingContext2D & {
   ) => void;
 };
 
+/** Ellipsis by measured width so wide glyphs do not overlap the score column. */
+function truncateCanvasTeamName(
+  ctx: CanvasRenderingContext2D,
+  name: string,
+  maxWidthPx: number
+): string {
+  if (maxWidthPx <= 0) return '';
+  if (ctx.measureText(name).width <= maxWidthPx) return name;
+  const ellipsis = '…';
+  let end = name.length;
+  while (end > 0) {
+    const candidate = name.slice(0, end) + ellipsis;
+    if (ctx.measureText(candidate).width <= maxWidthPx) return candidate;
+    end -= 1;
+  }
+  return ellipsis;
+}
+
 export const GameOverScreen = () => {
   const { teams, currentTheme, resetGame, rematch, leaveRoom, isHost } = useGame();
   const t = useT();
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const statsTrackedRef = useRef(false);
   const gameStats = usePlayerStats();
 
@@ -121,6 +140,9 @@ export const GameOverScreen = () => {
 
       // Teams
       const medals = ['🥇', '🥈', '🥉'];
+      const nameLeftX = 96;
+      const scoreRightX = W - 56;
+      const nameMaxWidth = scoreRightX - nameLeftX - 16;
       sorted.slice(0, 6).forEach((team, i) => {
         const y = 130 + i * 54;
         const alpha = i === 0 ? 1 : 0.75 - i * 0.08;
@@ -143,13 +165,14 @@ export const GameOverScreen = () => {
         // Team name
         ctx.font = i === 0 ? 'bold 20px Arial, sans-serif' : '18px Arial, sans-serif';
         ctx.fillStyle = i === 0 ? accent : fg;
-        ctx.fillText(team.name.slice(0, 22), 96, y);
+        const displayName = truncateCanvasTeamName(ctx, team.name, nameMaxWidth);
+        ctx.fillText(displayName, nameLeftX, y);
 
         // Score
         ctx.font = 'bold 20px Arial, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillStyle = i === 0 ? accent : 'color-mix(in_srgb,var(--ui-fg)_70%,transparent)';
-        ctx.fillText(`${team.score} ${t.pts ?? 'pts'}`, W - 56, y);
+        ctx.fillText(`${team.score} ${t.pts ?? 'pts'}`, scoreRightX, y);
         ctx.globalAlpha = 1;
       });
 
@@ -167,42 +190,48 @@ export const GameOverScreen = () => {
   };
 
   const handleShare = async () => {
-    const blob = await buildShareImage();
-    if (blob) {
-      const file = new File([blob], 'alias-result.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
+    if (isSharing) return;
+    setIsSharing(true);
+    try {
+      const blob = await buildShareImage();
+      if (blob) {
+        const file = new File([blob], 'alias-result.png', { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: `ALIAS — ${t.finalResults}` });
+            return;
+          } catch (_err) {
+            void _err;
+          }
+        }
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'alias-result.png';
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      // Final fallback: text share
+      const lines = sorted.map(
+        (team, i) => `${['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`} ${team.name}: ${team.score} ${t.pts}`
+      );
+      const text = `🎮 ALIAS — ${t.finalResults}\n${lines.join('\n')}`;
+      if (navigator.share) {
         try {
-          await navigator.share({ files: [file], title: `ALIAS — ${t.finalResults}` });
+          await navigator.share({ text });
           return;
         } catch (_err) {
           void _err;
         }
       }
-      // Fallback: download
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'alias-result.png';
-      a.click();
-      URL.revokeObjectURL(url);
-      return;
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } finally {
+      setIsSharing(false);
     }
-    // Final fallback: text share
-    const lines = sorted.map(
-      (team, i) => `${['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`} ${team.name}: ${team.score} ${t.pts}`
-    );
-    const text = `🎮 ALIAS — ${t.finalResults}\n${lines.join('\n')}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        return;
-      } catch (_err) {
-        void _err;
-      }
-    }
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const medals = ['🥇', '🥈', '🥉'];
@@ -210,8 +239,7 @@ export const GameOverScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-12 items-center overflow-y-auto no-scrollbar`}
-      style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-12 pb-safe-bottom items-center overflow-y-auto no-scrollbar`}
     >
       <Confetti />
 
@@ -227,7 +255,7 @@ export const GameOverScreen = () => {
       {/* Team leaderboard */}
       <div className="w-full max-w-sm space-y-2 animate-fade-in">
         <p
-          className={`text-[10px] uppercase tracking-widest font-bold opacity-40 mb-3 ${currentTheme.textMain}`}
+          className={`text-[10px] uppercase tracking-widest font-bold mb-3 ${currentTheme.textSecondary}`}
         >
           {t.finalResults}
         </p>
@@ -240,7 +268,7 @@ export const GameOverScreen = () => {
             <div className="flex-1 min-w-0">
               <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{team.name}</p>
               {team.players.length > 0 && (
-                <p className={`text-[10px] truncate opacity-40 ${currentTheme.textMain}`}>
+                <p className={`text-[10px] truncate ${currentTheme.textSecondary}`}>
                   {team.players.map((p: Player) => p.name).join(', ')}
                 </p>
               )}
@@ -248,7 +276,8 @@ export const GameOverScreen = () => {
             <span
               className={`font-bold text-base tabular-nums ${i === 0 ? 'text-(--ui-accent)' : currentTheme.textMain}`}
             >
-              {team.score} <span className="text-[10px] opacity-40">{t.pts}</span>
+              {team.score}{' '}
+              <span className={`text-[10px] ${currentTheme.textSecondary}`}>{t.pts}</span>
             </span>
           </div>
         ))}
@@ -258,7 +287,7 @@ export const GameOverScreen = () => {
       {topGuessers.length > 0 && (
         <div className="w-full max-w-sm mt-8 space-y-2 animate-fade-in">
           <p
-            className={`text-[10px] uppercase tracking-widest font-bold opacity-40 mb-3 ${currentTheme.textMain}`}
+            className={`text-[10px] uppercase tracking-widest font-bold mb-3 ${currentTheme.textSecondary}`}
           >
             {t.topGuessers ?? 'Top Guessers'}
           </p>
@@ -275,9 +304,7 @@ export const GameOverScreen = () => {
               )}
               <div className="flex-1 min-w-0">
                 <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{p.name}</p>
-                <p className={`text-[10px] truncate opacity-40 ${currentTheme.textMain}`}>
-                  {p.teamName}
-                </p>
+                <p className={`text-[10px] truncate ${currentTheme.textSecondary}`}>{p.teamName}</p>
               </div>
               <div className="text-right">
                 <span
@@ -285,7 +312,7 @@ export const GameOverScreen = () => {
                 >
                   {p.stats?.guessed ?? 0}
                 </span>
-                <p className={`text-[9px] opacity-40 ${currentTheme.textMain}`}>
+                <p className={`text-[9px] ${currentTheme.textSecondary}`}>
                   {t.guessedStat ?? 'guessed'}
                 </p>
               </div>
@@ -297,10 +324,22 @@ export const GameOverScreen = () => {
       {/* Actions */}
       <div className="w-full max-w-sm space-y-3 pt-6 pb-2">
         <button
+          type="button"
           onClick={handleShare}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all text-[12px] font-bold uppercase tracking-widest"
+          disabled={isSharing}
+          aria-busy={isSharing}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all text-[12px] font-bold uppercase tracking-widest disabled:pointer-events-none disabled:opacity-70"
         >
-          {copied ? t.shareCopied : t.shareResults}
+          {isSharing ? (
+            <>
+              <Loader2 size={18} className="animate-spin shrink-0" aria-hidden />
+              <span>{t.shareResults}</span>
+            </>
+          ) : copied ? (
+            t.shareCopied
+          ) : (
+            t.shareResults
+          )}
         </button>
 
         {isHost ? (
@@ -318,15 +357,18 @@ export const GameOverScreen = () => {
               {t.toLobby}
             </Button>
             <button
+              type="button"
               onClick={leaveRoom}
-              className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+              className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} hover:text-(--ui-fg) transition-colors`}
             >
               {t.toMainMenu}
             </button>
           </>
         ) : (
           <div className="space-y-3">
-            <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">
+            <p
+              className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
+            >
               {t.waitAdmin}
             </p>
             <Button

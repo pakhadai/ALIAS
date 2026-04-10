@@ -71,152 +71,163 @@ export const TeamSetupScreen = () => {
       <header className="flex justify-between items-center py-6 mb-8">
         <button
           onClick={() => setGameState(GameState.LOBBY)}
-          className="p-2 opacity-30 hover:opacity-100 transition-opacity"
+          type="button"
+          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors"
+          aria-label={t.backToLobby}
         >
-          <X size={20} className={currentTheme.iconColor} />
+          <X size={22} className={currentTheme.iconColor} />
         </button>
         <h2
           className={`text-[10px] font-sans uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
         >
           {t.teams}
         </h2>
-        <div className="w-10"></div>
+        <div className="min-w-11" aria-hidden />
       </header>
 
       <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar">
-        {teams.map((team: Team) => (
-          <div
-            key={team.id}
-            className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface)"
-            style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-3 h-3 rounded-full ${team.color}`} />
-              {editingTeamId === team.id ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    value={teamNameDraft}
-                    onChange={(e) => setTeamNameDraft(e.target.value)}
-                    className="flex-1 bg-transparent border-b border-(--ui-border) text-(--ui-fg) font-serif text-xl tracking-wide outline-none focus:border-(--ui-accent)"
-                    autoFocus
-                    maxLength={18}
-                  />
-                  <button
-                    type="button"
-                    onClick={applyRename}
-                    className="p-2 rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
-                    aria-label="Save"
-                  >
-                    <Check size={16} className={currentTheme.iconColor} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <h3 className={`font-serif text-xl ${currentTheme.textMain} truncate`}>
-                    {team.name}
-                  </h3>
-                  {canEdit && (
+        {teams.map((team: Team) => {
+          const isDropTarget =
+            canEdit && selectedPlayer != null && selectedPlayer.fromTeamId !== team.id;
+          return (
+            <div
+              key={team.id}
+              className={`p-6 rounded-3xl border bg-(--ui-surface) transition-[border-color,box-shadow,background-color] duration-200 ${
+                isDropTarget
+                  ? 'border-2 border-dashed border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_12%,var(--ui-surface))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--ui-accent)_18%,transparent)] motion-safe:animate-pulse'
+                  : 'border border-(--ui-border)'
+              }`}
+              style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-3 h-3 rounded-full ${team.color}`} />
+                {editingTeamId === team.id ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      value={teamNameDraft}
+                      onChange={(e) => setTeamNameDraft(e.target.value)}
+                      className="flex-1 bg-transparent border-b border-(--ui-border) text-(--ui-fg) font-serif text-xl tracking-wide outline-none focus:border-(--ui-accent)"
+                      autoFocus
+                      maxLength={18}
+                    />
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingTeamId(team.id);
-                        setTeamNameDraft(team.name);
-                      }}
-                      className="p-1.5 rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
-                      aria-label="Rename team"
-                      title="Rename"
+                      onClick={applyRename}
+                      className="min-h-11 min-w-11 inline-flex shrink-0 items-center justify-center rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
+                      aria-label="Save"
                     >
-                      <PencilLine size={14} className={`${currentTheme.iconColor} opacity-60`} />
+                      <Check size={18} className={currentTheme.iconColor} />
                     </button>
-                  )}
-                </div>
-              )}
-              <span className={`ml-auto text-[10px] ${currentTheme.textSecondary}`}>
-                ({team.players.length})
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {team.players.map((p: Player) => {
-                const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
-                const isSelected = selectedPlayer?.playerId === p.id;
-                return (
-                  <div
-                    key={p.id}
-                    role={canEdit ? 'button' : undefined}
-                    tabIndex={canEdit ? 0 : undefined}
-                    onClick={() => {
-                      if (!canEdit) return;
-                      setSelectedPlayer((cur) =>
-                        cur?.playerId === p.id ? null : { playerId: p.id, fromTeamId: team.id }
-                      );
-                    }}
-                    onKeyDown={(e) => {
-                      if (!canEdit) return;
-                      if (e.key === 'Enter' || e.key === ' ') {
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <h3 className={`font-serif text-xl ${currentTheme.textMain} truncate`}>
+                      {team.name}
+                    </h3>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingTeamId(team.id);
+                          setTeamNameDraft(team.name);
+                        }}
+                        className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-colors"
+                        aria-label="Rename team"
+                        title="Rename"
+                      >
+                        <PencilLine size={18} className={currentTheme.iconColor} />
+                      </button>
+                    )}
+                  </div>
+                )}
+                <span className={`ml-auto text-[10px] ${currentTheme.textSecondary}`}>
+                  ({team.players.length})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {team.players.map((p: Player) => {
+                  const online = gameMode === 'OFFLINE' || isPlayerSocketConnected(p);
+                  const isSelected = selectedPlayer?.playerId === p.id;
+                  return (
+                    <div
+                      key={p.id}
+                      role={canEdit ? 'button' : undefined}
+                      tabIndex={canEdit ? 0 : undefined}
+                      onClick={() => {
+                        if (!canEdit) return;
                         setSelectedPlayer((cur) =>
                           cur?.playerId === p.id ? null : { playerId: p.id, fromTeamId: team.id }
                         );
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-full flex items-center gap-2 border bg-(--ui-surface) border-(--ui-border) transition-all ${
-                      gameMode === 'ONLINE' && !online
-                        ? 'opacity-70 border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)]'
-                        : ''
-                    } ${isSelected ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]' : ''}`}
-                  >
-                    {p.avatarId != null ? (
-                      <AvatarDisplay avatarId={p.avatarId} size={20} />
-                    ) : (
-                      <span>{p.avatar}</span>
-                    )}
-                    <span
-                      className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}
+                      }}
+                      onKeyDown={(e) => {
+                        if (!canEdit) return;
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          setSelectedPlayer((cur) =>
+                            cur?.playerId === p.id ? null : { playerId: p.id, fromTeamId: team.id }
+                          );
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-full flex items-center gap-2 border bg-(--ui-surface) border-(--ui-border) transition-all ${
+                        gameMode === 'ONLINE' && !online
+                          ? 'opacity-70 border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)]'
+                          : ''
+                      } ${isSelected ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]' : ''}`}
                     >
-                      {p.name}
-                    </span>
-                    {gameMode === 'ONLINE' && !online && (
-                      <span className="text-[8px] font-bold uppercase text-(--ui-warning) opacity-90">
-                        {t.playerDisconnected}
+                      {p.avatarId != null ? (
+                        <AvatarDisplay avatarId={p.avatarId} size={20} />
+                      ) : (
+                        <span>{p.avatar}</span>
+                      )}
+                      <span
+                        className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}
+                      >
+                        {p.name}
                       </span>
-                    )}
-                  </div>
-                );
-              })}
-              {team.players.length === 0 && (
-                <span className={`text-[10px] italic ${currentTheme.textSecondary} opacity-50`}>
-                  {t.noPlayersInTeam}
-                </span>
+                      {gameMode === 'ONLINE' && !online && (
+                        <span className="text-[10px] font-bold uppercase text-(--ui-warning)">
+                          {t.playerDisconnected}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                {team.players.length === 0 && (
+                  <span className={`text-[10px] italic ${currentTheme.textSecondary}`}>
+                    {t.noPlayersInTeam}
+                  </span>
+                )}
+              </div>
+
+              {canEdit && selectedPlayer && selectedPlayer.fromTeamId !== team.id && (
+                <button
+                  type="button"
+                  onClick={() => moveSelectedTo(team.id)}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                >
+                  <MoveRight size={16} className={currentTheme.iconColor} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+                    Перемістити сюди
+                  </span>
+                </button>
               )}
             </div>
-
-            {canEdit && selectedPlayer && selectedPlayer.fromTeamId !== team.id && (
-              <button
-                type="button"
-                onClick={() => moveSelectedTo(team.id)}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
-              >
-                <MoveRight size={16} className={currentTheme.iconColor} />
-                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
-                  Перемістити сюди
-                </span>
-              </button>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <footer className="py-8 space-y-4">
         {canEdit && (
           <p
-            className={`text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 ${currentTheme.textMain}`}
+            className={`text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary}`}
           >
             Торкніться гравця, потім “Перемістити сюди”
           </p>
         )}
         {isHost && (
           <button
+            type="button"
             onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-            className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity mb-4 ${currentTheme.textMain}`}
+            className={`w-full text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary} hover:text-(--ui-fg) transition-colors mb-4`}
           >
             {t.shuffle}
           </button>
@@ -232,7 +243,9 @@ export const TeamSetupScreen = () => {
             {t.startGame}
           </Button>
         ) : (
-          <p className="text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse">
+          <p
+            className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
+          >
             {t.waitTeams}
           </p>
         )}

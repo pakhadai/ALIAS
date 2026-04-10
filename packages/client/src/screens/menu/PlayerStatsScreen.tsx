@@ -37,10 +37,7 @@ export const PlayerStatsScreen = () => {
   return (
     <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header
-          className="flex items-center px-6 md:px-8 pb-4 gap-3"
-          style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}
-        >
+        <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
           <button
             type="button"
             onClick={goBack}

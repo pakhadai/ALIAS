@@ -51,6 +51,7 @@ export const initialState: AppState = {
   wordDeck: [],
   currentWord: '',
   currentTask: null,
+  currentTaskAnswered: undefined,
   currentRoundStats: { correct: 0, skipped: 0, words: [], teamId: '', explainerName: '' },
   timeLeft: 0,
   isPaused: false,

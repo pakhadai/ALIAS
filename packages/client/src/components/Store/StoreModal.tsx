@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { LoginModal } from '../Auth/LoginModal';
-import { bottomSheetBackdropClass, bottomSheetPanelClass } from '../Shared';
+import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
 import {
   fetchStore,
   createCheckout,
@@ -262,158 +262,162 @@ export function StoreModal({ onClose }: StoreModalProps) {
   });
 
   return (
-    <>
-      <div
-        className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
-        onClick={requestClose}
-        role="presentation"
-      >
+    <ModalPortal>
+      <>
         <div
-          className={bottomSheetPanelClass(
-            sheetOpen,
-            'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!'
-          )}
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Магазин"
+          className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+          onClick={requestClose}
+          role="presentation"
         >
-          <div className="flex justify-center pt-2 pb-1 shrink-0">
-            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-          </div>
-          {/* Header */}
-          <div className="shrink-0 px-5 pt-3 pb-4 border-b border-(--ui-border)">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
-                  <ShoppingBag size={20} className="text-(--ui-accent)" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-(--ui-fg)">Магазин</h1>
-                  <p className="text-xs text-(--ui-fg-muted)">Додаткові словники, теми та звуки</p>
-                </div>
-              </div>
-              <button
-                onClick={requestClose}
-                className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all duration-150 ease-out active:scale-95"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-1 mt-4 p-1 bg-(--ui-surface) border border-(--ui-border) rounded-xl">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold tracking-wider transition-all duration-150 ease-out active:scale-95 ${
-                    activeTab === tab.id
-                      ? 'bg-(--ui-accent) text-(--ui-accent-contrast)'
-                      : 'text-(--ui-fg-muted) hover:text-(--ui-fg)'
-                  }`}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
-            {loading ? (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
-              </div>
-            ) : !storeData ? (
-              <div className="text-center py-12 text-(--ui-fg-muted)">
-                <p className="text-sm">Не вдалося завантажити магазин</p>
-                <button
-                  onClick={loadStore}
-                  className="mt-3 text-(--ui-accent) text-xs hover:text-(--ui-accent-hover)"
-                >
-                  Спробувати знову
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Word Packs */}
-                {activeTab === 'packs' && (
-                  <div className="space-y-6">
-                    {Object.entries(packsByLang).map(([lang, packs]) => (
-                      <div key={lang}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-base">{LANG_FLAGS[lang] || '🌐'}</span>
-                          <span className="text-xs font-bold uppercase tracking-widest text-(--ui-fg-muted)">
-                            {lang === 'UA' ? 'Українська' : lang === 'EN' ? 'English' : 'Deutsch'}
-                          </span>
-                        </div>
-                        <div className="space-y-2">
-                          {packs.map((p) => (
-                            <PackCard
-                              key={p.id}
-                              pack={p}
-                              onBuy={(id) => handleBuy('wordPack', id)}
-                              buying={buying}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Themes */}
-                {activeTab === 'themes' && (
-                  <div className="space-y-2">
-                    {storeData.themes.map((t) => (
-                      <ThemeCard
-                        key={t.id}
-                        theme={t}
-                        onBuy={(id) => handleBuy('theme', id)}
-                        buying={buying}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Sound Packs */}
-                {activeTab === 'sounds' && (
-                  <div className="space-y-2">
-                    {storeData.soundPacks.map((s) => (
-                      <SoundCard
-                        key={s.id}
-                        sp={s}
-                        onBuy={(id) => handleBuy('soundPack', id)}
-                        buying={buying}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
+          <div
+            className={bottomSheetPanelClass(
+              sheetOpen,
+              'flex max-h-[92dvh] flex-col min-h-0 max-w-lg!'
             )}
-          </div>
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Магазин"
+          >
+            <div className="flex justify-center pt-2 pb-1 shrink-0">
+              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+            </div>
+            {/* Header */}
+            <div className="shrink-0 px-5 pt-3 pb-4 border-b border-(--ui-border)">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-(--ui-surface) border border-(--ui-border)">
+                    <ShoppingBag size={20} className="text-(--ui-accent)" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold text-(--ui-fg)">Магазин</h1>
+                    <p className="text-xs text-(--ui-fg-muted)">
+                      Додаткові словники, теми та звуки
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={requestClose}
+                  className="p-2 rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all duration-150 ease-out active:scale-95"
+                >
+                  <X size={20} />
+                </button>
+              </div>
 
-          {/* Footer note */}
-          <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
-            <div className="flex items-center justify-center gap-1.5 text-(--ui-fg-muted) text-[10px]">
-              <ExternalLink size={10} />
-              <span>Оплата через Stripe — безпечно та швидко</span>
+              {/* Tabs */}
+              <div className="flex gap-1 mt-4 p-1 bg-(--ui-surface) border border-(--ui-border) rounded-xl">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold tracking-wider transition-all duration-150 ease-out active:scale-95 ${
+                      activeTab === tab.id
+                        ? 'bg-(--ui-accent) text-(--ui-accent-contrast)'
+                        : 'text-(--ui-fg-muted) hover:text-(--ui-fg)'
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+              {loading ? (
+                <div className="flex items-center justify-center h-40">
+                  <Loader2 size={24} className="animate-spin text-(--ui-accent)" />
+                </div>
+              ) : !storeData ? (
+                <div className="text-center py-12 text-(--ui-fg-muted)">
+                  <p className="text-sm">Не вдалося завантажити магазин</p>
+                  <button
+                    onClick={loadStore}
+                    className="mt-3 text-(--ui-accent) text-xs hover:text-(--ui-accent-hover)"
+                  >
+                    Спробувати знову
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Word Packs */}
+                  {activeTab === 'packs' && (
+                    <div className="space-y-6">
+                      {Object.entries(packsByLang).map(([lang, packs]) => (
+                        <div key={lang}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">{LANG_FLAGS[lang] || '🌐'}</span>
+                            <span className="text-xs font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+                              {lang === 'UA' ? 'Українська' : lang === 'EN' ? 'English' : 'Deutsch'}
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            {packs.map((p) => (
+                              <PackCard
+                                key={p.id}
+                                pack={p}
+                                onBuy={(id) => handleBuy('wordPack', id)}
+                                buying={buying}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Themes */}
+                  {activeTab === 'themes' && (
+                    <div className="space-y-2">
+                      {storeData.themes.map((t) => (
+                        <ThemeCard
+                          key={t.id}
+                          theme={t}
+                          onBuy={(id) => handleBuy('theme', id)}
+                          buying={buying}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Sound Packs */}
+                  {activeTab === 'sounds' && (
+                    <div className="space-y-2">
+                      {storeData.soundPacks.map((s) => (
+                        <SoundCard
+                          key={s.id}
+                          sp={s}
+                          onBuy={(id) => handleBuy('soundPack', id)}
+                          buying={buying}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer note */}
+            <div className="shrink-0 px-5 py-3 border-t border-(--ui-border)">
+              <div className="flex items-center justify-center gap-1.5 text-(--ui-fg-muted) text-[10px]">
+                <ExternalLink size={10} />
+                <span>Оплата через Stripe — безпечно та швидко</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {showLogin && (
-        <LoginModal
-          onClose={() => {
-            setShowLogin(false);
-            setPendingBuyId(null);
-          }}
-          onSuccess={handleLoginSuccess}
-        />
-      )}
-    </>
+        {showLogin && (
+          <LoginModal
+            onClose={() => {
+              setShowLogin(false);
+              setPendingBuyId(null);
+            }}
+            onSuccess={handleLoginSuccess}
+          />
+        )}
+      </>
+    </ModalPortal>
   );
 }

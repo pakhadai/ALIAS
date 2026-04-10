@@ -418,10 +418,7 @@ export const StoreScreen = () => {
           )}
         </div>
 
-        <div
-          className="px-6 md:px-8 py-4 border-t border-(--ui-border) bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0"
-          style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
-        >
+        <div className="px-6 md:px-8 pt-4 pb-safe-bottom-sm border-t border-(--ui-border) bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0">
           <div className="flex items-center justify-center gap-1.5">
             <ShieldCheck size={12} className="text-(--ui-fg-muted) opacity-70" />
             <p className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-70">
