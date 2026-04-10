@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "fun",
+    "name": "Fun",
+    "isFree": true,
+    "config": {
+      "id": "FUN",
+      "correct": "pop",
+      "skip": "whoosh",
+      "timer": "tick",
+      "gameOver": "fanfare"
+    }
+  },
+  {
+    "slug": "minimal",
+    "name": "Minimal",
+    "isFree": true,
+    "config": {
+      "id": "MINIMAL",
+      "correct": "click",
+      "skip": "soft-whoosh",
+      "timer": "soft-tick",
+      "gameOver": "chime"
+    }
+  },
+  {
+    "slug": "eight-bit",
+    "name": "8-Bit",
+    "isFree": true,
+    "config": {
+      "id": "EIGHT_BIT",
+      "correct": "coin",
+      "skip": "jump",
+      "timer": "beep",
+      "gameOver": "level-up"
+    }
+  }
+]

@@ -21,6 +21,11 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
+import {
+  keyboardAvoidingBottomPadding,
+  scrollElementIntoViewCentered,
+  useVisualViewportBottomInset,
+} from '../../hooks/useVisualViewportBottomInset';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import versionData from '../../version.json';
 import { RulesModal } from './RulesScreen';
@@ -50,6 +55,7 @@ export const MenuScreen = () => {
   const [quickJoinCode, setQuickJoinCode] = useState('');
   const [quickJoinChecking, setQuickJoinChecking] = useState(false);
   const t = useT();
+  const keyboardBottomInset = useVisualViewportBottomInset();
 
   void setSettings;
 
@@ -71,12 +77,12 @@ export const MenuScreen = () => {
 
   const closeFullscreenHint = () => {
     setFullscreenHintVisible(false);
-    setTimeout(() => setShowFullscreenHint(false), 280);
+    setTimeout(() => setShowFullscreenHint(false), 300);
   };
 
   const closeQuickJoin = () => {
     setQuickJoinVisible(false);
-    setTimeout(() => setShowQuickJoin(false), 280);
+    setTimeout(() => setShowQuickJoin(false), 300);
   };
 
   // After sign-in inside the modal → close it and go to ProfileScreen
@@ -309,6 +315,7 @@ export const MenuScreen = () => {
         <ModalPortal>
           <div
             className={bottomSheetBackdropClass(quickJoinVisible, 'z-50')}
+            style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
             onClick={closeQuickJoin}
             role="dialog"
             aria-modal="true"
@@ -348,6 +355,7 @@ export const MenuScreen = () => {
                     type="text"
                     inputMode="numeric"
                     value={quickJoinCode}
+                    onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       if (val.length <= ROOM_CODE_LENGTH) setQuickJoinCode(val);

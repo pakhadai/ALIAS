@@ -80,6 +80,8 @@ export const QuizUI: React.FC<QuizUIProps> = ({
   const reveal = picked !== null;
   const solved = picked !== null && picked === task.answer;
   const solvedBySomeone = !!currentTaskAnswered;
+  const systemReveal =
+    currentTaskAnswered === '__timeout__' || currentTaskAnswered === '__all_wrong__';
   const shouldRevealCorrect = solvedBySomeone || reveal;
 
   const kindLabel =
@@ -116,7 +118,13 @@ export const QuizUI: React.FC<QuizUIProps> = ({
         <div className="w-full text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-(--ui-border) bg-(--ui-surface)">
             <span className={`text-sm font-sans font-bold ${currentTheme.textMain}`}>
-              {solvedByName ? `${solvedByName} +1` : '+1'}
+              {solvedByName
+                ? `${solvedByName} +1`
+                : systemReveal
+                  ? currentTaskAnswered === '__all_wrong__'
+                    ? 'Ніхто не вгадав'
+                    : 'Час вийшов'
+                  : '+1'}
             </span>
           </div>
         </div>

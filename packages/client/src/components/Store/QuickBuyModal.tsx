@@ -131,7 +131,7 @@ export function QuickBuyModal({
 
   const requestClose = () => {
     setIsClosing(true);
-    setTimeout(() => onClose(), 280);
+    setTimeout(() => onClose(), 300);
   };
 
   const handleSuccess = () => {

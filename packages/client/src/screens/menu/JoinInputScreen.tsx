@@ -6,12 +6,18 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { ROOM_CODE_LENGTH } from '../../constants';
 import { useT } from '../../hooks/useT';
+import {
+  keyboardAvoidingBottomPadding,
+  scrollElementIntoViewCentered,
+  useVisualViewportBottomInset,
+} from '../../hooks/useVisualViewportBottomInset';
 
 export const JoinInputScreen = () => {
   const { setGameState, currentTheme, setRoomCode, checkRoomExists, showNotification } = useGame();
   const [code, setCode] = useState('');
   const [checking, setChecking] = useState(false);
   const t = useT();
+  const keyboardBottomInset = useVisualViewportBottomInset();
 
   const handleJoinRoom = async () => {
     if (code.length !== ROOM_CODE_LENGTH) return;
@@ -38,6 +44,7 @@ export const JoinInputScreen = () => {
   return (
     <div
       className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
+      style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
     >
       <Logo theme={currentTheme} />
       <div
@@ -60,6 +67,7 @@ export const JoinInputScreen = () => {
             inputMode="numeric"
             maxLength={ROOM_CODE_LENGTH}
             value={code}
+            onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
             onChange={handleInputChange}
             data-testid="join-room-code"
             placeholder="00000"

@@ -67,7 +67,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
 
   const handleClose = () => {
     setVisible(false);
-    setTimeout(onClose, 280);
+    setTimeout(onClose, 300);
   };
 
   const handleLogout = async () => {
@@ -78,7 +78,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
 
   const closeLogoutConfirm = () => {
     setLogoutConfirmVisible(false);
-    setTimeout(() => setShowLogoutConfirm(false), 280);
+    setTimeout(() => setShowLogoutConfirm(false), 300);
   };
 
   const locale = useMemo(() => {
@@ -201,8 +201,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
     <ModalPortal>
       <div className={bottomSheetBackdropClass(visible, 'z-50')} onClick={handleClose}>
         <div
-          className={bottomSheetPanelClass(visible, 'max-w-sm')}
-          style={{ maxHeight: '90vh' }}
+          className={bottomSheetPanelClass(visible, 'max-w-sm max-h-[90dvh]')}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close */}

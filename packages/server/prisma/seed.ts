@@ -4,6 +4,8 @@ import foodData from './data/food.json';
 import generalData from './data/general.json';
 import moviesData from './data/movies.json';
 import scienceData from './data/science.json';
+import soundPacksData from './data/sounds.json';
+import themesData from './data/themes.json';
 import travelData from './data/travel.json';
 
 const prisma = new PrismaClient();
@@ -44,8 +46,6 @@ interface ConceptSeed {
   translations: Partial<Record<string, TranslationBlock>>;
 }
 
-type WordListsByLanguage = Record<string, string[]>;
-
 interface CategoryAsset {
   slug: string;
   category: string;
@@ -65,13 +65,6 @@ function isConceptArray(data: unknown): data is ConceptSeed[] {
   if (data.length === 0) return true;
   const first = data[0];
   return typeof first === 'object' && first !== null && 'translations' in first;
-}
-
-function isLegacyWordLists(data: unknown): data is WordListsByLanguage {
-  if (typeof data !== 'object' || data === null || Array.isArray(data)) return false;
-  return Object.values(data).every(
-    (v) => Array.isArray(v) && v.every((item) => typeof item === 'string')
-  );
 }
 
 function pickTranslation(
@@ -224,149 +217,6 @@ async function seedRichLanguagePack(
   return rows.length;
 }
 
-async function seedLegacyLanguagePack(
-  wordPackId: string,
-  lang: SupportedLang,
-  words: string[]
-): Promise<number> {
-  const language = lang as Language;
-  const uniqueWords = [...new Set(words.map((w) => w.trim()).filter((w) => w.length > 0))];
-
-  await prisma.wordConcept.deleteMany({ where: { packId: wordPackId } });
-
-  for (const text of uniqueWords) {
-    await prisma.wordConcept.create({
-      data: {
-        packId: wordPackId,
-        difficulty: 1,
-        translations: {
-          create: [{ language, word: text }],
-        },
-      },
-    });
-  }
-
-  return uniqueWords.length;
-}
-
-// ─── Seed themes ────────────────────────────────────────────────────────
-
-const themes = [
-  {
-    slug: 'premium-dark',
-    name: 'Midnight Ruby',
-    isFree: true,
-    price: 0,
-    config: {
-      id: 'PREMIUM_DARK',
-      description: 'OLED chocolate-black with pearl text and ruby accents',
-      preview: { bg: '#0A0809', accent: '#E11D48' },
-      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
-    },
-  },
-  {
-    slug: 'premium-light',
-    name: 'Premium Light',
-    isFree: true,
-    price: 0,
-    config: {
-      id: 'PREMIUM_LIGHT',
-      description: 'Clean light with classic serif',
-      preview: { bg: '#F8FAFC', accent: '#1E293B' },
-      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
-    },
-  },
-  {
-    slug: 'cyberpunk',
-    name: 'Indigo',
-    isFree: false,
-    price: 99,
-    config: {
-      id: 'CYBERPUNK',
-      description: 'Dark neon with indigo & pink',
-      preview: { bg: '#020617', accent: '#6366F1' },
-      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
-    },
-  },
-  {
-    slug: 'forest',
-    name: 'Luminous Aero',
-    isFree: false,
-    price: 99,
-    config: {
-      id: 'FOREST',
-      description: 'Cool white surfaces with indigo, cyan and coral accents',
-      preview: { bg: '#FAFCFF', accent: '#6366F1' },
-      fonts: { heading: "'Inter', sans-serif", body: "'Inter', sans-serif" },
-    },
-  },
-  {
-    slug: 'sleek',
-    name: 'Sleek',
-    isFree: true,
-    price: 0,
-    config: {
-      id: 'SLEEK',
-      description: 'Dark pro with sharp corners',
-      preview: { bg: '#050505', accent: '#4338CA' },
-      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
-    },
-  },
-  {
-    slug: 'void-luxe',
-    name: 'Void Luxe',
-    isFree: false,
-    price: 99,
-    config: {
-      id: 'VOID_LUXE',
-      description: 'OLED black with cool blue and warm premium accents',
-      preview: { bg: '#000000', accent: '#052659' },
-      fonts: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif" },
-    },
-  },
-  {
-    slug: 'quantum-eclipse',
-    name: 'Quantum Eclipse',
-    isFree: false,
-    price: 99,
-    config: {
-      id: 'QUANTUM_ECLIPSE',
-      description: 'True OLED black with violet, cyan, and neon orange accents',
-      preview: { bg: '#000000', accent: '#6C47FF' },
-      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
-    },
-  },
-];
-
-// ─── Seed sound packs ──────────────────────────────────────────────────
-
-const soundPacks = [
-  {
-    slug: 'fun',
-    name: 'Fun',
-    isFree: true,
-    config: { id: 'FUN', correct: 'pop', skip: 'whoosh', timer: 'tick', gameOver: 'fanfare' },
-  },
-  {
-    slug: 'minimal',
-    name: 'Minimal',
-    isFree: true,
-    config: {
-      id: 'MINIMAL',
-      correct: 'click',
-      skip: 'soft-whoosh',
-      timer: 'soft-tick',
-      gameOver: 'chime',
-    },
-  },
-  {
-    slug: 'eight-bit',
-    name: '8-Bit',
-    isFree: true,
-    config: { id: 'EIGHT_BIT', correct: 'coin', skip: 'jump', timer: 'beep', gameOver: 'level-up' },
-  },
-];
-
 // ─── Main seed function ────────────────────────────────────────────────
 
 async function main() {
@@ -377,28 +227,15 @@ async function main() {
       const slug = `${lang.toLowerCase()}-${asset.slug}`;
       const name = packName(lang, asset.category);
 
-      let count: number;
-
-      if (isConceptArray(asset.data)) {
-        const wp = await upsertWordPack(slug, name, lang, asset.category, 0);
-        count = await seedRichLanguagePack(wp.id, lang, asset.data);
-        await prisma.wordPack.update({
-          where: { id: wp.id },
-          data: { wordCount: count },
-        });
-      } else if (isLegacyWordLists(asset.data)) {
-        const list = asset.data[lang] ?? asset.data[lang.toLowerCase()] ?? [];
-        const wp = await upsertWordPack(slug, name, lang, asset.category, 0);
-        count = await seedLegacyLanguagePack(wp.id, lang, list);
-        await prisma.wordPack.update({
-          where: { id: wp.id },
-          data: { wordCount: count },
-        });
-      } else {
-        throw new Error(
-          `Invalid word data for category "${asset.slug}": expected concept[] or { UA|EN|DE: string[] }`
-        );
+      if (!isConceptArray(asset.data)) {
+        throw new Error(`Invalid word data for category "${asset.slug}": expected concept[]`);
       }
+      const wp = await upsertWordPack(slug, name, lang, asset.category, 0);
+      const count = await seedRichLanguagePack(wp.id, lang, asset.data);
+      await prisma.wordPack.update({
+        where: { id: wp.id },
+        data: { wordCount: count },
+      });
 
       console.log(`  [WordPack] ${slug}: ${count} words`);
     }
@@ -427,7 +264,7 @@ async function main() {
   console.log('  [Feature] feature-custom-packs');
 
   // Seed Themes
-  for (const theme of themes) {
+  for (const theme of themesData) {
     await prisma.theme.upsert({
       where: { slug: theme.slug },
       update: { name: theme.name, config: theme.config, isFree: theme.isFree, price: theme.price },
@@ -443,7 +280,7 @@ async function main() {
   }
 
   // Seed SoundPacks
-  for (const sp of soundPacks) {
+  for (const sp of soundPacksData) {
     await prisma.soundPack.upsert({
       where: { slug: sp.slug },
       update: { name: sp.name, config: sp.config, isFree: sp.isFree },

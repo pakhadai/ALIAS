@@ -39,7 +39,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
 
   const handleClose = useCallback(() => {
     setVisible(false);
-    setTimeout(onClose, 280);
+    setTimeout(onClose, 300);
   }, [onClose]);
 
   const locale = useMemo(() => googleLocale(uiLanguage), [uiLanguage]);

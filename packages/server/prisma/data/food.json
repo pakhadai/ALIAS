@@ -1,608 +1,5402 @@
-{
-  "UA": [
-    "Яблуко",
-    "Піца",
-    "Борщ",
-    "Кава",
-    "Шоколад",
-    "Морозиво",
-    "Суші",
-    "Паста",
-    "Хліб",
-    "Вино",
-    "Салат",
-    "Стейк",
-    "Лимон",
-    "Сир",
-    "Вареники",
-    "Пельмені",
-    "Голубці",
-    "Деруни",
-    "Котлета",
-    "Сосиска",
-    "Банан",
-    "Апельсин",
-    "Полуниця",
-    "Вишня",
-    "Виноград",
-    "Кавун",
-    "Диня",
-    "Персик",
-    "Ананас",
-    "Манго",
-    "Помідор",
-    "Огірок",
-    "Морква",
-    "Цибуля",
-    "Часник",
-    "Перець",
-    "Капуста",
-    "Баклажан",
-    "Кабачок",
-    "Гарбуз",
-    "Гриби",
-    "Рис",
-    "Гречка",
-    "Макарони",
-    "Овсянка",
-    "Кукурудза",
-    "Квасоля",
-    "Горох",
-    "Сочевиця",
-    "Мак",
-    "Масло",
-    "Сметана",
-    "Молоко",
-    "Кефір",
-    "Йогурт",
-    "Творог",
-    "Вершки",
-    "Яйце",
-    "Мука",
-    "Цукор",
-    "Сіль",
-    "Кориця",
-    "Ваніль",
-    "Базилік",
-    "Укроп",
-    "Петрушка",
-    "Мята",
-    "Розмарин",
-    "Імбир",
-    "Орегано",
-    "Чай",
-    "Какао",
-    "Сік",
-    "Компот",
-    "Лимонад",
-    "Смузі",
-    "Коктейль",
-    "Пиво",
-    "Шампанське",
-    "Віскі",
-    "Бургер",
-    "Хот-дог",
-    "Сендвіч",
-    "Тако",
-    "Шаурма",
-    "Круасан",
-    "Багет",
-    "Тост",
-    "Крекер",
-    "Чіпси",
-    "Тірамісу",
-    "Чізкейк",
-    "Пудинг",
-    "Желе",
-    "Мус",
-    "Еклер",
-    "Макарон",
-    "Вафлі",
-    "Пончик",
-    "Кекс",
-    "Карамель",
-    "Нуга",
-    "Марципан",
-    "Зефір",
-    "Халва",
-    "Козинак",
-    "Рахат-лукум",
-    "Пастила",
-    "Цукат",
-    "Джем",
-    "Оселедець",
-    "Лосось",
-    "Тунець",
-    "Креветки",
-    "Краб",
-    "Мідії",
-    "Кальмар",
-    "Восьминіг",
-    "Ікра",
-    "Устриці",
-    "Курка",
-    "Індичка",
-    "Свинина",
-    "Яловичина",
-    "Баранина",
-    "Шинка",
-    "Бекон",
-    "Ковбаса",
-    "Сало",
-    "Паштет",
-    "Олія",
-    "Оцет",
-    "Соус",
-    "Кетчуп",
-    "Майонез",
-    "Гірчиця",
-    "Аджика",
-    "Хрін",
-    "Соєвий соус",
-    "Песто",
-    "Фондю",
-    "Рататуй",
-    "Газпачо",
-    "Мінестроне",
-    "Том ям",
-    "Харчо",
-    "Солянка",
-    "Окрошка",
-    "Юшка",
-    "Бульйон",
-    "Картопля фрі",
-    "Пюре",
-    "Запіканка",
-    "Рагу",
-    "Плов",
-    "Різотто",
-    "Паелья",
-    "Лазанья",
-    "Равіолі",
-    "Ньокі",
-    "Хумус",
-    "Фалафель",
-    "Табуле",
-    "Долма",
-    "Мусака",
-    "Гуляш",
-    "Штрудель",
-    "Кнедлик",
-    "Шніцель",
-    "Бретцель",
-    "Чебурек",
-    "Самса",
-    "Лагман",
-    "Манти",
-    "Бешбармак",
-    "Пахлава",
-    "Кутя",
-    "Узвар",
-    "Сирники",
-    "Оладки",
-    "Повидло",
-    "Маринад",
-    "Соління",
-    "Квашена капуста",
-    "Гранола",
-    "Тофу",
-    "Авокадо",
-    "Кіноа",
-    "Чіа",
-    "Асаї",
-    "Спіруліна",
-    "Матча",
-    "Комбуча",
-    "Міндаль",
-    "Волоський горіх",
-    "Кешю",
-    "Фісташка",
-    "Арахіс",
-    "Фундук",
-    "Кокос"
-  ],
-  "EN": [
-    "Apple",
-    "Pizza",
-    "Borscht",
-    "Coffee",
-    "Chocolate",
-    "Ice Cream",
-    "Sushi",
-    "Pasta",
-    "Bread",
-    "Wine",
-    "Salad",
-    "Steak",
-    "Lemon",
-    "Cheese",
-    "Dumplings",
-    "Burger",
-    "Hot dog",
-    "Sandwich",
-    "Taco",
-    "Wrap",
-    "Banana",
-    "Orange",
-    "Strawberry",
-    "Cherry",
-    "Grape",
-    "Watermelon",
-    "Melon",
-    "Peach",
-    "Pineapple",
-    "Mango",
-    "Tomato",
-    "Cucumber",
-    "Carrot",
-    "Onion",
-    "Garlic",
-    "Pepper",
-    "Cabbage",
-    "Eggplant",
-    "Zucchini",
-    "Pumpkin",
-    "Mushroom",
-    "Rice",
-    "Buckwheat",
-    "Noodles",
-    "Oatmeal",
-    "Corn",
-    "Beans",
-    "Peas",
-    "Lentils",
-    "Quinoa",
-    "Butter",
-    "Sour cream",
-    "Milk",
-    "Yogurt",
-    "Cottage cheese",
-    "Cream",
-    "Egg",
-    "Flour",
-    "Sugar",
-    "Salt",
-    "Cinnamon",
-    "Vanilla",
-    "Basil",
-    "Dill",
-    "Parsley",
-    "Mint",
-    "Rosemary",
-    "Ginger",
-    "Turmeric",
-    "Oregano",
-    "Tea",
-    "Cocoa",
-    "Juice",
-    "Lemonade",
-    "Smoothie",
-    "Cocktail",
-    "Beer",
-    "Champagne",
-    "Whiskey",
-    "Rum",
-    "Croissant",
-    "Baguette",
-    "Toast",
-    "Cracker",
-    "Chips",
-    "Pretzel",
-    "Muffin",
-    "Scone",
-    "Pancake",
-    "Waffle",
-    "Tiramisu",
-    "Cheesecake",
-    "Pudding",
-    "Jelly",
-    "Mousse",
-    "Eclair",
-    "Macaron",
-    "Donut",
-    "Cupcake",
-    "Brownie",
-    "Caramel",
-    "Nougat",
-    "Marzipan",
-    "Marshmallow",
-    "Fudge",
-    "Toffee",
-    "Praline",
-    "Truffle",
-    "Meringue",
-    "Sorbet",
-    "Salmon",
-    "Tuna",
-    "Shrimp",
-    "Crab",
-    "Lobster",
-    "Mussels",
-    "Squid",
-    "Octopus",
-    "Caviar",
-    "Oyster",
-    "Chicken",
-    "Turkey",
-    "Pork",
-    "Beef",
-    "Lamb",
-    "Ham",
-    "Bacon",
-    "Sausage",
-    "Ribs",
-    "Brisket",
-    "Ketchup",
-    "Mayonnaise",
-    "Mustard",
-    "Soy sauce",
-    "Pesto",
-    "Hummus",
-    "Guacamole",
-    "Salsa",
-    "Ranch",
-    "Vinaigrette",
-    "Fondue",
-    "Ratatouille",
-    "Gazpacho",
-    "Minestrone",
-    "Chowder",
-    "Gumbo",
-    "Bisque",
-    "Broth",
-    "Stew",
-    "Chili",
-    "French fries",
-    "Mashed potato",
-    "Casserole",
-    "Pilaf",
-    "Risotto",
-    "Paella",
-    "Lasagna",
-    "Ravioli",
-    "Gnocchi",
-    "Couscous",
-    "Falafel",
-    "Kebab",
-    "Gyros",
-    "Dim sum",
-    "Spring roll",
-    "Tempura",
-    "Ramen",
-    "Pho",
-    "Bibimbap",
-    "Pad Thai",
-    "Schnitzel",
-    "Goulash",
-    "Strudel",
-    "Bratwurst",
-    "Pierogi",
-    "Blintz",
-    "Crepe",
-    "Quiche",
-    "Souffle",
-    "Creme brulee",
-    "Avocado",
-    "Tofu",
-    "Granola",
-    "Acai",
-    "Matcha",
-    "Kombucha",
-    "Almond",
-    "Walnut",
-    "Cashew",
-    "Pistachio",
-    "Olive oil",
-    "Vinegar",
-    "Honey",
-    "Maple syrup",
-    "Jam",
-    "Marmalade",
-    "Chutney",
-    "Relish",
-    "Pickle",
-    "Kimchi"
-  ],
-  "DE": [
-    "Apfel",
-    "Pizza",
-    "Borschtsch",
-    "Kaffee",
-    "Schokolade",
-    "Eis",
-    "Sushi",
-    "Pasta",
-    "Brot",
-    "Wein",
-    "Salat",
-    "Steak",
-    "Zitrone",
-    "Käse",
-    "Maultaschen",
-    "Burger",
-    "Hotdog",
-    "Sandwich",
-    "Taco",
-    "Wrap",
-    "Banane",
-    "Orange",
-    "Erdbeere",
-    "Kirsche",
-    "Traube",
-    "Wassermelone",
-    "Melone",
-    "Pfirsich",
-    "Ananas",
-    "Mango",
-    "Tomate",
-    "Gurke",
-    "Karotte",
-    "Zwiebel",
-    "Knoblauch",
-    "Paprika",
-    "Kohl",
-    "Aubergine",
-    "Zucchini",
-    "Kürbis",
-    "Pilz",
-    "Reis",
-    "Buchweizen",
-    "Nudeln",
-    "Haferflocken",
-    "Mais",
-    "Bohnen",
-    "Erbsen",
-    "Linsen",
-    "Quinoa",
-    "Butter",
-    "Sahne",
-    "Milch",
-    "Joghurt",
-    "Quark",
-    "Rahm",
-    "Ei",
-    "Mehl",
-    "Zucker",
-    "Salz",
-    "Zimt",
-    "Vanille",
-    "Basilikum",
-    "Dill",
-    "Petersilie",
-    "Minze",
-    "Rosmarin",
-    "Ingwer",
-    "Kurkuma",
-    "Oregano",
-    "Tee",
-    "Kakao",
-    "Saft",
-    "Limonade",
-    "Smoothie",
-    "Cocktail",
-    "Bier",
-    "Sekt",
-    "Whiskey",
-    "Rum",
-    "Croissant",
-    "Baguette",
-    "Toast",
-    "Cracker",
-    "Chips",
-    "Brezel",
-    "Muffin",
-    "Scone",
-    "Pfannkuchen",
-    "Waffel",
-    "Tiramisu",
-    "Käsekuchen",
-    "Pudding",
-    "Gelee",
-    "Mousse",
-    "Eclair",
-    "Makrone",
-    "Krapfen",
-    "Cupcake",
-    "Brownie",
-    "Karamell",
-    "Nougat",
-    "Marzipan",
-    "Marshmallow",
-    "Fudge",
-    "Toffee",
-    "Praline",
-    "Trüffel",
-    "Baiser",
-    "Sorbet",
-    "Lachs",
-    "Thunfisch",
-    "Garnele",
-    "Krabbe",
-    "Hummer",
-    "Muschel",
-    "Tintenfisch",
-    "Oktopus",
-    "Kaviar",
-    "Auster",
-    "Hähnchen",
-    "Truthahn",
-    "Schweinefleisch",
-    "Rindfleisch",
-    "Lammfleisch",
-    "Schinken",
-    "Speck",
-    "Wurst",
-    "Rippchen",
-    "Braten",
-    "Ketchup",
-    "Mayonnaise",
-    "Senf",
-    "Sojasoße",
-    "Pesto",
-    "Hummus",
-    "Guacamole",
-    "Salsa",
-    "Dressing",
-    "Vinaigrette",
-    "Fondue",
-    "Ratatouille",
-    "Gazpacho",
-    "Minestrone",
-    "Eintopf",
-    "Gulasch",
-    "Brühe",
-    "Suppe",
-    "Chili",
-    "Curry",
-    "Pommes",
-    "Kartoffelbrei",
-    "Auflauf",
-    "Pilaw",
-    "Risotto",
-    "Paella",
-    "Lasagne",
-    "Ravioli",
-    "Gnocchi",
-    "Couscous",
-    "Falafel",
-    "Kebab",
-    "Gyros",
-    "Dim Sum",
-    "Frühlingsrolle",
-    "Tempura",
-    "Ramen",
-    "Pho",
-    "Bibimbap",
-    "Pad Thai",
-    "Schnitzel",
-    "Strudel",
-    "Bratwurst",
-    "Pirogge",
-    "Blini",
-    "Crêpe",
-    "Quiche",
-    "Soufflé",
-    "Crème brûlée",
-    "Flammkuchen",
-    "Avocado",
-    "Tofu",
-    "Müsli",
-    "Acai",
-    "Matcha",
-    "Kombucha",
-    "Mandel",
-    "Walnuss",
-    "Cashew",
-    "Pistazie",
-    "Olivenöl",
-    "Essig",
-    "Ahornsirup",
-    "Marmelade",
-    "Konfitüre",
-    "Chutney",
-    "Relish",
-    "Essiggurke",
-    "Kimchi",
-    "Sauerkraut"
-  ]
-}
+[
+  {
+    "conceptId": "food-apple",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Яблуко",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Фрукт", "Дерево", "Червоне", "Зелене", "Сад"],
+        "hint": "Круглий плід фруктового дерева"
+      },
+      "EN": {
+        "word": "Apple",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fruit", "Tree", "Red", "Green", "Orchard"],
+        "hint": "Round fruit from a tree"
+      },
+      "DE": {
+        "word": "Apfel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Frucht", "Baum", "Rot", "Grün", "Garten"],
+        "hint": "Runde Frucht eines Baumes"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pizza",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Піца",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Італія", "Тісто", "Сир", "Доставка", "Коло"],
+        "hint": "Кругла страва італійської кухні"
+      },
+      "EN": {
+        "word": "Pizza",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Italy", "Dough", "Cheese", "Delivery", "Circle"],
+        "hint": "Round dish of Italian cuisine"
+      },
+      "DE": {
+        "word": "Pizza",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Italien", "Teig", "Käse", "Lieferung", "Kreis"],
+        "hint": "Rundes Gericht der italienischen Küche"
+      }
+    }
+  },
+  {
+    "conceptId": "food-borscht",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Борщ",
+        "antonyms": [],
+        "synonyms": ["Перше", "Суп"],
+        "tabooWords": ["Буряк", "Сметана", "Червоний", "Україна", "Варити"],
+        "hint": "Традиційний український буряковий суп"
+      },
+      "EN": {
+        "word": "Borscht",
+        "antonyms": [],
+        "synonyms": ["Soup"],
+        "tabooWords": ["Beetroot", "Sour cream", "Red", "Ukraine", "Boil"],
+        "hint": "Traditional Ukrainian beetroot soup"
+      },
+      "DE": {
+        "word": "Borschtsch",
+        "antonyms": [],
+        "synonyms": ["Suppe"],
+        "tabooWords": ["Rote Bete", "Schmand", "Rot", "Ukraine", "Kochen"],
+        "hint": "Traditionelle ukrainische Rote-Bete-Suppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-coffee",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кава",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Зерна", "Ранок", "Кофеїн", "Енергія"],
+        "hint": "Популярний гарячий бадьорий напій"
+      },
+      "EN": {
+        "word": "Coffee",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Beans", "Morning", "Caffeine", "Energy"],
+        "hint": "Popular hot stimulating beverage"
+      },
+      "DE": {
+        "word": "Kaffee",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Bohnen", "Morgen", "Koffein", "Energie"],
+        "hint": "Beliebtes heißes anregendes Getränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-chocolate",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Шоколад",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Какао", "Солодке", "Плитка", "Десерт", "Чорний"],
+        "hint": "Солодощі з какао-бобів"
+      },
+      "EN": {
+        "word": "Chocolate",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cocoa", "Sweet", "Bar", "Dessert", "Dark"],
+        "hint": "Confection made from cocoa beans"
+      },
+      "DE": {
+        "word": "Schokolade",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kakao", "Süß", "Tafel", "Dessert", "Dunkel"],
+        "hint": "Süßigkeit aus Kakaobohnen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ice-cream",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Морозиво",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Холодне", "Літо", "Ріжок", "Молоко", "Десерт"],
+        "hint": "Заморожений солодкий десерт"
+      },
+      "EN": {
+        "word": "Ice cream",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cold", "Summer", "Cone", "Milk", "Dessert"],
+        "hint": "Frozen sweet dessert"
+      },
+      "DE": {
+        "word": "Eiscreme",
+        "antonyms": [],
+        "synonyms": ["Eis"],
+        "tabooWords": ["Kalt", "Sommer", "Waffel", "Milch", "Dessert"],
+        "hint": "Gefrorenes süßes Dessert"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sushi",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Суші",
+        "antonyms": [],
+        "synonyms": ["Роли"],
+        "tabooWords": ["Японія", "Рис", "Риба", "Водорості", "Палички"],
+        "hint": "Японська страва з риби і рису"
+      },
+      "EN": {
+        "word": "Sushi",
+        "antonyms": [],
+        "synonyms": ["Rolls"],
+        "tabooWords": ["Japan", "Rice", "Fish", "Seaweed", "Chopsticks"],
+        "hint": "Japanese dish of fish and rice"
+      },
+      "DE": {
+        "word": "Sushi",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Japan", "Reis", "Fisch", "Algen", "Stäbchen"],
+        "hint": "Japanisches Gericht aus Fisch und Reis"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pasta",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Паста",
+        "antonyms": [],
+        "synonyms": ["Макарони"],
+        "tabooWords": ["Італія", "Тісто", "Варити", "Спагеті", "Соус"],
+        "hint": "Традиційні італійські макаронні вироби"
+      },
+      "EN": {
+        "word": "Pasta",
+        "antonyms": [],
+        "synonyms": ["Macaroni", "Noodles"],
+        "tabooWords": ["Italy", "Dough", "Boil", "Spaghetti", "Sauce"],
+        "hint": "Traditional Italian noodle dish"
+      },
+      "DE": {
+        "word": "Pasta",
+        "antonyms": [],
+        "synonyms": ["Nudeln"],
+        "tabooWords": ["Italien", "Teig", "Kochen", "Spaghetti", "Soße"],
+        "hint": "Traditionelles italienisches Nudelgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-bread",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Хліб",
+        "antonyms": [],
+        "synonyms": ["Буханець", "Батон"],
+        "tabooWords": ["Тісто", "Піч", "Борошно", "Пекарня", "Їсти"],
+        "hint": "Випечений виріб з борошна"
+      },
+      "EN": {
+        "word": "Bread",
+        "antonyms": [],
+        "synonyms": ["Loaf"],
+        "tabooWords": ["Dough", "Bake", "Flour", "Bakery", "Eat"],
+        "hint": "Baked product made from flour"
+      },
+      "DE": {
+        "word": "Brot",
+        "antonyms": [],
+        "synonyms": ["Laib"],
+        "tabooWords": ["Teig", "Backen", "Mehl", "Bäckerei", "Essen"],
+        "hint": "Gebackenes Produkt aus Mehl"
+      }
+    }
+  },
+  {
+    "conceptId": "food-wine",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вино",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Алкоголь", "Виноград", "Келих", "Пляшка"],
+        "hint": "Алкогольний напій з винограду"
+      },
+      "EN": {
+        "word": "Wine",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Alcohol", "Grapes", "Glass", "Bottle"],
+        "hint": "Alcoholic beverage made from grapes"
+      },
+      "DE": {
+        "word": "Wein",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Alkohol", "Trauben", "Glas", "Flasche"],
+        "hint": "Alkoholisches Getränk aus Trauben"
+      }
+    }
+  },
+  {
+    "conceptId": "food-salad",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Салат",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Овочі", "Миска", "Листя", "Здоровий", "Страва"],
+        "hint": "Холодна страва з овочів чи зелені"
+      },
+      "EN": {
+        "word": "Salad",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Vegetables", "Bowl", "Leaves", "Healthy", "Dish"],
+        "hint": "Cold dish of vegetables or greens"
+      },
+      "DE": {
+        "word": "Salat",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gemüse", "Schüssel", "Blätter", "Gesund", "Gericht"],
+        "hint": "Kaltes Gericht aus Gemüse oder Grünzeug"
+      }
+    }
+  },
+  {
+    "conceptId": "food-steak",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Стейк",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Яловичина", "Смажити", "Гриль", "Кров"],
+        "hint": "Товстий шматок смаженого м'яса"
+      },
+      "EN": {
+        "word": "Steak",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Beef", "Fry", "Grill", "Blood"],
+        "hint": "Thick slice of cooked meat"
+      },
+      "DE": {
+        "word": "Steak",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Rindfleisch", "Braten", "Grill", "Blut"],
+        "hint": "Dicke Scheibe gebratenes Fleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-lemon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лимон",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Жовтий", "Кислий", "Цитрус", "Чай", "Фрукт"],
+        "hint": "Жовтий і дуже кислий цитрус"
+      },
+      "EN": {
+        "word": "Lemon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Yellow", "Sour", "Citrus", "Tea", "Fruit"],
+        "hint": "Yellow and very sour citrus"
+      },
+      "DE": {
+        "word": "Zitrone",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gelb", "Sauer", "Zitrusfrucht", "Tee", "Frucht"],
+        "hint": "Gelbe und sehr saure Zitrusfrucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cheese",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сир",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Молоко", "Дірки", "Миша", "Жовтий", "Піца"],
+        "hint": "Молочний продукт, часто жовтого кольору"
+      },
+      "EN": {
+        "word": "Cheese",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Milk", "Holes", "Mouse", "Yellow", "Pizza"],
+        "hint": "Dairy product, often yellow colored"
+      },
+      "DE": {
+        "word": "Käse",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Milch", "Löcher", "Maus", "Gelb", "Pizza"],
+        "hint": "Milchprodukt, oft gelb gefärbt"
+      }
+    }
+  },
+  {
+    "conceptId": "food-varenyky",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Вареники",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тісто", "Картопля", "Начинка", "Сметана", "Ліпити"],
+        "hint": "Українська страва з тіста та начинки"
+      },
+      "EN": {
+        "word": "Varenyky",
+        "antonyms": [],
+        "synonyms": ["Dumplings"],
+        "tabooWords": ["Dough", "Potato", "Filling", "Sour cream", "Make"],
+        "hint": "Ukrainian dish of dough and filling"
+      },
+      "DE": {
+        "word": "Wareniki",
+        "antonyms": [],
+        "synonyms": ["Teigtaschen"],
+        "tabooWords": ["Teig", "Kartoffel", "Füllung", "Schmand", "Formen"],
+        "hint": "Ukrainisches Gericht aus Teig und Füllung"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pelmeni",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Пельмені",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Тісто", "Варити", "Фарш", "Сметана"],
+        "hint": "Тісто з м'ясною начинкою"
+      },
+      "EN": {
+        "word": "Pelmeni",
+        "antonyms": [],
+        "synonyms": ["Dumplings"],
+        "tabooWords": ["Meat", "Dough", "Boil", "Minced meat", "Sour cream"],
+        "hint": "Dough filled with minced meat"
+      },
+      "DE": {
+        "word": "Pelmeni",
+        "antonyms": [],
+        "synonyms": ["Teigtaschen"],
+        "tabooWords": ["Fleisch", "Teig", "Kochen", "Hackfleisch", "Schmand"],
+        "hint": "Teigtaschen mit Fleischfüllung"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cabbage-rolls",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Голубці",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Капуста", "Рис", "М'ясо", "Загортати", "Страва"],
+        "hint": "М'ясо з рисом у листі капусти"
+      },
+      "EN": {
+        "word": "Cabbage rolls",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cabbage", "Rice", "Meat", "Wrap", "Dish"],
+        "hint": "Meat and rice in cabbage leaves"
+      },
+      "DE": {
+        "word": "Kohlrouladen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kohl", "Reis", "Fleisch", "Wickeln", "Gericht"],
+        "hint": "Fleisch und Reis in Kohlblättern"
+      }
+    }
+  },
+  {
+    "conceptId": "food-deruny",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Деруни",
+        "antonyms": [],
+        "synonyms": ["Оладки"],
+        "tabooWords": ["Картопля", "Смажити", "Сметана", "Терти", "Страва"],
+        "hint": "Млинці з тертої картоплі"
+      },
+      "EN": {
+        "word": "Potato pancakes",
+        "antonyms": [],
+        "synonyms": ["Deruny"],
+        "tabooWords": ["Potato", "Fry", "Sour cream", "Grate", "Dish"],
+        "hint": "Pancakes made from grated potato"
+      },
+      "DE": {
+        "word": "Kartoffelpuffer",
+        "antonyms": [],
+        "synonyms": ["Reibekuchen"],
+        "tabooWords": ["Kartoffel", "Braten", "Schmand", "Reiben", "Gericht"],
+        "hint": "Pfannkuchen aus geriebenen Kartoffeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cutlet",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Котлета",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Фарш", "Смажити", "Паніровка", "Страва"],
+        "hint": "Смажена страва з м'ясного фаршу"
+      },
+      "EN": {
+        "word": "Cutlet",
+        "antonyms": [],
+        "synonyms": ["Patty"],
+        "tabooWords": ["Meat", "Minced meat", "Fry", "Breading", "Dish"],
+        "hint": "Fried dish made of minced meat"
+      },
+      "DE": {
+        "word": "Frikadelle",
+        "antonyms": [],
+        "synonyms": ["Kotelett", "Bulette"],
+        "tabooWords": ["Fleisch", "Hackfleisch", "Braten", "Panade", "Gericht"],
+        "hint": "Gebratenes Gericht aus Hackfleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sausage",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сосиска",
+        "antonyms": [],
+        "synonyms": ["Сарделька"],
+        "tabooWords": ["М'ясо", "Хот-дог", "Варити", "Довга", "Ковбаса"],
+        "hint": "М'ясний виріб для хот-догів"
+      },
+      "EN": {
+        "word": "Sausage",
+        "antonyms": [],
+        "synonyms": ["Frankfurter"],
+        "tabooWords": ["Meat", "Hot dog", "Boil", "Long", "Bratwurst"],
+        "hint": "Meat product used for hot dogs"
+      },
+      "DE": {
+        "word": "Würstchen",
+        "antonyms": [],
+        "synonyms": ["Wurst"],
+        "tabooWords": ["Fleisch", "Hot Dog", "Kochen", "Lang", "Bratwurst"],
+        "hint": "Fleischprodukt für Hot Dogs"
+      }
+    }
+  },
+  {
+    "conceptId": "food-banana",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Банан",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Жовтий", "Мавпа", "Фрукт", "Шкірка", "Африка"],
+        "hint": "Довгий жовтий тропічний плід"
+      },
+      "EN": {
+        "word": "Banana",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Yellow", "Monkey", "Fruit", "Peel", "Africa"],
+        "hint": "Long yellow tropical fruit"
+      },
+      "DE": {
+        "word": "Banane",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gelb", "Affe", "Frucht", "Schale", "Afrika"],
+        "hint": "Lange gelbe tropische Frucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-orange",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Апельсин",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Помаранчевий", "Цитрус", "Сік", "Фрукт", "Круглий"],
+        "hint": "Круглий помаранчевий цитрусовий плід"
+      },
+      "EN": {
+        "word": "Orange",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Orange", "Citrus", "Juice", "Fruit", "Round"],
+        "hint": "Round orange citrus fruit"
+      },
+      "DE": {
+        "word": "Orange",
+        "antonyms": [],
+        "synonyms": ["Apfelsine"],
+        "tabooWords": ["Orange", "Zitrusfrucht", "Saft", "Frucht", "Rund"],
+        "hint": "Runde orangefarbene Zitrusfrucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-strawberry",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Полуниця",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Червона", "Ягода", "Літо", "Солодка", "Насіння"],
+        "hint": "Червона солодка літня ягода"
+      },
+      "EN": {
+        "word": "Strawberry",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Red", "Berry", "Summer", "Sweet", "Seeds"],
+        "hint": "Red sweet summer berry"
+      },
+      "DE": {
+        "word": "Erdbeere",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rot", "Beere", "Sommer", "Süß", "Samen"],
+        "hint": "Rote süße Sommerbeere"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cherry",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вишня",
+        "antonyms": [],
+        "synonyms": ["Черешня"],
+        "tabooWords": ["Ягода", "Червона", "Кісточка", "Компот", "Дерево"],
+        "hint": "Маленька червона кісточкова ягода"
+      },
+      "EN": {
+        "word": "Cherry",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Berry", "Red", "Pit", "Compote", "Tree"],
+        "hint": "Small red stone fruit"
+      },
+      "DE": {
+        "word": "Kirsche",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Beere", "Rot", "Kern", "Kompott", "Baum"],
+        "hint": "Kleine rote Steinfrucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-grapes",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Виноград",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Лоза", "Ягода", "Вино", "Гроно", "Зелений"],
+        "hint": "Ягоди, з яких роблять вино"
+      },
+      "EN": {
+        "word": "Grapes",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Vine", "Berry", "Wine", "Bunch", "Green"],
+        "hint": "Berries used to make wine"
+      },
+      "DE": {
+        "word": "Trauben",
+        "antonyms": [],
+        "synonyms": ["Weintrauben"],
+        "tabooWords": ["Rebe", "Beere", "Wein", "Traube", "Grün"],
+        "hint": "Beeren zur Weinherstellung"
+      }
+    }
+  },
+  {
+    "conceptId": "food-watermelon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кавун",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Смугастий", "Червоний", "Літо", "Насіння", "Величезний"],
+        "hint": "Велика смугаста літня ягода"
+      },
+      "EN": {
+        "word": "Watermelon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Striped", "Red", "Summer", "Seeds", "Huge"],
+        "hint": "Large striped summer fruit"
+      },
+      "DE": {
+        "word": "Wassermelone",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gestreift", "Rot", "Sommer", "Samen", "Riesig"],
+        "hint": "Große gestreifte Sommerfrucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-melon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Диня",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Жовта", "Солодка", "Овальна", "Насіння", "Плід"],
+        "hint": "Жовтий солодкий овальний плід"
+      },
+      "EN": {
+        "word": "Melon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Yellow", "Sweet", "Oval", "Seeds", "Fruit"],
+        "hint": "Yellow sweet oval fruit"
+      },
+      "DE": {
+        "word": "Melone",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gelb", "Süß", "Oval", "Samen", "Frucht"],
+        "hint": "Gelbe süße ovale Frucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-peach",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Персик",
+        "antonyms": [],
+        "synonyms": ["Абрикос"],
+        "tabooWords": ["Кісточка", "Фрукт", "Солодкий", "Пухнастий", "Помаранчевий"],
+        "hint": "Пухнастий солодкий фрукт з кісточкою"
+      },
+      "EN": {
+        "word": "Peach",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pit", "Fruit", "Sweet", "Fuzzy", "Orange"],
+        "hint": "Fuzzy sweet fruit with pit"
+      },
+      "DE": {
+        "word": "Pfirsich",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kern", "Frucht", "Süß", "Flaumig", "Orange"],
+        "hint": "Flaumige süße Frucht mit Kern"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pineapple",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ананас",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тропіки", "Колючий", "Жовтий", "Фрукт", "Верхівка"],
+        "hint": "Тропічний фрукт з колючою шкіркою"
+      },
+      "EN": {
+        "word": "Pineapple",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tropics", "Spiky", "Yellow", "Fruit", "Top"],
+        "hint": "Tropical fruit with spiky skin"
+      },
+      "DE": {
+        "word": "Ananas",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tropen", "Stachelig", "Gelb", "Frucht", "Krone"],
+        "hint": "Tropische Frucht mit stacheliger Schale"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mango",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Манго",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Екзотичний", "Фрукт", "Жовтий", "Солодкий", "Тропіки"],
+        "hint": "Популярний жовтий тропічний фрукт"
+      },
+      "EN": {
+        "word": "Mango",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Exotic", "Fruit", "Yellow", "Sweet", "Tropics"],
+        "hint": "Popular yellow tropical fruit"
+      },
+      "DE": {
+        "word": "Mango",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Exotisch", "Frucht", "Gelb", "Süß", "Tropen"],
+        "hint": "Beliebte gelbe tropische Frucht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tomato",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Помідор",
+        "antonyms": [],
+        "synonyms": ["Томат"],
+        "tabooWords": ["Червоний", "Овоч", "Салат", "Кетчуп", "Круглий"],
+        "hint": "Червоний овоч для салатів"
+      },
+      "EN": {
+        "word": "Tomato",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Red", "Vegetable", "Salad", "Ketchup", "Round"],
+        "hint": "Red vegetable used in salads"
+      },
+      "DE": {
+        "word": "Tomate",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rot", "Gemüse", "Salat", "Ketchup", "Rund"],
+        "hint": "Rotes Gemüse für Salate"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cucumber",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Огірок",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Зелений", "Овоч", "Вода", "Салат", "Довгий"],
+        "hint": "Зелений хрусткий овоч з водою"
+      },
+      "EN": {
+        "word": "Cucumber",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Green", "Vegetable", "Water", "Salad", "Long"],
+        "hint": "Green crispy watery vegetable"
+      },
+      "DE": {
+        "word": "Gurke",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grün", "Gemüse", "Wasser", "Salat", "Lang"],
+        "hint": "Grünes knackiges wasserreiches Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-carrot",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Морква",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Помаранчева", "Заєць", "Овоч", "Довга", "Суп"],
+        "hint": "Помаранчевий коренеплід, який люблять зайці"
+      },
+      "EN": {
+        "word": "Carrot",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Orange", "Rabbit", "Vegetable", "Long", "Soup"],
+        "hint": "Orange root vegetable loved by rabbits"
+      },
+      "DE": {
+        "word": "Karotte",
+        "antonyms": [],
+        "synonyms": ["Möhre"],
+        "tabooWords": ["Orange", "Hase", "Gemüse", "Lang", "Suppe"],
+        "hint": "Orangefarbenes Wurzelgemüse für Hasen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-onion",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Цибуля",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сльози", "Овоч", "Різати", "Гірка", "Шари"],
+        "hint": "Овоч, від якого плачуть"
+      },
+      "EN": {
+        "word": "Onion",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tears", "Vegetable", "Cut", "Bitter", "Layers"],
+        "hint": "Vegetable that makes you cry"
+      },
+      "DE": {
+        "word": "Zwiebel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tränen", "Gemüse", "Schneiden", "Bitter", "Schichten"],
+        "hint": "Gemüse das zum Weinen bringt"
+      }
+    }
+  },
+  {
+    "conceptId": "food-garlic",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Часник",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Запах", "Зубчик", "Вампір", "Гострий", "Приправа"],
+        "hint": "Гострий овоч, що відлякує вампірів"
+      },
+      "EN": {
+        "word": "Garlic",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Smell", "Clove", "Vampire", "Spicy", "Seasoning"],
+        "hint": "Pungent vegetable that repels vampires"
+      },
+      "DE": {
+        "word": "Knoblauch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Geruch", "Zehe", "Vampir", "Scharf", "Gewürz"],
+        "hint": "Scharfes Gemüse gegen Vampire"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pepper",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Перець",
+        "antonyms": [],
+        "synonyms": ["Чилі"],
+        "tabooWords": ["Гострий", "Овоч", "Колір", "Спеція", "Болгарський"],
+        "hint": "Гострий або солодкий кольоровий овоч"
+      },
+      "EN": {
+        "word": "Pepper",
+        "antonyms": [],
+        "synonyms": ["Chili", "Bell pepper"],
+        "tabooWords": ["Spicy", "Vegetable", "Color", "Spice", "Bell"],
+        "hint": "Spicy or sweet colored vegetable"
+      },
+      "DE": {
+        "word": "Paprika",
+        "antonyms": [],
+        "synonyms": ["Pfeffer"],
+        "tabooWords": ["Scharf", "Gemüse", "Farbe", "Gewürz", "Glocke"],
+        "hint": "Scharfes oder süßes buntes Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cabbage",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Капуста",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Листя", "Качан", "Борщ", "Овоч", "Зелена"],
+        "hint": "Багатошаровий овоч для борщу"
+      },
+      "EN": {
+        "word": "Cabbage",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Leaves", "Head", "Borscht", "Vegetable", "Green"],
+        "hint": "Multi-layered vegetable for soup"
+      },
+      "DE": {
+        "word": "Kohl",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Blätter", "Kopf", "Borschtsch", "Gemüse", "Grün"],
+        "hint": "Mehrschichtiges Gemüse für Suppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-eggplant",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Баклажан",
+        "antonyms": [],
+        "synonyms": ["Синенькі"],
+        "tabooWords": ["Фіолетовий", "Овоч", "Довгий", "Ікра", "Смажити"],
+        "hint": "Фіолетовий овоч видовженої форми"
+      },
+      "EN": {
+        "word": "Eggplant",
+        "antonyms": [],
+        "synonyms": ["Aubergine"],
+        "tabooWords": ["Purple", "Vegetable", "Long", "Caviar", "Fry"],
+        "hint": "Purple elongated vegetable"
+      },
+      "DE": {
+        "word": "Aubergine",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Lila", "Gemüse", "Lang", "Kaviar", "Braten"],
+        "hint": "Lila längliches Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-zucchini",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кабачок",
+        "antonyms": [],
+        "synonyms": ["Цукіні"],
+        "tabooWords": ["Овоч", "Зелений", "Оладки", "Довгий", "Смажити"],
+        "hint": "Світло-зелений родич гарбуза"
+      },
+      "EN": {
+        "word": "Zucchini",
+        "antonyms": [],
+        "synonyms": ["Courgette"],
+        "tabooWords": ["Vegetable", "Green", "Pancakes", "Long", "Fry"],
+        "hint": "Light green relative of pumpkin"
+      },
+      "DE": {
+        "word": "Zucchini",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gemüse", "Grün", "Pfannkuchen", "Lang", "Braten"],
+        "hint": "Hellgrüner Verwandter des Kürbis"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pumpkin",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гарбуз",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Осінь", "Хелловін", "Помаранчевий", "Насіння", "Каша"],
+        "hint": "Великий помаранчевий символ Хелловіну"
+      },
+      "EN": {
+        "word": "Pumpkin",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Autumn", "Halloween", "Orange", "Seeds", "Porridge"],
+        "hint": "Large orange symbol of Halloween"
+      },
+      "DE": {
+        "word": "Kürbis",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Herbst", "Halloween", "Orange", "Samen", "Brei"],
+        "hint": "Großes oranges Halloween-Symbol"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mushrooms",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гриби",
+        "antonyms": [],
+        "synonyms": ["Печериці"],
+        "tabooWords": ["Ліс", "Збирати", "Капелюшок", "Ніжка", "Їстівні"],
+        "hint": "Ростуть у лісі під деревами"
+      },
+      "EN": {
+        "word": "Mushrooms",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Forest", "Pick", "Cap", "Stem", "Edible"],
+        "hint": "Organisms growing in the forest"
+      },
+      "DE": {
+        "word": "Pilze",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Wald", "Sammeln", "Hut", "Stiel", "Essbar"],
+        "hint": "Wachsen im Wald unter Bäumen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-rice",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Рис",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Білий", "Азія", "Злак", "Суші", "Плов"],
+        "hint": "Основа багатьох азіатських страв"
+      },
+      "EN": {
+        "word": "Rice",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["White", "Asia", "Grain", "Sushi", "Pilaf"],
+        "hint": "Base for many Asian dishes"
+      },
+      "DE": {
+        "word": "Reis",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Weiß", "Asien", "Korn", "Sushi", "Pilaw"],
+        "hint": "Basis vieler asiatischer Gerichte"
+      }
+    }
+  },
+  {
+    "conceptId": "food-buckwheat",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Гречка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Коричнева", "Каша", "Злак", "Варити", "Гарнір"],
+        "hint": "Популярна коричнева крупа"
+      },
+      "EN": {
+        "word": "Buckwheat",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brown", "Porridge", "Grain", "Boil", "Garnish"],
+        "hint": "Popular brown groats"
+      },
+      "DE": {
+        "word": "Buchweizen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Braun", "Brei", "Korn", "Kochen", "Beilage"],
+        "hint": "Beliebte braune Grütze"
+      }
+    }
+  },
+  {
+    "conceptId": "food-macaroni",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Макарони",
+        "antonyms": [],
+        "synonyms": ["Паста"],
+        "tabooWords": ["Італія", "Тісто", "Варити", "Ріжки", "Сир"],
+        "hint": "Вироби з висушеного тіста"
+      },
+      "EN": {
+        "word": "Macaroni",
+        "antonyms": [],
+        "synonyms": ["Pasta"],
+        "tabooWords": ["Italy", "Dough", "Boil", "Horns", "Cheese"],
+        "hint": "Dried dough products"
+      },
+      "DE": {
+        "word": "Makkaroni",
+        "antonyms": [],
+        "synonyms": ["Nudeln"],
+        "tabooWords": ["Italien", "Teig", "Kochen", "Hörnchen", "Käse"],
+        "hint": "Getrocknete Teigprodukte"
+      }
+    }
+  },
+  {
+    "conceptId": "food-oatmeal",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Вівсянка",
+        "antonyms": [],
+        "synonyms": ["Овсянка", "Пластівці"],
+        "tabooWords": ["Ранок", "Каша", "Англія", "Сніданок", "Молоко"],
+        "hint": "Традиційний англійський сніданок"
+      },
+      "EN": {
+        "word": "Oatmeal",
+        "antonyms": [],
+        "synonyms": ["Oats", "Porridge"],
+        "tabooWords": ["Morning", "Porridge", "England", "Breakfast", "Milk"],
+        "hint": "Traditional English breakfast dish"
+      },
+      "DE": {
+        "word": "Haferflocken",
+        "antonyms": [],
+        "synonyms": ["Haferbrei"],
+        "tabooWords": ["Morgen", "Brei", "England", "Frühstück", "Milch"],
+        "hint": "Traditionelles englisches Frühstück"
+      }
+    }
+  },
+  {
+    "conceptId": "food-corn",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кукурудза",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Жовта", "Качан", "Попкорн", "Солодка", "Поле"],
+        "hint": "Жовтий злак, з якого роблять попкорн"
+      },
+      "EN": {
+        "word": "Corn",
+        "antonyms": [],
+        "synonyms": ["Maize"],
+        "tabooWords": ["Yellow", "Cob", "Popcorn", "Sweet", "Field"],
+        "hint": "Yellow grain used for popcorn"
+      },
+      "DE": {
+        "word": "Mais",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gelb", "Kolben", "Popcorn", "Süß", "Feld"],
+        "hint": "Gelbes Getreide für Popcorn"
+      }
+    }
+  },
+  {
+    "conceptId": "food-beans",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Квасоля",
+        "antonyms": [],
+        "synonyms": ["Боби"],
+        "tabooWords": ["Бобові", "Суп", "Борщ", "Червона", "Біла"],
+        "hint": "Білі або червоні бобові зерна"
+      },
+      "EN": {
+        "word": "Beans",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Legumes", "Soup", "Borscht", "Red", "White"],
+        "hint": "White or red legume seeds"
+      },
+      "DE": {
+        "word": "Bohnen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Hülsenfrüchte", "Suppe", "Borschtsch", "Rot", "Weiß"],
+        "hint": "Weiße oder rote Hülsenfrüchte"
+      }
+    }
+  },
+  {
+    "conceptId": "food-peas",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Горох",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Зелений", "Бобові", "Суп", "Стручок", "Круглий"],
+        "hint": "Маленькі зелені круглі бобові"
+      },
+      "EN": {
+        "word": "Peas",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Green", "Legumes", "Soup", "Pod", "Round"],
+        "hint": "Small green round legumes"
+      },
+      "DE": {
+        "word": "Erbsen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grün", "Hülsenfrüchte", "Suppe", "Schote", "Rund"],
+        "hint": "Kleine grüne runde Hülsenfrüchte"
+      }
+    }
+  },
+  {
+    "conceptId": "food-lentils",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Сочевиця",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Бобові", "Каша", "Суп", "Коричнева", "Червона"],
+        "hint": "Плоскі дрібні бобові зерна"
+      },
+      "EN": {
+        "word": "Lentils",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Legumes", "Porridge", "Soup", "Brown", "Red"],
+        "hint": "Flat small legume seeds"
+      },
+      "DE": {
+        "word": "Linsen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Hülsenfrüchte", "Brei", "Suppe", "Braun", "Rot"],
+        "hint": "Flache kleine Hülsenfrüchte"
+      }
+    }
+  },
+  {
+    "conceptId": "food-poppy",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Мак",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Чорний", "Квітка", "Насіння", "Булочка", "Червоний"],
+        "hint": "Чорне насіння для випічки"
+      },
+      "EN": {
+        "word": "Poppy seeds",
+        "antonyms": [],
+        "synonyms": ["Poppy"],
+        "tabooWords": ["Black", "Flower", "Seeds", "Bun", "Red"],
+        "hint": "Black seeds used in baking"
+      },
+      "DE": {
+        "word": "Mohn",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Schwarz", "Blume", "Samen", "Brötchen", "Rot"],
+        "hint": "Schwarze Samen zum Backen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-butter",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Масло",
+        "antonyms": [],
+        "synonyms": ["Вершкове"],
+        "tabooWords": ["Коров'яче", "Хліб", "Жовте", "Жирне", "Бутерброд"],
+        "hint": "Жирний продукт з вершків"
+      },
+      "EN": {
+        "word": "Butter",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cow", "Bread", "Yellow", "Fat", "Sandwich"],
+        "hint": "Fatty dairy product from cream"
+      },
+      "DE": {
+        "word": "Butter",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kuh", "Brot", "Gelb", "Fett", "Sandwich"],
+        "hint": "Fettiges Milchprodukt aus Sahne"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sour-cream",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сметана",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Біла", "Борщ", "Молоко", "Густа", "Вареники"],
+        "hint": "Густий білий молочний продукт"
+      },
+      "EN": {
+        "word": "Sour cream",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["White", "Borscht", "Milk", "Thick", "Dumplings"],
+        "hint": "Thick white dairy product"
+      },
+      "DE": {
+        "word": "Schmand",
+        "antonyms": [],
+        "synonyms": ["Saure Sahne"],
+        "tabooWords": ["Weiß", "Borschtsch", "Milch", "Dick", "Teigtaschen"],
+        "hint": "Dickes weißes Milchprodukt"
+      }
+    }
+  },
+  {
+    "conceptId": "food-milk",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Молоко",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Корова", "Біле", "Напій", "Кальцій", "Пити"],
+        "hint": "Білий напій, що дає корова"
+      },
+      "EN": {
+        "word": "Milk",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cow", "White", "Drink", "Calcium", "Drink"],
+        "hint": "White beverage from a cow"
+      },
+      "DE": {
+        "word": "Milch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kuh", "Weiß", "Getränk", "Kalzium", "Trinken"],
+        "hint": "Weißes Getränk von der Kuh"
+      }
+    }
+  },
+  {
+    "conceptId": "food-kefir",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кефір",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Кислий", "Молоко", "Білий", "Корисний"],
+        "hint": "Кисломолочний питний продукт"
+      },
+      "EN": {
+        "word": "Kefir",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Sour", "Milk", "White", "Healthy"],
+        "hint": "Fermented milk drink"
+      },
+      "DE": {
+        "word": "Kefir",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Sauer", "Milch", "Weiß", "Gesund"],
+        "hint": "Fermentiertes Milchgetränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-yogurt",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Йогурт",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Фрукти", "Напій", "Молоко", "Солодкий", "Десерт"],
+        "hint": "Солодкий кисломолочний десерт"
+      },
+      "EN": {
+        "word": "Yogurt",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fruits", "Drink", "Milk", "Sweet", "Dessert"],
+        "hint": "Sweet fermented dairy dessert"
+      },
+      "DE": {
+        "word": "Joghurt",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Früchte", "Getränk", "Milch", "Süß", "Dessert"],
+        "hint": "Süßes fermentiertes Milchdessert"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cottage-cheese",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Домашній сир",
+        "antonyms": [],
+        "synonyms": ["Творог"],
+        "tabooWords": ["Білий", "Молоко", "Сирники", "Корисний", "Сметана"],
+        "hint": "Основа для сирників та запіканок"
+      },
+      "EN": {
+        "word": "Cottage cheese",
+        "antonyms": [],
+        "synonyms": ["Curd"],
+        "tabooWords": ["White", "Milk", "Pancakes", "Healthy", "Sour cream"],
+        "hint": "Fresh cheese curd product"
+      },
+      "DE": {
+        "word": "Quark",
+        "antonyms": [],
+        "synonyms": ["Hüttenkäse"],
+        "tabooWords": ["Weiß", "Milch", "Pfannkuchen", "Gesund", "Schmand"],
+        "hint": "Frisches Frischkäseprodukt"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cream",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Вершки",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Кава", "Білі", "Молоко", "Жирні", "Збивати"],
+        "hint": "Жирна частина молока для збивання"
+      },
+      "EN": {
+        "word": "Cream",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Coffee", "White", "Milk", "Fat", "Whip"],
+        "hint": "Fatty part of milk"
+      },
+      "DE": {
+        "word": "Sahne",
+        "antonyms": [],
+        "synonyms": ["Rahm"],
+        "tabooWords": ["Kaffee", "Weiß", "Milch", "Fett", "Schlagen"],
+        "hint": "Fettiger Teil der Milch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-egg",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Яйце",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Курка", "Жовток", "Білок", "Шкаралупа", "Смажити"],
+        "hint": "Овальний продукт від курки"
+      },
+      "EN": {
+        "word": "Egg",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Chicken", "Yolk", "White", "Shell", "Fry"],
+        "hint": "Oval product laid by chickens"
+      },
+      "DE": {
+        "word": "Ei",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Huhn", "Eigelb", "Eiweiß", "Schale", "Braten"],
+        "hint": "Ovales Produkt vom Huhn"
+      }
+    }
+  },
+  {
+    "conceptId": "food-flour",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Борошно",
+        "antonyms": [],
+        "synonyms": ["Мука"],
+        "tabooWords": ["Біле", "Пшениця", "Тісто", "Пекти", "Порошок"],
+        "hint": "Перемелені зерна для тіста"
+      },
+      "EN": {
+        "word": "Flour",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["White", "Wheat", "Dough", "Bake", "Powder"],
+        "hint": "Milled grains used for baking"
+      },
+      "DE": {
+        "word": "Mehl",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Weiß", "Weizen", "Teig", "Backen", "Pulver"],
+        "hint": "Gemahlene Körner zum Backen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sugar",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Цукор",
+        "antonyms": ["Сіль"],
+        "synonyms": [],
+        "tabooWords": ["Солодкий", "Білий", "Чай", "Пісок", "Кристал"],
+        "hint": "Солодка біла кристалічна речовина"
+      },
+      "EN": {
+        "word": "Sugar",
+        "antonyms": ["Salt"],
+        "synonyms": [],
+        "tabooWords": ["Sweet", "White", "Tea", "Sand", "Crystal"],
+        "hint": "Sweet white crystalline substance"
+      },
+      "DE": {
+        "word": "Zucker",
+        "antonyms": ["Salz"],
+        "synonyms": [],
+        "tabooWords": ["Süß", "Weiß", "Tee", "Sand", "Kristall"],
+        "hint": "Süße weiße kristalline Substanz"
+      }
+    }
+  },
+  {
+    "conceptId": "food-salt",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сіль",
+        "antonyms": ["Цукор"],
+        "synonyms": [],
+        "tabooWords": ["Біла", "Солона", "Море", "Приправа", "Сльози"],
+        "hint": "Основна солона приправа"
+      },
+      "EN": {
+        "word": "Salt",
+        "antonyms": ["Sugar"],
+        "synonyms": [],
+        "tabooWords": ["White", "Salty", "Sea", "Seasoning", "Tears"],
+        "hint": "Basic salty seasoning"
+      },
+      "DE": {
+        "word": "Salz",
+        "antonyms": ["Zucker"],
+        "synonyms": [],
+        "tabooWords": ["Weiß", "Salzig", "Meer", "Gewürz", "Tränen"],
+        "hint": "Grundlegendes salziges Gewürz"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cinnamon",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кориця",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Коричнева", "Спеція", "Яблуко", "Булочка", "Запах"],
+        "hint": "Ароматна спеція з кори дерева"
+      },
+      "EN": {
+        "word": "Cinnamon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brown", "Spice", "Apple", "Bun", "Smell"],
+        "hint": "Aromatic spice from tree bark"
+      },
+      "DE": {
+        "word": "Zimt",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Braun", "Gewürz", "Apfel", "Brötchen", "Geruch"],
+        "hint": "Aromatisches Gewürz aus Baumrinde"
+      }
+    }
+  },
+  {
+    "conceptId": "food-vanilla",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Ваніль",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Запах", "Солодке", "Спеція", "Морозиво", "Випічка"],
+        "hint": "Найпопулярніший солодкий аромат десертів"
+      },
+      "EN": {
+        "word": "Vanilla",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Smell", "Sweet", "Spice", "Ice cream", "Baking"],
+        "hint": "Most popular sweet dessert flavor"
+      },
+      "DE": {
+        "word": "Vanille",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Geruch", "Süß", "Gewürz", "Eiscreme", "Backen"],
+        "hint": "Beliebtestes süßes Dessertaroma"
+      }
+    }
+  },
+  {
+    "conceptId": "food-basil",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Базилік",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Зелений", "Трава", "Італія", "Піца", "Песто"],
+        "hint": "Ароматна трава для соусу песто"
+      },
+      "EN": {
+        "word": "Basil",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Green", "Herb", "Italy", "Pizza", "Pesto"],
+        "hint": "Aromatic herb used in pesto"
+      },
+      "DE": {
+        "word": "Basilikum",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grün", "Kraut", "Italien", "Pizza", "Pesto"],
+        "hint": "Aromatisches Kraut für Pesto-Soße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-dill",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кріп",
+        "antonyms": [],
+        "synonyms": ["Укроп"],
+        "tabooWords": ["Трава", "Зелений", "Суп", "Салат", "Запах"],
+        "hint": "Зелень, яку часто додають у суп"
+      },
+      "EN": {
+        "word": "Dill",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Herb", "Green", "Soup", "Salad", "Smell"],
+        "hint": "Green herb often added to soup"
+      },
+      "DE": {
+        "word": "Dill",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kraut", "Grün", "Suppe", "Salat", "Geruch"],
+        "hint": "Grünes Kraut oft in Suppen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-parsley",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Петрушка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Зелень", "Трава", "Салат", "Приправа", "Корінь"],
+        "hint": "Популярна салатна зелень"
+      },
+      "EN": {
+        "word": "Parsley",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Greens", "Herb", "Salad", "Seasoning", "Root"],
+        "hint": "Popular green salad herb"
+      },
+      "DE": {
+        "word": "Petersilie",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grünzeug", "Kraut", "Salat", "Gewürz", "Wurzel"],
+        "hint": "Beliebtes grünes Salatkraut"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mint",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "М'ята",
+        "antonyms": [],
+        "synonyms": ["Мята"],
+        "tabooWords": ["Запах", "Чай", "Свіжість", "Трава", "Мохіто"],
+        "hint": "Трава з освіжаючим ментоловим смаком"
+      },
+      "EN": {
+        "word": "Mint",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Smell", "Tea", "Freshness", "Herb", "Mojito"],
+        "hint": "Herb with a refreshing menthol flavor"
+      },
+      "DE": {
+        "word": "Minze",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Geruch", "Tee", "Frische", "Kraut", "Mojito"],
+        "hint": "Kraut mit erfrischendem Mentholgeschmack"
+      }
+    }
+  },
+  {
+    "conceptId": "food-rosemary",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Розмарин",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Трава", "М'ясо", "Голки", "Запах", "Спеція"],
+        "hint": "Хвойна на вигляд приправа до м'яса"
+      },
+      "EN": {
+        "word": "Rosemary",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Herb", "Meat", "Needles", "Smell", "Spice"],
+        "hint": "Pine-like seasoning for meat"
+      },
+      "DE": {
+        "word": "Rosmarin",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kraut", "Fleisch", "Nadeln", "Geruch", "Gewürz"],
+        "hint": "Kieferartiges Gewürz für Fleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ginger",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Імбир",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Корінь", "Гострий", "Чай", "Суші", "Застуда"],
+        "hint": "Пекучий корінь від застуди"
+      },
+      "EN": {
+        "word": "Ginger",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Root", "Spicy", "Tea", "Sushi", "Cold"],
+        "hint": "Pungent root used for colds"
+      },
+      "DE": {
+        "word": "Ingwer",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Wurzel", "Scharf", "Tee", "Sushi", "Erkältung"],
+        "hint": "Scharfe Wurzel gegen Erkältung"
+      }
+    }
+  },
+  {
+    "conceptId": "food-oregano",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Орегано",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Піца", "Трава", "Італія", "Спеція", "Сушений"],
+        "hint": "Класична сушена приправа для піци"
+      },
+      "EN": {
+        "word": "Oregano",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pizza", "Herb", "Italy", "Spice", "Dried"],
+        "hint": "Classic dried pizza seasoning"
+      },
+      "DE": {
+        "word": "Oregano",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pizza", "Kraut", "Italien", "Gewürz", "Getrocknet"],
+        "hint": "Klassisches getrocknetes Pizzagewürz"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tea",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Чай",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Вода", "Заварка", "Листя", "Чашка"],
+        "hint": "Популярний гарячий напій з листя"
+      },
+      "EN": {
+        "word": "Tea",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Water", "Brew", "Leaves", "Cup"],
+        "hint": "Popular hot drink from leaves"
+      },
+      "DE": {
+        "word": "Tee",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Wasser", "Aufguss", "Blätter", "Tasse"],
+        "hint": "Beliebtes Heißgetränk aus Blättern"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cocoa",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Какао",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Шоколад", "Коричневий", "Гарячий", "Молоко"],
+        "hint": "Гарячий шоколадний напій"
+      },
+      "EN": {
+        "word": "Cocoa",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Chocolate", "Brown", "Hot", "Milk"],
+        "hint": "Hot chocolate beverage"
+      },
+      "DE": {
+        "word": "Kakao",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Schokolade", "Braun", "Heiß", "Milch"],
+        "hint": "Heißes Schokoladengetränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-juice",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сік",
+        "antonyms": [],
+        "synonyms": ["Фреш"],
+        "tabooWords": ["Напій", "Фрукти", "Пити", "Яблучний", "Рідкий"],
+        "hint": "Рідкий напій з вичавлених фруктів"
+      },
+      "EN": {
+        "word": "Juice",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Fruits", "Drink", "Apple", "Liquid"],
+        "hint": "Liquid beverage from squeezed fruits"
+      },
+      "DE": {
+        "word": "Saft",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Früchte", "Trinken", "Apfel", "Flüssig"],
+        "hint": "Flüssiges Getränk aus gepressten Früchten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-compote",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Компот",
+        "antonyms": [],
+        "synonyms": ["Узвар"],
+        "tabooWords": ["Ягоди", "Вода", "Варити", "Солодкий", "Напій"],
+        "hint": "Домашній напій з варених фруктів"
+      },
+      "EN": {
+        "word": "Compote",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Berries", "Water", "Boil", "Sweet", "Drink"],
+        "hint": "Homemade drink made of boiled fruits"
+      },
+      "DE": {
+        "word": "Kompott",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Beeren", "Wasser", "Kochen", "Süß", "Getränk"],
+        "hint": "Hausgemachtes Getränk aus gekochten Früchten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-lemonade",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лимонад",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Лимон", "Газ", "Солодкий", "Літо"],
+        "hint": "Освіжаючий напій з цитрусових"
+      },
+      "EN": {
+        "word": "Lemonade",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Lemon", "Gas", "Sweet", "Summer"],
+        "hint": "Refreshing citrus beverage"
+      },
+      "DE": {
+        "word": "Limonade",
+        "antonyms": [],
+        "synonyms": ["Limo"],
+        "tabooWords": ["Getränk", "Zitrone", "Gas", "Süß", "Sommer"],
+        "hint": "Erfrischendes Zitrusgetränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-smoothie",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Смузі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Густий", "Фрукти", "Блендер", "Напій", "Здоровий"],
+        "hint": "Збитий у блендері фруктовий напій"
+      },
+      "EN": {
+        "word": "Smoothie",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Thick", "Fruits", "Blender", "Drink", "Healthy"],
+        "hint": "Blended fruit beverage"
+      },
+      "DE": {
+        "word": "Smoothie",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dick", "Früchte", "Mixer", "Getränk", "Gesund"],
+        "hint": "Gemixtes Fruchtgetränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cocktail",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Коктейль",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Змішувати", "Алкоголь", "Бар", "Трубочка"],
+        "hint": "Змішаний напій, часто алкогольний"
+      },
+      "EN": {
+        "word": "Cocktail",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Mix", "Alcohol", "Bar", "Straw"],
+        "hint": "Mixed drink, often alcoholic"
+      },
+      "DE": {
+        "word": "Cocktail",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Mischen", "Alkohol", "Bar", "Strohhalm"],
+        "hint": "Gemischtes Getränk, oft alkoholisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-beer",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пиво",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Алкоголь", "Напій", "Піна", "Хміль", "Солод"],
+        "hint": "Пінний алкогольний напій з хмелю"
+      },
+      "EN": {
+        "word": "Beer",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Alcohol", "Drink", "Foam", "Hops", "Malt"],
+        "hint": "Foamy alcoholic drink from hops"
+      },
+      "DE": {
+        "word": "Bier",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Alkohol", "Getränk", "Schaum", "Hopfen", "Malz"],
+        "hint": "Schaumiges alkoholisches Getränk aus Hopfen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-champagne",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Шампанське",
+        "antonyms": [],
+        "synonyms": ["Ігристе"],
+        "tabooWords": ["Алкоголь", "Свято", "Бульбашки", "Вино", "Новий рік"],
+        "hint": "Ігристе вино для святкувань"
+      },
+      "EN": {
+        "word": "Champagne",
+        "antonyms": [],
+        "synonyms": ["Sparkling wine"],
+        "tabooWords": ["Alcohol", "Celebration", "Bubbles", "Wine", "New Year"],
+        "hint": "Sparkling wine for celebrations"
+      },
+      "DE": {
+        "word": "Champagner",
+        "antonyms": [],
+        "synonyms": ["Sekt"],
+        "tabooWords": ["Alkohol", "Feier", "Bläschen", "Wein", "Neujahr"],
+        "hint": "Schaumwein für Feierlichkeiten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-whiskey",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Віскі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Алкоголь", "Міцний", "Лід", "Шотландія", "Келих"],
+        "hint": "Міцний алкоголь з Шотландії"
+      },
+      "EN": {
+        "word": "Whiskey",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Alcohol", "Strong", "Ice", "Scotland", "Glass"],
+        "hint": "Strong alcohol from Scotland"
+      },
+      "DE": {
+        "word": "Whiskey",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Alkohol", "Stark", "Eis", "Schottland", "Glas"],
+        "hint": "Starker Alkohol aus Schottland"
+      }
+    }
+  },
+  {
+    "conceptId": "food-burger",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Бургер",
+        "antonyms": [],
+        "synonyms": ["Гамбургер"],
+        "tabooWords": ["М'ясо", "Булка", "Фастфуд", "Макдональдс", "Сир"],
+        "hint": "Котлета між двома половинами булки"
+      },
+      "EN": {
+        "word": "Burger",
+        "antonyms": [],
+        "synonyms": ["Hamburger"],
+        "tabooWords": ["Meat", "Bun", "Fast food", "McDonalds", "Cheese"],
+        "hint": "Patty between two bun halves"
+      },
+      "DE": {
+        "word": "Burger",
+        "antonyms": [],
+        "synonyms": ["Hamburger"],
+        "tabooWords": ["Fleisch", "Brötchen", "Fastfood", "McDonalds", "Käse"],
+        "hint": "Frikadelle zwischen zwei Brötchenhälften"
+      }
+    }
+  },
+  {
+    "conceptId": "food-hot-dog",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Хот-дог",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сосиска", "Булка", "Кетчуп", "Фастфуд", "Вулиця"],
+        "hint": "Вулична їжа з сосискою в булці"
+      },
+      "EN": {
+        "word": "Hot dog",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sausage", "Bun", "Ketchup", "Fast food", "Street"],
+        "hint": "Street food with sausage in bun"
+      },
+      "DE": {
+        "word": "Hot Dog",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Würstchen", "Brötchen", "Ketchup", "Fastfood", "Straße"],
+        "hint": "Straßenessen mit Würstchen im Brötchen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sandwich",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сендвіч",
+        "antonyms": [],
+        "synonyms": ["Бутерброд"],
+        "tabooWords": ["Хліб", "М'ясо", "Сир", "Перекус", "Трикутник"],
+        "hint": "Їжа між двома шматками хліба"
+      },
+      "EN": {
+        "word": "Sandwich",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Bread", "Meat", "Cheese", "Snack", "Triangle"],
+        "hint": "Food between two pieces of bread"
+      },
+      "DE": {
+        "word": "Sandwich",
+        "antonyms": [],
+        "synonyms": ["Pausenbrot"],
+        "tabooWords": ["Brot", "Fleisch", "Käse", "Snack", "Dreieck"],
+        "hint": "Essen zwischen zwei Brotscheiben"
+      }
+    }
+  },
+  {
+    "conceptId": "food-taco",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Тако",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Мексика", "Коржик", "М'ясо", "Гострий", "Кукурудза"],
+        "hint": "Мексиканська страва у кукурудзяному коржику"
+      },
+      "EN": {
+        "word": "Taco",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Mexico", "Tortilla", "Meat", "Spicy", "Corn"],
+        "hint": "Mexican dish in a corn tortilla"
+      },
+      "DE": {
+        "word": "Taco",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Mexiko", "Tortilla", "Fleisch", "Scharf", "Mais"],
+        "hint": "Mexikanisches Gericht in einer Maistortilla"
+      }
+    }
+  },
+  {
+    "conceptId": "food-shawarma",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Шаурма",
+        "antonyms": [],
+        "synonyms": ["Кебаб"],
+        "tabooWords": ["М'ясо", "Лаваш", "Вулиця", "Фастфуд", "Соус"],
+        "hint": "М'ясо з овочами, загорнуте в лаваш"
+      },
+      "EN": {
+        "word": "Shawarma",
+        "antonyms": [],
+        "synonyms": ["Kebab"],
+        "tabooWords": ["Meat", "Pita", "Street", "Fast food", "Sauce"],
+        "hint": "Meat and vegetables wrapped in flatbread"
+      },
+      "DE": {
+        "word": "Döner",
+        "antonyms": [],
+        "synonyms": ["Schawarma"],
+        "tabooWords": ["Fleisch", "Fladenbrot", "Straße", "Fastfood", "Soße"],
+        "hint": "Fleisch und Gemüse im Fladenbrot"
+      }
+    }
+  },
+  {
+    "conceptId": "food-croissant",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Круасан",
+        "antonyms": [],
+        "synonyms": ["Рогалик"],
+        "tabooWords": ["Франція", "Випічка", "Тісто", "Ранок", "Кава"],
+        "hint": "Французький рогалик у формі півмісяця"
+      },
+      "EN": {
+        "word": "Croissant",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["France", "Pastry", "Dough", "Morning", "Coffee"],
+        "hint": "Crescent-shaped French pastry"
+      },
+      "DE": {
+        "word": "Croissant",
+        "antonyms": [],
+        "synonyms": ["Hörnchen"],
+        "tabooWords": ["Frankreich", "Gebäck", "Teig", "Morgen", "Kaffee"],
+        "hint": "Halbmondförmiges französisches Gebäck"
+      }
+    }
+  },
+  {
+    "conceptId": "food-baguette",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Багет",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Франція", "Хліб", "Довгий", "Хрусткий", "Пекарня"],
+        "hint": "Традиційний довгий французький хліб"
+      },
+      "EN": {
+        "word": "Baguette",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["France", "Bread", "Long", "Crispy", "Bakery"],
+        "hint": "Traditional long French bread"
+      },
+      "DE": {
+        "word": "Baguette",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Frankreich", "Brot", "Lang", "Knusprig", "Bäckerei"],
+        "hint": "Traditionelles langes französisches Brot"
+      }
+    }
+  },
+  {
+    "conceptId": "food-toast",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Тост",
+        "antonyms": [],
+        "synonyms": ["Грінка"],
+        "tabooWords": ["Хліб", "Смажити", "Ранок", "Масло", "Хрусткий"],
+        "hint": "Підсмажений шматочок хліба"
+      },
+      "EN": {
+        "word": "Toast",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Bread", "Fry", "Morning", "Butter", "Crispy"],
+        "hint": "Browned slice of bread"
+      },
+      "DE": {
+        "word": "Toast",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brot", "Braten", "Morgen", "Butter", "Knusprig"],
+        "hint": "Gebräunte Brotscheibe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cracker",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Крекер",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Печиво", "Солоний", "Хрусткий", "Снек", "Сухий"],
+        "hint": "Тонке хрустке солоне печиво"
+      },
+      "EN": {
+        "word": "Cracker",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cookie", "Salty", "Crispy", "Snack", "Dry"],
+        "hint": "Thin crispy salty biscuit"
+      },
+      "DE": {
+        "word": "Cracker",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Keks", "Salzig", "Knusprig", "Snack", "Trocken"],
+        "hint": "Dünner knuspriger salziger Keks"
+      }
+    }
+  },
+  {
+    "conceptId": "food-chips",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Чіпси",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Картопля", "Хрусткі", "Снек", "Солоні", "Пачка"],
+        "hint": "Тонкі скибочки смаженої картоплі"
+      },
+      "EN": {
+        "word": "Chips",
+        "antonyms": [],
+        "synonyms": ["Crisps"],
+        "tabooWords": ["Potato", "Crispy", "Snack", "Salty", "Bag"],
+        "hint": "Thin slices of fried potato"
+      },
+      "DE": {
+        "word": "Chips",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kartoffel", "Knusprig", "Snack", "Salzig", "Tüte"],
+        "hint": "Dünne Scheiben gebratener Kartoffel"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tiramisu",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Тірамісу",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Десерт", "Італія", "Кава", "Маскарпоне", "Солодке"],
+        "hint": "Італійський кавовий десерт"
+      },
+      "EN": {
+        "word": "Tiramisu",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "Italy", "Coffee", "Mascarpone", "Sweet"],
+        "hint": "Italian coffee-flavored dessert"
+      },
+      "DE": {
+        "word": "Tiramisu",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "Italien", "Kaffee", "Mascarpone", "Süß"],
+        "hint": "Italienisches Dessert mit Kaffeegeschmack"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cheesecake",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Чізкейк",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сир", "Десерт", "Пиріг", "Солодке", "Випічка"],
+        "hint": "Десерт на основі м'якого сиру"
+      },
+      "EN": {
+        "word": "Cheesecake",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cheese", "Dessert", "Pie", "Sweet", "Baking"],
+        "hint": "Dessert made of soft cheese"
+      },
+      "DE": {
+        "word": "Käsekuchen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Käse", "Dessert", "Kuchen", "Süß", "Backen"],
+        "hint": "Dessert aus weichem Käse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pudding",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Пудинг",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Десерт", "Англія", "Солодкий", "М'який", "Желе"],
+        "hint": "М'який англійський солодкий десерт"
+      },
+      "EN": {
+        "word": "Pudding",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "England", "Sweet", "Soft", "Jelly"],
+        "hint": "Soft English sweet dessert"
+      },
+      "DE": {
+        "word": "Pudding",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "England", "Süß", "Weich", "Gelee"],
+        "hint": "Weiches englisches süßes Dessert"
+      }
+    }
+  },
+  {
+    "conceptId": "food-jelly",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Желе",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тремтить", "Прозоре", "Десерт", "Фруктове", "Кольорове"],
+        "hint": "Прозорий десерт, який тремтить"
+      },
+      "EN": {
+        "word": "Jelly",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Wobbles", "Transparent", "Dessert", "Fruity", "Colorful"],
+        "hint": "Transparent dessert that wobbles"
+      },
+      "DE": {
+        "word": "Gelee",
+        "antonyms": [],
+        "synonyms": ["Wackelpudding"],
+        "tabooWords": ["Wackelt", "Transparent", "Dessert", "Fruchtig", "Bunt"],
+        "hint": "Transparentes Dessert das wackelt"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mousse",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Мус",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Десерт", "Повітряний", "Солодкий", "Шоколадний", "М'який"],
+        "hint": "Легкий повітряний збитий десерт"
+      },
+      "EN": {
+        "word": "Mousse",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "Airy", "Sweet", "Chocolate", "Soft"],
+        "hint": "Light airy whipped dessert"
+      },
+      "DE": {
+        "word": "Mousse",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "Luftig", "Süß", "Schokolade", "Weich"],
+        "hint": "Leichtes luftiges geschlagenes Dessert"
+      }
+    }
+  },
+  {
+    "conceptId": "food-eclair",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Еклер",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Десерт", "Заварний", "Крем", "Тісто", "Довгий"],
+        "hint": "Довге тістечко із заварним кремом"
+      },
+      "EN": {
+        "word": "Eclair",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dessert", "Choux", "Cream", "Dough", "Long"],
+        "hint": "Long pastry with custard cream"
+      },
+      "DE": {
+        "word": "Eclair",
+        "antonyms": [],
+        "synonyms": ["Liebesknochen"],
+        "tabooWords": ["Dessert", "Brandteig", "Creme", "Teig", "Lang"],
+        "hint": "Langes Gebäck mit Puddingcreme"
+      }
+    }
+  },
+  {
+    "conceptId": "food-macaron",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Макарон",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Франція", "Десерт", "Мигдаль", "Кольоровий", "Круглий"],
+        "hint": "Кольорове французьке мигдалеве печиво"
+      },
+      "EN": {
+        "word": "Macaron",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["France", "Dessert", "Almond", "Colorful", "Round"],
+        "hint": "Colorful French almond cookie"
+      },
+      "DE": {
+        "word": "Macaron",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Frankreich", "Dessert", "Mandel", "Bunt", "Rund"],
+        "hint": "Bunter französischer Mandelkeks"
+      }
+    }
+  },
+  {
+    "conceptId": "food-waffle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вафлі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Солодкі", "Клітинка", "Хрусткі", "Десерт", "Бельгійські"],
+        "hint": "Хрусткий десерт у клітинку"
+      },
+      "EN": {
+        "word": "Waffle",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sweet", "Grid", "Crispy", "Dessert", "Belgian"],
+        "hint": "Crispy dessert with a grid pattern"
+      },
+      "DE": {
+        "word": "Waffel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Süß", "Muster", "Knusprig", "Dessert", "Belgisch"],
+        "hint": "Knuspriges Dessert mit Gittermuster"
+      }
+    }
+  },
+  {
+    "conceptId": "food-donut",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пончик",
+        "antonyms": [],
+        "synonyms": ["Донат"],
+        "tabooWords": ["Дірка", "Солодкий", "Тісто", "Смажити", "Глазур"],
+        "hint": "Круглий солодкий виріб з діркою"
+      },
+      "EN": {
+        "word": "Donut",
+        "antonyms": [],
+        "synonyms": ["Doughnut"],
+        "tabooWords": ["Hole", "Sweet", "Dough", "Fry", "Glaze"],
+        "hint": "Round sweet pastry with a hole"
+      },
+      "DE": {
+        "word": "Donut",
+        "antonyms": [],
+        "synonyms": ["Krapfen"],
+        "tabooWords": ["Loch", "Süß", "Teig", "Braten", "Glasur"],
+        "hint": "Rundes süßes Gebäck mit Loch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-muffin",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кекс",
+        "antonyms": [],
+        "synonyms": ["Мафін"],
+        "tabooWords": ["Випічка", "Десерт", "Формочка", "Солодкий", "Ізюм"],
+        "hint": "Невелика солодка порційна випічка"
+      },
+      "EN": {
+        "word": "Muffin",
+        "antonyms": [],
+        "synonyms": ["Cupcake"],
+        "tabooWords": ["Pastry", "Dessert", "Mold", "Sweet", "Raisins"],
+        "hint": "Small sweet individual baked good"
+      },
+      "DE": {
+        "word": "Muffin",
+        "antonyms": [],
+        "synonyms": ["Cupcake"],
+        "tabooWords": ["Gebäck", "Dessert", "Förmchen", "Süß", "Rosinen"],
+        "hint": "Kleines süßes Portionsgebäck"
+      }
+    }
+  },
+  {
+    "conceptId": "food-caramel",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Карамель",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Цукор", "Солодка", "Тягнеться", "Коричнева", "Цукерка"],
+        "hint": "Солодощі з плавленого цукру"
+      },
+      "EN": {
+        "word": "Caramel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sugar", "Sweet", "Chewy", "Brown", "Candy"],
+        "hint": "Sweet made from melted sugar"
+      },
+      "DE": {
+        "word": "Karamell",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Zucker", "Süß", "Zäh", "Braun", "Bonbon"],
+        "hint": "Süßigkeit aus geschmolzenem Zucker"
+      }
+    }
+  },
+  {
+    "conceptId": "food-nougat",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Нуга",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Горіхи", "Солодка", "Біла", "Десерт", "Тягуча"],
+        "hint": "Тягучий солодкий десерт з горіхами"
+      },
+      "EN": {
+        "word": "Nougat",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuts", "Sweet", "White", "Dessert", "Chewy"],
+        "hint": "Chewy sweet dessert with nuts"
+      },
+      "DE": {
+        "word": "Nougat",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nüsse", "Süß", "Weiß", "Dessert", "Zäh"],
+        "hint": "Zähes süßes Dessert mit Nüssen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-marzipan",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Марципан",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Мигдаль", "Маса", "Десерт", "Фігурки", "Солодкий"],
+        "hint": "Солодка маса з тертого мигдалю"
+      },
+      "EN": {
+        "word": "Marzipan",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Almond", "Paste", "Dessert", "Figures", "Sweet"],
+        "hint": "Sweet paste made from grated almonds"
+      },
+      "DE": {
+        "word": "Marzipan",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Mandel", "Masse", "Dessert", "Figuren", "Süß"],
+        "hint": "Süße Masse aus geriebenen Mandeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-marshmallow",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Зефір",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Солодкий", "Білий", "Повітряний", "Десерт", "Яблуко"],
+        "hint": "Білий повітряний десерт"
+      },
+      "EN": {
+        "word": "Marshmallow",
+        "antonyms": [],
+        "synonyms": ["Zephyr"],
+        "tabooWords": ["Sweet", "White", "Airy", "Dessert", "Apple"],
+        "hint": "White airy soft dessert"
+      },
+      "DE": {
+        "word": "Zephir",
+        "antonyms": [],
+        "synonyms": ["Marshmallow"],
+        "tabooWords": ["Süß", "Weiß", "Luftig", "Dessert", "Apfel"],
+        "hint": "Weißes luftiges weiches Dessert"
+      }
+    }
+  },
+  {
+    "conceptId": "food-halva",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Халва",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Насіння", "Східна", "Солодка", "Розсипається", "Соняшник"],
+        "hint": "Східна солодість із насіння або горіхів"
+      },
+      "EN": {
+        "word": "Halva",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Seeds", "Eastern", "Sweet", "Crumbly", "Sunflower"],
+        "hint": "Eastern sweet made from seeds or nuts"
+      },
+      "DE": {
+        "word": "Halva",
+        "antonyms": [],
+        "synonyms": ["Helva"],
+        "tabooWords": ["Samen", "Östlich", "Süß", "Krümelig", "Sonnenblume"],
+        "hint": "Östliche Süßigkeit aus Samen oder Nüssen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-gozinaki",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Козинак",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Насіння", "Мед", "Твердий", "Горіхи", "Солодощі"],
+        "hint": "Тверді солодощі з горіхів і меду"
+      },
+      "EN": {
+        "word": "Gozinaki",
+        "antonyms": [],
+        "synonyms": ["Brittle"],
+        "tabooWords": ["Seeds", "Honey", "Hard", "Nuts", "Sweets"],
+        "hint": "Hard sweets made of nuts and honey"
+      },
+      "DE": {
+        "word": "Krokant",
+        "antonyms": [],
+        "synonyms": ["Gozinaki"],
+        "tabooWords": ["Samen", "Honig", "Hart", "Nüsse", "Süßigkeiten"],
+        "hint": "Harte Süßigkeit aus Nüssen und Honig"
+      }
+    }
+  },
+  {
+    "conceptId": "food-turkish-delight",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Рахат-лукум",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Туреччина", "Солодощі", "Кубики", "Пудра", "Горіхи"],
+        "hint": "Традиційні турецькі солодощі в пудрі"
+      },
+      "EN": {
+        "word": "Turkish delight",
+        "antonyms": [],
+        "synonyms": ["Lokum"],
+        "tabooWords": ["Turkey", "Sweets", "Cubes", "Powder", "Nuts"],
+        "hint": "Traditional Turkish sweets in powder"
+      },
+      "DE": {
+        "word": "Lokum",
+        "antonyms": [],
+        "synonyms": ["Türkischer Honig"],
+        "tabooWords": ["Türkei", "Süßigkeiten", "Würfel", "Puder", "Nüsse"],
+        "hint": "Traditionelle türkische Süßigkeit"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pastila",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Пастила",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Яблуко", "Десерт", "Сушена", "Пюре", "Солодка"],
+        "hint": "Десерт із підсушеного фруктового пюре"
+      },
+      "EN": {
+        "word": "Pastila",
+        "antonyms": [],
+        "synonyms": ["Fruit leather"],
+        "tabooWords": ["Apple", "Dessert", "Dried", "Puree", "Sweet"],
+        "hint": "Dessert made of dried fruit puree"
+      },
+      "DE": {
+        "word": "Pastila",
+        "antonyms": [],
+        "synonyms": ["Fruchtleder"],
+        "tabooWords": ["Apfel", "Dessert", "Getrocknet", "Püree", "Süß"],
+        "hint": "Dessert aus getrocknetem Fruchtpüree"
+      }
+    }
+  },
+  {
+    "conceptId": "food-candied-fruit",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Цукат",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Фрукти", "Сироп", "Солодкі", "Шматочки", "Випічка"],
+        "hint": "Шматочки фруктів, зварені в сиропі"
+      },
+      "EN": {
+        "word": "Candied fruit",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fruits", "Syrup", "Sweet", "Pieces", "Baking"],
+        "hint": "Pieces of fruit boiled in syrup"
+      },
+      "DE": {
+        "word": "Orangeat",
+        "antonyms": [],
+        "synonyms": ["Zitronat"],
+        "tabooWords": ["Früchte", "Sirup", "Süß", "Stücke", "Backen"],
+        "hint": "In Sirup gekochte Fruchtstücke"
+      }
+    }
+  },
+  {
+    "conceptId": "food-jam",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Джем",
+        "antonyms": [],
+        "synonyms": ["Варення"],
+        "tabooWords": ["Фрукти", "Банка", "Солодкий", "Хліб", "Мазати"],
+        "hint": "Густа солодка маса з фруктів"
+      },
+      "EN": {
+        "word": "Jam",
+        "antonyms": [],
+        "synonyms": ["Marmalade"],
+        "tabooWords": ["Fruits", "Jar", "Sweet", "Bread", "Spread"],
+        "hint": "Thick sweet fruit spread"
+      },
+      "DE": {
+        "word": "Marmelade",
+        "antonyms": [],
+        "synonyms": ["Konfitüre"],
+        "tabooWords": ["Früchte", "Glas", "Süß", "Brot", "Streichen"],
+        "hint": "Dicker süßer Fruchtaufstrich"
+      }
+    }
+  },
+  {
+    "conceptId": "food-herring",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Оселедець",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Риба", "Солоний", "Шуба", "Цибуля", "Море"],
+        "hint": "Популярна солона риба"
+      },
+      "EN": {
+        "word": "Herring",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fish", "Salted", "Coat", "Onion", "Sea"],
+        "hint": "Popular salted fish"
+      },
+      "DE": {
+        "word": "Hering",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fisch", "Gesalzen", "Mantel", "Zwiebel", "Meer"],
+        "hint": "Beliebter gesalzener Fisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-salmon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лосось",
+        "antonyms": [],
+        "synonyms": ["Сьомга"],
+        "tabooWords": ["Червона", "Риба", "Суші", "Ікра", "Дорогий"],
+        "hint": "Велика червона риба"
+      },
+      "EN": {
+        "word": "Salmon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Red", "Fish", "Sushi", "Caviar", "Expensive"],
+        "hint": "Large red fish"
+      },
+      "DE": {
+        "word": "Lachs",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rot", "Fisch", "Sushi", "Kaviar", "Teuer"],
+        "hint": "Großer roter Fisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tuna",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Тунець",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Риба", "Консерва", "Салат", "Море", "Велика"],
+        "hint": "Велика риба, популярна в консервах"
+      },
+      "EN": {
+        "word": "Tuna",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fish", "Can", "Salad", "Sea", "Large"],
+        "hint": "Large fish popular in cans"
+      },
+      "DE": {
+        "word": "Thunfisch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fisch", "Dose", "Salat", "Meer", "Groß"],
+        "hint": "Großer Fisch oft in Dosen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-shrimp",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Креветки",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Морепродукти", "Рожеві", "Варити", "Хвіст", "Пиво"],
+        "hint": "Маленькі ракоподібні рожевого кольору"
+      },
+      "EN": {
+        "word": "Shrimp",
+        "antonyms": [],
+        "synonyms": ["Prawns"],
+        "tabooWords": ["Seafood", "Pink", "Boil", "Tail", "Beer"],
+        "hint": "Small pink crustaceans"
+      },
+      "DE": {
+        "word": "Garnelen",
+        "antonyms": [],
+        "synonyms": ["Shrimps"],
+        "tabooWords": ["Meeresfrüchte", "Rosa", "Kochen", "Schwanz", "Bier"],
+        "hint": "Kleine rosa Krebstiere"
+      }
+    }
+  },
+  {
+    "conceptId": "food-crab",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Краб",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Клешні", "Море", "Ходить", "Панцир", "Палички"],
+        "hint": "Морська тварина з клешнями"
+      },
+      "EN": {
+        "word": "Crab",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Claws", "Sea", "Walk", "Shell", "Sticks"],
+        "hint": "Sea animal with claws"
+      },
+      "DE": {
+        "word": "Krabbe",
+        "antonyms": [],
+        "synonyms": ["Krebs"],
+        "tabooWords": ["Scheren", "Meer", "Gehen", "Panzer", "Stäbchen"],
+        "hint": "Meerestier mit Scheren"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mussels",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Мідії",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Морепродукти", "Раковина", "Чорні", "Море", "Їсти"],
+        "hint": "Молюски у чорних мушлях"
+      },
+      "EN": {
+        "word": "Mussels",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Seafood", "Shell", "Black", "Sea", "Eat"],
+        "hint": "Mollusks in black shells"
+      },
+      "DE": {
+        "word": "Muscheln",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meeresfrüchte", "Schale", "Schwarz", "Meer", "Essen"],
+        "hint": "Weichtiere in schwarzen Schalen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-squid",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кальмар",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Щупальця", "Море", "Кільця", "Чорнило", "Морепродукти"],
+        "hint": "Морська тварина, з якої роблять кільця"
+      },
+      "EN": {
+        "word": "Squid",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tentacles", "Sea", "Rings", "Ink", "Seafood"],
+        "hint": "Sea animal used for calamari rings"
+      },
+      "DE": {
+        "word": "Tintenfisch",
+        "antonyms": [],
+        "synonyms": ["Kalmar"],
+        "tabooWords": ["Tentakel", "Meer", "Ringe", "Tinte", "Meeresfrüchte"],
+        "hint": "Meerestier für Calamari-Ringe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-octopus",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Восьминіг",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Щупальця", "Море", "Тварина", "Чорнило", "Голова"],
+        "hint": "Морська тварина з вісьмома щупальцями"
+      },
+      "EN": {
+        "word": "Octopus",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tentacles", "Sea", "Animal", "Ink", "Head"],
+        "hint": "Sea animal with eight tentacles"
+      },
+      "DE": {
+        "word": "Oktopus",
+        "antonyms": [],
+        "synonyms": ["Krake"],
+        "tabooWords": ["Tentakel", "Meer", "Tier", "Tinte", "Kopf"],
+        "hint": "Meerestier mit acht Tentakeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-caviar",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ікра",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Червона", "Чорна", "Риба", "Дорога", "Бутерброд"],
+        "hint": "Дрібні риб'ячі яйця"
+      },
+      "EN": {
+        "word": "Caviar",
+        "antonyms": [],
+        "synonyms": ["Roe"],
+        "tabooWords": ["Red", "Black", "Fish", "Expensive", "Sandwich"],
+        "hint": "Small fish eggs"
+      },
+      "DE": {
+        "word": "Kaviar",
+        "antonyms": [],
+        "synonyms": ["Rogen"],
+        "tabooWords": ["Rot", "Schwarz", "Fisch", "Teuer", "Sandwich"],
+        "hint": "Kleine Fischeier"
+      }
+    }
+  },
+  {
+    "conceptId": "food-oysters",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Устриці",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Раковина", "Морепродукти", "Лимон", "Дорогі", "Перлина"],
+        "hint": "Дорогий молюск, якого їдять сирим"
+      },
+      "EN": {
+        "word": "Oysters",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Shell", "Seafood", "Lemon", "Expensive", "Pearl"],
+        "hint": "Expensive mollusk eaten raw"
+      },
+      "DE": {
+        "word": "Austern",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Schale", "Meeresfrüchte", "Zitrone", "Teuer", "Perle"],
+        "hint": "Teure Muschel die roh gegessen wird"
+      }
+    }
+  },
+  {
+    "conceptId": "food-chicken",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Курка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Птах", "Яйце", "М'ясо", "Смажити", "Пір'я"],
+        "hint": "Найпопулярніша домашня птиця"
+      },
+      "EN": {
+        "word": "Chicken",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Bird", "Egg", "Meat", "Fry", "Feathers"],
+        "hint": "Most popular domestic bird"
+      },
+      "DE": {
+        "word": "Huhn",
+        "antonyms": [],
+        "synonyms": ["Hähnchen"],
+        "tabooWords": ["Vogel", "Ei", "Fleisch", "Braten", "Federn"],
+        "hint": "Beliebtester Hausvogel"
+      }
+    }
+  },
+  {
+    "conceptId": "food-turkey",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Індичка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Птах", "М'ясо", "США", "Свято", "Великий"],
+        "hint": "Великий птах, якого готують у США на свято"
+      },
+      "EN": {
+        "word": "Turkey",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Bird", "Meat", "USA", "Holiday", "Large"],
+        "hint": "Large bird cooked for Thanksgiving"
+      },
+      "DE": {
+        "word": "Truthahn",
+        "antonyms": [],
+        "synonyms": ["Pute"],
+        "tabooWords": ["Vogel", "Fleisch", "USA", "Feiertag", "Groß"],
+        "hint": "Großer Vogel für Feiertage in den USA"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pork",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Свинина",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Тварина", "Сало", "Шашлик", "Рожева"],
+        "hint": "М'ясо свині"
+      },
+      "EN": {
+        "word": "Pork",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Animal", "Fat", "Kebab", "Pink"],
+        "hint": "Meat from a pig"
+      },
+      "DE": {
+        "word": "Schweinefleisch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Tier", "Speck", "Kebab", "Rosa"],
+        "hint": "Fleisch vom Schwein"
+      }
+    }
+  },
+  {
+    "conceptId": "food-beef",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Яловичина",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Корова", "М'ясо", "Стейк", "Бургер", "Червоне"],
+        "hint": "М'ясо корови"
+      },
+      "EN": {
+        "word": "Beef",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cow", "Meat", "Steak", "Burger", "Red"],
+        "hint": "Meat from a cow"
+      },
+      "DE": {
+        "word": "Rindfleisch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kuh", "Fleisch", "Steak", "Burger", "Rot"],
+        "hint": "Fleisch von der Kuh"
+      }
+    }
+  },
+  {
+    "conceptId": "food-lamb",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Баранина",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Вівця", "Шашлик", "Плов", "Гори"],
+        "hint": "М'ясо вівці або барана"
+      },
+      "EN": {
+        "word": "Lamb",
+        "antonyms": [],
+        "synonyms": ["Mutton"],
+        "tabooWords": ["Meat", "Sheep", "Kebab", "Pilaf", "Mountains"],
+        "hint": "Meat from a sheep"
+      },
+      "DE": {
+        "word": "Lammfleisch",
+        "antonyms": [],
+        "synonyms": ["Hammelfleisch"],
+        "tabooWords": ["Fleisch", "Schaf", "Kebab", "Pilaw", "Berge"],
+        "hint": "Fleisch vom Schaf"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ham",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Шинка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Свинина", "М'ясо", "Сендвіч", "Піца", "Рожева"],
+        "hint": "Приготований шматок свинячого м'яса"
+      },
+      "EN": {
+        "word": "Ham",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pork", "Meat", "Sandwich", "Pizza", "Pink"],
+        "hint": "Cooked pork meat"
+      },
+      "DE": {
+        "word": "Schinken",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Schweinefleisch", "Fleisch", "Sandwich", "Pizza", "Rosa"],
+        "hint": "Gekochtes Schweinefleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-bacon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Бекон",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Свинина", "М'ясо", "Смажити", "Яєчня", "Смужки"],
+        "hint": "Тонкі смужки жирного свинячого м'яса"
+      },
+      "EN": {
+        "word": "Bacon",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pork", "Meat", "Fry", "Eggs", "Strips"],
+        "hint": "Thin strips of fatty pork meat"
+      },
+      "DE": {
+        "word": "Speck",
+        "antonyms": [],
+        "synonyms": ["Bacon"],
+        "tabooWords": ["Schweinefleisch", "Fleisch", "Braten", "Eier", "Streifen"],
+        "hint": "Dünne Streifen von fettigem Schweinefleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sausage-product",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ковбаса",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Бутерброд", "Різати", "Палиця", "Салямі"],
+        "hint": "М'ясний виріб у формі довгої палиці"
+      },
+      "EN": {
+        "word": "Sausage",
+        "antonyms": [],
+        "synonyms": ["Salami"],
+        "tabooWords": ["Meat", "Sandwich", "Cut", "Stick", "Salami"],
+        "hint": "Meat product in a long shape"
+      },
+      "DE": {
+        "word": "Wurst",
+        "antonyms": [],
+        "synonyms": ["Salami"],
+        "tabooWords": ["Fleisch", "Sandwich", "Schneiden", "Stock", "Salami"],
+        "hint": "Fleischprodukt in langer Form"
+      }
+    }
+  },
+  {
+    "conceptId": "food-salo",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Сало",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Свиня", "Біле", "Борщ", "Часник", "Україна"],
+        "hint": "Традиційний український продукт зі свинини"
+      },
+      "EN": {
+        "word": "Salo",
+        "antonyms": [],
+        "synonyms": ["Pork fat"],
+        "tabooWords": ["Pig", "White", "Borscht", "Garlic", "Ukraine"],
+        "hint": "Traditional Ukrainian pork fat product"
+      },
+      "DE": {
+        "word": "Speck",
+        "antonyms": [],
+        "synonyms": ["Schweineschmalz"],
+        "tabooWords": ["Schwein", "Weiß", "Borschtsch", "Knoblauch", "Ukraine"],
+        "hint": "Traditionelles ukrainisches Produkt aus Schweinefett"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pate",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Паштет",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Намазувати", "Хліб", "Печінка", "Банка"],
+        "hint": "М'ясна паста для бутербродів"
+      },
+      "EN": {
+        "word": "Pâté",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Spread", "Bread", "Liver", "Jar"],
+        "hint": "Meat paste for sandwiches"
+      },
+      "DE": {
+        "word": "Pastete",
+        "antonyms": [],
+        "synonyms": ["Aufstrich"],
+        "tabooWords": ["Fleisch", "Streichen", "Brot", "Leber", "Glas"],
+        "hint": "Fleischpaste für Sandwiches"
+      }
+    }
+  },
+  {
+    "conceptId": "food-oil",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Олія",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Соняшник", "Смажити", "Салат", "Рідина", "Оливкова"],
+        "hint": "Рідкий рослинний жир"
+      },
+      "EN": {
+        "word": "Oil",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sunflower", "Fry", "Salad", "Liquid", "Olive"],
+        "hint": "Liquid plant fat"
+      },
+      "DE": {
+        "word": "Öl",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sonnenblume", "Braten", "Salat", "Flüssigkeit", "Olive"],
+        "hint": "Flüssiges Pflanzenfett"
+      }
+    }
+  },
+  {
+    "conceptId": "food-vinegar",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Оцет",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Кислий", "Рідина", "Салат", "Маринад", "Яблучний"],
+        "hint": "Кисла рідина для маринадів"
+      },
+      "EN": {
+        "word": "Vinegar",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sour", "Liquid", "Salad", "Marinade", "Apple"],
+        "hint": "Sour liquid for marinades"
+      },
+      "DE": {
+        "word": "Essig",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sauer", "Flüssigkeit", "Salat", "Marinade", "Apfel"],
+        "hint": "Saure Flüssigkeit für Marinaden"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sauce",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Соус",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Рідина", "М'ясо", "Паста", "Кетчуп", "Додаток"],
+        "hint": "Рідка приправа до основної страви"
+      },
+      "EN": {
+        "word": "Sauce",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Liquid", "Meat", "Pasta", "Ketchup", "Addition"],
+        "hint": "Liquid seasoning for main dish"
+      },
+      "DE": {
+        "word": "Soße",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Flüssigkeit", "Fleisch", "Pasta", "Ketchup", "Zusatz"],
+        "hint": "Flüssiges Gewürz für Hauptgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ketchup",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кетчуп",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Помідор", "Червоний", "Соус", "Картопля", "М'ясо"],
+        "hint": "Популярний червоний томатний соус"
+      },
+      "EN": {
+        "word": "Ketchup",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tomato", "Red", "Sauce", "Potato", "Meat"],
+        "hint": "Popular red tomato sauce"
+      },
+      "DE": {
+        "word": "Ketchup",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tomate", "Rot", "Soße", "Kartoffel", "Fleisch"],
+        "hint": "Beliebte rote Tomatensoße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mayonnaise",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Майонез",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Білий", "Соус", "Салат", "Яйце", "Олія"],
+        "hint": "Популярний білий соус до салатів"
+      },
+      "EN": {
+        "word": "Mayonnaise",
+        "antonyms": [],
+        "synonyms": ["Mayo"],
+        "tabooWords": ["White", "Sauce", "Salad", "Egg", "Oil"],
+        "hint": "Popular white salad sauce"
+      },
+      "DE": {
+        "word": "Mayonnaise",
+        "antonyms": [],
+        "synonyms": ["Mayo"],
+        "tabooWords": ["Weiß", "Soße", "Salat", "Ei", "Öl"],
+        "hint": "Beliebte weiße Salatsoße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mustard",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Гірчиця",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Жовта", "Гостра", "Соус", "М'ясо", "Хот-дог"],
+        "hint": "Гострий жовтий соус"
+      },
+      "EN": {
+        "word": "Mustard",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Yellow", "Spicy", "Sauce", "Meat", "Hot dog"],
+        "hint": "Spicy yellow sauce"
+      },
+      "DE": {
+        "word": "Senf",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gelb", "Scharf", "Soße", "Fleisch", "Hot Dog"],
+        "hint": "Scharfe gelbe Soße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-adjika",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Аджика",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Гостра", "Соус", "Червона", "Перець", "М'ясо"],
+        "hint": "Гостра кавказька приправа з перцю"
+      },
+      "EN": {
+        "word": "Adjika",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Spicy", "Sauce", "Red", "Pepper", "Meat"],
+        "hint": "Spicy Caucasian pepper seasoning"
+      },
+      "DE": {
+        "word": "Adschika",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Scharf", "Soße", "Rot", "Pfeffer", "Fleisch"],
+        "hint": "Scharfes kaukasisches Pfeffergewürz"
+      }
+    }
+  },
+  {
+    "conceptId": "food-horseradish",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Хрін",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Корінь", "Гострий", "Білий", "М'ясо", "Сльози"],
+        "hint": "Гострий білий корінь"
+      },
+      "EN": {
+        "word": "Horseradish",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Root", "Spicy", "White", "Meat", "Tears"],
+        "hint": "Spicy white root"
+      },
+      "DE": {
+        "word": "Meerrettich",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Wurzel", "Scharf", "Weiß", "Fleisch", "Tränen"],
+        "hint": "Scharfe weiße Wurzel"
+      }
+    }
+  },
+  {
+    "conceptId": "food-soy-sauce",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Соєвий соус",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Азія", "Суші", "Чорний", "Солоний", "Рис"],
+        "hint": "Темна солона рідина для суші"
+      },
+      "EN": {
+        "word": "Soy sauce",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Asia", "Sushi", "Black", "Salty", "Rice"],
+        "hint": "Dark salty liquid for sushi"
+      },
+      "DE": {
+        "word": "Sojasauce",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Asien", "Sushi", "Schwarz", "Salzig", "Reis"],
+        "hint": "Dunkle salzige Flüssigkeit für Sushi"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pesto",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Песто",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Соус", "Зелений", "Базилік", "Паста", "Італія"],
+        "hint": "Зелений італійський соус"
+      },
+      "EN": {
+        "word": "Pesto",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Sauce", "Green", "Basil", "Pasta", "Italy"],
+        "hint": "Green Italian sauce"
+      },
+      "DE": {
+        "word": "Pesto",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soße", "Grün", "Basilikum", "Pasta", "Italien"],
+        "hint": "Grüne italienische Soße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-fondue",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Фондю",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сир", "Шоколад", "Макати", "Гаряче", "Швейцарія"],
+        "hint": "Страва, де шматочки макають у розплавлену масу"
+      },
+      "EN": {
+        "word": "Fondue",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cheese", "Chocolate", "Dip", "Hot", "Switzerland"],
+        "hint": "Dish where pieces are dipped into a melted mass"
+      },
+      "DE": {
+        "word": "Fondue",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Käse", "Schokolade", "Eintauchen", "Heiß", "Schweiz"],
+        "hint": "Gericht bei dem Stücke in geschmolzene Masse getaucht werden"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ratatouille",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Рататуй",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Овочі", "Франція", "Мультик", "Миша", "Тушкувати"],
+        "hint": "Французька страва з тушкованих овочів"
+      },
+      "EN": {
+        "word": "Ratatouille",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Vegetables", "France", "Cartoon", "Mouse", "Stew"],
+        "hint": "French vegetable stew dish"
+      },
+      "DE": {
+        "word": "Ratatouille",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gemüse", "Frankreich", "Cartoon", "Maus", "Schmoren"],
+        "hint": "Französisches Gemüseeintopfgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-gazpacho",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Газпачо",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Холодний", "Помідор", "Іспанія", "Літо"],
+        "hint": "Холодний іспанський томатний суп"
+      },
+      "EN": {
+        "word": "Gazpacho",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Cold", "Tomato", "Spain", "Summer"],
+        "hint": "Cold Spanish tomato soup"
+      },
+      "DE": {
+        "word": "Gazpacho",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Kalt", "Tomate", "Spanien", "Sommer"],
+        "hint": "Kalte spanische Tomatensuppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-minestrone",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Мінестроне",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Італія", "Овочі", "Паста", "Густий"],
+        "hint": "Густий італійський овочевий суп"
+      },
+      "EN": {
+        "word": "Minestrone",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Italy", "Vegetables", "Pasta", "Thick"],
+        "hint": "Thick Italian vegetable soup"
+      },
+      "DE": {
+        "word": "Minestrone",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Italien", "Gemüse", "Pasta", "Dick"],
+        "hint": "Dicke italienische Gemüsesuppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tom-yum",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Том ям",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Таїланд", "Гострий", "Креветки", "Азія"],
+        "hint": "Гострий тайський суп із морепродуктами"
+      },
+      "EN": {
+        "word": "Tom Yum",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Thailand", "Spicy", "Shrimp", "Asia"],
+        "hint": "Spicy Thai seafood soup"
+      },
+      "DE": {
+        "word": "Tom Yum",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Thailand", "Scharf", "Garnelen", "Asien"],
+        "hint": "Scharfe thailändische Meeresfrüchtesuppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-kharcho",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Харчо",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Грузія", "Гострий", "М'ясо", "Рис"],
+        "hint": "Гострий грузинський м'ясний суп"
+      },
+      "EN": {
+        "word": "Kharcho",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Georgia", "Spicy", "Meat", "Rice"],
+        "hint": "Spicy Georgian meat soup"
+      },
+      "DE": {
+        "word": "Chartscho",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Georgien", "Scharf", "Fleisch", "Reis"],
+        "hint": "Scharfe georgische Fleischsuppe"
+      }
+    }
+  },
+  {
+    "conceptId": "food-solyanka",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Солянка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Ковбаса", "Оливки", "М'ясо", "Лимон"],
+        "hint": "Густий суп з різними видами м'яса"
+      },
+      "EN": {
+        "word": "Solyanka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Sausage", "Olives", "Meat", "Lemon"],
+        "hint": "Thick soup with various meats"
+      },
+      "DE": {
+        "word": "Soljanka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Wurst", "Oliven", "Fleisch", "Zitrone"],
+        "hint": "Dicke Suppe mit verschiedenen Fleischsorten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-okroshka",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Окрошка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "Холодний", "Літо", "Кефір", "Квас"],
+        "hint": "Холодний літній суп на кефірі або квасі"
+      },
+      "EN": {
+        "word": "Okroshka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Soup", "Cold", "Summer", "Kefir", "Kvass"],
+        "hint": "Cold summer soup on kefir or kvass"
+      },
+      "DE": {
+        "word": "Okroschka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Suppe", "Kalt", "Sommer", "Kefir", "Kwas"],
+        "hint": "Kalte Sommersuppe mit Kefir oder Kwas"
+      }
+    }
+  },
+  {
+    "conceptId": "food-yushka",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Юшка",
+        "antonyms": [],
+        "synonyms": ["Уха"],
+        "tabooWords": ["Суп", "Риба", "Вогнище", "Річка", "Казанок"],
+        "hint": "Суп, зварений зі свіжої риби"
+      },
+      "EN": {
+        "word": "Fish soup",
+        "antonyms": [],
+        "synonyms": ["Yushka", "Ukha"],
+        "tabooWords": ["Soup", "Fish", "Fire", "River", "Pot"],
+        "hint": "Soup made from fresh fish"
+      },
+      "DE": {
+        "word": "Fischsuppe",
+        "antonyms": [],
+        "synonyms": ["Ukha"],
+        "tabooWords": ["Suppe", "Fisch", "Feuer", "Fluss", "Topf"],
+        "hint": "Suppe aus frischem Fisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-broth",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Бульйон",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Суп", "М'ясо", "Рідина", "Курка", "Варити"],
+        "hint": "Відвар з м'яса або овочів"
+      },
+      "EN": {
+        "word": "Broth",
+        "antonyms": [],
+        "synonyms": ["Bouillon"],
+        "tabooWords": ["Soup", "Meat", "Liquid", "Chicken", "Boil"],
+        "hint": "Liquid from boiling meat or vegetables"
+      },
+      "DE": {
+        "word": "Brühe",
+        "antonyms": [],
+        "synonyms": ["Bouillon"],
+        "tabooWords": ["Suppe", "Fleisch", "Flüssigkeit", "Huhn", "Kochen"],
+        "hint": "Flüssigkeit aus gekochtem Fleisch oder Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-french-fries",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Картопля фрі",
+        "antonyms": [],
+        "synonyms": ["Фрі"],
+        "tabooWords": ["Макдональдс", "Смажити", "Сіль", "Олія", "Фастфуд"],
+        "hint": "Довгі скибочки смаженої картоплі"
+      },
+      "EN": {
+        "word": "French fries",
+        "antonyms": [],
+        "synonyms": ["Fries"],
+        "tabooWords": ["McDonalds", "Fry", "Salt", "Oil", "Fast food"],
+        "hint": "Long slices of fried potato"
+      },
+      "DE": {
+        "word": "Pommes frites",
+        "antonyms": [],
+        "synonyms": ["Pommes"],
+        "tabooWords": ["McDonalds", "Braten", "Salz", "Öl", "Fastfood"],
+        "hint": "Lange Scheiben von frittierten Kartoffeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-mashed-potatoes",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пюре",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Картопля", "Товкти", "Молоко", "М'яке", "Гарнір"],
+        "hint": "Розім'ята варена картопля"
+      },
+      "EN": {
+        "word": "Mashed potatoes",
+        "antonyms": [],
+        "synonyms": ["Puree"],
+        "tabooWords": ["Potato", "Crush", "Milk", "Soft", "Side dish"],
+        "hint": "Crushed boiled potatoes"
+      },
+      "DE": {
+        "word": "Kartoffelpüree",
+        "antonyms": [],
+        "synonyms": ["Püree"],
+        "tabooWords": ["Kartoffel", "Zerdrücken", "Milch", "Weich", "Beilage"],
+        "hint": "Zerkleinerte gekochte Kartoffeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-casserole",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Запіканка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сир", "Духовка", "Форма", "Пекти", "Страва"],
+        "hint": "Страва, запечена в духовці у формі"
+      },
+      "EN": {
+        "word": "Casserole",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cheese", "Oven", "Dish", "Bake", "Meal"],
+        "hint": "Dish baked in the oven in a pan"
+      },
+      "DE": {
+        "word": "Auflauf",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Käse", "Ofen", "Form", "Backen", "Gericht"],
+        "hint": "Im Ofen in einer Form gebackenes Gericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ragout",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Рагу",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Овочі", "М'ясо", "Тушкувати", "Шматочки", "Страва"],
+        "hint": "Тушковані шматочки м'яса або овочів"
+      },
+      "EN": {
+        "word": "Ragout",
+        "antonyms": [],
+        "synonyms": ["Stew"],
+        "tabooWords": ["Vegetables", "Meat", "Stew", "Pieces", "Dish"],
+        "hint": "Stewed pieces of meat or vegetables"
+      },
+      "DE": {
+        "word": "Ragout",
+        "antonyms": [],
+        "synonyms": ["Eintopf"],
+        "tabooWords": ["Gemüse", "Fleisch", "Schmoren", "Stücke", "Gericht"],
+        "hint": "Geschmorte Stücke von Fleisch oder Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pilaf",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Плов",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Рис", "М'ясо", "Казан", "Схід", "Морква"],
+        "hint": "Східна страва з рису та м'яса"
+      },
+      "EN": {
+        "word": "Pilaf",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rice", "Meat", "Cauldron", "East", "Carrot"],
+        "hint": "Eastern dish made of rice and meat"
+      },
+      "DE": {
+        "word": "Pilaw",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Reis", "Fleisch", "Kessel", "Osten", "Karotte"],
+        "hint": "Östliches Gericht aus Reis und Fleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-risotto",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Різотто",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Рис", "Італія", "Вино", "Сир", "Кремовий"],
+        "hint": "Кремова італійська страва з рису"
+      },
+      "EN": {
+        "word": "Risotto",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rice", "Italy", "Wine", "Cheese", "Creamy"],
+        "hint": "Creamy Italian rice dish"
+      },
+      "DE": {
+        "word": "Risotto",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Reis", "Italien", "Wein", "Käse", "Cremig"],
+        "hint": "Cremiges italienisches Reisgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-paella",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Паелья",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Іспанія", "Рис", "Морепродукти", "Сковорода", "Жовтий"],
+        "hint": "Іспанська страва з рису на сковороді"
+      },
+      "EN": {
+        "word": "Paella",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Spain", "Rice", "Seafood", "Pan", "Yellow"],
+        "hint": "Spanish rice dish cooked in a pan"
+      },
+      "DE": {
+        "word": "Paella",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Spanien", "Reis", "Meeresfrüchte", "Pfanne", "Gelb"],
+        "hint": "Spanisches Reisgericht in einer Pfanne"
+      }
+    }
+  },
+  {
+    "conceptId": "food-lasagna",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Лазанья",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Паста", "Шари", "М'ясо", "Сир", "Італія"],
+        "hint": "Італійська страва з шарів тіста і начинки"
+      },
+      "EN": {
+        "word": "Lasagna",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pasta", "Layers", "Meat", "Cheese", "Italy"],
+        "hint": "Italian dish with layers of dough and filling"
+      },
+      "DE": {
+        "word": "Lasagne",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pasta", "Schichten", "Fleisch", "Käse", "Italien"],
+        "hint": "Italienisches Gericht mit Teigschichten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-ravioli",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Равіолі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Італія", "Тісто", "Пельмені", "Начинка", "Квадрати"],
+        "hint": "Італійські квадратні пельмені"
+      },
+      "EN": {
+        "word": "Ravioli",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Italy", "Dough", "Dumplings", "Filling", "Squares"],
+        "hint": "Italian square-shaped dumplings"
+      },
+      "DE": {
+        "word": "Ravioli",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Italien", "Teig", "Teigtaschen", "Füllung", "Quadrate"],
+        "hint": "Italienische quadratische Teigtaschen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-gnocchi",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Ньокі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Картопля", "Італія", "Кльоцки", "Варити", "Соус"],
+        "hint": "Італійські картопляні кльоцки"
+      },
+      "EN": {
+        "word": "Gnocchi",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Potato", "Italy", "Dumplings", "Boil", "Sauce"],
+        "hint": "Italian potato dumplings"
+      },
+      "DE": {
+        "word": "Gnocchi",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kartoffel", "Italien", "Klöße", "Kochen", "Soße"],
+        "hint": "Italienische Kartoffelklöße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-hummus",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Хумус",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Нут", "Паста", "Закуска", "Ізраїль", "Кунжут"],
+        "hint": "Паста з нуту зі східними спеціями"
+      },
+      "EN": {
+        "word": "Hummus",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Chickpeas", "Paste", "Snack", "Israel", "Sesame"],
+        "hint": "Chickpea paste with eastern spices"
+      },
+      "DE": {
+        "word": "Hummus",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kichererbsen", "Paste", "Snack", "Israel", "Sesam"],
+        "hint": "Kichererbsenpaste mit östlichen Gewürzen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-falafel",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Фалафель",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Нут", "Кульки", "Смажити", "Схід", "Веган"],
+        "hint": "Смажені кульки з нуту"
+      },
+      "EN": {
+        "word": "Falafel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Chickpeas", "Balls", "Fry", "East", "Vegan"],
+        "hint": "Fried chickpea balls"
+      },
+      "DE": {
+        "word": "Falafel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Kichererbsen", "Bällchen", "Braten", "Osten", "Vegan"],
+        "hint": "Frittierte Kichererbsenbällchen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tabbouleh",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Табуле",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Салат", "Булгур", "Зелень", "Схід", "Петрушка"],
+        "hint": "Східний салат з булгуром і зеленню"
+      },
+      "EN": {
+        "word": "Tabbouleh",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Salad", "Bulgur", "Greens", "East", "Parsley"],
+        "hint": "Eastern salad with bulgur and greens"
+      },
+      "DE": {
+        "word": "Tabbouleh",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Salat", "Bulgur", "Grünzeug", "Osten", "Petersilie"],
+        "hint": "Östlicher Salat mit Bulgur und Grünzeug"
+      }
+    }
+  },
+  {
+    "conceptId": "food-dolma",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Долма",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Виноград", "Листя", "М'ясо", "Рис", "Голубці"],
+        "hint": "М'ясо з рисом у виноградному листі"
+      },
+      "EN": {
+        "word": "Dolma",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grape", "Leaves", "Meat", "Rice", "Cabbage rolls"],
+        "hint": "Meat and rice in grape leaves"
+      },
+      "DE": {
+        "word": "Dolma",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Traube", "Blätter", "Fleisch", "Reis", "Kohlrouladen"],
+        "hint": "Fleisch und Reis in Weinblättern"
+      }
+    }
+  },
+  {
+    "conceptId": "food-moussaka",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Мусака",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Баклажан", "М'ясо", "Греція", "Запіканка", "Шари"],
+        "hint": "Грецька запіканка з баклажанами"
+      },
+      "EN": {
+        "word": "Moussaka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Eggplant", "Meat", "Greece", "Casserole", "Layers"],
+        "hint": "Greek eggplant casserole"
+      },
+      "DE": {
+        "word": "Moussaka",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Aubergine", "Fleisch", "Griechenland", "Auflauf", "Schichten"],
+        "hint": "Griechischer Auberginenauflauf"
+      }
+    }
+  },
+  {
+    "conceptId": "food-goulash",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Гуляш",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Соус", "Угорщина", "Підлива", "Суп"],
+        "hint": "Угорська страва з м'яса в соусі"
+      },
+      "EN": {
+        "word": "Goulash",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Sauce", "Hungary", "Gravy", "Soup"],
+        "hint": "Hungarian meat dish in sauce"
+      },
+      "DE": {
+        "word": "Gulasch",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Soße", "Ungarn", "Bratenjus", "Suppe"],
+        "hint": "Ungarisches Fleischgericht in Soße"
+      }
+    }
+  },
+  {
+    "conceptId": "food-strudel",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Штрудель",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Яблуко", "Випічка", "Рулет", "Тісто", "Австрія"],
+        "hint": "Австрійський рулет з яблуками"
+      },
+      "EN": {
+        "word": "Strudel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Apple", "Pastry", "Roll", "Dough", "Austria"],
+        "hint": "Austrian apple pastry roll"
+      },
+      "DE": {
+        "word": "Strudel",
+        "antonyms": [],
+        "synonyms": ["Apfelstrudel"],
+        "tabooWords": ["Apfel", "Gebäck", "Rolle", "Teig", "Österreich"],
+        "hint": "Österreichische Gebäckrolle mit Äpfeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-knedlik",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Кнедлик",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тісто", "Варити", "Чехія", "Кулька", "Гарнір"],
+        "hint": "Чеський гарнір з вареного тіста"
+      },
+      "EN": {
+        "word": "Knedlik",
+        "antonyms": [],
+        "synonyms": ["Dumpling"],
+        "tabooWords": ["Dough", "Boil", "Czech", "Ball", "Side dish"],
+        "hint": "Czech boiled dough side dish"
+      },
+      "DE": {
+        "word": "Knödel",
+        "antonyms": [],
+        "synonyms": ["Kloß"],
+        "tabooWords": ["Teig", "Kochen", "Tschechien", "Kugel", "Beilage"],
+        "hint": "Tschechische Beilage aus gekochtem Teig"
+      }
+    }
+  },
+  {
+    "conceptId": "food-schnitzel",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Шніцель",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Відбивна", "Паніровка", "Смажити", "Відень"],
+        "hint": "Тонкий шматок м'яса в паніровці"
+      },
+      "EN": {
+        "word": "Schnitzel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Chop", "Breading", "Fry", "Vienna"],
+        "hint": "Thin piece of breaded meat"
+      },
+      "DE": {
+        "word": "Schnitzel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Kotelett", "Panade", "Braten", "Wien"],
+        "hint": "Dünnes Stück paniertes Fleisch"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pretzel",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Бретцель",
+        "antonyms": [],
+        "synonyms": ["Крендель"],
+        "tabooWords": ["Випічка", "Німеччина", "Сіль", "Вузол", "Пиво"],
+        "hint": "Німецький солоний крендель"
+      },
+      "EN": {
+        "word": "Pretzel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pastry", "Germany", "Salt", "Knot", "Beer"],
+        "hint": "German salty knotted pastry"
+      },
+      "DE": {
+        "word": "Brezel",
+        "antonyms": [],
+        "synonyms": ["Breze"],
+        "tabooWords": ["Gebäck", "Deutschland", "Salz", "Knoten", "Bier"],
+        "hint": "Deutsches salziges geknotetes Gebäck"
+      }
+    }
+  },
+  {
+    "conceptId": "food-chebureki",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Чебурек",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тісто", "М'ясо", "Смажити", "Олія", "Крим"],
+        "hint": "Великий смажений пиріжок з м'ясом"
+      },
+      "EN": {
+        "word": "Chebureki",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dough", "Meat", "Fry", "Oil", "Crimea"],
+        "hint": "Large fried meat pastry"
+      },
+      "DE": {
+        "word": "Tscheburek",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Teig", "Fleisch", "Braten", "Öl", "Krim"],
+        "hint": "Große frittierte Fleischtasche"
+      }
+    }
+  },
+  {
+    "conceptId": "food-samsa",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Самса",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Тісто", "М'ясо", "Схід", "Піч", "Трикутник"],
+        "hint": "Східний трикутний пиріжок з м'ясом"
+      },
+      "EN": {
+        "word": "Samsa",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Dough", "Meat", "East", "Oven", "Triangle"],
+        "hint": "Eastern triangular meat pastry"
+      },
+      "DE": {
+        "word": "Samsa",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Teig", "Fleisch", "Osten", "Ofen", "Dreieck"],
+        "hint": "Östliche dreieckige Fleischtasche"
+      }
+    }
+  },
+  {
+    "conceptId": "food-laghman",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Лагман",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Локшина", "Суп", "М'ясо", "Схід", "Овочі"],
+        "hint": "Східна страва з довгою локшиною"
+      },
+      "EN": {
+        "word": "Laghman",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Noodles", "Soup", "Meat", "East", "Vegetables"],
+        "hint": "Eastern dish with long noodles"
+      },
+      "DE": {
+        "word": "Laghman",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nudeln", "Suppe", "Fleisch", "Osten", "Gemüse"],
+        "hint": "Östliches Gericht mit langen Nudeln"
+      }
+    }
+  },
+  {
+    "conceptId": "food-manti",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Манти",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Тісто", "Пара", "Схід", "Пельмені"],
+        "hint": "Великі пельмені, приготовані на пару"
+      },
+      "EN": {
+        "word": "Manti",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Dough", "Steam", "East", "Dumplings"],
+        "hint": "Large steamed dumplings"
+      },
+      "DE": {
+        "word": "Manti",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Teig", "Dampf", "Osten", "Teigtaschen"],
+        "hint": "Große gedämpfte Teigtaschen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-beshbarmak",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Бешбармак",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Тісто", "Руки", "Казахстан", "Бульйон"],
+        "hint": "Традиційна казахська страва з м'ясом"
+      },
+      "EN": {
+        "word": "Beshbarmak",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Dough", "Hands", "Kazakhstan", "Broth"],
+        "hint": "Traditional Kazakh dish with meat"
+      },
+      "DE": {
+        "word": "Beschbarmak",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Teig", "Hände", "Kasachstan", "Brühe"],
+        "hint": "Traditionelles kasachisches Fleischgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-baklava",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Пахлава",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Горіхи", "Мед", "Схід", "Тісто", "Солодка"],
+        "hint": "Солодкий східний десерт з горіхами"
+      },
+      "EN": {
+        "word": "Baklava",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuts", "Honey", "East", "Dough", "Sweet"],
+        "hint": "Sweet eastern dessert with nuts"
+      },
+      "DE": {
+        "word": "Baklava",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nüsse", "Honig", "Osten", "Teig", "Süß"],
+        "hint": "Süßes östliches Dessert mit Nüssen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-kutia",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кутя",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Різдво", "Пшениця", "Мак", "Горіхи", "Свято"],
+        "hint": "Традиційна солодка різдвяна страва"
+      },
+      "EN": {
+        "word": "Kutia",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Christmas", "Wheat", "Poppy", "Nuts", "Holiday"],
+        "hint": "Traditional sweet Christmas dish"
+      },
+      "DE": {
+        "word": "Kutja",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Weihnachten", "Weizen", "Mohn", "Nüsse", "Feiertag"],
+        "hint": "Traditionelles süßes Weihnachtsgericht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-uzvar",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Узвар",
+        "antonyms": [],
+        "synonyms": ["Компот"],
+        "tabooWords": ["Сухофрукти", "Напій", "Різдво", "Вода", "Яблука"],
+        "hint": "Напій із сушених фруктів"
+      },
+      "EN": {
+        "word": "Uzvar",
+        "antonyms": [],
+        "synonyms": ["Compote"],
+        "tabooWords": ["Dried fruits", "Drink", "Christmas", "Water", "Apples"],
+        "hint": "Drink made from dried fruits"
+      },
+      "DE": {
+        "word": "Uzvar",
+        "antonyms": [],
+        "synonyms": ["Kompott"],
+        "tabooWords": ["Trockenfrüchte", "Getränk", "Weihnachten", "Wasser", "Äpfel"],
+        "hint": "Getränk aus getrockneten Früchten"
+      }
+    }
+  },
+  {
+    "conceptId": "food-syrniki",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Сирники",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сир", "Сніданок", "Смажити", "Сметана", "Млинці"],
+        "hint": "Смажені коржі з домашнього сиру"
+      },
+      "EN": {
+        "word": "Syrniki",
+        "antonyms": [],
+        "synonyms": ["Cheese pancakes"],
+        "tabooWords": ["Cottage cheese", "Breakfast", "Fry", "Sour cream", "Pancakes"],
+        "hint": "Fried cottage cheese pancakes"
+      },
+      "DE": {
+        "word": "Syrniki",
+        "antonyms": [],
+        "synonyms": ["Quarkkäulchen"],
+        "tabooWords": ["Quark", "Frühstück", "Braten", "Schmand", "Pfannkuchen"],
+        "hint": "Gebratene Pfannkuchen aus Quark"
+      }
+    }
+  },
+  {
+    "conceptId": "food-fritters",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Оладки",
+        "antonyms": [],
+        "synonyms": ["Млинці"],
+        "tabooWords": ["Тісто", "Смажити", "Пишні", "Сніданок", "Сметана"],
+        "hint": "Пишні маленькі млинці"
+      },
+      "EN": {
+        "word": "Fritters",
+        "antonyms": [],
+        "synonyms": ["Pancakes"],
+        "tabooWords": ["Dough", "Fry", "Fluffy", "Breakfast", "Sour cream"],
+        "hint": "Small fluffy thick pancakes"
+      },
+      "DE": {
+        "word": "Pfannkuchen",
+        "antonyms": [],
+        "synonyms": ["Pancakes"],
+        "tabooWords": ["Teig", "Braten", "Fluffig", "Frühstück", "Schmand"],
+        "hint": "Kleine dicke flauschige Pfannkuchen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-fruit-butter",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Повидло",
+        "antonyms": [],
+        "synonyms": ["Варення", "Джем"],
+        "tabooWords": ["Яблука", "Густе", "Солодке", "Пиріжок", "Банка"],
+        "hint": "Дуже густе фруктове варення"
+      },
+      "EN": {
+        "word": "Fruit butter",
+        "antonyms": [],
+        "synonyms": ["Jam"],
+        "tabooWords": ["Apples", "Thick", "Sweet", "Pie", "Jar"],
+        "hint": "Very thick sweet fruit spread"
+      },
+      "DE": {
+        "word": "Pflaumenmus",
+        "antonyms": [],
+        "synonyms": ["Marmelade"],
+        "tabooWords": ["Äpfel", "Dick", "Süß", "Kuchen", "Glas"],
+        "hint": "Sehr dicker süßer Fruchtaufstrich"
+      }
+    }
+  },
+  {
+    "conceptId": "food-marinade",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Маринад",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["М'ясо", "Шашлик", "Рідина", "Спеції", "Оцет"],
+        "hint": "Рідина зі спеціями для замочування м'яса"
+      },
+      "EN": {
+        "word": "Marinade",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Meat", "Kebab", "Liquid", "Spices", "Vinegar"],
+        "hint": "Liquid with spices for soaking meat"
+      },
+      "DE": {
+        "word": "Marinade",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Fleisch", "Kebab", "Flüssigkeit", "Gewürze", "Essig"],
+        "hint": "Flüssigkeit mit Gewürzen zum Einlegen"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pickles",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Соління",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Огірки", "Помідори", "Банка", "Зима", "Сіль"],
+        "hint": "Овочі, законсервовані в розсолі"
+      },
+      "EN": {
+        "word": "Pickles",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Cucumbers", "Tomatoes", "Jar", "Winter", "Salt"],
+        "hint": "Vegetables preserved in brine"
+      },
+      "DE": {
+        "word": "Eingelegtes",
+        "antonyms": [],
+        "synonyms": ["Pickles"],
+        "tabooWords": ["Gurken", "Tomaten", "Glas", "Winter", "Salz"],
+        "hint": "In Salzlake konserviertes Gemüse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-sauerkraut",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Квашена капуста",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Банка", "Кисла", "Зима", "Морква", "Овоч"],
+        "hint": "Популярна кисла консервація на зиму"
+      },
+      "EN": {
+        "word": "Sauerkraut",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Jar", "Sour", "Winter", "Carrot", "Vegetable"],
+        "hint": "Fermented sour cabbage"
+      },
+      "DE": {
+        "word": "Sauerkraut",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Glas", "Sauer", "Winter", "Karotte", "Gemüse"],
+        "hint": "Fermentierter saurer Kohl"
+      }
+    }
+  },
+  {
+    "conceptId": "food-granola",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Гранола",
+        "antonyms": [],
+        "synonyms": ["Мюслі"],
+        "tabooWords": ["Сніданок", "Вівсянка", "Горіхи", "Йогурт", "Хрустка"],
+        "hint": "Корисний хрусткий сніданок з пластівців"
+      },
+      "EN": {
+        "word": "Granola",
+        "antonyms": [],
+        "synonyms": ["Muesli"],
+        "tabooWords": ["Breakfast", "Oatmeal", "Nuts", "Yogurt", "Crispy"],
+        "hint": "Healthy crispy cereal breakfast"
+      },
+      "DE": {
+        "word": "Granola",
+        "antonyms": [],
+        "synonyms": ["Müsli"],
+        "tabooWords": ["Frühstück", "Haferflocken", "Nüsse", "Joghurt", "Knusprig"],
+        "hint": "Gesundes knuspriges Frühstücksmüsli"
+      }
+    }
+  },
+  {
+    "conceptId": "food-tofu",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Тофу",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Сир", "Соя", "Веган", "Білий", "Азія"],
+        "hint": "Популярний рослинний соєвий сир"
+      },
+      "EN": {
+        "word": "Tofu",
+        "antonyms": [],
+        "synonyms": ["Bean curd"],
+        "tabooWords": ["Cheese", "Soy", "Vegan", "White", "Asia"],
+        "hint": "Popular plant-based soy cheese"
+      },
+      "DE": {
+        "word": "Tofu",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Käse", "Soja", "Vegan", "Weiß", "Asien"],
+        "hint": "Beliebter pflanzlicher Sojakäse"
+      }
+    }
+  },
+  {
+    "conceptId": "food-avocado",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Авокадо",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Зелений", "Кісточка", "Тост", "М'який", "Фрукт"],
+        "hint": "Зелений маслянистий плід з великою кісточкою"
+      },
+      "EN": {
+        "word": "Avocado",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Green", "Pit", "Toast", "Soft", "Fruit"],
+        "hint": "Green buttery fruit with a large pit"
+      },
+      "DE": {
+        "word": "Avocado",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Grün", "Kern", "Toast", "Weich", "Frucht"],
+        "hint": "Grüne butterartige Frucht mit großem Kern"
+      }
+    }
+  },
+  {
+    "conceptId": "food-quinoa",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Кіноа",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Каша", "Корисна", "Крупа", "Злак", "Салат"],
+        "hint": "Популярна корисна дрібна крупа"
+      },
+      "EN": {
+        "word": "Quinoa",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Porridge", "Healthy", "Groats", "Grain", "Salad"],
+        "hint": "Popular healthy small grain"
+      },
+      "DE": {
+        "word": "Quinoa",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brei", "Gesund", "Grütze", "Getreide", "Salat"],
+        "hint": "Beliebtes gesundes kleines Getreide"
+      }
+    }
+  },
+  {
+    "conceptId": "food-chia",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Чіа",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Насіння", "Корисне", "Пудинг", "Чорні", "Вода"],
+        "hint": "Дрібне чорне насіння для пудингів"
+      },
+      "EN": {
+        "word": "Chia",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Seeds", "Healthy", "Pudding", "Black", "Water"],
+        "hint": "Tiny black seeds used for puddings"
+      },
+      "DE": {
+        "word": "Chia",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Samen", "Gesund", "Pudding", "Schwarz", "Wasser"],
+        "hint": "Winzige schwarze Samen für Pudding"
+      }
+    }
+  },
+  {
+    "conceptId": "food-acai",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Асаї",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Ягоди", "Корисні", "Фіолетові", "Смузі", "Бразилія"],
+        "hint": "Корисні темні ягоди з Амазонії"
+      },
+      "EN": {
+        "word": "Acai",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Berries", "Healthy", "Purple", "Smoothie", "Brazil"],
+        "hint": "Healthy dark berries from the Amazon"
+      },
+      "DE": {
+        "word": "Acai",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Beeren", "Gesund", "Lila", "Smoothie", "Brasilien"],
+        "hint": "Gesunde dunkle Beeren aus dem Amazonas"
+      }
+    }
+  },
+  {
+    "conceptId": "food-spirulina",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Спіруліна",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Водорості", "Зелена", "Порошок", "Корисна", "Смузі"],
+        "hint": "Корисний зелений порошок з водоростей"
+      },
+      "EN": {
+        "word": "Spirulina",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Algae", "Green", "Powder", "Healthy", "Smoothie"],
+        "hint": "Healthy green algae powder"
+      },
+      "DE": {
+        "word": "Spirulina",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Algen", "Grün", "Pulver", "Gesund", "Smoothie"],
+        "hint": "Gesundes grünes Algenpulver"
+      }
+    }
+  },
+  {
+    "conceptId": "food-matcha",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Матча",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Чай", "Зелений", "Порошок", "Японія", "Латте"],
+        "hint": "Японський подрібнений зелений чай"
+      },
+      "EN": {
+        "word": "Matcha",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tea", "Green", "Powder", "Japan", "Latte"],
+        "hint": "Japanese powdered green tea"
+      },
+      "DE": {
+        "word": "Matcha",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Tee", "Grün", "Pulver", "Japan", "Latte"],
+        "hint": "Japanischer gemahlener grüner Tee"
+      }
+    }
+  },
+  {
+    "conceptId": "food-kombucha",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Комбуча",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Напій", "Чай", "Гриб", "Газований", "Корисний"],
+        "hint": "Газований ферментований чайний напій"
+      },
+      "EN": {
+        "word": "Kombucha",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Drink", "Tea", "Mushroom", "Carbonated", "Healthy"],
+        "hint": "Carbonated fermented tea drink"
+      },
+      "DE": {
+        "word": "Kombucha",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Getränk", "Tee", "Pilz", "Kohlensäure", "Gesund"],
+        "hint": "Fermentiertes kohlensäurehaltiges Teegetränk"
+      }
+    }
+  },
+  {
+    "conceptId": "food-almond",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Мигдаль",
+        "antonyms": [],
+        "synonyms": ["Міндаль"],
+        "tabooWords": ["Горіх", "Марципан", "Молоко", "Форма", "Світлий"],
+        "hint": "Горіх, з якого роблять марципан"
+      },
+      "EN": {
+        "word": "Almond",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nut", "Marzipan", "Milk", "Shape", "Light"],
+        "hint": "Nut used to make marzipan"
+      },
+      "DE": {
+        "word": "Mandel",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuss", "Marzipan", "Milch", "Form", "Hell"],
+        "hint": "Nuss aus der Marzipan gemacht wird"
+      }
+    }
+  },
+  {
+    "conceptId": "food-walnut",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Волоський горіх",
+        "antonyms": [],
+        "synonyms": ["Горіх"],
+        "tabooWords": ["Мозок", "Шкаралупа", "Дерево", "Коричневий", "Твердий"],
+        "hint": "Горіх, серцевина якого схожа на мозок"
+      },
+      "EN": {
+        "word": "Walnut",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brain", "Shell", "Tree", "Brown", "Hard"],
+        "hint": "Nut with a brain-like kernel"
+      },
+      "DE": {
+        "word": "Walnuss",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Gehirn", "Schale", "Baum", "Braun", "Hart"],
+        "hint": "Nuss deren Kern wie ein Gehirn aussieht"
+      }
+    }
+  },
+  {
+    "conceptId": "food-cashew",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Кеш'ю",
+        "antonyms": [],
+        "synonyms": ["Кешю"],
+        "tabooWords": ["Горіх", "Місяць", "М'який", "Білий", "Азія"],
+        "hint": "Горіх у формі півмісяця"
+      },
+      "EN": {
+        "word": "Cashew",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nut", "Moon", "Soft", "White", "Asia"],
+        "hint": "Nut shaped like a crescent moon"
+      },
+      "DE": {
+        "word": "Cashew",
+        "antonyms": [],
+        "synonyms": ["Cashewnuss"],
+        "tabooWords": ["Nuss", "Mond", "Weich", "Weiß", "Asien"],
+        "hint": "Halbmondförmige Nuss"
+      }
+    }
+  },
+  {
+    "conceptId": "food-pistachio",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Фісташка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Горіх", "Зелений", "Солоний", "Шкаралупа", "Морозиво"],
+        "hint": "Зелений горішок у напіввідкритій шкаралупі"
+      },
+      "EN": {
+        "word": "Pistachio",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nut", "Green", "Salty", "Shell", "Ice cream"],
+        "hint": "Green nut in a half-open shell"
+      },
+      "DE": {
+        "word": "Pistazie",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuss", "Grün", "Salzig", "Schale", "Eiscreme"],
+        "hint": "Grüne Nuss in einer halboffenen Schale"
+      }
+    }
+  },
+  {
+    "conceptId": "food-peanut",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Арахіс",
+        "antonyms": [],
+        "synonyms": ["Земляний горіх"],
+        "tabooWords": ["Горіх", "Паста", "Снікерс", "Солоний", "Пиво"],
+        "hint": "Популярний горіх для солоної закуски або пасти"
+      },
+      "EN": {
+        "word": "Peanut",
+        "antonyms": [],
+        "synonyms": ["Groundnut"],
+        "tabooWords": ["Nut", "Paste", "Snickers", "Salty", "Beer"],
+        "hint": "Popular nut for salty snack or paste"
+      },
+      "DE": {
+        "word": "Erdnuss",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuss", "Paste", "Snickers", "Salzig", "Bier"],
+        "hint": "Beliebte Nuss für Snacks oder Paste"
+      }
+    }
+  },
+  {
+    "conceptId": "food-hazelnut",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Фундук",
+        "antonyms": [],
+        "synonyms": ["Ліщина"],
+        "tabooWords": ["Горіх", "Шоколад", "Круглий", "Нутелла", "Твердий"],
+        "hint": "Круглий горіх, який часто додають у шоколад"
+      },
+      "EN": {
+        "word": "Hazelnut",
+        "antonyms": [],
+        "synonyms": ["Filbert"],
+        "tabooWords": ["Nut", "Chocolate", "Round", "Nutella", "Hard"],
+        "hint": "Round nut often added to chocolate"
+      },
+      "DE": {
+        "word": "Haselnuss",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuss", "Schokolade", "Rund", "Nutella", "Hart"],
+        "hint": "Runde Nuss die oft in Schokolade ist"
+      }
+    }
+  },
+  {
+    "conceptId": "food-coconut",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кокос",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Горіх", "Пальма", "Волосатий", "Молоко", "Баунті"],
+        "hint": "Великий екзотичний горіх з молоком усередині"
+      },
+      "EN": {
+        "word": "Coconut",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nut", "Palm", "Hairy", "Milk", "Bounty"],
+        "hint": "Large exotic nut with milk inside"
+      },
+      "DE": {
+        "word": "Kokosnuss",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Nuss", "Palme", "Haarig", "Milch", "Bounty"],
+        "hint": "Große exotische Nuss mit Milch darin"
+      }
+    }
+  }
+]

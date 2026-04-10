@@ -38,7 +38,7 @@ export function AssignPlayerSheet(props: {
         className={bottomSheetBackdropClass(sheetOpen, 'z-120')}
         onClick={() => {
           setSheetOpen(false);
-          setTimeout(onClose, 280);
+          setTimeout(onClose, 300);
         }}
         role="presentation"
       >
@@ -78,7 +78,7 @@ export function AssignPlayerSheet(props: {
                     data: { teamId: team.id, playerId: target.id },
                   });
                   setSheetOpen(false);
-                  setTimeout(onClose, 280);
+                  setTimeout(onClose, 300);
                 }}
                 className="w-full py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] flex items-center justify-between px-4"
               >
@@ -99,7 +99,7 @@ export function AssignPlayerSheet(props: {
               onClick={() => {
                 sendAction({ action: 'TEAM_LEAVE', data: { playerId: target.id } });
                 setSheetOpen(false);
-                setTimeout(onClose, 280);
+                setTimeout(onClose, 300);
               }}
               className="w-full py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] text-[10px] uppercase tracking-widest font-bold text-(--ui-fg-muted)"
             >
@@ -111,7 +111,7 @@ export function AssignPlayerSheet(props: {
             type="button"
             onClick={() => {
               setSheetOpen(false);
-              setTimeout(onClose, 280);
+              setTimeout(onClose, 300);
             }}
             className="mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
           >

@@ -11,6 +11,11 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
+import {
+  keyboardAvoidingBottomPadding,
+  scrollElementIntoViewCentered,
+  useVisualViewportBottomInset,
+} from '../../hooks/useVisualViewportBottomInset';
 import { AVATARS } from '../../utils/avatars';
 import { PRESET_AVATARS } from '../../components/AvatarDisplay';
 
@@ -33,6 +38,7 @@ export const EnterNameScreen = () => {
   const [isEntering, setIsEntering] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const t = useT();
+  const keyboardBottomInset = useVisualViewportBottomInset();
 
   const stableId = useRef(`player-${generateUUID()}`);
 
@@ -110,6 +116,7 @@ export const EnterNameScreen = () => {
       <ModalPortal>
         <div
           className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
+          style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
           onClick={handleCancel}
           role="presentation"
         >
@@ -142,6 +149,7 @@ export const EnterNameScreen = () => {
               <input
                 autoFocus
                 value={name}
+                onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
                 onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
                 data-testid="enter-name"
                 placeholder={t.namePlaceholder}

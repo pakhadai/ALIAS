@@ -200,7 +200,7 @@ export function StoreModal({ onClose }: StoreModalProps) {
 
   const requestClose = useCallback(() => {
     setSheetOpen(false);
-    setTimeout(onClose, 280);
+    setTimeout(onClose, 300);
   }, [onClose]);
 
   const loadStore = useCallback(async () => {

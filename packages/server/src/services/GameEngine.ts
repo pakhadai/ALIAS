@@ -260,36 +260,27 @@ export class GameEngine {
 
         if (result.nextWord) {
           if (isQuiz) {
-            // Micro-round pause: keep currentTask visible briefly before advancing.
-            if (room.quizNextWordTimeout) {
-              clearTimeout(room.quizNextWordTimeout);
-              room.quizNextWordTimeout = null;
-            }
-            room.quizTaskLockUntil = Date.now() + 2500;
-            const lockedTaskId = room.currentTask.id;
-            room.quizNextWordTimeout = setTimeout(() => {
-              if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
-              if (room.gameState !== GameState.PLAYING) return;
-              if (!room.currentTask || room.currentTask.id !== lockedTaskId) return;
-              if (room.timeUp) return;
-              if (room.quizRoundTimeLeft !== undefined && room.quizRoundTimeLeft <= 0) return;
-              void this.nextWord(room).then(() => {
-                if (
-                  room.settings.mode.gameMode === GameMode.QUIZ &&
-                  room.settings.mode.quizTimerMode === 'PER_TASK'
-                ) {
-                  room.timeLeft = room.settings.mode.quizQuestionTime;
-                }
-              });
-              this.timerBroadcast?.(room);
-              this.roomManager.persistRoom(room);
-            }, 2500);
+            this.scheduleQuizMicroPauseAndAdvance(room);
           } else {
             await this.nextWord(room);
             if (room.timeUp) {
               this.transitionToRoundSummary(room);
             }
           }
+        }
+
+        // QUIZ: everyone guessed wrong — advance like question timeout (no round wait).
+        if (
+          isQuiz &&
+          payload.action === 'GUESS_OPTION' &&
+          !room.currentTaskAnswered &&
+          room.players.length > 0 &&
+          new Set(room.currentTaskWrongAttempts ?? []).size >= room.players.length
+        ) {
+          room.currentTaskAnswered = '__all_wrong__';
+          this.scheduleQuizMicroPauseAndAdvance(room);
+          this.timerBroadcast?.(room);
+          this.roomManager.persistRoom(room);
         }
 
         if (result.endTurn) {
@@ -720,6 +711,31 @@ export class GameEngine {
     room.timeUp = false;
   }
 
+  /** After a correct guess, per-question timeout, or all-wrong in QUIZ: brief pause then next task. */
+  private scheduleQuizMicroPauseAndAdvance(room: Room): void {
+    if (!room.currentTask) return;
+    if (room.quizNextWordTimeout) {
+      clearTimeout(room.quizNextWordTimeout);
+      room.quizNextWordTimeout = null;
+    }
+    room.quizTaskLockUntil = Date.now() + 2500;
+    const lockedTaskId = room.currentTask.id;
+    room.quizNextWordTimeout = setTimeout(() => {
+      if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
+      if (room.gameState !== GameState.PLAYING) return;
+      if (!room.currentTask || room.currentTask.id !== lockedTaskId) return;
+      if (room.timeUp) return;
+      if (room.quizRoundTimeLeft !== undefined && room.quizRoundTimeLeft <= 0) return;
+      void this.nextWord(room).then(() => {
+        if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
+        const m = room.settings.mode;
+        if (m.quizTimerMode === 'PER_TASK') room.timeLeft = m.quizQuestionTime;
+      });
+      this.timerBroadcast?.(room);
+      this.roomManager.persistRoom(room);
+    }, 2500);
+  }
+
   private async nextWord(room: Room): Promise<void> {
     const { word, deck, usedWords, deckReshuffled } = await this.wordService.nextWord(
       room.wordDeck,
@@ -770,27 +786,7 @@ export class GameEngine {
         } else {
           room.timeLeft = 0;
           room.currentTaskAnswered = '__timeout__';
-          // Micro-round pause before next question.
-          if (room.quizNextWordTimeout) {
-            clearTimeout(room.quizNextWordTimeout);
-            room.quizNextWordTimeout = null;
-          }
-          room.quizTaskLockUntil = Date.now() + 2500;
-          const lockedTaskId = room.currentTask.id;
-          room.quizNextWordTimeout = setTimeout(() => {
-            if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
-            if (room.gameState !== GameState.PLAYING) return;
-            if (!room.currentTask || room.currentTask.id !== lockedTaskId) return;
-            if (room.quizRoundTimeLeft !== undefined && room.quizRoundTimeLeft <= 0) return;
-            void this.nextWord(room).then(() => {
-              if (room.settings.mode.gameMode === GameMode.QUIZ) {
-                const m = room.settings.mode;
-                if (m.quizTimerMode === 'PER_TASK') room.timeLeft = m.quizQuestionTime;
-              }
-            });
-            this.timerBroadcast?.(room);
-            this.roomManager.persistRoom(room);
-          }, 2500);
+          this.scheduleQuizMicroPauseAndAdvance(room);
         }
         this.timerBroadcast?.(room);
         this.roomManager.persistRoom(room);

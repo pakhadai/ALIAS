@@ -407,6 +407,187 @@ describe('PAUSE_GAME', () => {
   });
 });
 
+// ─── QUIZ timers ─────────────────────────────────────────────────────────────
+
+describe('QUIZ timers', () => {
+  it('PER_TASK: times out a question, reveals, then advances after micro-pause', async () => {
+    vi.spyOn(wordService, 'nextWord')
+      .mockResolvedValueOnce({
+        word: 'A',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      })
+      .mockResolvedValueOnce({
+        word: 'B',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      });
+
+    const room = makeRoom({
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'PER_TASK',
+          quizRoundTime: 10,
+          quizQuestionTime: 3,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: false,
+        },
+      },
+    });
+
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    expect(room.gameState).toBe(GameState.PLAYING);
+    expect(room.timeLeft).toBe(3);
+    expect(room.currentTask?.prompt).toBe('A');
+
+    // Question timeout: should mark answered by timeout (no points), and schedule next question.
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(room.timeLeft).toBe(0);
+    expect(room.currentTaskAnswered).toBe('__timeout__');
+
+    // Micro-pause (2.5s) then next word.
+    await vi.advanceTimersByTimeAsync(2500);
+    expect(wordService.nextWord).toHaveBeenCalledTimes(2);
+    expect(room.currentTask?.prompt).toBe('B');
+    expect(room.timeLeft).toBe(3);
+  });
+
+  it('PER_TASK: does not tick question timer while locked (micro-pause)', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'A',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+
+    const room = makeRoom({
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'PER_TASK',
+          quizRoundTime: 10,
+          quizQuestionTime: 3,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: false,
+        },
+      },
+    });
+
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    room.quizRoundTimeLeft = 10;
+    room.timeLeft = 3;
+    room.quizTaskLockUntil = Date.now() + 5000;
+
+    await vi.advanceTimersByTimeAsync(1000);
+    // Round time should tick, question time should not.
+    expect(room.quizRoundTimeLeft).toBe(9);
+    expect(room.timeLeft).toBe(3);
+  });
+
+  it('applies wrong-penalty to quiz team score but never below 0', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'A',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+
+    const p = makePlayer({ id: 'p1' });
+    const team = makeTeam({ id: 't1', score: 0, players: [p] });
+    const room = makeRoom({
+      players: [p],
+      teams: [team],
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'ROUND',
+          quizRoundTime: 60,
+          quizQuestionTime: 10,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: true,
+        },
+      },
+    });
+
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    // Force a task with known answer.
+    room.currentTask = { id: 't1', prompt: 'Q', answer: 'A', options: ['A', 'B', 'C', 'D'] };
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'B' } },
+      'p1'
+    );
+    expect(room.teams[0].score).toBe(0);
+  });
+
+  it('when every player guesses wrong, sets __all_wrong__ and advances after micro-pause', async () => {
+    vi.spyOn(wordService, 'nextWord')
+      .mockResolvedValueOnce({
+        word: 'Q1',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      })
+      .mockResolvedValueOnce({
+        word: 'Q2',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      });
+
+    const p1 = makePlayer({ id: 'p1' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [makeTeam({ id: 't1', players: [p1] }), makeTeam({ id: 't2', players: [p2] })],
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'PER_TASK',
+          quizRoundTime: 10,
+          quizQuestionTime: 30,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: false,
+        },
+      },
+    });
+
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    room.currentTask = { id: 'task-x', prompt: 'Q', answer: 'A', options: ['A', 'B', 'C', 'D'] };
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'B' } },
+      'p1'
+    );
+    expect(room.currentTaskAnswered).toBeUndefined();
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'C' } },
+      'p2'
+    );
+    expect(room.currentTaskAnswered).toBe('__all_wrong__');
+
+    await vi.advanceTimersByTimeAsync(2500);
+    expect(wordService.nextWord).toHaveBeenCalledTimes(2);
+    expect(room.currentTaskWrongAttempts).toEqual([]);
+    expect(room.currentTaskAnswered).toBeUndefined();
+  });
+});
+
 // ─── TIME_UP ─────────────────────────────────────────────────────────────────
 
 describe('TIME_UP', () => {

@@ -39,7 +39,7 @@ export function AppSettingsModal({ onClose }: Props) {
   const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
   const handleClose = () => {
     setVisible(false);
-    setTimeout(onClose, 280);
+    setTimeout(onClose, 300);
   };
 
   return (

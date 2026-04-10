@@ -69,18 +69,9 @@ export const bottomSheetBackdropClass = (
   position: 'fixed' | 'absolute' = 'fixed',
   extraClassName = ''
 ) =>
-  `${position} inset-0 ${zIndex} flex flex-col justify-end transition-[opacity,background-color] duration-300 ${extraClassName} ${
-    visible
-      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl opacity-100'
-      : 'bg-transparent opacity-0 pointer-events-none'
-  }`;
-
-export const centerModalBackdropClass = (
-  visible: boolean,
-  zIndex = 'z-50',
-  position: 'fixed' | 'absolute' = 'fixed'
-) =>
-  `${position} inset-0 ${zIndex} flex items-center justify-center p-6 transition-[opacity,background-color] duration-300 ${
+  // Scrollable overlay: when the keyboard shrinks the visual viewport, user can scroll to keep the sheet in view.
+  // `pb-safe-bottom` insets the sheet above the home indicator / gesture bar.
+  `${position} inset-0 ${zIndex} flex min-h-0 flex-col items-stretch justify-end overflow-y-auto overscroll-y-contain pb-safe-bottom [-webkit-overflow-scrolling:touch] transition-[opacity,background-color] duration-300 ${extraClassName} ${
     visible
       ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl opacity-100'
       : 'bg-transparent opacity-0 pointer-events-none'
@@ -97,22 +88,11 @@ export function bottomSheetPanelClass(open: boolean, extraClassName = ''): strin
   return [
     // Use a scrollable panel to avoid sheets being cut off below the viewport
     // (common on mobile with browser chrome / safe areas).
-    'relative w-full max-w-md mx-auto rounded-t-4xl max-h-[85svh] overflow-y-auto overscroll-contain',
+    // Prefer dvh when supported (keyboard / dynamic toolbars); svh fallback for older engines.
+    'relative w-full max-w-md mx-auto min-h-0 shrink-0 rounded-t-4xl max-h-[85svh] supports-[height:100dvh]:max-h-[85dvh] overflow-y-auto overscroll-y-contain touch-pan-y',
     'bg-(--ui-card) border border-(--ui-border)',
     'transition-transform duration-300 ease-out will-change-transform',
     open ? 'translate-y-0' : 'translate-y-full',
-    extraClassName,
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
-
-export function centerModalPanelClass(open: boolean, extraClassName = ''): string {
-  return [
-    'relative w-full max-w-md mx-auto rounded-4xl max-h-[85svh] overflow-y-auto overscroll-contain',
-    'bg-(--ui-card) border border-(--ui-border)',
-    'transition-[transform,opacity] duration-250 ease-out will-change-transform',
-    open ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
     extraClassName,
   ]
     .filter(Boolean)
@@ -241,7 +221,6 @@ interface ConfirmationModalProps {
   theme?: ThemeConfig;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'bottomSheet' | 'center';
   backdropExtraClassName?: string;
 }
 
@@ -255,7 +234,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   theme,
   confirmText,
   cancelText,
-  variant = 'bottomSheet',
   backdropExtraClassName,
 }) => {
   const [shouldRender, setShouldRender] = useState(isOpen);
@@ -272,7 +250,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     const t = setTimeout(() => {
       setShouldRender(false);
       setIsClosing(false);
-    }, 280);
+    }, 300);
     return () => clearTimeout(t);
   }, [isOpen, shouldRender]);
 
@@ -281,36 +259,25 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const textMain = theme?.textMain || 'text-(--ui-fg)';
   const textSecondary = theme?.textSecondary || 'text-(--ui-fg-muted)';
   const sheetOpen = !isClosing;
-  const isCenter = variant === 'center';
 
   return (
     <ModalPortal>
       <div
-        className={
-          isCenter
-            ? centerModalBackdropClass(sheetOpen, 'z-600')
-            : bottomSheetBackdropClass(sheetOpen, 'z-600', 'fixed', backdropExtraClassName)
-        }
+        className={bottomSheetBackdropClass(sheetOpen, 'z-600', 'fixed', backdropExtraClassName)}
         onClick={onCancel}
         role="presentation"
       >
         <div
-          className={
-            isCenter
-              ? centerModalPanelClass(sheetOpen, 'px-8 py-8 text-center')
-              : bottomSheetPanelClass(sheetOpen, 'px-8 pt-8 pb-safe-bottom text-center')
-          }
+          className={bottomSheetPanelClass(sheetOpen, 'px-8 pt-8 pb-safe-bottom text-center')}
           onClick={(e) => e.stopPropagation()}
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="confirm-modal-title"
           aria-describedby="confirm-modal-desc"
         >
-          {!isCenter && (
-            <div className="flex justify-center pt-1 pb-3">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
-            </div>
-          )}
+          <div className="flex justify-center pt-1 pb-3">
+            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+          </div>
           <h3
             id="confirm-modal-title"
             className={`text-2xl md:text-3xl font-serif ${textMain} mb-4 tracking-wide leading-tight`}

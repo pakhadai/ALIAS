@@ -55,7 +55,7 @@ export const ProfileScreen = () => {
 
   const closeLogoutConfirm = () => {
     setLogoutConfirmVisible(false);
-    setTimeout(() => setShowLogoutConfirm(false), 280);
+    setTimeout(() => setShowLogoutConfirm(false), 300);
   };
 
   const handleLogout = async () => {

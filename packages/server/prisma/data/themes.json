@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "premium-dark",
+    "name": "Midnight Ruby",
+    "isFree": true,
+    "price": 0,
+    "config": {
+      "id": "PREMIUM_DARK",
+      "description": "OLED chocolate-black with pearl text and ruby accents",
+      "preview": { "bg": "#0A0809", "accent": "#E11D48" },
+      "fonts": { "heading": "'Playfair Display', serif", "body": "'Lato', sans-serif" }
+    }
+  },
+  {
+    "slug": "premium-light",
+    "name": "Premium Light",
+    "isFree": true,
+    "price": 0,
+    "config": {
+      "id": "PREMIUM_LIGHT",
+      "description": "Clean light with classic serif",
+      "preview": { "bg": "#F8FAFC", "accent": "#1E293B" },
+      "fonts": { "heading": "'Playfair Display', serif", "body": "'Lato', sans-serif" }
+    }
+  },
+  {
+    "slug": "cyberpunk",
+    "name": "Indigo",
+    "isFree": false,
+    "price": 99,
+    "config": {
+      "id": "CYBERPUNK",
+      "description": "Dark neon with indigo & pink",
+      "preview": { "bg": "#020617", "accent": "#6366F1" },
+      "fonts": { "heading": "'Playfair Display', serif", "body": "'Lato', sans-serif" }
+    }
+  },
+  {
+    "slug": "forest",
+    "name": "Luminous Aero",
+    "isFree": false,
+    "price": 99,
+    "config": {
+      "id": "FOREST",
+      "description": "Cool white surfaces with indigo, cyan and coral accents",
+      "preview": { "bg": "#FAFCFF", "accent": "#6366F1" },
+      "fonts": { "heading": "'Inter', sans-serif", "body": "'Inter', sans-serif" }
+    }
+  },
+  {
+    "slug": "sleek",
+    "name": "Sleek",
+    "isFree": true,
+    "price": 0,
+    "config": {
+      "id": "SLEEK",
+      "description": "Dark pro with sharp corners",
+      "preview": { "bg": "#050505", "accent": "#4338CA" },
+      "fonts": { "heading": "'Exo 2', sans-serif", "body": "'Inter', sans-serif" }
+    }
+  },
+  {
+    "slug": "void-luxe",
+    "name": "Void Luxe",
+    "isFree": false,
+    "price": 99,
+    "config": {
+      "id": "VOID_LUXE",
+      "description": "OLED black with cool blue and warm premium accents",
+      "preview": { "bg": "#000000", "accent": "#052659" },
+      "fonts": { "heading": "'Playfair Display', serif", "body": "'Lato', sans-serif" }
+    }
+  },
+  {
+    "slug": "quantum-eclipse",
+    "name": "Quantum Eclipse",
+    "isFree": false,
+    "price": 99,
+    "config": {
+      "id": "QUANTUM_ECLIPSE",
+      "description": "True OLED black with violet, cyan, and neon orange accents",
+      "preview": { "bg": "#000000", "accent": "#6C47FF" },
+      "fonts": { "heading": "'Exo 2', sans-serif", "body": "'Inter', sans-serif" }
+    }
+  }
+]

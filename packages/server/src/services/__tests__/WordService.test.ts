@@ -251,6 +251,108 @@ describe('buildDeck (with Prisma)', () => {
     expect(deck).not.toContain('X');
     expect(deck).toContain('DBWord');
   });
+
+  it('QUIZ: respects quizTypes filter when building encoded deck entries', async () => {
+    const quizRows = [
+      {
+        word: 'Fast',
+        conceptId: 'c1',
+        synonyms: ['Quick'],
+        antonyms: ['Slow'],
+        tabooWords: ['Speed', 'Rapid', 'Hurry'],
+      },
+    ];
+    const mockPrisma = {
+      customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
+      wordTranslation: {
+        findMany: vi
+          .fn()
+          // main query (UA)
+          .mockResolvedValueOnce(quizRows)
+          // target translation query (EN) — should be skipped when translation=false
+          .mockResolvedValueOnce([{ conceptId: 'c1', word: 'Швидкий' }]),
+      },
+    } as unknown as PrismaClient;
+
+    service.setPrisma(mockPrisma);
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, targetLanguage: Language.EN },
+      mode: {
+        gameMode: GameMode.QUIZ,
+        classicRoundTime: 60,
+        quizTimerMode: 'ROUND',
+        quizRoundTime: 60,
+        quizQuestionTime: 10,
+        quizTypes: { synonyms: true, antonyms: false, taboo: false, translation: false },
+        quizWrongPenaltyEnabled: false,
+      },
+    };
+
+    const deck = await service.buildDeck(settings);
+    const decoded = deck
+      .filter((x) => typeof x === 'string' && x.startsWith('{'))
+      .map((s) => JSON.parse(s as string) as { kind: string });
+    const kinds = new Set(decoded.map((d) => d.kind));
+
+    expect(kinds.has('SYNONYM')).toBe(true);
+    expect(kinds.has('ANTONYM')).toBe(false);
+    expect(kinds.has('TABOO')).toBe(false);
+    expect(kinds.has('TRANSLATION')).toBe(false);
+    // BASIC should always exist as a fallback
+    expect(kinds.has('BASIC')).toBe(true);
+  });
+
+  it('QUIZ: includes TRANSLATION entries when enabled and targetLanguage differs', async () => {
+    const quizRows = [
+      {
+        word: 'Apple',
+        conceptId: 'c1',
+        synonyms: [],
+        antonyms: [],
+        tabooWords: [],
+      },
+    ];
+    const mockPrisma = {
+      customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
+      wordTranslation: {
+        findMany: vi
+          .fn()
+          // main query (UA)
+          .mockResolvedValueOnce(quizRows)
+          // target translation query (EN)
+          .mockResolvedValueOnce([{ conceptId: 'c1', word: 'Яблуко' }]),
+      },
+    } as unknown as PrismaClient;
+
+    service.setPrisma(mockPrisma);
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, targetLanguage: Language.EN },
+      mode: {
+        gameMode: GameMode.QUIZ,
+        classicRoundTime: 60,
+        quizTimerMode: 'ROUND',
+        quizRoundTime: 60,
+        quizQuestionTime: 10,
+        quizTypes: { synonyms: false, antonyms: false, taboo: false, translation: true },
+        quizWrongPenaltyEnabled: false,
+      },
+    };
+
+    const deck = await service.buildDeck(settings);
+    const decoded = deck
+      .filter((x) => typeof x === 'string' && x.startsWith('{'))
+      .map((s) => JSON.parse(s as string) as { kind: string });
+    const kinds = new Set(decoded.map((d) => d.kind));
+
+    expect(kinds.has('TRANSLATION')).toBe(true);
+    // Prisma should be called twice (base + translation lookup)
+    expect(
+      (mockPrisma.wordTranslation.findMany as unknown as { mock: { calls: unknown[][] } }).mock
+        .calls.length
+    ).toBe(2);
+  });
 });
 
 // ─── nextWord ────────────────────────────────────────────────────────────────

@@ -366,7 +366,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
 
   const requestClose = () => {
     setSheetOpen(false);
-    setTimeout(() => onClose(), 280);
+    setTimeout(() => onClose(), 300);
   };
 
   const loadDecks = useCallback(async () => {

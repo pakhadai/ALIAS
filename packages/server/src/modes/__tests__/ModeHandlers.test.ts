@@ -54,10 +54,32 @@ describe('Game mode handlers', () => {
     expect(t.options).toContain('correct');
   });
 
+  test('QuizModeHandler decodes JSON deck entries and sets kind/prompt/answer', () => {
+    const h = new QuizModeHandler();
+    const encoded = JSON.stringify({ v: 1, kind: 'SYNONYM', prompt: 'Fast', answer: 'Quick' });
+    const deck = ['x', 'y', 'z', encoded];
+    const t = h.generateTask(deck, {} as never);
+    expect(t.prompt).toBe('Fast');
+    expect(t.answer).toBe('Quick');
+    expect(t.kind).toBe('SYNONYM');
+  });
+
+  test('QuizModeHandler falls back to raw word on invalid JSON', () => {
+    const h = new QuizModeHandler();
+    const deck = ['d1', 'd2', 'd3', '{not-json'];
+    const t = h.generateTask(deck, {} as never);
+    expect(t.prompt).toBe('{not-json');
+    expect(t.answer).toBe('{not-json');
+  });
+
   test('QuizModeHandler awards only the first correct guess (sets room.currentTaskAnswered)', () => {
     const h = new QuizModeHandler();
     const task = { id: 't1', prompt: 'p', answer: 'a', options: ['a', 'b', 'c', 'd'] };
-    const room: { currentTaskAnswered?: string | null } = { currentTaskAnswered: null };
+    const room: {
+      currentTaskAnswered?: string | null;
+      currentTaskWrongAttempts?: string[];
+      settings?: { mode?: { gameMode?: string; quizWrongPenaltyEnabled?: boolean } };
+    } = { currentTaskAnswered: null, currentTaskWrongAttempts: [] };
 
     const ok = h.handleAction(
       { action: 'GUESS_OPTION', data: { selectedOption: 'a' } } as never,
@@ -75,6 +97,38 @@ describe('Game mode handlers', () => {
     expect(ignored.isCorrect).toBe(false);
     expect(ignored.nextWord).toBe(false);
     expect(room.currentTaskAnswered).toBe('p1');
+  });
+
+  test('QuizModeHandler applies -1 penalty once per task when enabled', () => {
+    const h = new QuizModeHandler();
+    const task = { id: 't1', prompt: 'p', answer: 'a', options: ['a', 'b', 'c', 'd'] };
+    const room: {
+      currentTaskAnswered?: string | null;
+      currentTaskWrongAttempts?: string[];
+      settings?: { mode?: { gameMode?: string; quizWrongPenaltyEnabled?: boolean } };
+    } = {
+      currentTaskAnswered: null,
+      currentTaskWrongAttempts: [],
+      settings: { mode: { gameMode: 'QUIZ', quizWrongPenaltyEnabled: true } },
+    };
+
+    const wrong1 = h.handleAction(
+      { action: 'GUESS_OPTION', data: { selectedOption: 'b' } } as never,
+      task as never,
+      { room, senderId: 'p1' } as never
+    );
+    expect(wrong1.isCorrect).toBe(false);
+    expect(wrong1.points).toBe(-1);
+    expect(room.currentTaskWrongAttempts).toContain('p1');
+
+    // Repeat wrong attempt is ignored entirely by anti-spam (no extra penalty).
+    const wrong2 = h.handleAction(
+      { action: 'GUESS_OPTION', data: { selectedOption: 'c' } } as never,
+      task as never,
+      { room, senderId: 'p1' } as never
+    );
+    expect(wrong2.isCorrect).toBe(false);
+    expect(wrong2.points).toBe(0);
   });
 });
 

@@ -12,6 +12,11 @@ import type { RoomErrorCode } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { AVATARS } from '../../utils/avatars';
 import { useT } from '../../hooks/useT';
+import {
+  keyboardAvoidingBottomPadding,
+  scrollElementIntoViewCentered,
+  useVisualViewportBottomInset,
+} from '../../hooks/useVisualViewportBottomInset';
 import { MAX_PLAYERS, TEAM_COLORS, TEAM_NAMES } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
@@ -59,6 +64,7 @@ export const LobbyScreen = () => {
   } = useGame();
   const general = settings.general;
   const t = useT();
+  const keyboardBottomInset = useVisualViewportBottomInset();
   const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -139,12 +145,12 @@ export const LobbyScreen = () => {
 
   const closeQrModal = () => {
     setQrSheetOpen(false);
-    setTimeout(() => setShowQrModal(false), 280);
+    setTimeout(() => setShowQrModal(false), 300);
   };
 
   const closeAddPlayerModal = () => {
     setAddPlayerSheetOpen(false);
-    setTimeout(() => setShowAddPlayer(false), 280);
+    setTimeout(() => setShowAddPlayer(false), 300);
   };
 
   const canAddOfflinePlayer = isHost && gameMode === 'OFFLINE' && players.length < MAX_PLAYERS;
@@ -251,8 +257,6 @@ export const LobbyScreen = () => {
           message={t.leaveLobbyMsg}
           isDanger
           theme={currentTheme}
-          variant="bottomSheet"
-          backdropExtraClassName="pb-20"
           onCancel={() => setShowExitConfirm(false)}
           onConfirm={() => {
             leaveRoom();
@@ -270,8 +274,6 @@ export const LobbyScreen = () => {
           )}
           isDanger
           theme={currentTheme}
-          variant="bottomSheet"
-          backdropExtraClassName="pb-20"
           onCancel={() => setKickTarget(null)}
           onConfirm={() => {
             if (kickTarget) sendAction({ action: 'KICK_PLAYER', data: kickTarget.id });
@@ -287,8 +289,6 @@ export const LobbyScreen = () => {
           message="Це перерозподілить усіх гравців по командах заново."
           isDanger
           theme={currentTheme}
-          variant="bottomSheet"
-          backdropExtraClassName="pb-20"
           onCancel={() => setShowShuffleAllConfirm(false)}
           onConfirm={() => {
             setShowShuffleAllConfirm(false);
@@ -301,27 +301,35 @@ export const LobbyScreen = () => {
         {showQrModal && qrCodeData && (
           <ModalPortal>
             <div
-              className={bottomSheetBackdropClass(qrSheetOpen, 'z-120', 'fixed', 'pb-20')}
+              className={bottomSheetBackdropClass(qrSheetOpen, 'z-120', 'fixed')}
               onClick={closeQrModal}
               role="presentation"
             >
               <div
                 className={bottomSheetPanelClass(
                   qrSheetOpen,
-                  'px-6 py-6 pb-safe-bottom flex flex-col items-center gap-5'
+                  'px-5 py-5 pb-safe-bottom flex flex-col items-center gap-4 text-center max-w-sm'
                 )}
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
+                aria-label={t.scanToJoin ?? 'QR code to join room'}
               >
-                <div className="bg-(--ui-surface) p-6 rounded-2xl border border-(--ui-border) w-full flex justify-center">
+                <div className="flex justify-center pb-1">
+                  <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                </div>
+                {/* Fixed box avoids layout shift while the data-URL image paints */}
+                <div className="bg-(--ui-surface) p-4 rounded-2xl border border-(--ui-border) w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
                   <img
                     src={qrCodeData}
-                    alt="QR"
-                    className="w-[min(80vw,320px)] h-[min(80vw,320px)] max-w-full rounded-xl"
+                    alt=""
+                    width={208}
+                    height={208}
+                    decoding="async"
+                    className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
                   />
                 </div>
-                <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold text-center px-2">
+                <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold px-1">
                   {t.scanToJoin ?? 'Відскануйте для приєднання'}
                 </p>
               </div>
@@ -442,6 +450,7 @@ export const LobbyScreen = () => {
             <ModalPortal>
               <div
                 className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
+                style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
                 onClick={closeAddPlayerModal}
                 role="presentation"
               >
@@ -478,6 +487,7 @@ export const LobbyScreen = () => {
                     <input
                       autoFocus
                       value={newPlayerName}
+                      onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
                       onChange={(e) =>
                         setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
                       }

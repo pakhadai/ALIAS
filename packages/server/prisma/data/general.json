@@ -1,608 +1,5402 @@
-{
-  "UA": [
-    "Кіт",
-    "Собака",
-    "Автомобіль",
-    "Сонце",
-    "Море",
-    "Дерево",
-    "Будинок",
-    "Книга",
-    "Телефон",
-    "Комп'ютер",
-    "Літак",
-    "Київ",
-    "Картопля",
-    "М'яч",
-    "Гітара",
-    "Кава",
-    "Окуляри",
-    "Рюкзак",
-    "Міст",
-    "Годинник",
-    "Вікно",
-    "Двері",
-    "Лампа",
-    "Стіл",
-    "Стілець",
-    "Ліжко",
-    "Дзеркало",
-    "Ключ",
-    "Замок",
-    "Парасолька",
-    "Ковдра",
-    "Подушка",
-    "Чашка",
-    "Тарілка",
-    "Ложка",
-    "Виделка",
-    "Ніж",
-    "Пляшка",
-    "Сумка",
-    "Гаманець",
-    "Зошит",
-    "Олівець",
-    "Ручка",
-    "Папір",
-    "Ножиці",
-    "Клей",
-    "Лінійка",
-    "Фарби",
-    "Пензлик",
-    "Калькулятор",
-    "Велосипед",
-    "Мотоцикл",
-    "Автобус",
-    "Трамвай",
-    "Метро",
-    "Таксі",
-    "Потяг",
-    "Корабель",
-    "Ракета",
-    "Гелікоптер",
-    "Школа",
-    "Університет",
-    "Лікарня",
-    "Аптека",
-    "Магазин",
-    "Ринок",
-    "Банк",
-    "Пошта",
-    "Бібліотека",
-    "Церква",
-    "Футбол",
-    "Баскетбол",
-    "Теніс",
-    "Плавання",
-    "Біг",
-    "Шахи",
-    "Танець",
-    "Спів",
-    "Малювання",
-    "Фотографія",
-    "Лев",
-    "Слон",
-    "Жираф",
-    "Мавпа",
-    "Ведмідь",
-    "Вовк",
-    "Лисиця",
-    "Заєць",
-    "Олень",
-    "Орел",
-    "Троянда",
-    "Тюльпан",
-    "Соняшник",
-    "Ромашка",
-    "Фіалка",
-    "Кактус",
-    "Пальма",
-    "Береза",
-    "Дуб",
-    "Сосна",
-    "Дощ",
-    "Сніг",
-    "Вітер",
-    "Хмара",
-    "Блискавка",
-    "Веселка",
-    "Туман",
-    "Мороз",
-    "Спека",
-    "Шторм",
-    "Свічка",
-    "Вогонь",
-    "Вода",
-    "Земля",
-    "Повітря",
-    "Камінь",
-    "Пісок",
-    "Глина",
-    "Метал",
-    "Скло",
-    "Привид",
-    "Дракон",
-    "Єдиноріг",
-    "Русалка",
-    "Фея",
-    "Лицар",
-    "Пірат",
-    "Ковбой",
-    "Ніндзя",
-    "Робот",
-    "Серце",
-    "Зірка",
-    "Місяць",
-    "Коло",
-    "Трикутник",
-    "Квадрат",
-    "Спіраль",
-    "Стрілка",
-    "Хрест",
-    "Корона",
-    "Свобода",
-    "Мрія",
-    "Щастя",
-    "Любов",
-    "Дружба",
-    "Сила",
-    "Мудрість",
-    "Час",
-    "Таємниця",
-    "Пригода",
-    "Парк",
-    "Фонтан",
-    "Памятник",
-    "Площа",
-    "Вулиця",
-    "Провулок",
-    "Набережна",
-    "Ліс",
-    "Поле",
-    "Озеро",
-    "Гора",
-    "Долина",
-    "Острів",
-    "Печера",
-    "Водоспад",
-    "Вулкан",
-    "Пустеля",
-    "Джунглі",
-    "Болото",
-    "Каньйон",
-    "Шоколад",
-    "Цукерка",
-    "Торт",
-    "Печиво",
-    "Мед",
-    "Варення",
-    "Пиріг",
-    "Млинці",
-    "Каша",
-    "Суп",
-    "Гроші",
-    "Монета",
-    "Купюра",
-    "Карта",
-    "Компас",
-    "Бінокль",
-    "Прапор",
-    "Медаль",
-    "Кубок",
-    "Диплом",
-    "Антена",
-    "Радіо",
-    "Телевізор",
-    "Пульт",
-    "Навушники",
-    "Мікрофон",
-    "Колонка",
-    "Клавіатура",
-    "Миша",
-    "Екран"
-  ],
-  "EN": [
-    "Cat",
-    "Dog",
-    "Car",
-    "Sun",
-    "Sea",
-    "Tree",
-    "House",
-    "Book",
-    "Phone",
-    "Computer",
-    "Airplane",
-    "Bridge",
-    "Guitar",
-    "Coffee",
-    "Glasses",
-    "Backpack",
-    "Clock",
-    "Mirror",
-    "Window",
-    "Door",
-    "Lamp",
-    "Table",
-    "Chair",
-    "Bed",
-    "Key",
-    "Lock",
-    "Umbrella",
-    "Blanket",
-    "Pillow",
-    "Cup",
-    "Plate",
-    "Spoon",
-    "Fork",
-    "Knife",
-    "Bottle",
-    "Bag",
-    "Wallet",
-    "Notebook",
-    "Pencil",
-    "Pen",
-    "Paper",
-    "Scissors",
-    "Glue",
-    "Ruler",
-    "Brush",
-    "Calculator",
-    "Bicycle",
-    "Motorcycle",
-    "Bus",
-    "Subway",
-    "Taxi",
-    "Train",
-    "Ship",
-    "Rocket",
-    "Helicopter",
-    "School",
-    "Hospital",
-    "Pharmacy",
-    "Market",
-    "Bank",
-    "Library",
-    "Church",
-    "Football",
-    "Basketball",
-    "Tennis",
-    "Swimming",
-    "Running",
-    "Chess",
-    "Dance",
-    "Singing",
-    "Painting",
-    "Photography",
-    "Lion",
-    "Elephant",
-    "Giraffe",
-    "Monkey",
-    "Bear",
-    "Wolf",
-    "Fox",
-    "Rabbit",
-    "Deer",
-    "Eagle",
-    "Rose",
-    "Tulip",
-    "Sunflower",
-    "Daisy",
-    "Cactus",
-    "Palm",
-    "Birch",
-    "Oak",
-    "Pine",
-    "Rain",
-    "Snow",
-    "Wind",
-    "Cloud",
-    "Lightning",
-    "Rainbow",
-    "Fog",
-    "Frost",
-    "Storm",
-    "Candle",
-    "Fire",
-    "Water",
-    "Earth",
-    "Air",
-    "Stone",
-    "Sand",
-    "Metal",
-    "Glass",
-    "Ghost",
-    "Dragon",
-    "Unicorn",
-    "Mermaid",
-    "Fairy",
-    "Knight",
-    "Pirate",
-    "Cowboy",
-    "Ninja",
-    "Robot",
-    "Heart",
-    "Star",
-    "Moon",
-    "Circle",
-    "Triangle",
-    "Square",
-    "Spiral",
-    "Arrow",
-    "Crown",
-    "Freedom",
-    "Dream",
-    "Happiness",
-    "Love",
-    "Friendship",
-    "Strength",
-    "Wisdom",
-    "Time",
-    "Mystery",
-    "Adventure",
-    "Park",
-    "Fountain",
-    "Monument",
-    "Street",
-    "River",
-    "Lake",
-    "Mountain",
-    "Valley",
-    "Island",
-    "Cave",
-    "Waterfall",
-    "Volcano",
-    "Desert",
-    "Jungle",
-    "Swamp",
-    "Canyon",
-    "Chocolate",
-    "Candy",
-    "Cake",
-    "Honey",
-    "Pie",
-    "Soup",
-    "Money",
-    "Coin",
-    "Flag",
-    "Medal",
-    "Trophy",
-    "Diploma",
-    "Antenna",
-    "Radio",
-    "Television",
-    "Headphones",
-    "Microphone",
-    "Speaker",
-    "Keyboard",
-    "Screen",
-    "Sunset",
-    "Sunrise",
-    "Whistle",
-    "Bell",
-    "Drum",
-    "Flute",
-    "Trumpet",
-    "Violin",
-    "Piano",
-    "Harp",
-    "Accordion",
-    "Balloon",
-    "Fireworks",
-    "Confetti",
-    "Ribbon",
-    "Gift",
-    "Puzzle",
-    "Dice",
-    "Cards",
-    "Board game",
-    "Kite",
-    "Swing",
-    "Slide",
-    "Trampoline",
-    "Hammock",
-    "Tent"
-  ],
-  "DE": [
-    "Katze",
-    "Hund",
-    "Auto",
-    "Sonne",
-    "Meer",
-    "Baum",
-    "Haus",
-    "Buch",
-    "Telefon",
-    "Computer",
-    "Flugzeug",
-    "Brücke",
-    "Gitarre",
-    "Kaffee",
-    "Brille",
-    "Rucksack",
-    "Uhr",
-    "Spiegel",
-    "Fenster",
-    "Tür",
-    "Lampe",
-    "Tisch",
-    "Stuhl",
-    "Bett",
-    "Schlüssel",
-    "Schloss",
-    "Regenschirm",
-    "Decke",
-    "Kissen",
-    "Tasse",
-    "Teller",
-    "Löffel",
-    "Gabel",
-    "Messer",
-    "Flasche",
-    "Tasche",
-    "Geldbörse",
-    "Heft",
-    "Bleistift",
-    "Kugelschreiber",
-    "Papier",
-    "Schere",
-    "Kleber",
-    "Lineal",
-    "Pinsel",
-    "Taschenrechner",
-    "Fahrrad",
-    "Motorrad",
-    "Bus",
-    "U-Bahn",
-    "Taxi",
-    "Zug",
-    "Schiff",
-    "Rakete",
-    "Hubschrauber",
-    "Schule",
-    "Krankenhaus",
-    "Apotheke",
-    "Markt",
-    "Bank",
-    "Bibliothek",
-    "Kirche",
-    "Fußball",
-    "Basketball",
-    "Tennis",
-    "Schwimmen",
-    "Laufen",
-    "Schach",
-    "Tanz",
-    "Gesang",
-    "Malerei",
-    "Fotografie",
-    "Löwe",
-    "Elefant",
-    "Giraffe",
-    "Affe",
-    "Bär",
-    "Wolf",
-    "Fuchs",
-    "Hase",
-    "Hirsch",
-    "Adler",
-    "Rose",
-    "Tulpe",
-    "Sonnenblume",
-    "Gänseblümchen",
-    "Kaktus",
-    "Palme",
-    "Birke",
-    "Eiche",
-    "Kiefer",
-    "Regen",
-    "Schnee",
-    "Wind",
-    "Wolke",
-    "Blitz",
-    "Regenbogen",
-    "Nebel",
-    "Frost",
-    "Sturm",
-    "Kerze",
-    "Feuer",
-    "Wasser",
-    "Erde",
-    "Luft",
-    "Stein",
-    "Sand",
-    "Metall",
-    "Glas",
-    "Geist",
-    "Drache",
-    "Einhorn",
-    "Meerjungfrau",
-    "Fee",
-    "Ritter",
-    "Pirat",
-    "Cowboy",
-    "Ninja",
-    "Roboter",
-    "Herz",
-    "Stern",
-    "Mond",
-    "Kreis",
-    "Dreieck",
-    "Quadrat",
-    "Spirale",
-    "Pfeil",
-    "Krone",
-    "Freiheit",
-    "Traum",
-    "Glück",
-    "Liebe",
-    "Freundschaft",
-    "Kraft",
-    "Weisheit",
-    "Zeit",
-    "Geheimnis",
-    "Abenteuer",
-    "Park",
-    "Brunnen",
-    "Denkmal",
-    "Straße",
-    "Fluss",
-    "See",
-    "Berg",
-    "Tal",
-    "Insel",
-    "Höhle",
-    "Wasserfall",
-    "Vulkan",
-    "Wüste",
-    "Dschungel",
-    "Sumpf",
-    "Schlucht",
-    "Schokolade",
-    "Bonbon",
-    "Kuchen",
-    "Honig",
-    "Torte",
-    "Suppe",
-    "Geld",
-    "Münze",
-    "Fahne",
-    "Medaille",
-    "Pokal",
-    "Diplom",
-    "Antenne",
-    "Radio",
-    "Fernseher",
-    "Kopfhörer",
-    "Mikrofon",
-    "Lautsprecher",
-    "Tastatur",
-    "Bildschirm",
-    "Sonnenuntergang",
-    "Sonnenaufgang",
-    "Pfeife",
-    "Glocke",
-    "Trommel",
-    "Flöte",
-    "Trompete",
-    "Geige",
-    "Klavier",
-    "Harfe",
-    "Akkordeon",
-    "Luftballon",
-    "Feuerwerk",
-    "Konfetti",
-    "Band",
-    "Geschenk",
-    "Puzzle",
-    "Würfel",
-    "Karten",
-    "Brettspiel",
-    "Drachen",
-    "Schaukel",
-    "Rutsche",
-    "Trampolin",
-    "Hängematte",
-    "Zelt"
-  ]
-}
+[
+  {
+    "conceptId": "general-cat",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кіт",
+        "antonyms": ["собака"],
+        "synonyms": ["кішка", "кошеня"],
+        "tabooWords": ["мяу", "миша", "вуса", "тварина", "хвіст"],
+        "hint": "Домашня тварина, яка ловить мишей"
+      },
+      "EN": {
+        "word": "Cat",
+        "antonyms": ["dog"],
+        "synonyms": ["feline", "kitty"],
+        "tabooWords": ["meow", "mouse", "whiskers", "animal", "tail"],
+        "hint": "A domestic animal catching mice"
+      },
+      "DE": {
+        "word": "Katze",
+        "antonyms": ["Hund"],
+        "synonyms": ["Kater", "Kätzchen"],
+        "tabooWords": ["Miau", "Maus", "Schnurrhaare", "Tier", "Schwanz"],
+        "hint": "Ein Haustier, das Mäuse fängt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-dog",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Собака",
+        "antonyms": ["кіт", "вовк"],
+        "synonyms": ["пес", "цуценя"],
+        "tabooWords": ["гав", "будка", "кістка", "тварина", "кусати"],
+        "hint": "Найкращий друг людини, який гавкає"
+      },
+      "EN": {
+        "word": "Dog",
+        "antonyms": ["cat", "wolf"],
+        "synonyms": ["hound", "puppy"],
+        "tabooWords": ["bark", "house", "bone", "animal", "bite"],
+        "hint": "Man's best friend that barks"
+      },
+      "DE": {
+        "word": "Hund",
+        "antonyms": ["Katze", "Wolf"],
+        "synonyms": ["Welpe", "Rüde"],
+        "tabooWords": ["bellen", "Hütte", "Knochen", "Tier", "beißen"],
+        "hint": "Der beste Freund des Menschen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-car",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Автомобіль",
+        "antonyms": ["пішохід", "велосипед"],
+        "synonyms": ["машина", "авто"],
+        "tabooWords": ["їхати", "колеса", "кермо", "дорога", "мотор"],
+        "hint": "Транспортний засіб на чотирьох колесах"
+      },
+      "EN": {
+        "word": "Car",
+        "antonyms": ["pedestrian", "bicycle"],
+        "synonyms": ["automobile", "vehicle"],
+        "tabooWords": ["drive", "wheels", "steering", "road", "engine"],
+        "hint": "A four-wheeled transport vehicle"
+      },
+      "DE": {
+        "word": "Auto",
+        "antonyms": ["Fußgänger", "Fahrrad"],
+        "synonyms": ["Wagen", "Fahrzeug"],
+        "tabooWords": ["fahren", "Räder", "Lenkrad", "Straße", "Motor"],
+        "hint": "Ein Fahrzeug mit vier Rädern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-sun",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сонце",
+        "antonyms": ["місяць", "темрява"],
+        "synonyms": ["світило", "зірка"],
+        "tabooWords": ["небо", "жовте", "світити", "гріти", "промінь"],
+        "hint": "Гаряча зірка, що дає світло"
+      },
+      "EN": {
+        "word": "Sun",
+        "antonyms": ["moon", "darkness"],
+        "synonyms": ["star", "light"],
+        "tabooWords": ["sky", "yellow", "shine", "warm", "ray"],
+        "hint": "A hot star giving light"
+      },
+      "DE": {
+        "word": "Sonne",
+        "antonyms": ["Mond", "Dunkelheit"],
+        "synonyms": ["Stern", "Licht"],
+        "tabooWords": ["Himmel", "gelb", "scheinen", "wärmen", "Strahl"],
+        "hint": "Ein heißer Stern, der leuchtet"
+      }
+    }
+  },
+  {
+    "conceptId": "general-sea",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Море",
+        "antonyms": ["суша", "гора"],
+        "synonyms": ["океан", "водойма"],
+        "tabooWords": ["вода", "сіль", "пляж", "плавати", "хвиля"],
+        "hint": "Велика водойма з солоною водою"
+      },
+      "EN": {
+        "word": "Sea",
+        "antonyms": ["land", "mountain"],
+        "synonyms": ["ocean", "water"],
+        "tabooWords": ["water", "salt", "beach", "swim", "wave"],
+        "hint": "A large body of saltwater"
+      },
+      "DE": {
+        "word": "Meer",
+        "antonyms": ["Land", "Berg"],
+        "synonyms": ["Ozean", "See"],
+        "tabooWords": ["Wasser", "Salz", "Strand", "schwimmen", "Welle"],
+        "hint": "Ein großes Gewässer mit Salzwasser"
+      }
+    }
+  },
+  {
+    "conceptId": "general-tree",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Дерево",
+        "antonyms": ["кущ", "трава"],
+        "synonyms": ["рослина", "саджанець"],
+        "tabooWords": ["ліс", "листя", "гілка", "стовбур", "зелене"],
+        "hint": "Велика рослина з дерев'яним стовбуром"
+      },
+      "EN": {
+        "word": "Tree",
+        "antonyms": ["bush", "grass"],
+        "synonyms": ["plant", "sapling"],
+        "tabooWords": ["forest", "leaves", "branch", "trunk", "green"],
+        "hint": "A large plant with a wooden trunk"
+      },
+      "DE": {
+        "word": "Baum",
+        "antonyms": ["Busch", "Gras"],
+        "synonyms": ["Pflanze", "Gewächs"],
+        "tabooWords": ["Wald", "Blätter", "Ast", "Stamm", "grün"],
+        "hint": "Eine große Pflanze mit Holzstamm"
+      }
+    }
+  },
+  {
+    "conceptId": "general-house",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Будинок",
+        "antonyms": ["вулиця"],
+        "synonyms": ["дім", "житло"],
+        "tabooWords": ["жити", "дах", "вікно", "стіна", "квартира"],
+        "hint": "Будівля, в якій живуть люди"
+      },
+      "EN": {
+        "word": "House",
+        "antonyms": ["street"],
+        "synonyms": ["home", "building"],
+        "tabooWords": ["live", "roof", "window", "wall", "apartment"],
+        "hint": "A building where people live"
+      },
+      "DE": {
+        "word": "Haus",
+        "antonyms": ["Straße"],
+        "synonyms": ["Heim", "Gebäude"],
+        "tabooWords": ["leben", "Dach", "Fenster", "Wand", "Wohnung"],
+        "hint": "Ein Gebäude, in dem Menschen leben"
+      }
+    }
+  },
+  {
+    "conceptId": "general-book",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Книга",
+        "antonyms": [],
+        "synonyms": ["видання", "том"],
+        "tabooWords": ["читати", "сторінка", "папір", "літери", "автор"],
+        "hint": "Джерело знань із паперовими сторінками"
+      },
+      "EN": {
+        "word": "Book",
+        "antonyms": [],
+        "synonyms": ["publication", "volume"],
+        "tabooWords": ["read", "page", "paper", "letters", "author"],
+        "hint": "A source of knowledge with pages"
+      },
+      "DE": {
+        "word": "Buch",
+        "antonyms": [],
+        "synonyms": ["Ausgabe", "Band"],
+        "tabooWords": ["lesen", "Seite", "Papier", "Buchstaben", "Autor"],
+        "hint": "Eine Wissensquelle mit Seiten aus Papier"
+      }
+    }
+  },
+  {
+    "conceptId": "general-phone",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Телефон",
+        "antonyms": ["лист"],
+        "synonyms": ["смартфон", "мобільний"],
+        "tabooWords": ["дзвонити", "екран", "зв'язок", "гаджет", "номер"],
+        "hint": "Пристрій для зв'язку на відстані"
+      },
+      "EN": {
+        "word": "Phone",
+        "antonyms": ["letter"],
+        "synonyms": ["smartphone", "mobile"],
+        "tabooWords": ["call", "screen", "connection", "gadget", "number"],
+        "hint": "A device for remote communication"
+      },
+      "DE": {
+        "word": "Telefon",
+        "antonyms": ["Brief"],
+        "synonyms": ["Smartphone", "Handy"],
+        "tabooWords": ["anrufen", "Bildschirm", "Verbindung", "Gerät", "Nummer"],
+        "hint": "Ein Gerät zur Fernkommunikation"
+      }
+    }
+  },
+  {
+    "conceptId": "general-computer",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Комп'ютер",
+        "antonyms": [],
+        "synonyms": ["ПК", "ноутбук"],
+        "tabooWords": ["мишка", "клавіатура", "екран", "інтернет", "грати"],
+        "hint": "Електронна машина для обробки даних"
+      },
+      "EN": {
+        "word": "Computer",
+        "antonyms": [],
+        "synonyms": ["PC", "laptop"],
+        "tabooWords": ["mouse", "keyboard", "screen", "internet", "play"],
+        "hint": "An electronic machine for data processing"
+      },
+      "DE": {
+        "word": "Computer",
+        "antonyms": [],
+        "synonyms": ["PC", "Laptop"],
+        "tabooWords": ["Maus", "Tastatur", "Bildschirm", "Internet", "spielen"],
+        "hint": "Eine elektronische Maschine zur Datenverarbeitung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-airplane",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Літак",
+        "antonyms": ["поїзд", "автомобіль"],
+        "synonyms": ["лайнер", "судно"],
+        "tabooWords": ["небо", "літати", "крила", "пілот", "аеропорт"],
+        "hint": "Повітряне судно для польотів"
+      },
+      "EN": {
+        "word": "Airplane",
+        "antonyms": ["train", "car"],
+        "synonyms": ["jet", "aircraft"],
+        "tabooWords": ["sky", "fly", "wings", "pilot", "airport"],
+        "hint": "An aircraft designed for flying"
+      },
+      "DE": {
+        "word": "Flugzeug",
+        "antonyms": ["Zug", "Auto"],
+        "synonyms": ["Jet", "Flieger"],
+        "tabooWords": ["Himmel", "fliegen", "Flügel", "Pilot", "Flughafen"],
+        "hint": "Ein Luftfahrzeug zum Fliegen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-kyiv",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Київ",
+        "antonyms": ["провінція"],
+        "synonyms": ["столиця"],
+        "tabooWords": ["Україна", "місто", "Дніпро", "каштани", "Хрещатик"],
+        "hint": "Головне місто, столиця України"
+      },
+      "EN": {
+        "word": "Kyiv",
+        "antonyms": ["province"],
+        "synonyms": ["capital"],
+        "tabooWords": ["Ukraine", "city", "Dnipro", "chestnuts", "Khreshchatyk"],
+        "hint": "The main city, capital of Ukraine"
+      },
+      "DE": {
+        "word": "Kiew",
+        "antonyms": ["Provinz"],
+        "synonyms": ["Hauptstadt"],
+        "tabooWords": ["Ukraine", "Stadt", "Dnipro", "Kastanien", "Chreschtschatyk"],
+        "hint": "Die wichtigste Stadt, Hauptstadt der Ukraine"
+      }
+    }
+  },
+  {
+    "conceptId": "general-potato",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Картопля",
+        "antonyms": [],
+        "synonyms": ["бараболя"],
+        "tabooWords": ["їжа", "овоч", "смажити", "пюре", "город"],
+        "hint": "Овоч, з якого роблять пюре"
+      },
+      "EN": {
+        "word": "Potato",
+        "antonyms": [],
+        "synonyms": ["spud", "tater"],
+        "tabooWords": ["food", "vegetable", "fry", "mash", "garden"],
+        "hint": "A vegetable used to make mash"
+      },
+      "DE": {
+        "word": "Kartoffel",
+        "antonyms": [],
+        "synonyms": ["Erdapfel", "Knolle"],
+        "tabooWords": ["Essen", "Gemüse", "braten", "Püree", "Garten"],
+        "hint": "Ein Gemüse, aus dem man Püree macht"
+      }
+    }
+  },
+  {
+    "conceptId": "general-ball",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "М'яч",
+        "antonyms": ["куб", "квадрат"],
+        "synonyms": ["сфера", "куля"],
+        "tabooWords": ["футбол", "грати", "круглий", "кидати", "спорт"],
+        "hint": "Круглий предмет для спортивних ігор"
+      },
+      "EN": {
+        "word": "Ball",
+        "antonyms": ["cube", "square"],
+        "synonyms": ["sphere", "globe"],
+        "tabooWords": ["football", "play", "round", "throw", "sport"],
+        "hint": "A round object for sports games"
+      },
+      "DE": {
+        "word": "Ball",
+        "antonyms": ["Würfel", "Quadrat"],
+        "synonyms": ["Kugel", "Sphäre"],
+        "tabooWords": ["Fußball", "spielen", "rund", "werfen", "Sport"],
+        "hint": "Ein runder Gegenstand für Sportspiele"
+      }
+    }
+  },
+  {
+    "conceptId": "general-guitar",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гітара",
+        "antonyms": ["тиша"],
+        "synonyms": ["інструмент"],
+        "tabooWords": ["музика", "струни", "грати", "акорд", "пісня"],
+        "hint": "Струнний музичний інструмент"
+      },
+      "EN": {
+        "word": "Guitar",
+        "antonyms": ["silence"],
+        "synonyms": ["instrument"],
+        "tabooWords": ["music", "strings", "play", "chord", "song"],
+        "hint": "A stringed musical instrument"
+      },
+      "DE": {
+        "word": "Gitarre",
+        "antonyms": ["Stille"],
+        "synonyms": ["Instrument"],
+        "tabooWords": ["Musik", "Saiten", "spielen", "Akkord", "Lied"],
+        "hint": "Ein Saiteninstrument für Musik"
+      }
+    }
+  },
+  {
+    "conceptId": "general-coffee",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кава",
+        "antonyms": ["чай", "вода"],
+        "synonyms": ["еспресо", "напій"],
+        "tabooWords": ["пити", "ранок", "кофеїн", "чашка", "чорна"],
+        "hint": "Популярний ранковий напій з кофеїном"
+      },
+      "EN": {
+        "word": "Coffee",
+        "antonyms": ["tea", "water"],
+        "synonyms": ["espresso", "drink"],
+        "tabooWords": ["drink", "morning", "caffeine", "cup", "black"],
+        "hint": "A popular morning caffeinated beverage"
+      },
+      "DE": {
+        "word": "Kaffee",
+        "antonyms": ["Tee", "Wasser"],
+        "synonyms": ["Espresso", "Getränk"],
+        "tabooWords": ["trinken", "Morgen", "Koffein", "Tasse", "schwarz"],
+        "hint": "Ein beliebtes morgendliches Getränk mit Koffein"
+      }
+    }
+  },
+  {
+    "conceptId": "general-glasses",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Окуляри",
+        "antonyms": ["сліпота"],
+        "synonyms": ["лінзи"],
+        "tabooWords": ["очі", "бачити", "скло", "зір", "сонце"],
+        "hint": "Прилад для покращення зору"
+      },
+      "EN": {
+        "word": "Glasses",
+        "antonyms": ["blindness"],
+        "synonyms": ["spectacles", "lenses"],
+        "tabooWords": ["eyes", "see", "glass", "vision", "sun"],
+        "hint": "A device to improve eyesight"
+      },
+      "DE": {
+        "word": "Brille",
+        "antonyms": ["Blindheit"],
+        "synonyms": ["Linsen", "Sehhilfe"],
+        "tabooWords": ["Augen", "sehen", "Glas", "Sicht", "Sonne"],
+        "hint": "Ein Gerät zur Verbesserung der Sehkraft"
+      }
+    }
+  },
+  {
+    "conceptId": "general-backpack",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Рюкзак",
+        "antonyms": ["кишеня"],
+        "synonyms": ["наплічник", "сумка"],
+        "tabooWords": ["спина", "носити", "речі", "школа", "похід"],
+        "hint": "Сумка, яку носять на спині"
+      },
+      "EN": {
+        "word": "Backpack",
+        "antonyms": ["pocket"],
+        "synonyms": ["knapsack", "bag"],
+        "tabooWords": ["back", "carry", "things", "school", "hike"],
+        "hint": "A bag carried on the back"
+      },
+      "DE": {
+        "word": "Rucksack",
+        "antonyms": ["Tasche"],
+        "synonyms": ["Ranzen", "Gepäck"],
+        "tabooWords": ["Rücken", "tragen", "Sachen", "Schule", "wandern"],
+        "hint": "Eine Tasche, die man auf dem Rücken trägt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bridge",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Міст",
+        "antonyms": ["прірва", "стіна"],
+        "synonyms": ["переправа", "віадук"],
+        "tabooWords": ["річка", "перехід", "вода", "берег", "з'єднувати"],
+        "hint": "Споруда для переходу через перешкоду"
+      },
+      "EN": {
+        "word": "Bridge",
+        "antonyms": ["abyss", "wall"],
+        "synonyms": ["crossing", "viaduct"],
+        "tabooWords": ["river", "cross", "water", "bank", "connect"],
+        "hint": "A structure to cross an obstacle"
+      },
+      "DE": {
+        "word": "Brücke",
+        "antonyms": ["Abgrund", "Mauer"],
+        "synonyms": ["Übergang", "Viadukt"],
+        "tabooWords": ["Fluss", "überqueren", "Wasser", "Ufer", "verbinden"],
+        "hint": "Ein Bauwerk zur Überquerung eines Hindernisses"
+      }
+    }
+  },
+  {
+    "conceptId": "general-clock",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Годинник",
+        "antonyms": ["вічність"],
+        "synonyms": ["хронометр", "будильник"],
+        "tabooWords": ["час", "стрілка", "рука", "хвилина", "механізм"],
+        "hint": "Прилад для вимірювання часу"
+      },
+      "EN": {
+        "word": "Clock",
+        "antonyms": ["eternity"],
+        "synonyms": ["watch", "timepiece"],
+        "tabooWords": ["time", "hands", "wrist", "minute", "mechanism"],
+        "hint": "A device for measuring time"
+      },
+      "DE": {
+        "word": "Uhr",
+        "antonyms": ["Ewigkeit"],
+        "synonyms": ["Chronometer", "Wecker"],
+        "tabooWords": ["Zeit", "Zeiger", "Arm", "Minute", "Mechanismus"],
+        "hint": "Ein Gerät zur Zeitmessung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-window",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вікно",
+        "antonyms": ["стіна", "підлога"],
+        "synonyms": ["шибка", "ілюмінатор"],
+        "tabooWords": ["скло", "дивитися", "рама", "будинок", "світло"],
+        "hint": "Отвір у стіні для світла"
+      },
+      "EN": {
+        "word": "Window",
+        "antonyms": ["wall", "floor"],
+        "synonyms": ["pane", "porthole"],
+        "tabooWords": ["glass", "look", "frame", "house", "light"],
+        "hint": "An opening in a wall for light"
+      },
+      "DE": {
+        "word": "Fenster",
+        "antonyms": ["Wand", "Boden"],
+        "synonyms": ["Scheibe", "Luke"],
+        "tabooWords": ["Glas", "schauen", "Rahmen", "Haus", "Licht"],
+        "hint": "Eine Öffnung in der Wand für Licht"
+      }
+    }
+  },
+  {
+    "conceptId": "general-door",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Двері",
+        "antonyms": ["стіна", "вікно"],
+        "synonyms": ["вхід", "ворота"],
+        "tabooWords": ["виходити", "кімната", "закривати", "відкривати", "ручка"],
+        "hint": "Вхід або вихід із кімнати"
+      },
+      "EN": {
+        "word": "Door",
+        "antonyms": ["wall", "window"],
+        "synonyms": ["entrance", "gate"],
+        "tabooWords": ["exit", "room", "close", "open", "handle"],
+        "hint": "An entry or exit to a room"
+      },
+      "DE": {
+        "word": "Tür",
+        "antonyms": ["Wand", "Fenster"],
+        "synonyms": ["Eingang", "Tor"],
+        "tabooWords": ["hinausgehen", "Zimmer", "schließen", "öffnen", "Griff"],
+        "hint": "Ein Ein- oder Ausgang eines Raumes"
+      }
+    }
+  },
+  {
+    "conceptId": "general-lamp",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лампа",
+        "antonyms": ["темрява", "ніч"],
+        "synonyms": ["світильник", "ліхтар"],
+        "tabooWords": ["світло", "світити", "електрика", "стіл", "люстра"],
+        "hint": "Пристрій для штучного освітлення"
+      },
+      "EN": {
+        "word": "Lamp",
+        "antonyms": ["darkness", "night"],
+        "synonyms": ["lightbulb", "lantern"],
+        "tabooWords": ["light", "shine", "electricity", "table", "chandelier"],
+        "hint": "A device for artificial lighting"
+      },
+      "DE": {
+        "word": "Lampe",
+        "antonyms": ["Dunkelheit", "Nacht"],
+        "synonyms": ["Leuchte", "Laterne"],
+        "tabooWords": ["Licht", "leuchten", "Strom", "Tisch", "Kronleuchter"],
+        "hint": "Ein Gerät zur künstlichen Beleuchtung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-table",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Стіл",
+        "antonyms": ["підлога"],
+        "synonyms": ["парта", "столик"],
+        "tabooWords": ["їсти", "меблі", "дерево", "стілець", "поверхня"],
+        "hint": "Меблі з плоскою горизонтальною поверхнею"
+      },
+      "EN": {
+        "word": "Table",
+        "antonyms": ["floor"],
+        "synonyms": ["desk", "counter"],
+        "tabooWords": ["eat", "furniture", "wood", "chair", "surface"],
+        "hint": "Furniture with a flat horizontal surface"
+      },
+      "DE": {
+        "word": "Tisch",
+        "antonyms": ["Boden"],
+        "synonyms": ["Pult", "Theke"],
+        "tabooWords": ["essen", "Möbel", "Holz", "Stuhl", "Oberfläche"],
+        "hint": "Möbelstück mit einer flachen horizontalen Oberfläche"
+      }
+    }
+  },
+  {
+    "conceptId": "general-chair",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Стілець",
+        "antonyms": ["стіл", "ліжко"],
+        "synonyms": ["крісло", "табуретка"],
+        "tabooWords": ["сидіти", "спинка", "ніжки", "меблі", "людина"],
+        "hint": "Предмет меблів для сидіння"
+      },
+      "EN": {
+        "word": "Chair",
+        "antonyms": ["table", "bed"],
+        "synonyms": ["seat", "stool"],
+        "tabooWords": ["sit", "back", "legs", "furniture", "person"],
+        "hint": "A piece of furniture for sitting"
+      },
+      "DE": {
+        "word": "Stuhl",
+        "antonyms": ["Tisch", "Bett"],
+        "synonyms": ["Sessel", "Hocker"],
+        "tabooWords": ["sitzen", "Lehne", "Beine", "Möbel", "Person"],
+        "hint": "Ein Möbelstück zum Sitzen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bed",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ліжко",
+        "antonyms": ["робота", "стілець"],
+        "synonyms": ["постіль", "диван"],
+        "tabooWords": ["спати", "подушка", "ковдра", "матрац", "ніч"],
+        "hint": "Меблі для сну і відпочинку"
+      },
+      "EN": {
+        "word": "Bed",
+        "antonyms": ["work", "chair"],
+        "synonyms": ["cot", "sofa"],
+        "tabooWords": ["sleep", "pillow", "blanket", "mattress", "night"],
+        "hint": "Furniture for sleeping and resting"
+      },
+      "DE": {
+        "word": "Bett",
+        "antonyms": ["Arbeit", "Stuhl"],
+        "synonyms": ["Schlafplatz", "Sofa"],
+        "tabooWords": ["schlafen", "Kissen", "Decke", "Matratze", "Nacht"],
+        "hint": "Ein Möbelstück zum Schlafen und Ausruhen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-mirror",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Дзеркало",
+        "antonyms": ["стіна", "картина"],
+        "synonyms": ["люстерко", "відбивач"],
+        "tabooWords": ["відображення", "дивитися", "скло", "обличчя", "краса"],
+        "hint": "Скляна поверхня, що відбиває зображення"
+      },
+      "EN": {
+        "word": "Mirror",
+        "antonyms": ["wall", "painting"],
+        "synonyms": ["looking-glass", "reflector"],
+        "tabooWords": ["reflection", "look", "glass", "face", "beauty"],
+        "hint": "A glass surface that reflects images"
+      },
+      "DE": {
+        "word": "Spiegel",
+        "antonyms": ["Wand", "Gemälde"],
+        "synonyms": ["Handspiegel", "Reflektor"],
+        "tabooWords": ["Spiegelbild", "schauen", "Glas", "Gesicht", "Schönheit"],
+        "hint": "Eine Glasoberfläche, die Bilder reflektiert"
+      }
+    }
+  },
+  {
+    "conceptId": "general-key",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ключ",
+        "antonyms": ["замок"],
+        "synonyms": ["відмичка"],
+        "tabooWords": ["двері", "відкривати", "закривати", "метал", "брелок"],
+        "hint": "Інструмент для відкривання замків"
+      },
+      "EN": {
+        "word": "Key",
+        "antonyms": ["lock"],
+        "synonyms": ["opener"],
+        "tabooWords": ["door", "open", "close", "metal", "keychain"],
+        "hint": "A tool used for opening locks"
+      },
+      "DE": {
+        "word": "Schlüssel",
+        "antonyms": ["Schloss"],
+        "synonyms": ["Dietrich"],
+        "tabooWords": ["Tür", "öffnen", "schließen", "Metall", "Anhänger"],
+        "hint": "Ein Werkzeug zum Öffnen von Schlössern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-lock",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Замок",
+        "antonyms": ["ключ", "отвір"],
+        "synonyms": ["засув", "колодка"],
+        "tabooWords": ["безпека", "двері", "закривати", "метал", "відкривати"],
+        "hint": "Пристрій для замикання дверей"
+      },
+      "EN": {
+        "word": "Lock",
+        "antonyms": ["key", "opening"],
+        "synonyms": ["padlock", "bolt"],
+        "tabooWords": ["security", "door", "close", "metal", "open"],
+        "hint": "A device used to secure doors"
+      },
+      "DE": {
+        "word": "Schloss",
+        "antonyms": ["Schlüssel", "Öffnung"],
+        "synonyms": ["Vorhängeschloss", "Riegel"],
+        "tabooWords": ["Sicherheit", "Tür", "schließen", "Metall", "öffnen"],
+        "hint": "Ein Gerät zum Sichern von Türen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-umbrella",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Парасолька",
+        "antonyms": ["сонце", "посуха"],
+        "synonyms": ["зонтик", "тент"],
+        "tabooWords": ["дощ", "вода", "ховатися", "осінь", "краплі"],
+        "hint": "Річ, що захищає від дощу"
+      },
+      "EN": {
+        "word": "Umbrella",
+        "antonyms": ["sun", "drought"],
+        "synonyms": ["parasol", "canopy"],
+        "tabooWords": ["rain", "water", "hide", "autumn", "drops"],
+        "hint": "An item that protects from rain"
+      },
+      "DE": {
+        "word": "Regenschirm",
+        "antonyms": ["Sonne", "Dürre"],
+        "synonyms": ["Sonnenschirm", "Baldachin"],
+        "tabooWords": ["Regen", "Wasser", "verstecken", "Herbst", "Tropfen"],
+        "hint": "Ein Gegenstand, der vor Regen schützt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-blanket",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ковдра",
+        "antonyms": ["холод", "мороз"],
+        "synonyms": ["плед", "покривало"],
+        "tabooWords": ["спати", "тепло", "ліжко", "вкриватися", "зима"],
+        "hint": "Тепле покривало для сну"
+      },
+      "EN": {
+        "word": "Blanket",
+        "antonyms": ["cold", "frost"],
+        "synonyms": ["throw", "quilt"],
+        "tabooWords": ["sleep", "warm", "bed", "cover", "winter"],
+        "hint": "A warm cover used for sleeping"
+      },
+      "DE": {
+        "word": "Decke",
+        "antonyms": ["Kälte", "Frost"],
+        "synonyms": ["Plaid", "Überwurf"],
+        "tabooWords": ["schlafen", "warm", "Bett", "zudecken", "Winter"],
+        "hint": "Eine warme Abdeckung zum Schlafen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pillow",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Подушка",
+        "antonyms": [],
+        "synonyms": ["підголівник"],
+        "tabooWords": ["спати", "ліжко", "голова", "м'яка", "ковдра"],
+        "hint": "М'яка річ для сну під голову"
+      },
+      "EN": {
+        "word": "Pillow",
+        "antonyms": [],
+        "synonyms": ["cushion"],
+        "tabooWords": ["sleep", "bed", "head", "soft", "blanket"],
+        "hint": "A soft thing to sleep on"
+      },
+      "DE": {
+        "word": "Kissen",
+        "antonyms": [],
+        "synonyms": ["Polster"],
+        "tabooWords": ["schlafen", "Bett", "Kopf", "weich", "Decke"],
+        "hint": "Ein weiches Ding zum Schlafen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cup",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Чашка",
+        "antonyms": [],
+        "synonyms": ["кухля", "горнятко"],
+        "tabooWords": ["пити", "чай", "кава", "ручка", "напій"],
+        "hint": "Посуд для гарячих напоїв"
+      },
+      "EN": {
+        "word": "Cup",
+        "antonyms": [],
+        "synonyms": ["mug"],
+        "tabooWords": ["drink", "tea", "coffee", "handle", "beverage"],
+        "hint": "A vessel for hot drinks"
+      },
+      "DE": {
+        "word": "Tasse",
+        "antonyms": [],
+        "synonyms": ["Becher"],
+        "tabooWords": ["trinken", "Tee", "Kaffee", "Griff", "Getränk"],
+        "hint": "Gefäß für heiße Getränke"
+      }
+    }
+  },
+  {
+    "conceptId": "general-plate",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Тарілка",
+        "antonyms": [],
+        "synonyms": ["миска"],
+        "tabooWords": ["їсти", "суп", "посуд", "кругла", "їжа"],
+        "hint": "Плоский посуд для подачі їжі"
+      },
+      "EN": {
+        "word": "Plate",
+        "antonyms": [],
+        "synonyms": ["dish"],
+        "tabooWords": ["eat", "soup", "dishes", "round", "food"],
+        "hint": "Flat dish for serving food"
+      },
+      "DE": {
+        "word": "Teller",
+        "antonyms": [],
+        "synonyms": ["Schüssel"],
+        "tabooWords": ["essen", "Suppe", "Geschirr", "rund", "Nahrung"],
+        "hint": "Flaches Geschirr zum Servieren"
+      }
+    }
+  },
+  {
+    "conceptId": "general-spoon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ложка",
+        "antonyms": ["виделка"],
+        "synonyms": [],
+        "tabooWords": ["їсти", "суп", "рот", "метал", "мішати"],
+        "hint": "Столовий прилад для рідкої їжі"
+      },
+      "EN": {
+        "word": "Spoon",
+        "antonyms": ["fork"],
+        "synonyms": [],
+        "tabooWords": ["eat", "soup", "mouth", "metal", "stir"],
+        "hint": "Cutlery used for liquid food"
+      },
+      "DE": {
+        "word": "Löffel",
+        "antonyms": ["Gabel"],
+        "synonyms": [],
+        "tabooWords": ["essen", "Suppe", "Mund", "Metall", "rühren"],
+        "hint": "Besteck für flüssige Speisen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fork",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Виделка",
+        "antonyms": ["ложка"],
+        "synonyms": [],
+        "tabooWords": ["їсти", "зуби", "наколювати", "метал", "макарони"],
+        "hint": "Прилад із зубцями для їжі"
+      },
+      "EN": {
+        "word": "Fork",
+        "antonyms": ["spoon"],
+        "synonyms": [],
+        "tabooWords": ["eat", "teeth", "stab", "metal", "pasta"],
+        "hint": "An eating utensil with prongs"
+      },
+      "DE": {
+        "word": "Gabel",
+        "antonyms": ["Löffel"],
+        "synonyms": [],
+        "tabooWords": ["essen", "Zähne", "stechen", "Metall", "Nudeln"],
+        "hint": "Ein Besteckteil mit Zinken"
+      }
+    }
+  },
+  {
+    "conceptId": "general-knife",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ніж",
+        "antonyms": [],
+        "synonyms": ["клинок"],
+        "tabooWords": ["різати", "гострий", "хліб", "виделка", "лезо"],
+        "hint": "Гострий інструмент для різання"
+      },
+      "EN": {
+        "word": "Knife",
+        "antonyms": [],
+        "synonyms": ["blade"],
+        "tabooWords": ["cut", "sharp", "bread", "fork", "edge"],
+        "hint": "A sharp tool for cutting"
+      },
+      "DE": {
+        "word": "Messer",
+        "antonyms": [],
+        "synonyms": ["Klinge"],
+        "tabooWords": ["schneiden", "scharf", "Brot", "Gabel", "Schneide"],
+        "hint": "Ein scharfes Werkzeug zum Schneiden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bottle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пляшка",
+        "antonyms": [],
+        "synonyms": ["бутиль"],
+        "tabooWords": ["вода", "пити", "скло", "пластик", "кришка"],
+        "hint": "Посудина з вузьким горлечком"
+      },
+      "EN": {
+        "word": "Bottle",
+        "antonyms": [],
+        "synonyms": ["flask"],
+        "tabooWords": ["water", "drink", "glass", "plastic", "cap"],
+        "hint": "A container with a narrow neck"
+      },
+      "DE": {
+        "word": "Flasche",
+        "antonyms": [],
+        "synonyms": ["Behälter"],
+        "tabooWords": ["Wasser", "trinken", "Glas", "Plastik", "Deckel"],
+        "hint": "Ein Gefäß mit engem Hals"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bag",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сумка",
+        "antonyms": [],
+        "synonyms": ["торба"],
+        "tabooWords": ["носити", "речі", "ручки", "шкіра", "плече"],
+        "hint": "Аксесуар для перенесення речей"
+      },
+      "EN": {
+        "word": "Bag",
+        "antonyms": [],
+        "synonyms": ["sack"],
+        "tabooWords": ["carry", "things", "handles", "leather", "shoulder"],
+        "hint": "An accessory for carrying items"
+      },
+      "DE": {
+        "word": "Tasche",
+        "antonyms": [],
+        "synonyms": ["Beutel"],
+        "tabooWords": ["tragen", "Sachen", "Griffe", "Leder", "Schulter"],
+        "hint": "Ein Accessoire zum Tragen von Dingen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-wallet",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гаманець",
+        "antonyms": [],
+        "synonyms": ["портмоне"],
+        "tabooWords": ["гроші", "картки", "шкіра", "кишеня", "платити"],
+        "hint": "Маленька сумочка для зберігання грошей"
+      },
+      "EN": {
+        "word": "Wallet",
+        "antonyms": [],
+        "synonyms": ["purse"],
+        "tabooWords": ["money", "cards", "leather", "pocket", "pay"],
+        "hint": "A small case for keeping money"
+      },
+      "DE": {
+        "word": "Geldbeutel",
+        "antonyms": [],
+        "synonyms": ["Portemonnaie"],
+        "tabooWords": ["Geld", "Karten", "Leder", "Tasche", "bezahlen"],
+        "hint": "Ein kleines Etui für Geld"
+      }
+    }
+  },
+  {
+    "conceptId": "general-notebook",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Зошит",
+        "antonyms": [],
+        "synonyms": ["блокнот"],
+        "tabooWords": ["писати", "школа", "папір", "клітинка", "ручка"],
+        "hint": "Зшиті аркуші паперу для записів"
+      },
+      "EN": {
+        "word": "Notebook",
+        "antonyms": [],
+        "synonyms": ["notepad"],
+        "tabooWords": ["write", "school", "paper", "grid", "pen"],
+        "hint": "Bound pages used for writing"
+      },
+      "DE": {
+        "word": "Heft",
+        "antonyms": [],
+        "synonyms": ["Notizbuch"],
+        "tabooWords": ["schreiben", "Schule", "Papier", "Kästchen", "Stift"],
+        "hint": "Gebundene Blätter zum Schreiben"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pencil",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Олівець",
+        "antonyms": ["ручка"],
+        "synonyms": [],
+        "tabooWords": ["малювати", "писати", "гумка", "дерево", "графіт"],
+        "hint": "Дерев'яний інструмент для малювання"
+      },
+      "EN": {
+        "word": "Pencil",
+        "antonyms": ["pen"],
+        "synonyms": [],
+        "tabooWords": ["draw", "write", "eraser", "wood", "graphite"],
+        "hint": "A wooden tool for drawing"
+      },
+      "DE": {
+        "word": "Bleistift",
+        "antonyms": ["Kugelschreiber"],
+        "synonyms": [],
+        "tabooWords": ["zeichnen", "schreiben", "Radiergummi", "Holz", "Grafit"],
+        "hint": "Ein hölzernes Werkzeug zum Zeichnen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pen",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ручка",
+        "antonyms": ["олівець"],
+        "synonyms": ["перо"],
+        "tabooWords": ["писати", "папір", "синя", "чорнило", "зошит"],
+        "hint": "Інструмент із чорнилом для письма"
+      },
+      "EN": {
+        "word": "Pen",
+        "antonyms": ["pencil"],
+        "synonyms": ["quill"],
+        "tabooWords": ["write", "paper", "blue", "ink", "notebook"],
+        "hint": "A tool with ink for writing"
+      },
+      "DE": {
+        "word": "Kugelschreiber",
+        "antonyms": ["Bleistift"],
+        "synonyms": ["Stift"],
+        "tabooWords": ["schreiben", "Papier", "blau", "Tinte", "Heft"],
+        "hint": "Ein Werkzeug mit Tinte zum Schreiben"
+      }
+    }
+  },
+  {
+    "conceptId": "general-paper",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Папір",
+        "antonyms": [],
+        "synonyms": ["аркуш"],
+        "tabooWords": ["писати", "білий", "зошит", "принтер", "дерево"],
+        "hint": "Матеріал для письма або друку"
+      },
+      "EN": {
+        "word": "Paper",
+        "antonyms": [],
+        "synonyms": ["sheet"],
+        "tabooWords": ["write", "white", "notebook", "printer", "tree"],
+        "hint": "Material for writing or printing"
+      },
+      "DE": {
+        "word": "Papier",
+        "antonyms": [],
+        "synonyms": ["Blatt"],
+        "tabooWords": ["schreiben", "weiß", "Heft", "Drucker", "Baum"],
+        "hint": "Material zum Schreiben oder Drucken"
+      }
+    }
+  },
+  {
+    "conceptId": "general-scissors",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ножиці",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["різати", "папір", "два", "гострі", "перукар"],
+        "hint": "Інструмент для розрізання паперу"
+      },
+      "EN": {
+        "word": "Scissors",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["cut", "paper", "two", "sharp", "hairdresser"],
+        "hint": "A tool for cutting paper"
+      },
+      "DE": {
+        "word": "Schere",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["schneiden", "Papier", "zwei", "scharf", "Friseur"],
+        "hint": "Ein Werkzeug zum Papierschneiden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-glue",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Клей",
+        "antonyms": [],
+        "synonyms": ["паста"],
+        "tabooWords": ["липкий", "папір", "з'єднувати", "мазати", "тюбик"],
+        "hint": "Речовина для з'єднання деталей"
+      },
+      "EN": {
+        "word": "Glue",
+        "antonyms": [],
+        "synonyms": ["adhesive"],
+        "tabooWords": ["sticky", "paper", "connect", "spread", "tube"],
+        "hint": "A substance for joining things together"
+      },
+      "DE": {
+        "word": "Kleber",
+        "antonyms": [],
+        "synonyms": ["Klebstoff"],
+        "tabooWords": ["klebrig", "Papier", "verbinden", "schmieren", "Tube"],
+        "hint": "Eine Substanz zum Verbinden von Teilen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-ruler",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лінійка",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["вимірювати", "довжина", "сантиметр", "пряма", "школа"],
+        "hint": "Інструмент для проведення прямих ліній"
+      },
+      "EN": {
+        "word": "Ruler",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["measure", "length", "centimeter", "straight", "school"],
+        "hint": "A tool to draw straight lines"
+      },
+      "DE": {
+        "word": "Lineal",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["messen", "Länge", "Zentimeter", "gerade", "Schule"],
+        "hint": "Ein Werkzeug, um gerade Linien zu ziehen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-paints",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Фарби",
+        "antonyms": [],
+        "synonyms": ["акварель", "гуаш"],
+        "tabooWords": ["малювати", "колір", "пензлик", "вода", "картина"],
+        "hint": "Матеріал для створення кольорових малюнків"
+      },
+      "EN": {
+        "word": "Paints",
+        "antonyms": [],
+        "synonyms": ["watercolor"],
+        "tabooWords": ["draw", "color", "brush", "water", "picture"],
+        "hint": "Material to create colorful drawings"
+      },
+      "DE": {
+        "word": "Farben",
+        "antonyms": [],
+        "synonyms": ["Aquarell"],
+        "tabooWords": ["malen", "Farbe", "Pinsel", "Wasser", "Bild"],
+        "hint": "Material zum Erstellen bunter Zeichnungen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-brush",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пензлик",
+        "antonyms": [],
+        "synonyms": ["щітка"],
+        "tabooWords": ["малювати", "фарби", "волосся", "художник", "картина"],
+        "hint": "Інструмент для нанесення фарби"
+      },
+      "EN": {
+        "word": "Brush",
+        "antonyms": [],
+        "synonyms": ["paintbrush"],
+        "tabooWords": ["draw", "paints", "hair", "artist", "picture"],
+        "hint": "A tool for applying paint"
+      },
+      "DE": {
+        "word": "Pinsel",
+        "antonyms": [],
+        "synonyms": ["Borste"],
+        "tabooWords": ["malen", "Farben", "Haar", "Künstler", "Bild"],
+        "hint": "Ein Werkzeug zum Auftragen von Farbe"
+      }
+    }
+  },
+  {
+    "conceptId": "general-calculator",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Калькулятор",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["рахувати", "математика", "цифри", "множити", "кнопки"],
+        "hint": "Пристрій для математичних обчислень"
+      },
+      "EN": {
+        "word": "Calculator",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["count", "math", "numbers", "multiply", "buttons"],
+        "hint": "A device for mathematical calculations"
+      },
+      "DE": {
+        "word": "Taschenrechner",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["rechnen", "Mathe", "Zahlen", "multiplizieren", "Tasten"],
+        "hint": "Ein Gerät für mathematische Berechnungen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bicycle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Велосипед",
+        "antonyms": ["автомобіль"],
+        "synonyms": ["велик"],
+        "tabooWords": ["крутити", "педалі", "два", "їхати", "колеса"],
+        "hint": "Двоколісний транспорт без мотора"
+      },
+      "EN": {
+        "word": "Bicycle",
+        "antonyms": ["car"],
+        "synonyms": ["bike"],
+        "tabooWords": ["spin", "pedals", "two", "ride", "wheels"],
+        "hint": "A two-wheeled transport without a motor"
+      },
+      "DE": {
+        "word": "Fahrrad",
+        "antonyms": ["Auto"],
+        "synonyms": ["Rad"],
+        "tabooWords": ["treten", "Pedale", "zwei", "fahren", "Räder"],
+        "hint": "Ein Zweirad ohne Motor"
+      }
+    }
+  },
+  {
+    "conceptId": "general-motorcycle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Мотоцикл",
+        "antonyms": [],
+        "synonyms": ["байк"],
+        "tabooWords": ["шолом", "швидкість", "мотор", "два", "колеса"],
+        "hint": "Швидкий двоколісний транспорт із мотором"
+      },
+      "EN": {
+        "word": "Motorcycle",
+        "antonyms": [],
+        "synonyms": ["motorbike"],
+        "tabooWords": ["helmet", "speed", "engine", "two", "wheels"],
+        "hint": "A fast two-wheeled transport with a motor"
+      },
+      "DE": {
+        "word": "Motorrad",
+        "antonyms": [],
+        "synonyms": ["Bike"],
+        "tabooWords": ["Helm", "Geschwindigkeit", "Motor", "zwei", "Räder"],
+        "hint": "Ein schnelles Zweirad mit Motor"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bus",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Автобус",
+        "antonyms": [],
+        "synonyms": ["маршрутка"],
+        "tabooWords": ["пасажири", "транспорт", "зупинка", "квиток", "великий"],
+        "hint": "Великий громадський транспорт на колесах"
+      },
+      "EN": {
+        "word": "Bus",
+        "antonyms": [],
+        "synonyms": ["coach"],
+        "tabooWords": ["passengers", "transport", "stop", "ticket", "big"],
+        "hint": "Large public transport on wheels"
+      },
+      "DE": {
+        "word": "Bus",
+        "antonyms": [],
+        "synonyms": ["Reisebus"],
+        "tabooWords": ["Passagiere", "Transport", "Haltestelle", "Ticket", "groß"],
+        "hint": "Großes öffentliches Verkehrsmittel auf Rädern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-tram",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Трамвай",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["рейки", "місто", "транспорт", "дроти", "зупинка"],
+        "hint": "Міський транспорт, що їздить рейками"
+      },
+      "EN": {
+        "word": "Tram",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["rails", "city", "transport", "wires", "stop"],
+        "hint": "Urban transport running on rails"
+      },
+      "DE": {
+        "word": "Straßenbahn",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Schienen", "Stadt", "Transport", "Drähte", "Haltestelle"],
+        "hint": "Städtisches Verkehrsmittel auf Schienen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-subway",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Метро",
+        "antonyms": [],
+        "synonyms": ["підземка"],
+        "tabooWords": ["під", "земля", "потяг", "станція", "швидко"],
+        "hint": "Швидкісний підземний громадський транспорт"
+      },
+      "EN": {
+        "word": "Subway",
+        "antonyms": [],
+        "synonyms": ["underground"],
+        "tabooWords": ["under", "ground", "train", "station", "fast"],
+        "hint": "High-speed underground public transport"
+      },
+      "DE": {
+        "word": "U-Bahn",
+        "antonyms": [],
+        "synonyms": ["Metro"],
+        "tabooWords": ["unter", "Erde", "Zug", "Station", "schnell"],
+        "hint": "Schnelles unterirdisches öffentliches Verkehrsmittel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-taxi",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Таксі",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["автомобіль", "платити", "водій", "викликати", "шашечки"],
+        "hint": "Автомобіль для платного перевезення пасажирів"
+      },
+      "EN": {
+        "word": "Taxi",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["car", "pay", "driver", "call", "checkers"],
+        "hint": "A car for paid passenger transport"
+      },
+      "DE": {
+        "word": "Taxi",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Auto", "bezahlen", "Fahrer", "rufen", "Karos"],
+        "hint": "Ein Auto zur kostenpflichtigen Personenbeförderung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-train",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Потяг",
+        "antonyms": ["літак"],
+        "synonyms": ["поїзд"],
+        "tabooWords": ["рейки", "вокзал", "вагони", "їхати", "квиток"],
+        "hint": "Довгий транспорт із багатьма вагонами"
+      },
+      "EN": {
+        "word": "Train",
+        "antonyms": ["airplane"],
+        "synonyms": ["locomotive"],
+        "tabooWords": ["rails", "station", "wagons", "ride", "ticket"],
+        "hint": "A long transport with many wagons"
+      },
+      "DE": {
+        "word": "Zug",
+        "antonyms": ["Flugzeug"],
+        "synonyms": ["Bahn"],
+        "tabooWords": ["Schienen", "Bahnhof", "Waggons", "fahren", "Ticket"],
+        "hint": "Ein langes Verkehrsmittel mit vielen Waggons"
+      }
+    }
+  },
+  {
+    "conceptId": "general-ship",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Корабель",
+        "antonyms": [],
+        "synonyms": ["судно"],
+        "tabooWords": ["море", "плавати", "вода", "капітан", "порт"],
+        "hint": "Великий водний транспортний засіб"
+      },
+      "EN": {
+        "word": "Ship",
+        "antonyms": [],
+        "synonyms": ["vessel"],
+        "tabooWords": ["sea", "swim", "water", "captain", "port"],
+        "hint": "A large water transport vehicle"
+      },
+      "DE": {
+        "word": "Schiff",
+        "antonyms": [],
+        "synonyms": ["Boot"],
+        "tabooWords": ["Meer", "schwimmen", "Wasser", "Kapitän", "Hafen"],
+        "hint": "Ein großes Wasserfahrzeug"
+      }
+    }
+  },
+  {
+    "conceptId": "general-rocket",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Ракета",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["космос", "летіти", "вогонь", "зірки", "астронавт"],
+        "hint": "Транспорт для польотів у космос"
+      },
+      "EN": {
+        "word": "Rocket",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["space", "fly", "fire", "stars", "astronaut"],
+        "hint": "Transport vehicle for space flights"
+      },
+      "DE": {
+        "word": "Rakete",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Weltraum", "fliegen", "Feuer", "Sterne", "Astronaut"],
+        "hint": "Ein Transportmittel für Raumflüge"
+      }
+    }
+  },
+  {
+    "conceptId": "general-helicopter",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Гелікоптер",
+        "antonyms": [],
+        "synonyms": ["вертоліт"],
+        "tabooWords": ["літати", "небо", "лопаті", "пропелер", "пілот"],
+        "hint": "Повітряний транспорт із гвинтом зверху"
+      },
+      "EN": {
+        "word": "Helicopter",
+        "antonyms": [],
+        "synonyms": ["chopper"],
+        "tabooWords": ["fly", "sky", "blades", "propeller", "pilot"],
+        "hint": "Air transport with a top rotor"
+      },
+      "DE": {
+        "word": "Hubschrauber",
+        "antonyms": [],
+        "synonyms": ["Heli"],
+        "tabooWords": ["fliegen", "Himmel", "Rotorblätter", "Propeller", "Pilot"],
+        "hint": "Ein Luftfahrzeug mit Rotor oben"
+      }
+    }
+  },
+  {
+    "conceptId": "general-school",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Школа",
+        "antonyms": ["канікули"],
+        "synonyms": ["навчальний заклад"],
+        "tabooWords": ["вчитель", "учні", "уроки", "клас", "парта"],
+        "hint": "Заклад, де діти здобувають освіту"
+      },
+      "EN": {
+        "word": "School",
+        "antonyms": ["holidays"],
+        "synonyms": ["academy"],
+        "tabooWords": ["teacher", "students", "lessons", "class", "desk"],
+        "hint": "An institution where children get education"
+      },
+      "DE": {
+        "word": "Schule",
+        "antonyms": ["Ferien"],
+        "synonyms": ["Bildungsstätte"],
+        "tabooWords": ["Lehrer", "Schüler", "Unterricht", "Klasse", "Pult"],
+        "hint": "Eine Einrichtung, wo Kinder Bildung erhalten"
+      }
+    }
+  },
+  {
+    "conceptId": "general-university",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Університет",
+        "antonyms": [],
+        "synonyms": ["інститут", "ВНЗ"],
+        "tabooWords": ["студент", "професор", "лекція", "сесія", "диплом"],
+        "hint": "Заклад для здобуття вищої освіти"
+      },
+      "EN": {
+        "word": "University",
+        "antonyms": [],
+        "synonyms": ["college"],
+        "tabooWords": ["student", "professor", "lecture", "exams", "diploma"],
+        "hint": "An institution for higher education"
+      },
+      "DE": {
+        "word": "Universität",
+        "antonyms": [],
+        "synonyms": ["Hochschule"],
+        "tabooWords": ["Student", "Professor", "Vorlesung", "Prüfung", "Diplom"],
+        "hint": "Eine Einrichtung für Hochschulbildung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-hospital",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лікарня",
+        "antonyms": [],
+        "synonyms": ["шпиталь", "клініка"],
+        "tabooWords": ["лікар", "хворий", "лікувати", "медицина", "палата"],
+        "hint": "Медичний заклад для лікування пацієнтів"
+      },
+      "EN": {
+        "word": "Hospital",
+        "antonyms": [],
+        "synonyms": ["clinic", "infirmary"],
+        "tabooWords": ["doctor", "sick", "treat", "medicine", "ward"],
+        "hint": "A medical facility for treatment"
+      },
+      "DE": {
+        "word": "Krankenhaus",
+        "antonyms": [],
+        "synonyms": ["Klinik", "Spital"],
+        "tabooWords": ["Arzt", "krank", "behandeln", "Medizin", "Station"],
+        "hint": "Eine medizinische Einrichtung zur Behandlung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pharmacy",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Аптека",
+        "antonyms": [],
+        "synonyms": ["фармація"],
+        "tabooWords": ["ліки", "купувати", "пігулки", "фармацевт", "хвороба"],
+        "hint": "Магазин, де продають ліки"
+      },
+      "EN": {
+        "word": "Pharmacy",
+        "antonyms": [],
+        "synonyms": ["drugstore", "apothecary"],
+        "tabooWords": ["medicine", "buy", "pills", "pharmacist", "illness"],
+        "hint": "A store that sells medicine"
+      },
+      "DE": {
+        "word": "Apotheke",
+        "antonyms": [],
+        "synonyms": ["Drogerie"],
+        "tabooWords": ["Medizin", "kaufen", "Pillen", "Apotheker", "Krankheit"],
+        "hint": "Ein Geschäft, das Medikamente verkauft"
+      }
+    }
+  },
+  {
+    "conceptId": "general-shop",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Магазин",
+        "antonyms": ["ринок"],
+        "synonyms": ["крамниця", "маркет"],
+        "tabooWords": ["купувати", "продавати", "гроші", "товар", "каса"],
+        "hint": "Місце для покупки товарів"
+      },
+      "EN": {
+        "word": "Shop",
+        "antonyms": ["market"],
+        "synonyms": ["store", "boutique"],
+        "tabooWords": ["buy", "sell", "money", "goods", "register"],
+        "hint": "A place to purchase goods"
+      },
+      "DE": {
+        "word": "Geschäft",
+        "antonyms": ["Markt"],
+        "synonyms": ["Laden", "Supermarkt"],
+        "tabooWords": ["kaufen", "verkaufen", "Geld", "Waren", "Kasse"],
+        "hint": "Ein Ort, um Waren zu kaufen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-market",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ринок",
+        "antonyms": ["магазин"],
+        "synonyms": ["базар", "ярмарок"],
+        "tabooWords": ["продавець", "купувати", "торгуватися", "свіжий", "овочі"],
+        "hint": "Відкрите місце для торгівлі"
+      },
+      "EN": {
+        "word": "Market",
+        "antonyms": ["shop"],
+        "synonyms": ["bazaar", "fair"],
+        "tabooWords": ["seller", "buy", "bargain", "fresh", "vegetables"],
+        "hint": "An open place for trading"
+      },
+      "DE": {
+        "word": "Markt",
+        "antonyms": ["Geschäft"],
+        "synonyms": ["Basar", "Jahrmarkt"],
+        "tabooWords": ["Verkäufer", "kaufen", "feilschen", "frisch", "Gemüse"],
+        "hint": "Ein offener Ort für Handel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bank",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Банк",
+        "antonyms": [],
+        "synonyms": ["установа"],
+        "tabooWords": ["гроші", "кредит", "картка", "рахунок", "відсотки"],
+        "hint": "Фінансова установа для зберігання грошей"
+      },
+      "EN": {
+        "word": "Bank",
+        "antonyms": [],
+        "synonyms": ["institution"],
+        "tabooWords": ["money", "credit", "card", "account", "interest"],
+        "hint": "A financial institution for money"
+      },
+      "DE": {
+        "word": "Bank",
+        "antonyms": [],
+        "synonyms": ["Institut"],
+        "tabooWords": ["Geld", "Kredit", "Karte", "Konto", "Zinsen"],
+        "hint": "Ein Finanzinstitut für Geld"
+      }
+    }
+  },
+  {
+    "conceptId": "general-post-office",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пошта",
+        "antonyms": [],
+        "synonyms": ["відділення"],
+        "tabooWords": ["лист", "посилка", "відправляти", "марка", "адреса"],
+        "hint": "Установа для пересилки листів"
+      },
+      "EN": {
+        "word": "Post office",
+        "antonyms": [],
+        "synonyms": ["mail"],
+        "tabooWords": ["letter", "parcel", "send", "stamp", "address"],
+        "hint": "An institution for sending letters"
+      },
+      "DE": {
+        "word": "Post",
+        "antonyms": [],
+        "synonyms": ["Postamt"],
+        "tabooWords": ["Brief", "Paket", "senden", "Briefmarke", "Adresse"],
+        "hint": "Eine Einrichtung zum Versenden von Briefen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-library",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Бібліотека",
+        "antonyms": [],
+        "synonyms": ["читальня"],
+        "tabooWords": ["книга", "читати", "тиша", "позичати", "полиця"],
+        "hint": "Місце, де зберігаються книги"
+      },
+      "EN": {
+        "word": "Library",
+        "antonyms": [],
+        "synonyms": ["athenaeum"],
+        "tabooWords": ["book", "read", "silence", "borrow", "shelf"],
+        "hint": "A place where books are kept"
+      },
+      "DE": {
+        "word": "Bibliothek",
+        "antonyms": [],
+        "synonyms": ["Bücherei"],
+        "tabooWords": ["Buch", "lesen", "Stille", "ausleihen", "Regal"],
+        "hint": "Ein Ort, an dem Bücher aufbewahrt werden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-church",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Церква",
+        "antonyms": [],
+        "synonyms": ["храм", "собор"],
+        "tabooWords": ["молитися", "релігія", "Бог", "священик", "хрест"],
+        "hint": "Релігійна будівля для молитов"
+      },
+      "EN": {
+        "word": "Church",
+        "antonyms": [],
+        "synonyms": ["temple", "cathedral"],
+        "tabooWords": ["pray", "religion", "God", "priest", "cross"],
+        "hint": "A religious building for prayers"
+      },
+      "DE": {
+        "word": "Kirche",
+        "antonyms": [],
+        "synonyms": ["Tempel", "Dom"],
+        "tabooWords": ["beten", "Religion", "Gott", "Priester", "Kreuz"],
+        "hint": "Ein religiöses Gebäude für Gebete"
+      }
+    }
+  },
+  {
+    "conceptId": "general-football",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Футбол",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["м'яч", "грати", "нога", "ворота", "гол"],
+        "hint": "Спортивна гра з м'ячем та ногами"
+      },
+      "EN": {
+        "word": "Football",
+        "antonyms": [],
+        "synonyms": ["soccer"],
+        "tabooWords": ["ball", "play", "foot", "goal", "kick"],
+        "hint": "A sports game with a ball and feet"
+      },
+      "DE": {
+        "word": "Fußball",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Ball", "spielen", "Fuß", "Tor", "schießen"],
+        "hint": "Ein Sportspiel mit Ball und Füßen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-basketball",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Баскетбол",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["м'яч", "кільце", "кидати", "руки", "стрибати"],
+        "hint": "Гра, де м'яч кидають у кошик"
+      },
+      "EN": {
+        "word": "Basketball",
+        "antonyms": [],
+        "synonyms": ["hoops"],
+        "tabooWords": ["ball", "hoop", "throw", "hands", "jump"],
+        "hint": "A game throwing a ball into a basket"
+      },
+      "DE": {
+        "word": "Basketball",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Ball", "Korb", "werfen", "Hände", "springen"],
+        "hint": "Ein Spiel, bei dem der Ball in einen Korb geworfen wird"
+      }
+    }
+  },
+  {
+    "conceptId": "general-tennis",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Теніс",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["ракетка", "м'ячик", "сітка", "корт", "відбивати"],
+        "hint": "Спорт із ракеткою та сіткою"
+      },
+      "EN": {
+        "word": "Tennis",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["racket", "ball", "net", "court", "hit"],
+        "hint": "A sport with a racket and net"
+      },
+      "DE": {
+        "word": "Tennis",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Schläger", "Ball", "Netz", "Platz", "schlagen"],
+        "hint": "Ein Sport mit Schläger und Netz"
+      }
+    }
+  },
+  {
+    "conceptId": "general-swimming",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Плавання",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["вода", "басейн", "море", "руки", "спорт"],
+        "hint": "Пересування по воді без човна"
+      },
+      "EN": {
+        "word": "Swimming",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["water", "pool", "sea", "arms", "sport"],
+        "hint": "Moving through water without a boat"
+      },
+      "DE": {
+        "word": "Schwimmen",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Wasser", "Becken", "Meer", "Arme", "Sport"],
+        "hint": "Sich im Wasser ohne Boot bewegen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-running",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Біг",
+        "antonyms": ["ходьба"],
+        "synonyms": ["спринт", "крос"],
+        "tabooWords": ["швидко", "ноги", "спорт", "марафон", "рухатися"],
+        "hint": "Швидке пересування на ногах"
+      },
+      "EN": {
+        "word": "Running",
+        "antonyms": ["walking"],
+        "synonyms": ["sprint", "jogging"],
+        "tabooWords": ["fast", "legs", "sport", "marathon", "move"],
+        "hint": "Moving quickly on foot"
+      },
+      "DE": {
+        "word": "Laufen",
+        "antonyms": ["Gehen"],
+        "synonyms": ["Rennen", "Sprint"],
+        "tabooWords": ["schnell", "Beine", "Sport", "Marathon", "bewegen"],
+        "hint": "Sich schnell zu Fuß bewegen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-chess",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Шахи",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["дошка", "гра", "фігури", "король", "мат"],
+        "hint": "Настільна логічна гра з чорно-білими клітинками"
+      },
+      "EN": {
+        "word": "Chess",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["board", "game", "pieces", "king", "mate"],
+        "hint": "A logical board game with black and white squares"
+      },
+      "DE": {
+        "word": "Schach",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Brett", "Spiel", "Figuren", "König", "Matt"],
+        "hint": "Ein logisches Brettspiel mit schwarz-weißen Feldern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-dance",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Танець",
+        "antonyms": [],
+        "synonyms": ["хореографія", "пляска"],
+        "tabooWords": ["музика", "рухатися", "партнер", "ритм", "клуб"],
+        "hint": "Ритмічні рухи тіла під музику"
+      },
+      "EN": {
+        "word": "Dance",
+        "antonyms": [],
+        "synonyms": ["choreography", "groove"],
+        "tabooWords": ["music", "move", "partner", "rhythm", "club"],
+        "hint": "Rhythmic body movements to music"
+      },
+      "DE": {
+        "word": "Tanz",
+        "antonyms": [],
+        "synonyms": ["Choreografie"],
+        "tabooWords": ["Musik", "bewegen", "Partner", "Rhythmus", "Club"],
+        "hint": "Rhythmische Körperbewegungen zur Musik"
+      }
+    }
+  },
+  {
+    "conceptId": "general-singing",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Спів",
+        "antonyms": ["мовчання"],
+        "synonyms": ["вокал"],
+        "tabooWords": ["голос", "пісня", "музика", "мікрофон", "мелодія"],
+        "hint": "Виконання музики голосом"
+      },
+      "EN": {
+        "word": "Singing",
+        "antonyms": ["silence"],
+        "synonyms": ["vocals"],
+        "tabooWords": ["voice", "song", "music", "microphone", "melody"],
+        "hint": "Performing music with the voice"
+      },
+      "DE": {
+        "word": "Gesang",
+        "antonyms": ["Schweigen"],
+        "synonyms": ["Vokalmusik"],
+        "tabooWords": ["Stimme", "Lied", "Musik", "Mikrofon", "Melodie"],
+        "hint": "Musik mit der Stimme aufführen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-drawing",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Малювання",
+        "antonyms": [],
+        "synonyms": ["живопис", "графіка"],
+        "tabooWords": ["олівець", "фарби", "папір", "картина", "художник"],
+        "hint": "Створення зображень на площині"
+      },
+      "EN": {
+        "word": "Drawing",
+        "antonyms": [],
+        "synonyms": ["painting", "sketching"],
+        "tabooWords": ["pencil", "paints", "paper", "picture", "artist"],
+        "hint": "Creating images on a surface"
+      },
+      "DE": {
+        "word": "Zeichnen",
+        "antonyms": [],
+        "synonyms": ["Malerei", "Grafik"],
+        "tabooWords": ["Bleistift", "Farben", "Papier", "Bild", "Künstler"],
+        "hint": "Bilder auf einer Fläche erstellen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-photography",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Фотографія",
+        "antonyms": [],
+        "synonyms": ["знімок", "світлина"],
+        "tabooWords": ["камера", "знімати", "пам'ять", "телефон", "спалах"],
+        "hint": "Зображення, зроблене камерою"
+      },
+      "EN": {
+        "word": "Photography",
+        "antonyms": [],
+        "synonyms": ["photo", "snapshot"],
+        "tabooWords": ["camera", "shoot", "memory", "phone", "flash"],
+        "hint": "An image made with a camera"
+      },
+      "DE": {
+        "word": "Fotografie",
+        "antonyms": [],
+        "synonyms": ["Foto", "Aufnahme"],
+        "tabooWords": ["Kamera", "schießen", "Erinnerung", "Telefon", "Blitz"],
+        "hint": "Ein mit einer Kamera gemachtes Bild"
+      }
+    }
+  },
+  {
+    "conceptId": "general-lion",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лев",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["король", "звірі", "грива", "Африка", "ричати"],
+        "hint": "Велика дика кішка з гривою"
+      },
+      "EN": {
+        "word": "Lion",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["king", "animals", "mane", "Africa", "roar"],
+        "hint": "A large wild cat with a mane"
+      },
+      "DE": {
+        "word": "Löwe",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["König", "Tiere", "Mähne", "Afrika", "brüllen"],
+        "hint": "Eine große Wildkatze mit Mähne"
+      }
+    }
+  },
+  {
+    "conceptId": "general-elephant",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Слон",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["хобот", "великий", "вуха", "Африка", "тварина"],
+        "hint": "Найбільша сухопутна тварина"
+      },
+      "EN": {
+        "word": "Elephant",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["trunk", "big", "ears", "Africa", "animal"],
+        "hint": "The largest land animal"
+      },
+      "DE": {
+        "word": "Elefant",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Rüssel", "groß", "Ohren", "Afrika", "Tier"],
+        "hint": "Das größte Landtier"
+      }
+    }
+  },
+  {
+    "conceptId": "general-giraffe",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Жираф",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["шия", "високий", "плями", "тварина", "Африка"],
+        "hint": "Тварина з найдовшою шиєю"
+      },
+      "EN": {
+        "word": "Giraffe",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["neck", "tall", "spots", "animal", "Africa"],
+        "hint": "The animal with the longest neck"
+      },
+      "DE": {
+        "word": "Giraffe",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Hals", "hoch", "Flecken", "Tier", "Afrika"],
+        "hint": "Das Tier mit dem längsten Hals"
+      }
+    }
+  },
+  {
+    "conceptId": "general-monkey",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Мавпа",
+        "antonyms": [],
+        "synonyms": ["примат"],
+        "tabooWords": ["банан", "дерево", "стрибати", "зоопарк", "хвіст"],
+        "hint": "Тварина, яка дуже схожа на людину"
+      },
+      "EN": {
+        "word": "Monkey",
+        "antonyms": [],
+        "synonyms": ["primate", "ape"],
+        "tabooWords": ["banana", "tree", "jump", "zoo", "tail"],
+        "hint": "An animal that looks like a human"
+      },
+      "DE": {
+        "word": "Affe",
+        "antonyms": [],
+        "synonyms": ["Primat"],
+        "tabooWords": ["Banane", "Baum", "springen", "Zoo", "Schwanz"],
+        "hint": "Ein Tier, das dem Menschen sehr ähnlich ist"
+      }
+    }
+  },
+  {
+    "conceptId": "general-bear",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ведмідь",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["мед", "ліс", "зима", "спати", "великий"],
+        "hint": "Великий хижак, що любить мед"
+      },
+      "EN": {
+        "word": "Bear",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["honey", "forest", "winter", "sleep", "big"],
+        "hint": "A large predator that loves honey"
+      },
+      "DE": {
+        "word": "Bär",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Honig", "Wald", "Winter", "schlafen", "groß"],
+        "hint": "Ein großes Raubtier, das Honig liebt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-wolf",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вовк",
+        "antonyms": ["собака"],
+        "synonyms": ["хижак"],
+        "tabooWords": ["ліс", "вити", "місяць", "зграя", "сірий"],
+        "hint": "Дикий предок собаки"
+      },
+      "EN": {
+        "word": "Wolf",
+        "antonyms": ["dog"],
+        "synonyms": ["predator"],
+        "tabooWords": ["forest", "howl", "moon", "pack", "gray"],
+        "hint": "The wild ancestor of the dog"
+      },
+      "DE": {
+        "word": "Wolf",
+        "antonyms": ["Hund"],
+        "synonyms": ["Raubtier"],
+        "tabooWords": ["Wald", "heulen", "Mond", "Rudel", "grau"],
+        "hint": "Der wilde Vorfahre des Hundes"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fox",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Лисиця",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["руда", "хитра", "хвіст", "ліс", "тварина"],
+        "hint": "Руда хитра тварина з лісу"
+      },
+      "EN": {
+        "word": "Fox",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["red", "sly", "tail", "forest", "animal"],
+        "hint": "A red sly animal from the forest"
+      },
+      "DE": {
+        "word": "Fuchs",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["rot", "schlau", "Schwanz", "Wald", "Tier"],
+        "hint": "Ein rotes schlaues Tier aus dem Wald"
+      }
+    }
+  },
+  {
+    "conceptId": "general-hare",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Заєць",
+        "antonyms": ["вовк"],
+        "synonyms": ["кролик"],
+        "tabooWords": ["вуха", "стрибати", "морква", "швидкий", "сірий"],
+        "hint": "Вухата тварина, що швидко бігає"
+      },
+      "EN": {
+        "word": "Hare",
+        "antonyms": ["wolf"],
+        "synonyms": ["rabbit", "bunny"],
+        "tabooWords": ["ears", "jump", "carrot", "fast", "gray"],
+        "hint": "An eared animal that runs fast"
+      },
+      "DE": {
+        "word": "Hase",
+        "antonyms": ["Wolf"],
+        "synonyms": ["Kaninchen"],
+        "tabooWords": ["Ohren", "springen", "Karotte", "schnell", "grau"],
+        "hint": "Ein Ohrentier, das schnell läuft"
+      }
+    }
+  },
+  {
+    "conceptId": "general-deer",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Олень",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["роги", "ліс", "сани", "Санта", "тварина"],
+        "hint": "Тварина з великими рогами"
+      },
+      "EN": {
+        "word": "Deer",
+        "antonyms": [],
+        "synonyms": ["stag", "buck"],
+        "tabooWords": ["antlers", "forest", "sleigh", "Santa", "animal"],
+        "hint": "An animal with large antlers"
+      },
+      "DE": {
+        "word": "Hirsch",
+        "antonyms": [],
+        "synonyms": ["Reh"],
+        "tabooWords": ["Geweih", "Wald", "Schlitten", "Santa", "Tier"],
+        "hint": "Ein Tier mit großem Geweih"
+      }
+    }
+  },
+  {
+    "conceptId": "general-eagle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Орел",
+        "antonyms": [],
+        "synonyms": ["птах"],
+        "tabooWords": ["літати", "небо", "гори", "крила", "зір"],
+        "hint": "Великий хижий птах"
+      },
+      "EN": {
+        "word": "Eagle",
+        "antonyms": [],
+        "synonyms": ["bird"],
+        "tabooWords": ["fly", "sky", "mountains", "wings", "vision"],
+        "hint": "A large bird of prey"
+      },
+      "DE": {
+        "word": "Adler",
+        "antonyms": [],
+        "synonyms": ["Vogel"],
+        "tabooWords": ["fliegen", "Himmel", "Berge", "Flügel", "Sicht"],
+        "hint": "Ein großer Greifvogel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-rose",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Троянда",
+        "antonyms": [],
+        "synonyms": ["квітка"],
+        "tabooWords": ["колючки", "червона", "любов", "букет", "пахнути"],
+        "hint": "Квітка кохання з шипами"
+      },
+      "EN": {
+        "word": "Rose",
+        "antonyms": [],
+        "synonyms": ["flower"],
+        "tabooWords": ["thorns", "red", "love", "bouquet", "smell"],
+        "hint": "The flower of love with thorns"
+      },
+      "DE": {
+        "word": "Rose",
+        "antonyms": [],
+        "synonyms": ["Blume"],
+        "tabooWords": ["Dornen", "rot", "Liebe", "Strauß", "riechen"],
+        "hint": "Die Blume der Liebe mit Dornen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-tulip",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Тюльпан",
+        "antonyms": [],
+        "synonyms": ["квітка"],
+        "tabooWords": ["весна", "Голландія", "букет", "жовтий", "цибулина"],
+        "hint": "Весняна квітка, символ Нідерландів"
+      },
+      "EN": {
+        "word": "Tulip",
+        "antonyms": [],
+        "synonyms": ["flower"],
+        "tabooWords": ["spring", "Holland", "bouquet", "yellow", "bulb"],
+        "hint": "A spring flower, symbol of the Netherlands"
+      },
+      "DE": {
+        "word": "Tulpe",
+        "antonyms": [],
+        "synonyms": ["Blume"],
+        "tabooWords": ["Frühling", "Holland", "Strauß", "gelb", "Zwiebel"],
+        "hint": "Eine Frühlingsblume, Symbol der Niederlande"
+      }
+    }
+  },
+  {
+    "conceptId": "general-sunflower",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Соняшник",
+        "antonyms": [],
+        "synonyms": ["квітка"],
+        "tabooWords": ["сонце", "насіння", "жовтий", "олія", "рослина"],
+        "hint": "Рослина, яка повертається за сонцем"
+      },
+      "EN": {
+        "word": "Sunflower",
+        "antonyms": [],
+        "synonyms": ["flower"],
+        "tabooWords": ["sun", "seeds", "yellow", "oil", "plant"],
+        "hint": "A plant that turns towards the sun"
+      },
+      "DE": {
+        "word": "Sonnenblume",
+        "antonyms": [],
+        "synonyms": ["Blume"],
+        "tabooWords": ["Sonne", "Samen", "gelb", "Öl", "Pflanze"],
+        "hint": "Eine Pflanze, die sich zur Sonne dreht"
+      }
+    }
+  },
+  {
+    "conceptId": "general-chamomile",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ромашка",
+        "antonyms": [],
+        "synonyms": ["квітка"],
+        "tabooWords": ["біла", "чай", "пелюстки", "гадати", "любить"],
+        "hint": "Квітка, на якій ворожать на кохання"
+      },
+      "EN": {
+        "word": "Chamomile",
+        "antonyms": [],
+        "synonyms": ["daisy", "flower"],
+        "tabooWords": ["white", "tea", "petals", "guess", "loves"],
+        "hint": "A flower used to tell fortunes in love"
+      },
+      "DE": {
+        "word": "Kamille",
+        "antonyms": [],
+        "synonyms": ["Gänseblümchen", "Blume"],
+        "tabooWords": ["weiß", "Tee", "Blütenblätter", "raten", "liebt"],
+        "hint": "Eine Blume, an der man die Liebe abliest"
+      }
+    }
+  },
+  {
+    "conceptId": "general-violet",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Фіалка",
+        "antonyms": [],
+        "synonyms": ["квітка"],
+        "tabooWords": ["горщик", "колір", "кімнатна", "маленька", "весна"],
+        "hint": "Маленька кімнатна квітка з фіолетовими пелюстками"
+      },
+      "EN": {
+        "word": "Violet",
+        "antonyms": [],
+        "synonyms": ["flower"],
+        "tabooWords": ["pot", "color", "indoor", "small", "spring"],
+        "hint": "A small indoor flower with purple petals"
+      },
+      "DE": {
+        "word": "Veilchen",
+        "antonyms": [],
+        "synonyms": ["Blume"],
+        "tabooWords": ["Topf", "Farbe", "Zimmer", "klein", "Frühling"],
+        "hint": "Eine kleine Zimmerblume mit lila Blütenblättern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cactus",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кактус",
+        "antonyms": [],
+        "synonyms": ["рослина"],
+        "tabooWords": ["колючки", "пустеля", "вода", "горщик", "зелений"],
+        "hint": "Рослина з колючками замість листя"
+      },
+      "EN": {
+        "word": "Cactus",
+        "antonyms": [],
+        "synonyms": ["plant"],
+        "tabooWords": ["spikes", "desert", "water", "pot", "green"],
+        "hint": "A plant with spines instead of leaves"
+      },
+      "DE": {
+        "word": "Kaktus",
+        "antonyms": [],
+        "synonyms": ["Pflanze"],
+        "tabooWords": ["Stacheln", "Wüste", "Wasser", "Topf", "grün"],
+        "hint": "Eine Pflanze mit Stacheln statt Blättern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-palm",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пальма",
+        "antonyms": [],
+        "synonyms": ["дерево"],
+        "tabooWords": ["кокос", "острів", "море", "пляж", "листя"],
+        "hint": "Екзотичне дерево, що росте на півдні"
+      },
+      "EN": {
+        "word": "Palm",
+        "antonyms": [],
+        "synonyms": ["tree"],
+        "tabooWords": ["coconut", "island", "sea", "beach", "leaves"],
+        "hint": "An exotic tree growing in the south"
+      },
+      "DE": {
+        "word": "Palme",
+        "antonyms": [],
+        "synonyms": ["Baum"],
+        "tabooWords": ["Kokosnuss", "Insel", "Meer", "Strand", "Blätter"],
+        "hint": "Ein exotischer Baum, der im Süden wächst"
+      }
+    }
+  },
+  {
+    "conceptId": "general-birch",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Береза",
+        "antonyms": [],
+        "synonyms": ["дерево"],
+        "tabooWords": ["біла", "кора", "сік", "ліс", "листя"],
+        "hint": "Дерево з характерним білим стовбуром"
+      },
+      "EN": {
+        "word": "Birch",
+        "antonyms": [],
+        "synonyms": ["tree"],
+        "tabooWords": ["white", "bark", "juice", "forest", "leaves"],
+        "hint": "A tree with a characteristic white trunk"
+      },
+      "DE": {
+        "word": "Birke",
+        "antonyms": [],
+        "synonyms": ["Baum"],
+        "tabooWords": ["weiß", "Rinde", "Saft", "Wald", "Blätter"],
+        "hint": "Ein Baum mit einem charakteristischen weißen Stamm"
+      }
+    }
+  },
+  {
+    "conceptId": "general-oak",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Дуб",
+        "antonyms": [],
+        "synonyms": ["дерево"],
+        "tabooWords": ["жолудь", "ліс", "листя", "кора", "міцний"],
+        "hint": "Міцне дерево з жолудями"
+      },
+      "EN": {
+        "word": "Oak",
+        "antonyms": [],
+        "synonyms": ["tree"],
+        "tabooWords": ["acorn", "forest", "leaves", "bark", "strong"],
+        "hint": "A strong tree with acorns"
+      },
+      "DE": {
+        "word": "Eiche",
+        "antonyms": [],
+        "synonyms": ["Baum"],
+        "tabooWords": ["Eichel", "Wald", "Blätter", "Rinde", "stark"],
+        "hint": "Ein starker Baum mit Eicheln"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pine",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сосна",
+        "antonyms": [],
+        "synonyms": ["дерево", "ялина"],
+        "tabooWords": ["голки", "ліс", "шишка", "зелена", "смола"],
+        "hint": "Хвойне дерево з довгими голками"
+      },
+      "EN": {
+        "word": "Pine",
+        "antonyms": [],
+        "synonyms": ["tree", "spruce"],
+        "tabooWords": ["needles", "forest", "cone", "green", "resin"],
+        "hint": "A coniferous tree with long needles"
+      },
+      "DE": {
+        "word": "Kiefer",
+        "antonyms": [],
+        "synonyms": ["Baum", "Fichte"],
+        "tabooWords": ["Nadeln", "Wald", "Zapfen", "grün", "Harz"],
+        "hint": "Ein Nadelbaum mit langen Nadeln"
+      }
+    }
+  },
+  {
+    "conceptId": "general-rain",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Дощ",
+        "antonyms": ["сніг", "посуха"],
+        "synonyms": ["злива"],
+        "tabooWords": ["вода", "краплі", "небо", "осінь", "парасолька"],
+        "hint": "Краплі води, що падають з неба"
+      },
+      "EN": {
+        "word": "Rain",
+        "antonyms": ["snow", "drought"],
+        "synonyms": ["shower"],
+        "tabooWords": ["water", "drops", "sky", "autumn", "umbrella"],
+        "hint": "Water drops falling from the sky"
+      },
+      "DE": {
+        "word": "Regen",
+        "antonyms": ["Schnee", "Dürre"],
+        "synonyms": ["Schauer"],
+        "tabooWords": ["Wasser", "Tropfen", "Himmel", "Herbst", "Regenschirm"],
+        "hint": "Wassertropfen, die vom Himmel fallen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-snow",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Сніг",
+        "antonyms": ["дощ", "спека"],
+        "synonyms": ["опади"],
+        "tabooWords": ["білий", "зима", "холод", "лід", "сніговик"],
+        "hint": "Білі опади взимку"
+      },
+      "EN": {
+        "word": "Snow",
+        "antonyms": ["rain", "heat"],
+        "synonyms": ["precipitation"],
+        "tabooWords": ["white", "winter", "cold", "ice", "snowman"],
+        "hint": "White precipitation in winter"
+      },
+      "DE": {
+        "word": "Schnee",
+        "antonyms": ["Regen", "Hitze"],
+        "synonyms": ["Niederschlag"],
+        "tabooWords": ["weiß", "Winter", "kalt", "Eis", "Schneemann"],
+        "hint": "Weißer Niederschlag im Winter"
+      }
+    }
+  },
+  {
+    "conceptId": "general-wind",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вітер",
+        "antonyms": ["штиль"],
+        "synonyms": ["буревій"],
+        "tabooWords": ["дути", "повітря", "дерева", "холодний", "ураган"],
+        "hint": "Рух повітря в атмосфері"
+      },
+      "EN": {
+        "word": "Wind",
+        "antonyms": ["calm"],
+        "synonyms": ["gale"],
+        "tabooWords": ["blow", "air", "trees", "cold", "hurricane"],
+        "hint": "Movement of air in the atmosphere"
+      },
+      "DE": {
+        "word": "Wind",
+        "antonyms": ["Windstille"],
+        "synonyms": ["Sturm"],
+        "tabooWords": ["blasen", "Luft", "Bäume", "kalt", "Orkan"],
+        "hint": "Luftbewegung in der Atmosphäre"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cloud",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Хмара",
+        "antonyms": ["сонце"],
+        "synonyms": ["хмарка"],
+        "tabooWords": ["небо", "біла", "дощ", "пухнаста", "літати"],
+        "hint": "Біле скупчення пари на небі"
+      },
+      "EN": {
+        "word": "Cloud",
+        "antonyms": ["sun"],
+        "synonyms": ["cloudlet"],
+        "tabooWords": ["sky", "white", "rain", "fluffy", "fly"],
+        "hint": "A white mass of vapor in the sky"
+      },
+      "DE": {
+        "word": "Wolke",
+        "antonyms": ["Sonne"],
+        "synonyms": ["Wölkchen"],
+        "tabooWords": ["Himmel", "weiß", "Regen", "flauschig", "fliegen"],
+        "hint": "Eine weiße Dampfansammlung am Himmel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-lightning",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Блискавка",
+        "antonyms": [],
+        "synonyms": ["грім"],
+        "tabooWords": ["шторм", "небо", "світло", "електрика", "дощ"],
+        "hint": "Електричний розряд у небі"
+      },
+      "EN": {
+        "word": "Lightning",
+        "antonyms": [],
+        "synonyms": ["thunder"],
+        "tabooWords": ["storm", "sky", "light", "electricity", "rain"],
+        "hint": "An electrical discharge in the sky"
+      },
+      "DE": {
+        "word": "Blitz",
+        "antonyms": [],
+        "synonyms": ["Donner"],
+        "tabooWords": ["Sturm", "Himmel", "Licht", "Strom", "Regen"],
+        "hint": "Eine elektrische Entladung am Himmel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-rainbow",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Веселка",
+        "antonyms": [],
+        "synonyms": ["райдуга"],
+        "tabooWords": ["кольори", "небо", "дощ", "сонце", "сім"],
+        "hint": "Кольорова дуга після дощу"
+      },
+      "EN": {
+        "word": "Rainbow",
+        "antonyms": [],
+        "synonyms": ["bow"],
+        "tabooWords": ["colors", "sky", "rain", "sun", "seven"],
+        "hint": "A colored arc after rain"
+      },
+      "DE": {
+        "word": "Regenbogen",
+        "antonyms": [],
+        "synonyms": ["Bogen"],
+        "tabooWords": ["Farben", "Himmel", "Regen", "Sonne", "sieben"],
+        "hint": "Ein farbiger Bogen nach dem Regen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fog",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Туман",
+        "antonyms": ["ясність"],
+        "synonyms": ["мряка"],
+        "tabooWords": ["видимість", "ранок", "білий", "дим", "їхати"],
+        "hint": "Густа мряка біля землі"
+      },
+      "EN": {
+        "word": "Fog",
+        "antonyms": ["clarity"],
+        "synonyms": ["mist", "haze"],
+        "tabooWords": ["visibility", "morning", "white", "smoke", "drive"],
+        "hint": "Thick mist near the ground"
+      },
+      "DE": {
+        "word": "Nebel",
+        "antonyms": ["Klarheit"],
+        "synonyms": ["Dunst"],
+        "tabooWords": ["Sicht", "Morgen", "weiß", "Rauch", "fahren"],
+        "hint": "Dichter Dunst in Bodennähe"
+      }
+    }
+  },
+  {
+    "conceptId": "general-frost",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Мороз",
+        "antonyms": ["спека", "тепло"],
+        "synonyms": ["холод"],
+        "tabooWords": ["зима", "сніг", "лід", "мінус", "замерзати"],
+        "hint": "Сильний холод взимку"
+      },
+      "EN": {
+        "word": "Frost",
+        "antonyms": ["heat", "warmth"],
+        "synonyms": ["cold", "freeze"],
+        "tabooWords": ["winter", "snow", "ice", "minus", "freezing"],
+        "hint": "Severe cold in winter"
+      },
+      "DE": {
+        "word": "Frost",
+        "antonyms": ["Hitze", "Wärme"],
+        "synonyms": ["Kälte"],
+        "tabooWords": ["Winter", "Schnee", "Eis", "Minus", "frieren"],
+        "hint": "Starke Kälte im Winter"
+      }
+    }
+  },
+  {
+    "conceptId": "general-heat",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Спека",
+        "antonyms": ["мороз", "холод"],
+        "synonyms": ["тепло"],
+        "tabooWords": ["літо", "сонце", "пітніти", "градус", "вода"],
+        "hint": "Дуже висока температура влітку"
+      },
+      "EN": {
+        "word": "Heat",
+        "antonyms": ["frost", "cold"],
+        "synonyms": ["warmth"],
+        "tabooWords": ["summer", "sun", "sweat", "degree", "water"],
+        "hint": "Very high temperature in summer"
+      },
+      "DE": {
+        "word": "Hitze",
+        "antonyms": ["Frost", "Kälte"],
+        "synonyms": ["Wärme"],
+        "tabooWords": ["Sommer", "Sonne", "schwitzen", "Grad", "Wasser"],
+        "hint": "Sehr hohe Temperatur im Sommer"
+      }
+    }
+  },
+  {
+    "conceptId": "general-storm",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Шторм",
+        "antonyms": ["штиль"],
+        "synonyms": ["буря", "ураган"],
+        "tabooWords": ["море", "вітер", "хвилі", "корабель", "дощ"],
+        "hint": "Сильний вітер на морі"
+      },
+      "EN": {
+        "word": "Storm",
+        "antonyms": ["calm"],
+        "synonyms": ["tempest", "hurricane"],
+        "tabooWords": ["sea", "wind", "waves", "ship", "rain"],
+        "hint": "Strong wind at sea"
+      },
+      "DE": {
+        "word": "Sturm",
+        "antonyms": ["Flaute"],
+        "synonyms": ["Unwetter", "Orkan"],
+        "tabooWords": ["Meer", "Wind", "Wellen", "Schiff", "Regen"],
+        "hint": "Starker Wind auf dem Meer"
+      }
+    }
+  },
+  {
+    "conceptId": "general-candle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Свічка",
+        "antonyms": ["лампа"],
+        "synonyms": [],
+        "tabooWords": ["вогонь", "віск", "горіти", "світло", "торт"],
+        "hint": "Восковий виріб для освітлення"
+      },
+      "EN": {
+        "word": "Candle",
+        "antonyms": ["lamp"],
+        "synonyms": ["taper"],
+        "tabooWords": ["fire", "wax", "burn", "light", "cake"],
+        "hint": "A wax item for lighting"
+      },
+      "DE": {
+        "word": "Kerze",
+        "antonyms": ["Lampe"],
+        "synonyms": [],
+        "tabooWords": ["Feuer", "Wachs", "brennen", "Licht", "Kuchen"],
+        "hint": "Ein Wachsprodukt zur Beleuchtung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fire",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вогонь",
+        "antonyms": ["вода", "лід"],
+        "synonyms": ["полум'я"],
+        "tabooWords": ["гарячий", "горіти", "пожежа", "сірник", "багаття"],
+        "hint": "Гаряче полум'я, що обпікає"
+      },
+      "EN": {
+        "word": "Fire",
+        "antonyms": ["water", "ice"],
+        "synonyms": ["flame"],
+        "tabooWords": ["hot", "burn", "blaze", "match", "bonfire"],
+        "hint": "Hot flame that burns"
+      },
+      "DE": {
+        "word": "Feuer",
+        "antonyms": ["Wasser", "Eis"],
+        "synonyms": ["Flamme"],
+        "tabooWords": ["heiß", "brennen", "Brand", "Streichholz", "Lagerfeuer"],
+        "hint": "Heiße Flamme, die brennt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-water",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вода",
+        "antonyms": ["вогонь"],
+        "synonyms": ["рідина"],
+        "tabooWords": ["пити", "море", "кран", "мокра", "дощ"],
+        "hint": "Прозора рідина для пиття"
+      },
+      "EN": {
+        "word": "Water",
+        "antonyms": ["fire"],
+        "synonyms": ["liquid"],
+        "tabooWords": ["drink", "sea", "tap", "wet", "rain"],
+        "hint": "A transparent liquid for drinking"
+      },
+      "DE": {
+        "word": "Wasser",
+        "antonyms": ["Feuer"],
+        "synonyms": ["Flüssigkeit"],
+        "tabooWords": ["trinken", "Meer", "Hahn", "nass", "Regen"],
+        "hint": "Eine durchsichtige Flüssigkeit zum Trinken"
+      }
+    }
+  },
+  {
+    "conceptId": "general-earth",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Земля",
+        "antonyms": ["небо"],
+        "synonyms": ["ґрунт", "планета"],
+        "tabooWords": ["копати", "бруд", "рослина", "куля", "сонце"],
+        "hint": "Планета або ґрунт під ногами"
+      },
+      "EN": {
+        "word": "Earth",
+        "antonyms": ["sky"],
+        "synonyms": ["soil", "planet"],
+        "tabooWords": ["dig", "dirt", "plant", "globe", "sun"],
+        "hint": "The planet or soil under your feet"
+      },
+      "DE": {
+        "word": "Erde",
+        "antonyms": ["Himmel"],
+        "synonyms": ["Boden", "Planet"],
+        "tabooWords": ["graben", "Schmutz", "Pflanze", "Kugel", "Sonne"],
+        "hint": "Der Planet oder Boden unter den Füßen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-air",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Повітря",
+        "antonyms": ["вода", "вакуум"],
+        "synonyms": ["кисень"],
+        "tabooWords": ["дихати", "невидиме", "вітер", "літати", "легені"],
+        "hint": "Газ, яким ми дихаємо"
+      },
+      "EN": {
+        "word": "Air",
+        "antonyms": ["water", "vacuum"],
+        "synonyms": ["oxygen"],
+        "tabooWords": ["breathe", "invisible", "wind", "fly", "lungs"],
+        "hint": "The gas we breathe"
+      },
+      "DE": {
+        "word": "Luft",
+        "antonyms": ["Wasser", "Vakuum"],
+        "synonyms": ["Sauerstoff"],
+        "tabooWords": ["atmen", "unsichtbar", "Wind", "fliegen", "Lunge"],
+        "hint": "Das Gas, das wir atmen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-stone",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Камінь",
+        "antonyms": [],
+        "synonyms": ["кругляк", "скеля"],
+        "tabooWords": ["твердий", "кидати", "гора", "тяжкий", "будувати"],
+        "hint": "Тверда гірська порода"
+      },
+      "EN": {
+        "word": "Stone",
+        "antonyms": [],
+        "synonyms": ["rock", "boulder"],
+        "tabooWords": ["hard", "throw", "mountain", "heavy", "build"],
+        "hint": "A hard mountain rock"
+      },
+      "DE": {
+        "word": "Stein",
+        "antonyms": [],
+        "synonyms": ["Fels", "Brocken"],
+        "tabooWords": ["hart", "werfen", "Berg", "schwer", "bauen"],
+        "hint": "Ein hartes Gestein"
+      }
+    }
+  },
+  {
+    "conceptId": "general-sand",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пісок",
+        "antonyms": ["камінь"],
+        "synonyms": [],
+        "tabooWords": ["пляж", "море", "пустеля", "замок", "жовтий"],
+        "hint": "Дрібні частинки на пляжі"
+      },
+      "EN": {
+        "word": "Sand",
+        "antonyms": ["stone"],
+        "synonyms": [],
+        "tabooWords": ["beach", "sea", "desert", "castle", "yellow"],
+        "hint": "Small particles on the beach"
+      },
+      "DE": {
+        "word": "Sand",
+        "antonyms": ["Stein"],
+        "synonyms": [],
+        "tabooWords": ["Strand", "Meer", "Wüste", "Burg", "gelb"],
+        "hint": "Kleine Partikel am Strand"
+      }
+    }
+  },
+  {
+    "conceptId": "general-clay",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Глина",
+        "antonyms": [],
+        "synonyms": ["керамзит"],
+        "tabooWords": ["ліпити", "земля", "бруд", "посуд", "м'яка"],
+        "hint": "М'яка порода для ліплення посуду"
+      },
+      "EN": {
+        "word": "Clay",
+        "antonyms": [],
+        "synonyms": ["mud"],
+        "tabooWords": ["sculpt", "earth", "dirt", "dishes", "soft"],
+        "hint": "A soft material for molding dishes"
+      },
+      "DE": {
+        "word": "Ton",
+        "antonyms": [],
+        "synonyms": ["Lehm"],
+        "tabooWords": ["formen", "Erde", "Schmutz", "Geschirr", "weich"],
+        "hint": "Ein weiches Material zum Töpfern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-metal",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Метал",
+        "antonyms": ["дерево", "пластик"],
+        "synonyms": ["залізо"],
+        "tabooWords": ["твердий", "холодний", "сталь", "магніт", "іржа"],
+        "hint": "Твердий матеріал, що проводить струм"
+      },
+      "EN": {
+        "word": "Metal",
+        "antonyms": ["wood", "plastic"],
+        "synonyms": ["iron"],
+        "tabooWords": ["hard", "cold", "steel", "magnet", "rust"],
+        "hint": "A hard material that conducts electricity"
+      },
+      "DE": {
+        "word": "Metall",
+        "antonyms": ["Holz", "Plastik"],
+        "synonyms": ["Eisen"],
+        "tabooWords": ["hart", "kalt", "Stahl", "Magnet", "Rost"],
+        "hint": "Ein hartes Material, das Strom leitet"
+      }
+    }
+  },
+  {
+    "conceptId": "general-glass",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Скло",
+        "antonyms": ["дерево"],
+        "synonyms": [],
+        "tabooWords": ["прозоре", "вікно", "бити", "крихке", "окуляри"],
+        "hint": "Прозорий матеріал для вікон"
+      },
+      "EN": {
+        "word": "Glass",
+        "antonyms": ["wood"],
+        "synonyms": [],
+        "tabooWords": ["transparent", "window", "break", "fragile", "glasses"],
+        "hint": "A transparent material for windows"
+      },
+      "DE": {
+        "word": "Glas",
+        "antonyms": ["Holz"],
+        "synonyms": [],
+        "tabooWords": ["transparent", "Fenster", "brechen", "zerbrechlich", "Brille"],
+        "hint": "Ein durchsichtiges Material für Fenster"
+      }
+    }
+  },
+  {
+    "conceptId": "general-ghost",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Привид",
+        "antonyms": ["людина"],
+        "synonyms": ["фантом", "дух"],
+        "tabooWords": ["страшний", "замок", "невидимий", "ніч", "смерть"],
+        "hint": "Душа померлої людини"
+      },
+      "EN": {
+        "word": "Ghost",
+        "antonyms": ["human"],
+        "synonyms": ["phantom", "spirit"],
+        "tabooWords": ["scary", "castle", "invisible", "night", "death"],
+        "hint": "The soul of a dead person"
+      },
+      "DE": {
+        "word": "Geist",
+        "antonyms": ["Mensch"],
+        "synonyms": ["Phantom", "Gespenst"],
+        "tabooWords": ["gruselig", "Schloss", "unsichtbar", "Nacht", "Tod"],
+        "hint": "Die Seele eines verstorbenen Menschen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-dragon",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Дракон",
+        "antonyms": [],
+        "synonyms": ["змій"],
+        "tabooWords": ["вогонь", "літати", "казка", "замок", "крила"],
+        "hint": "Казковий вогнедишний змій"
+      },
+      "EN": {
+        "word": "Dragon",
+        "antonyms": [],
+        "synonyms": ["serpent"],
+        "tabooWords": ["fire", "fly", "fairy-tale", "castle", "wings"],
+        "hint": "A magical fire-breathing serpent"
+      },
+      "DE": {
+        "word": "Drache",
+        "antonyms": [],
+        "synonyms": ["Lindwurm"],
+        "tabooWords": ["Feuer", "fliegen", "Märchen", "Schloss", "Flügel"],
+        "hint": "Ein märchenhaftes feuerspeiendes Monster"
+      }
+    }
+  },
+  {
+    "conceptId": "general-unicorn",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Єдиноріг",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["кінь", "ріг", "магія", "казка", "веселка"],
+        "hint": "Казковий кінь з рогом"
+      },
+      "EN": {
+        "word": "Unicorn",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["horse", "horn", "magic", "fairy-tale", "rainbow"],
+        "hint": "A magical horse with a horn"
+      },
+      "DE": {
+        "word": "Einhorn",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Pferd", "Horn", "Magie", "Märchen", "Regenbogen"],
+        "hint": "Ein märchenhaftes Pferd mit Horn"
+      }
+    }
+  },
+  {
+    "conceptId": "general-mermaid",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Русалка",
+        "antonyms": [],
+        "synonyms": ["сирена"],
+        "tabooWords": ["море", "хвіст", "риба", "дівчина", "казка"],
+        "hint": "Дівчина з риб'ячим хвостом"
+      },
+      "EN": {
+        "word": "Mermaid",
+        "antonyms": [],
+        "synonyms": ["siren"],
+        "tabooWords": ["sea", "tail", "fish", "girl", "fairy-tale"],
+        "hint": "A girl with a fish tail"
+      },
+      "DE": {
+        "word": "Meerjungfrau",
+        "antonyms": [],
+        "synonyms": ["Sirene"],
+        "tabooWords": ["Meer", "Schwanz", "Fisch", "Mädchen", "Märchen"],
+        "hint": "Ein Mädchen mit einem Fischschwanz"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fairy",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Фея",
+        "antonyms": ["відьма"],
+        "synonyms": ["чарівниця"],
+        "tabooWords": ["крила", "магія", "казка", "паличка", "дівчинка"],
+        "hint": "Маленька чарівниця з крильцями"
+      },
+      "EN": {
+        "word": "Fairy",
+        "antonyms": ["witch"],
+        "synonyms": ["enchantress"],
+        "tabooWords": ["wings", "magic", "fairy-tale", "wand", "girl"],
+        "hint": "A small enchantress with wings"
+      },
+      "DE": {
+        "word": "Fee",
+        "antonyms": ["Hexe"],
+        "synonyms": ["Zauberin"],
+        "tabooWords": ["Flügel", "Magie", "Märchen", "Zauberstab", "Mädchen"],
+        "hint": "Eine kleine Zauberin mit Flügeln"
+      }
+    }
+  },
+  {
+    "conceptId": "general-knight",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Лицар",
+        "antonyms": [],
+        "synonyms": ["воїн"],
+        "tabooWords": ["обладунки", "меч", "замок", "кінь", "король"],
+        "hint": "Воїн у залізних обладунках"
+      },
+      "EN": {
+        "word": "Knight",
+        "antonyms": [],
+        "synonyms": ["warrior"],
+        "tabooWords": ["armor", "sword", "castle", "horse", "king"],
+        "hint": "A warrior in iron armor"
+      },
+      "DE": {
+        "word": "Ritter",
+        "antonyms": [],
+        "synonyms": ["Krieger"],
+        "tabooWords": ["Rüstung", "Schwert", "Schloss", "Pferd", "König"],
+        "hint": "Ein Krieger in eiserner Rüstung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pirate",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Пірат",
+        "antonyms": [],
+        "synonyms": ["розбійник", "корсар"],
+        "tabooWords": ["корабель", "море", "скарб", "око", "капітан"],
+        "hint": "Морський розбійник"
+      },
+      "EN": {
+        "word": "Pirate",
+        "antonyms": [],
+        "synonyms": ["robber", "corsair"],
+        "tabooWords": ["ship", "sea", "treasure", "eye", "captain"],
+        "hint": "A sea robber"
+      },
+      "DE": {
+        "word": "Pirat",
+        "antonyms": [],
+        "synonyms": ["Seeräuber", "Korsar"],
+        "tabooWords": ["Schiff", "Meer", "Schatz", "Auge", "Kapitän"],
+        "hint": "Ein Seeräuber"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cowboy",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Ковбой",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["капелюх", "кінь", "Америка", "пістолет", "Дикий"],
+        "hint": "Американський пастух на коні"
+      },
+      "EN": {
+        "word": "Cowboy",
+        "antonyms": [],
+        "synonyms": ["herder"],
+        "tabooWords": ["hat", "horse", "America", "gun", "Wild"],
+        "hint": "An American cattle herder on horseback"
+      },
+      "DE": {
+        "word": "Cowboy",
+        "antonyms": [],
+        "synonyms": ["Hirte"],
+        "tabooWords": ["Hut", "Pferd", "Amerika", "Pistole", "Wild"],
+        "hint": "Ein amerikanischer Hirte auf einem Pferd"
+      }
+    }
+  },
+  {
+    "conceptId": "general-ninja",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Ніндзя",
+        "antonyms": ["самурай"],
+        "synonyms": ["вбивця"],
+        "tabooWords": ["Японія", "чорний", "швидкий", "зброя", "ховатися"],
+        "hint": "Японський таємний воїн"
+      },
+      "EN": {
+        "word": "Ninja",
+        "antonyms": ["samurai"],
+        "synonyms": ["assassin"],
+        "tabooWords": ["Japan", "black", "fast", "weapon", "hide"],
+        "hint": "A Japanese secret warrior"
+      },
+      "DE": {
+        "word": "Ninja",
+        "antonyms": ["Samurai"],
+        "synonyms": ["Attentäter"],
+        "tabooWords": ["Japan", "schwarz", "schnell", "Waffe", "verstecken"],
+        "hint": "Ein japanischer geheimer Krieger"
+      }
+    }
+  },
+  {
+    "conceptId": "general-robot",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Робот",
+        "antonyms": ["людина"],
+        "synonyms": ["кіборг", "андроїд"],
+        "tabooWords": ["метал", "машина", "програма", "штучний", "майбутнє"],
+        "hint": "Механічна машина зі штучним інтелектом"
+      },
+      "EN": {
+        "word": "Robot",
+        "antonyms": ["human"],
+        "synonyms": ["cyborg", "android"],
+        "tabooWords": ["metal", "machine", "program", "artificial", "future"],
+        "hint": "A mechanical machine with artificial intelligence"
+      },
+      "DE": {
+        "word": "Roboter",
+        "antonyms": ["Mensch"],
+        "synonyms": ["Cyborg", "Android"],
+        "tabooWords": ["Metall", "Maschine", "Programm", "künstlich", "Zukunft"],
+        "hint": "Eine mechanische Maschine mit künstlicher Intelligenz"
+      }
+    }
+  },
+  {
+    "conceptId": "general-heart",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Серце",
+        "antonyms": [],
+        "synonyms": ["мотор"],
+        "tabooWords": ["любов", "кров", "орган", "груди", "червоне"],
+        "hint": "Орган, що качає кров"
+      },
+      "EN": {
+        "word": "Heart",
+        "antonyms": [],
+        "synonyms": ["motor"],
+        "tabooWords": ["love", "blood", "organ", "chest", "red"],
+        "hint": "An organ that pumps blood"
+      },
+      "DE": {
+        "word": "Herz",
+        "antonyms": [],
+        "synonyms": ["Motor"],
+        "tabooWords": ["Liebe", "Blut", "Organ", "Brust", "rot"],
+        "hint": "Ein Organ, das Blut pumpt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-star",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Зірка",
+        "antonyms": [],
+        "synonyms": ["планета", "світило"],
+        "tabooWords": ["небо", "ніч", "світити", "космос", "п'ять"],
+        "hint": "Небесне тіло, що світиться вночі"
+      },
+      "EN": {
+        "word": "Star",
+        "antonyms": [],
+        "synonyms": ["planet", "luminary"],
+        "tabooWords": ["sky", "night", "shine", "space", "five"],
+        "hint": "A glowing celestial body at night"
+      },
+      "DE": {
+        "word": "Stern",
+        "antonyms": [],
+        "synonyms": ["Planet", "Gestirn"],
+        "tabooWords": ["Himmel", "Nacht", "leuchten", "Weltraum", "fünf"],
+        "hint": "Ein leuchtender Himmelskörper in der Nacht"
+      }
+    }
+  },
+  {
+    "conceptId": "general-moon",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Місяць",
+        "antonyms": ["сонце"],
+        "synonyms": ["супутник"],
+        "tabooWords": ["небо", "ніч", "зорі", "вовк", "світити"],
+        "hint": "Природний супутник Землі"
+      },
+      "EN": {
+        "word": "Moon",
+        "antonyms": ["sun"],
+        "synonyms": ["satellite"],
+        "tabooWords": ["sky", "night", "stars", "wolf", "shine"],
+        "hint": "The natural satellite of the Earth"
+      },
+      "DE": {
+        "word": "Mond",
+        "antonyms": ["Sonne"],
+        "synonyms": ["Trabant"],
+        "tabooWords": ["Himmel", "Nacht", "Sterne", "Wolf", "scheinen"],
+        "hint": "Der natürliche Satellit der Erde"
+      }
+    }
+  },
+  {
+    "conceptId": "general-circle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Коло",
+        "antonyms": ["квадрат", "кут"],
+        "synonyms": ["круг", "сфера"],
+        "tabooWords": ["фігура", "кругле", "лінія", "колесо", "малювати"],
+        "hint": "Геометрична фігура без кутів"
+      },
+      "EN": {
+        "word": "Circle",
+        "antonyms": ["square", "angle"],
+        "synonyms": ["round", "sphere"],
+        "tabooWords": ["figure", "round", "line", "wheel", "draw"],
+        "hint": "A geometric figure without angles"
+      },
+      "DE": {
+        "word": "Kreis",
+        "antonyms": ["Quadrat", "Winkel"],
+        "synonyms": ["Rund", "Sphäre"],
+        "tabooWords": ["Figur", "rund", "Linie", "Rad", "zeichnen"],
+        "hint": "Eine geometrische Figur ohne Ecken"
+      }
+    }
+  },
+  {
+    "conceptId": "general-triangle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Трикутник",
+        "antonyms": ["коло", "квадрат"],
+        "synonyms": [],
+        "tabooWords": ["фігура", "три", "кут", "геометрія", "піраміда"],
+        "hint": "Фігура з трьома кутами"
+      },
+      "EN": {
+        "word": "Triangle",
+        "antonyms": ["circle", "square"],
+        "synonyms": [],
+        "tabooWords": ["figure", "three", "angle", "geometry", "pyramid"],
+        "hint": "A figure with three angles"
+      },
+      "DE": {
+        "word": "Dreieck",
+        "antonyms": ["Kreis", "Quadrat"],
+        "synonyms": [],
+        "tabooWords": ["Figur", "drei", "Winkel", "Geometrie", "Pyramide"],
+        "hint": "Eine Figur mit drei Winkeln"
+      }
+    }
+  },
+  {
+    "conceptId": "general-square-shape",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Квадрат",
+        "antonyms": ["коло", "трикутник"],
+        "synonyms": ["чотирикутник"],
+        "tabooWords": ["фігура", "чотири", "кут", "рівний", "сторона"],
+        "hint": "Фігура з чотирма однаковими сторонами"
+      },
+      "EN": {
+        "word": "Square",
+        "antonyms": ["circle", "triangle"],
+        "synonyms": ["quadrilateral"],
+        "tabooWords": ["figure", "four", "angle", "equal", "side"],
+        "hint": "A figure with four equal sides"
+      },
+      "DE": {
+        "word": "Quadrat",
+        "antonyms": ["Kreis", "Dreieck"],
+        "synonyms": ["Viereck"],
+        "tabooWords": ["Figur", "vier", "Winkel", "gleich", "Seite"],
+        "hint": "Eine Figur mit vier gleichen Seiten"
+      }
+    }
+  },
+  {
+    "conceptId": "general-spiral",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Спіраль",
+        "antonyms": ["пряма", "лінія"],
+        "synonyms": ["завиток"],
+        "tabooWords": ["крутити", "форма", "равлик", "пружина", "коло"],
+        "hint": "Лінія, що закручується навколо центру"
+      },
+      "EN": {
+        "word": "Spiral",
+        "antonyms": ["straight", "line"],
+        "synonyms": ["curl", "coil"],
+        "tabooWords": ["twist", "shape", "snail", "spring", "circle"],
+        "hint": "A line twisting around a center"
+      },
+      "DE": {
+        "word": "Spirale",
+        "antonyms": ["Gerade", "Linie"],
+        "synonyms": ["Windung", "Schnecke"],
+        "tabooWords": ["drehen", "Form", "Schnecke", "Feder", "Kreis"],
+        "hint": "Eine Linie, die sich um ein Zentrum windet"
+      }
+    }
+  },
+  {
+    "conceptId": "general-arrow",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Стрілка",
+        "antonyms": [],
+        "synonyms": ["вказівник"],
+        "tabooWords": ["напрямок", "показувати", "годинник", "компас", "знак"],
+        "hint": "Знак, що вказує напрямок"
+      },
+      "EN": {
+        "word": "Arrow",
+        "antonyms": [],
+        "synonyms": ["pointer", "indicator"],
+        "tabooWords": ["direction", "show", "clock", "compass", "sign"],
+        "hint": "A sign pointing a direction"
+      },
+      "DE": {
+        "word": "Pfeil",
+        "antonyms": [],
+        "synonyms": ["Zeiger", "Richtungsanzeiger"],
+        "tabooWords": ["Richtung", "zeigen", "Uhr", "Kompass", "Zeichen"],
+        "hint": "Ein Zeichen, das die Richtung anzeigt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cross",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Хрест",
+        "antonyms": [],
+        "synonyms": ["плюс"],
+        "tabooWords": ["лінія", "перетин", "церква", "релігія", "знак"],
+        "hint": "Дві лінії, що перетинаються"
+      },
+      "EN": {
+        "word": "Cross",
+        "antonyms": [],
+        "synonyms": ["plus"],
+        "tabooWords": ["line", "intersection", "church", "religion", "sign"],
+        "hint": "Two intersecting lines"
+      },
+      "DE": {
+        "word": "Kreuz",
+        "antonyms": [],
+        "synonyms": ["Plus"],
+        "tabooWords": ["Linie", "Schnittpunkt", "Kirche", "Religion", "Zeichen"],
+        "hint": "Zwei sich kreuzende Linien"
+      }
+    }
+  },
+  {
+    "conceptId": "general-crown",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Корона",
+        "antonyms": [],
+        "synonyms": ["вінець", "діадема"],
+        "tabooWords": ["король", "голова", "золото", "влада", "принцеса"],
+        "hint": "Золотий головний убір монарха"
+      },
+      "EN": {
+        "word": "Crown",
+        "antonyms": [],
+        "synonyms": ["diadem", "coronet"],
+        "tabooWords": ["king", "head", "gold", "power", "princess"],
+        "hint": "A gold headgear of a monarch"
+      },
+      "DE": {
+        "word": "Krone",
+        "antonyms": [],
+        "synonyms": ["Diadem"],
+        "tabooWords": ["König", "Kopf", "Gold", "Macht", "Prinzessin"],
+        "hint": "Eine goldene Kopfbedeckung eines Monarchen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-freedom",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Свобода",
+        "antonyms": ["рабство", "тюрма"],
+        "synonyms": ["воля", "незалежність"],
+        "tabooWords": ["робити", "вибір", "права", "птах", "людина"],
+        "hint": "Можливість діяти за власним бажанням"
+      },
+      "EN": {
+        "word": "Freedom",
+        "antonyms": ["slavery", "prison"],
+        "synonyms": ["liberty", "independence"],
+        "tabooWords": ["do", "choice", "rights", "bird", "person"],
+        "hint": "The ability to act as one wishes"
+      },
+      "DE": {
+        "word": "Freiheit",
+        "antonyms": ["Sklaverei", "Gefängnis"],
+        "synonyms": ["Unabhängigkeit"],
+        "tabooWords": ["tun", "Wahl", "Rechte", "Vogel", "Mensch"],
+        "hint": "Die Möglichkeit, nach eigenem Wunsch zu handeln"
+      }
+    }
+  },
+  {
+    "conceptId": "general-dream",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Мрія",
+        "antonyms": ["реальність"],
+        "synonyms": ["бажання", "фантазія"],
+        "tabooWords": ["думати", "хотіти", "мета", "майбутнє", "спати"],
+        "hint": "Сильне бажання чогось у майбутньому"
+      },
+      "EN": {
+        "word": "Dream",
+        "antonyms": ["reality"],
+        "synonyms": ["desire", "fantasy"],
+        "tabooWords": ["think", "want", "goal", "future", "sleep"],
+        "hint": "A strong desire for something in the future"
+      },
+      "DE": {
+        "word": "Traum",
+        "antonyms": ["Realität"],
+        "synonyms": ["Wunsch", "Fantasie"],
+        "tabooWords": ["denken", "wollen", "Ziel", "Zukunft", "schlafen"],
+        "hint": "Ein starker Wunsch für die Zukunft"
+      }
+    }
+  },
+  {
+    "conceptId": "general-happiness",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Щастя",
+        "antonyms": ["горе", "сум"],
+        "synonyms": ["радість", "втіха"],
+        "tabooWords": ["почуття", "усмішка", "емоція", "добре", "життя"],
+        "hint": "Стан найвищого задоволення життям"
+      },
+      "EN": {
+        "word": "Happiness",
+        "antonyms": ["grief", "sadness"],
+        "synonyms": ["joy", "delight"],
+        "tabooWords": ["feeling", "smile", "emotion", "good", "life"],
+        "hint": "A state of supreme satisfaction with life"
+      },
+      "DE": {
+        "word": "Glück",
+        "antonyms": ["Kummer", "Traurigkeit"],
+        "synonyms": ["Freude", "Wonne"],
+        "tabooWords": ["Gefühl", "Lächeln", "Emotion", "gut", "Leben"],
+        "hint": "Ein Zustand höchster Lebenszufriedenheit"
+      }
+    }
+  },
+  {
+    "conceptId": "general-love",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Любов",
+        "antonyms": ["ненависть"],
+        "synonyms": ["кохання", "симпатія"],
+        "tabooWords": ["серце", "почуття", "людина", "пара", "романтика"],
+        "hint": "Сильне почуття прив'язаності до когось"
+      },
+      "EN": {
+        "word": "Love",
+        "antonyms": ["hate"],
+        "synonyms": ["affection", "romance"],
+        "tabooWords": ["heart", "feeling", "person", "couple", "romance"],
+        "hint": "A strong feeling of affection for someone"
+      },
+      "DE": {
+        "word": "Liebe",
+        "antonyms": ["Hass"],
+        "synonyms": ["Zuneigung", "Romanze"],
+        "tabooWords": ["Herz", "Gefühl", "Person", "Paar", "Romantik"],
+        "hint": "Ein starkes Gefühl der Zuneigung zu jemandem"
+      }
+    }
+  },
+  {
+    "conceptId": "general-friendship",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Дружба",
+        "antonyms": ["ворожнеча"],
+        "synonyms": ["товариськість"],
+        "tabooWords": ["друг", "разом", "довіра", "допомога", "стосунки"],
+        "hint": "Близькі стосунки між друзями"
+      },
+      "EN": {
+        "word": "Friendship",
+        "antonyms": ["enmity"],
+        "synonyms": ["camaraderie", "companionship"],
+        "tabooWords": ["friend", "together", "trust", "help", "relationship"],
+        "hint": "Close relationships between friends"
+      },
+      "DE": {
+        "word": "Freundschaft",
+        "antonyms": ["Feindschaft"],
+        "synonyms": ["Kameradschaft"],
+        "tabooWords": ["Freund", "zusammen", "Vertrauen", "Hilfe", "Beziehung"],
+        "hint": "Enge Beziehungen zwischen Freunden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-strength",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Сила",
+        "antonyms": ["слабкість"],
+        "synonyms": ["міць", "енергія"],
+        "tabooWords": ["м'язи", "спорт", "піднімати", "потужність", "важке"],
+        "hint": "Здатність долати фізичний опір"
+      },
+      "EN": {
+        "word": "Strength",
+        "antonyms": ["weakness"],
+        "synonyms": ["power", "energy"],
+        "tabooWords": ["muscles", "sport", "lift", "power", "heavy"],
+        "hint": "The ability to overcome physical resistance"
+      },
+      "DE": {
+        "word": "Stärke",
+        "antonyms": ["Schwäche"],
+        "synonyms": ["Kraft", "Macht"],
+        "tabooWords": ["Muskeln", "Sport", "heben", "Leistung", "schwer"],
+        "hint": "Die Fähigkeit, physischen Widerstand zu überwinden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-wisdom",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Мудрість",
+        "antonyms": ["дурість"],
+        "synonyms": ["розум", "досвід"],
+        "tabooWords": ["старий", "знати", "філософ", "книга", "рішення"],
+        "hint": "Глибокий розум, заснований на досвіді"
+      },
+      "EN": {
+        "word": "Wisdom",
+        "antonyms": ["stupidity"],
+        "synonyms": ["mind", "experience"],
+        "tabooWords": ["old", "know", "philosopher", "book", "decision"],
+        "hint": "Deep intelligence based on experience"
+      },
+      "DE": {
+        "word": "Weisheit",
+        "antonyms": ["Dummheit"],
+        "synonyms": ["Verstand", "Erfahrung"],
+        "tabooWords": ["alt", "wissen", "Philosoph", "Buch", "Entscheidung"],
+        "hint": "Tiefer Verstand basierend auf Erfahrung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-time",
+    "difficulty": 3,
+    "translations": {
+      "UA": {
+        "word": "Час",
+        "antonyms": ["вічність"],
+        "synonyms": ["період", "пора"],
+        "tabooWords": ["годинник", "стрілка", "хвилина", "йти", "життя"],
+        "hint": "Те, що вимірюють годинником"
+      },
+      "EN": {
+        "word": "Time",
+        "antonyms": ["eternity"],
+        "synonyms": ["period", "era"],
+        "tabooWords": ["clock", "hand", "minute", "go", "life"],
+        "hint": "What is measured by a clock"
+      },
+      "DE": {
+        "word": "Zeit",
+        "antonyms": ["Ewigkeit"],
+        "synonyms": ["Periode", "Epoche"],
+        "tabooWords": ["Uhr", "Zeiger", "Minute", "gehen", "Leben"],
+        "hint": "Was mit einer Uhr gemessen wird"
+      }
+    }
+  },
+  {
+    "conceptId": "general-secret",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Таємниця",
+        "antonyms": ["правда"],
+        "synonyms": ["секрет", "загадка"],
+        "tabooWords": ["знати", "розповідати", "мовчати", "ховати", "ніхто"],
+        "hint": "Те, що приховують від інших"
+      },
+      "EN": {
+        "word": "Secret",
+        "antonyms": ["truth"],
+        "synonyms": ["mystery", "riddle"],
+        "tabooWords": ["know", "tell", "silent", "hide", "nobody"],
+        "hint": "Something hidden from others"
+      },
+      "DE": {
+        "word": "Geheimnis",
+        "antonyms": ["Wahrheit"],
+        "synonyms": ["Mysterium", "Rätsel"],
+        "tabooWords": ["wissen", "erzählen", "schweigen", "verstecken", "niemand"],
+        "hint": "Etwas, das vor anderen verborgen wird"
+      }
+    }
+  },
+  {
+    "conceptId": "general-adventure",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Пригода",
+        "antonyms": ["рутина", "нудьга"],
+        "synonyms": ["авантюра", "подорож"],
+        "tabooWords": ["цікаво", "історія", "небезпека", "герой", "шукати"],
+        "hint": "Захоплива і незвичайна подія"
+      },
+      "EN": {
+        "word": "Adventure",
+        "antonyms": ["routine", "boredom"],
+        "synonyms": ["escapade", "journey"],
+        "tabooWords": ["interesting", "story", "danger", "hero", "seek"],
+        "hint": "An exciting and unusual event"
+      },
+      "DE": {
+        "word": "Abenteuer",
+        "antonyms": ["Routine", "Langeweile"],
+        "synonyms": ["Eskapade", "Reise"],
+        "tabooWords": ["interessant", "Geschichte", "Gefahr", "Held", "suchen"],
+        "hint": "Ein spannendes und ungewöhnliches Ereignis"
+      }
+    }
+  },
+  {
+    "conceptId": "general-park",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Парк",
+        "antonyms": [],
+        "synonyms": ["сквер", "сад"],
+        "tabooWords": ["дерева", "гуляти", "лавка", "місто", "природа"],
+        "hint": "Зелена зона для відпочинку в місті"
+      },
+      "EN": {
+        "word": "Park",
+        "antonyms": [],
+        "synonyms": ["square", "garden"],
+        "tabooWords": ["trees", "walk", "bench", "city", "nature"],
+        "hint": "A green area for recreation in the city"
+      },
+      "DE": {
+        "word": "Park",
+        "antonyms": [],
+        "synonyms": ["Anlage", "Garten"],
+        "tabooWords": ["Bäume", "spazieren", "Bank", "Stadt", "Natur"],
+        "hint": "Eine Grünfläche zur Erholung in der Stadt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-fountain",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Фонтан",
+        "antonyms": [],
+        "synonyms": ["водограй"],
+        "tabooWords": ["вода", "парк", "бризки", "струмінь", "місто"],
+        "hint": "Споруда, з якої б'є вода"
+      },
+      "EN": {
+        "word": "Fountain",
+        "antonyms": [],
+        "synonyms": ["spring"],
+        "tabooWords": ["water", "park", "splashes", "jet", "city"],
+        "hint": "A structure from which water shoots"
+      },
+      "DE": {
+        "word": "Brunnen",
+        "antonyms": [],
+        "synonyms": ["Springbrunnen"],
+        "tabooWords": ["Wasser", "Park", "Spritzer", "Strahl", "Stadt"],
+        "hint": "Ein Bauwerk, aus dem Wasser sprudelt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-monument",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пам'ятник",
+        "antonyms": [],
+        "synonyms": ["монумент", "статуя"],
+        "tabooWords": ["камінь", "герой", "площа", "історія", "скульптура"],
+        "hint": "Споруда в пам'ять про когось"
+      },
+      "EN": {
+        "word": "Monument",
+        "antonyms": [],
+        "synonyms": ["memorial", "statue"],
+        "tabooWords": ["stone", "hero", "square", "history", "sculpture"],
+        "hint": "A structure in memory of someone"
+      },
+      "DE": {
+        "word": "Denkmal",
+        "antonyms": [],
+        "synonyms": ["Monument", "Statue"],
+        "tabooWords": ["Stein", "Held", "Platz", "Geschichte", "Skulptur"],
+        "hint": "Ein Bauwerk zur Erinnerung an jemanden"
+      }
+    }
+  },
+  {
+    "conceptId": "general-city-square",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Площа",
+        "antonyms": ["провулок"],
+        "synonyms": ["майдан"],
+        "tabooWords": ["місто", "центр", "люди", "широка", "пам'ятник"],
+        "hint": "Великий відкритий простір у місті"
+      },
+      "EN": {
+        "word": "Square",
+        "antonyms": ["alley"],
+        "synonyms": ["plaza", "piazza"],
+        "tabooWords": ["city", "center", "people", "wide", "monument"],
+        "hint": "A large open space in a city"
+      },
+      "DE": {
+        "word": "Platz",
+        "antonyms": ["Gasse"],
+        "synonyms": ["Marktplatz"],
+        "tabooWords": ["Stadt", "Zentrum", "Leute", "breit", "Denkmal"],
+        "hint": "Ein großer offener Raum in einer Stadt"
+      }
+    }
+  },
+  {
+    "conceptId": "general-street",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Вулиця",
+        "antonyms": ["площа", "глухий кут"],
+        "synonyms": ["дорога", "проспект"],
+        "tabooWords": ["будинки", "місто", "машина", "адреса", "йти"],
+        "hint": "Дорога в місті з будинками"
+      },
+      "EN": {
+        "word": "Street",
+        "antonyms": ["square", "dead end"],
+        "synonyms": ["road", "avenue"],
+        "tabooWords": ["houses", "city", "car", "address", "walk"],
+        "hint": "A road in a city with houses"
+      },
+      "DE": {
+        "word": "Straße",
+        "antonyms": ["Platz", "Sackgasse"],
+        "synonyms": ["Weg", "Allee"],
+        "tabooWords": ["Häuser", "Stadt", "Auto", "Adresse", "gehen"],
+        "hint": "Ein Weg in einer Stadt mit Häusern"
+      }
+    }
+  },
+  {
+    "conceptId": "general-alley",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Провулок",
+        "antonyms": ["проспект", "площа"],
+        "synonyms": ["вуличка"],
+        "tabooWords": ["вузький", "вулиця", "місто", "будинки", "поворот"],
+        "hint": "Вузька вуличка між великими вулицями"
+      },
+      "EN": {
+        "word": "Alley",
+        "antonyms": ["avenue", "square"],
+        "synonyms": ["lane", "backstreet"],
+        "tabooWords": ["narrow", "street", "city", "houses", "turn"],
+        "hint": "A narrow street between larger ones"
+      },
+      "DE": {
+        "word": "Gasse",
+        "antonyms": ["Allee", "Platz"],
+        "synonyms": ["Weg", "Sträßchen"],
+        "tabooWords": ["schmal", "Straße", "Stadt", "Häuser", "Kurve"],
+        "hint": "Eine schmale Straße zwischen größeren"
+      }
+    }
+  },
+  {
+    "conceptId": "general-embankment",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Набережна",
+        "antonyms": [],
+        "synonyms": ["берег"],
+        "tabooWords": ["річка", "вода", "гуляти", "місто", "море"],
+        "hint": "Вулиця вздовж берега водойми"
+      },
+      "EN": {
+        "word": "Embankment",
+        "antonyms": [],
+        "synonyms": ["promenade", "waterfront"],
+        "tabooWords": ["river", "water", "walk", "city", "sea"],
+        "hint": "A street along the shore of a reservoir"
+      },
+      "DE": {
+        "word": "Uferpromenade",
+        "antonyms": [],
+        "synonyms": ["Kaimauer", "Ufer"],
+        "tabooWords": ["Fluss", "Wasser", "spazieren", "Stadt", "Meer"],
+        "hint": "Eine Straße am Ufer eines Gewässers"
+      }
+    }
+  },
+  {
+    "conceptId": "general-forest",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Ліс",
+        "antonyms": ["пустеля", "поле"],
+        "synonyms": ["гай", "бір"],
+        "tabooWords": ["дерева", "гриби", "звірі", "природа", "заблукати"],
+        "hint": "Велика територія, заросла деревами"
+      },
+      "EN": {
+        "word": "Forest",
+        "antonyms": ["desert", "field"],
+        "synonyms": ["wood", "grove"],
+        "tabooWords": ["trees", "mushrooms", "animals", "nature", "get lost"],
+        "hint": "A large area covered with trees"
+      },
+      "DE": {
+        "word": "Wald",
+        "antonyms": ["Wüste", "Feld"],
+        "synonyms": ["Forst", "Hain"],
+        "tabooWords": ["Bäume", "Pilze", "Tiere", "Natur", "verirren"],
+        "hint": "Ein großes Gebiet, bewachsen mit Bäumen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-field",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Поле",
+        "antonyms": ["ліс", "місто"],
+        "synonyms": ["луг", "нива"],
+        "tabooWords": ["трава", "пшениця", "широке", "квіти", "трактор"],
+        "hint": "Великий безлісий простір землі"
+      },
+      "EN": {
+        "word": "Field",
+        "antonyms": ["forest", "city"],
+        "synonyms": ["meadow", "pasture"],
+        "tabooWords": ["grass", "wheat", "wide", "flowers", "tractor"],
+        "hint": "A large treeless expanse of land"
+      },
+      "DE": {
+        "word": "Feld",
+        "antonyms": ["Wald", "Stadt"],
+        "synonyms": ["Wiese", "Acker"],
+        "tabooWords": ["Gras", "Weizen", "weit", "Blumen", "Traktor"],
+        "hint": "Eine große baumlose Landfläche"
+      }
+    }
+  },
+  {
+    "conceptId": "general-lake",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Озеро",
+        "antonyms": ["суша", "острів"],
+        "synonyms": ["ставок", "водойма"],
+        "tabooWords": ["вода", "плавати", "берег", "риба", "ліс"],
+        "hint": "Велика природна водойма, оточена сушею"
+      },
+      "EN": {
+        "word": "Lake",
+        "antonyms": ["land", "island"],
+        "synonyms": ["pond", "reservoir"],
+        "tabooWords": ["water", "swim", "shore", "fish", "forest"],
+        "hint": "A large natural body of water surrounded by land"
+      },
+      "DE": {
+        "word": "See",
+        "antonyms": ["Land", "Insel"],
+        "synonyms": ["Teich", "Gewässer"],
+        "tabooWords": ["Wasser", "schwimmen", "Ufer", "Fisch", "Wald"],
+        "hint": "Ein großes natürliches Gewässer, umgeben von Land"
+      }
+    }
+  },
+  {
+    "conceptId": "general-mountain",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гора",
+        "antonyms": ["долина", "яма"],
+        "synonyms": ["скеля", "вершина"],
+        "tabooWords": ["високо", "сніг", "лізти", "камінь", "Альпи"],
+        "hint": "Високе підняття земної поверхні"
+      },
+      "EN": {
+        "word": "Mountain",
+        "antonyms": ["valley", "hole"],
+        "synonyms": ["rock", "peak"],
+        "tabooWords": ["high", "snow", "climb", "stone", "Alps"],
+        "hint": "A high elevation of the earth's surface"
+      },
+      "DE": {
+        "word": "Berg",
+        "antonyms": ["Tal", "Grube"],
+        "synonyms": ["Fels", "Gipfel"],
+        "tabooWords": ["hoch", "Schnee", "klettern", "Stein", "Alpen"],
+        "hint": "Eine hohe Erhebung der Erdoberfläche"
+      }
+    }
+  },
+  {
+    "conceptId": "general-valley",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Долина",
+        "antonyms": ["гора", "вершина"],
+        "synonyms": ["улоговина", "низина"],
+        "tabooWords": ["річка", "гори", "низ", "зелена", "поле"],
+        "hint": "Пониження між горами"
+      },
+      "EN": {
+        "word": "Valley",
+        "antonyms": ["mountain", "peak"],
+        "synonyms": ["hollow", "lowland"],
+        "tabooWords": ["river", "mountains", "bottom", "green", "field"],
+        "hint": "A depression between mountains"
+      },
+      "DE": {
+        "word": "Tal",
+        "antonyms": ["Berg", "Gipfel"],
+        "synonyms": ["Senke", "Tiefland"],
+        "tabooWords": ["Fluss", "Berge", "unten", "grün", "Feld"],
+        "hint": "Eine Vertiefung zwischen Bergen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-island",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Острів",
+        "antonyms": ["материк", "континент"],
+        "synonyms": ["атол"],
+        "tabooWords": ["море", "вода", "земля", "океан", "пальма"],
+        "hint": "Частина суші, з усіх боків оточена водою"
+      },
+      "EN": {
+        "word": "Island",
+        "antonyms": ["mainland", "continent"],
+        "synonyms": ["isle", "atoll"],
+        "tabooWords": ["sea", "water", "land", "ocean", "palm"],
+        "hint": "A piece of land completely surrounded by water"
+      },
+      "DE": {
+        "word": "Insel",
+        "antonyms": ["Festland", "Kontinent"],
+        "synonyms": ["Eiland", "Atoll"],
+        "tabooWords": ["Meer", "Wasser", "Land", "Ozean", "Palme"],
+        "hint": "Ein Stück Land, komplett von Wasser umgeben"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cave",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Печера",
+        "antonyms": ["рівнина"],
+        "synonyms": ["грот"],
+        "tabooWords": ["гора", "темно", "камінь", "кажан", "підземний"],
+        "hint": "Порожнина всередині гори або під землею"
+      },
+      "EN": {
+        "word": "Cave",
+        "antonyms": ["plain"],
+        "synonyms": ["grotto", "cavern"],
+        "tabooWords": ["mountain", "dark", "stone", "bat", "underground"],
+        "hint": "A hollow inside a mountain or underground"
+      },
+      "DE": {
+        "word": "Höhle",
+        "antonyms": ["Ebene"],
+        "synonyms": ["Grotte"],
+        "tabooWords": ["Berg", "dunkel", "Stein", "Fledermaus", "unterirdisch"],
+        "hint": "Ein Hohlraum in einem Berg oder unter der Erde"
+      }
+    }
+  },
+  {
+    "conceptId": "general-waterfall",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Водоспад",
+        "antonyms": [],
+        "synonyms": ["каскад"],
+        "tabooWords": ["вода", "падати", "гора", "річка", "висота"],
+        "hint": "Стрімке падіння води з висоти"
+      },
+      "EN": {
+        "word": "Waterfall",
+        "antonyms": [],
+        "synonyms": ["cascade"],
+        "tabooWords": ["water", "fall", "mountain", "river", "height"],
+        "hint": "A steep drop of water from a height"
+      },
+      "DE": {
+        "word": "Wasserfall",
+        "antonyms": [],
+        "synonyms": ["Kaskade"],
+        "tabooWords": ["Wasser", "fallen", "Berg", "Fluss", "Höhe"],
+        "hint": "Ein steiler Wasserabfall aus großer Höhe"
+      }
+    }
+  },
+  {
+    "conceptId": "general-volcano",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Вулкан",
+        "antonyms": [],
+        "synonyms": ["кратер"],
+        "tabooWords": ["лава", "виверження", "гора", "попіл", "вогонь"],
+        "hint": "Вогнедишна гора з кратером"
+      },
+      "EN": {
+        "word": "Volcano",
+        "antonyms": [],
+        "synonyms": ["crater"],
+        "tabooWords": ["lava", "eruption", "mountain", "ash", "fire"],
+        "hint": "A fire-breathing mountain with a crater"
+      },
+      "DE": {
+        "word": "Vulkan",
+        "antonyms": [],
+        "synonyms": ["Krater"],
+        "tabooWords": ["Lava", "Ausbruch", "Berg", "Asche", "Feuer"],
+        "hint": "Ein feuerspeiender Berg mit Krater"
+      }
+    }
+  },
+  {
+    "conceptId": "general-desert",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пустеля",
+        "antonyms": ["ліс", "океан"],
+        "synonyms": [],
+        "tabooWords": ["пісок", "спека", "верблюд", "кактус", "вода"],
+        "hint": "Сухе місце з великою кількістю піску"
+      },
+      "EN": {
+        "word": "Desert",
+        "antonyms": ["forest", "ocean"],
+        "synonyms": [],
+        "tabooWords": ["sand", "heat", "camel", "cactus", "water"],
+        "hint": "A dry place with lots of sand"
+      },
+      "DE": {
+        "word": "Wüste",
+        "antonyms": ["Wald", "Ozean"],
+        "synonyms": [],
+        "tabooWords": ["Sand", "Hitze", "Kamel", "Kaktus", "Wasser"],
+        "hint": "Ein trockener Ort mit viel Sand"
+      }
+    }
+  },
+  {
+    "conceptId": "general-jungle",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Джунглі",
+        "antonyms": ["пустеля", "місто"],
+        "synonyms": ["тропіки"],
+        "tabooWords": ["ліс", "дерева", "ліани", "Африка", "мавпа"],
+        "hint": "Густий тропічний ліс"
+      },
+      "EN": {
+        "word": "Jungle",
+        "antonyms": ["desert", "city"],
+        "synonyms": ["tropics"],
+        "tabooWords": ["forest", "trees", "vines", "Africa", "monkey"],
+        "hint": "A dense tropical forest"
+      },
+      "DE": {
+        "word": "Dschungel",
+        "antonyms": ["Wüste", "Stadt"],
+        "synonyms": ["Tropen"],
+        "tabooWords": ["Wald", "Bäume", "Lianen", "Afrika", "Affe"],
+        "hint": "Ein dichter tropischer Wald"
+      }
+    }
+  },
+  {
+    "conceptId": "general-swamp",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Болото",
+        "antonyms": ["пустеля"],
+        "synonyms": ["трясовина"],
+        "tabooWords": ["вода", "бруд", "жаба", "мокре", "зелене"],
+        "hint": "Мокра і брудна ділянка землі"
+      },
+      "EN": {
+        "word": "Swamp",
+        "antonyms": ["desert"],
+        "synonyms": ["bog", "marsh"],
+        "tabooWords": ["water", "mud", "frog", "wet", "green"],
+        "hint": "A wet and muddy area of land"
+      },
+      "DE": {
+        "word": "Sumpf",
+        "antonyms": ["Wüste"],
+        "synonyms": ["Moor", "Morast"],
+        "tabooWords": ["Wasser", "Schlamm", "Frosch", "nass", "grün"],
+        "hint": "Ein nasses und schlammiges Stück Land"
+      }
+    }
+  },
+  {
+    "conceptId": "general-canyon",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Каньйон",
+        "antonyms": ["рівнина", "гора"],
+        "synonyms": ["ущелина"],
+        "tabooWords": ["гори", "глибокий", "річка", "каміння", "Америка"],
+        "hint": "Глибока ущелина між горами"
+      },
+      "EN": {
+        "word": "Canyon",
+        "antonyms": ["plain", "mountain"],
+        "synonyms": ["gorge", "ravine"],
+        "tabooWords": ["mountains", "deep", "river", "rocks", "America"],
+        "hint": "A deep gorge between mountains"
+      },
+      "DE": {
+        "word": "Canyon",
+        "antonyms": ["Ebene", "Berg"],
+        "synonyms": ["Schlucht"],
+        "tabooWords": ["Berge", "tief", "Fluss", "Steine", "Amerika"],
+        "hint": "Eine tiefe Schlucht zwischen Bergen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-chocolate",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Шоколад",
+        "antonyms": [],
+        "synonyms": ["десерт"],
+        "tabooWords": ["какао", "солодкий", "плитка", "молочний", "їсти"],
+        "hint": "Солодкий десерт із какао-бобів"
+      },
+      "EN": {
+        "word": "Chocolate",
+        "antonyms": [],
+        "synonyms": ["dessert"],
+        "tabooWords": ["cacao", "sweet", "bar", "milk", "eat"],
+        "hint": "A sweet dessert made from cocoa beans"
+      },
+      "DE": {
+        "word": "Schokolade",
+        "antonyms": [],
+        "synonyms": ["Dessert"],
+        "tabooWords": ["Kakao", "süß", "Tafel", "Milch", "essen"],
+        "hint": "Ein süßes Dessert aus Kakaobohnen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-candy",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Цукерка",
+        "antonyms": [],
+        "synonyms": ["льодяник", "солодощі"],
+        "tabooWords": ["карамель", "шоколад", "обгортка", "діти", "солодке"],
+        "hint": "Маленький солодкий виріб в обгортці"
+      },
+      "EN": {
+        "word": "Candy",
+        "antonyms": [],
+        "synonyms": ["sweet", "lollipop"],
+        "tabooWords": ["caramel", "chocolate", "wrapper", "children", "sweet"],
+        "hint": "A small sweet treat in a wrapper"
+      },
+      "DE": {
+        "word": "Süßigkeit",
+        "antonyms": [],
+        "synonyms": ["Bonbon", "Naschwerk"],
+        "tabooWords": ["Karamell", "Schokolade", "Papier", "Kinder", "süß"],
+        "hint": "Eine kleine süße Leckerei in Papier"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cake",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Торт",
+        "antonyms": [],
+        "synonyms": ["десерт"],
+        "tabooWords": ["свято", "іменини", "свічки", "солодкий", "крем"],
+        "hint": "Великий святковий десерт зі свічками"
+      },
+      "EN": {
+        "word": "Cake",
+        "antonyms": [],
+        "synonyms": ["dessert"],
+        "tabooWords": ["holiday", "birthday", "candles", "sweet", "cream"],
+        "hint": "A large festive dessert with candles"
+      },
+      "DE": {
+        "word": "Torte",
+        "antonyms": [],
+        "synonyms": ["Dessert"],
+        "tabooWords": ["Fest", "Geburtstag", "Kerzen", "süß", "Creme"],
+        "hint": "Ein großes festliches Dessert mit Kerzen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-cookie",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Печиво",
+        "antonyms": [],
+        "synonyms": ["смаколик", "бісквіт"],
+        "tabooWords": ["чай", "солодке", "випічка", "крихти", "духовка"],
+        "hint": "Суха солодка випічка до чаю"
+      },
+      "EN": {
+        "word": "Cookie",
+        "antonyms": [],
+        "synonyms": ["biscuit"],
+        "tabooWords": ["tea", "sweet", "pastry", "crumbs", "oven"],
+        "hint": "A dry sweet pastry for tea"
+      },
+      "DE": {
+        "word": "Keks",
+        "antonyms": [],
+        "synonyms": ["Plätzchen", "Biskuit"],
+        "tabooWords": ["Tee", "süß", "Gebäck", "Krümel", "Ofen"],
+        "hint": "Ein trockenes süßes Gebäck zum Tee"
+      }
+    }
+  },
+  {
+    "conceptId": "general-honey",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Мед",
+        "antonyms": [],
+        "synonyms": ["нектар"],
+        "tabooWords": ["бджола", "солодкий", "жовтий", "ведмідь", "вулик"],
+        "hint": "Солодкий продукт, який роблять комахи"
+      },
+      "EN": {
+        "word": "Honey",
+        "antonyms": [],
+        "synonyms": ["nectar"],
+        "tabooWords": ["bee", "sweet", "yellow", "bear", "hive"],
+        "hint": "A sweet product made by insects"
+      },
+      "DE": {
+        "word": "Honig",
+        "antonyms": [],
+        "synonyms": ["Nektar"],
+        "tabooWords": ["Biene", "süß", "gelb", "Bär", "Bienenstock"],
+        "hint": "Ein süßes Produkt, das von Insekten gemacht wird"
+      }
+    }
+  },
+  {
+    "conceptId": "general-jam",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Варення",
+        "antonyms": [],
+        "synonyms": ["джем", "повидло"],
+        "tabooWords": ["ягоди", "фрукти", "банка", "варити", "солодке"],
+        "hint": "Солодощі з уварених ягід або фруктів"
+      },
+      "EN": {
+        "word": "Jam",
+        "antonyms": [],
+        "synonyms": ["jelly", "marmalade"],
+        "tabooWords": ["berries", "fruits", "jar", "boil", "sweet"],
+        "hint": "Sweets made from boiled berries or fruits"
+      },
+      "DE": {
+        "word": "Marmelade",
+        "antonyms": [],
+        "synonyms": ["Konfitüre", "Gelee"],
+        "tabooWords": ["Beeren", "Früchte", "Glas", "kochen", "süß"],
+        "hint": "Eine Süßigkeit aus gekochten Beeren oder Früchten"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pie",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пиріг",
+        "antonyms": [],
+        "synonyms": ["випічка"],
+        "tabooWords": ["яблуко", "тісто", "піч", "духовка", "бабуся"],
+        "hint": "Запечений виріб із тіста з начинкою"
+      },
+      "EN": {
+        "word": "Pie",
+        "antonyms": [],
+        "synonyms": ["pastry"],
+        "tabooWords": ["apple", "dough", "oven", "bake", "grandma"],
+        "hint": "A baked dough item with a filling"
+      },
+      "DE": {
+        "word": "Kuchen",
+        "antonyms": [],
+        "synonyms": ["Pastete", "Gebäck"],
+        "tabooWords": ["Apfel", "Teig", "Ofen", "backen", "Oma"],
+        "hint": "Ein gebackenes Teiggericht mit Füllung"
+      }
+    }
+  },
+  {
+    "conceptId": "general-pancakes",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Млинці",
+        "antonyms": [],
+        "synonyms": ["оладки"],
+        "tabooWords": ["тісто", "сковорідка", "смажити", "круглі", "ранок"],
+        "hint": "Тонкі круглі вироби з тіста"
+      },
+      "EN": {
+        "word": "Pancakes",
+        "antonyms": [],
+        "synonyms": ["crepes", "flapjacks"],
+        "tabooWords": ["dough", "pan", "fry", "round", "morning"],
+        "hint": "Thin round items made from dough"
+      },
+      "DE": {
+        "word": "Pfannkuchen",
+        "antonyms": [],
+        "synonyms": ["Crêpes"],
+        "tabooWords": ["Teig", "Pfanne", "braten", "rund", "Morgen"],
+        "hint": "Dünne runde Teigwaren"
+      }
+    }
+  },
+  {
+    "conceptId": "general-porridge",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Каша",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["сніданок", "крупа", "варити", "молоко", "тарілка"],
+        "hint": "Популярна страва з крупи на сніданок"
+      },
+      "EN": {
+        "word": "Porridge",
+        "antonyms": [],
+        "synonyms": ["oatmeal", "cereal"],
+        "tabooWords": ["breakfast", "grains", "boil", "milk", "plate"],
+        "hint": "A popular grain dish for breakfast"
+      },
+      "DE": {
+        "word": "Brei",
+        "antonyms": [],
+        "synonyms": ["Haferbrei", "Müsli"],
+        "tabooWords": ["Frühstück", "Getreide", "kochen", "Milch", "Teller"],
+        "hint": "Ein beliebtes Getreidegericht zum Frühstück"
+      }
+    }
+  },
+  {
+    "conceptId": "general-soup",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Суп",
+        "antonyms": [],
+        "synonyms": ["борщ", "бульйон"],
+        "tabooWords": ["рідина", "ложка", "обід", "гаряче", "миска"],
+        "hint": "Рідка гаряча страва на перше"
+      },
+      "EN": {
+        "word": "Soup",
+        "antonyms": [],
+        "synonyms": ["broth", "stew"],
+        "tabooWords": ["liquid", "spoon", "lunch", "hot", "bowl"],
+        "hint": "A liquid hot dish for the first course"
+      },
+      "DE": {
+        "word": "Suppe",
+        "antonyms": [],
+        "synonyms": ["Brühe", "Eintopf"],
+        "tabooWords": ["Flüssigkeit", "Löffel", "Mittagessen", "heiß", "Schüssel"],
+        "hint": "Ein flüssiges heißes Gericht als Vorspeise"
+      }
+    }
+  },
+  {
+    "conceptId": "general-money",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Гроші",
+        "antonyms": [],
+        "synonyms": ["фінанси", "валюта"],
+        "tabooWords": ["купувати", "платити", "монети", "банк", "гаманець"],
+        "hint": "Те, чим ми розраховуємося за товари"
+      },
+      "EN": {
+        "word": "Money",
+        "antonyms": [],
+        "synonyms": ["finance", "currency"],
+        "tabooWords": ["buy", "pay", "coins", "bank", "wallet"],
+        "hint": "What we use to pay for goods"
+      },
+      "DE": {
+        "word": "Geld",
+        "antonyms": [],
+        "synonyms": ["Finanzen", "Währung"],
+        "tabooWords": ["kaufen", "bezahlen", "Münzen", "Bank", "Geldbeutel"],
+        "hint": "Womit wir für Waren bezahlen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-coin",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Монета",
+        "antonyms": ["купюра"],
+        "synonyms": ["копійка"],
+        "tabooWords": ["метал", "гроші", "кругла", "дзвеніти", "здача"],
+        "hint": "Круглі металеві гроші"
+      },
+      "EN": {
+        "word": "Coin",
+        "antonyms": ["banknote"],
+        "synonyms": ["penny", "cent"],
+        "tabooWords": ["metal", "money", "round", "ring", "change"],
+        "hint": "Round metal money"
+      },
+      "DE": {
+        "word": "Münze",
+        "antonyms": ["Geldschein"],
+        "synonyms": ["Cent"],
+        "tabooWords": ["Metall", "Geld", "rund", "klingeln", "Wechselgeld"],
+        "hint": "Rundes Geld aus Metall"
+      }
+    }
+  },
+  {
+    "conceptId": "general-banknote",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Купюра",
+        "antonyms": ["монета"],
+        "synonyms": ["банкнота"],
+        "tabooWords": ["папір", "гроші", "гаманець", "платити", "банк"],
+        "hint": "Паперові гроші в гаманці"
+      },
+      "EN": {
+        "word": "Banknote",
+        "antonyms": ["coin"],
+        "synonyms": ["bill", "paper money"],
+        "tabooWords": ["paper", "money", "wallet", "pay", "bank"],
+        "hint": "Paper money in a wallet"
+      },
+      "DE": {
+        "word": "Banknote",
+        "antonyms": ["Münze"],
+        "synonyms": ["Geldschein"],
+        "tabooWords": ["Papier", "Geld", "Geldbeutel", "bezahlen", "Bank"],
+        "hint": "Papiergeld in einem Geldbeutel"
+      }
+    }
+  },
+  {
+    "conceptId": "general-map",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Карта",
+        "antonyms": [],
+        "synonyms": ["мапа", "план"],
+        "tabooWords": ["географія", "країна", "шлях", "шукати", "папір"],
+        "hint": "Зображення земної поверхні на папері"
+      },
+      "EN": {
+        "word": "Map",
+        "antonyms": [],
+        "synonyms": ["chart", "plan"],
+        "tabooWords": ["geography", "country", "path", "search", "paper"],
+        "hint": "An image of the earth's surface on paper"
+      },
+      "DE": {
+        "word": "Landkarte",
+        "antonyms": [],
+        "synonyms": ["Plan", "Karte"],
+        "tabooWords": ["Geografie", "Land", "Weg", "suchen", "Papier"],
+        "hint": "Ein Bild der Erdoberfläche auf Papier"
+      }
+    }
+  },
+  {
+    "conceptId": "general-compass",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Компас",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["північ", "напрямок", "стрілка", "заблукати", "ліс"],
+        "hint": "Прилад для орієнтування на місцевості"
+      },
+      "EN": {
+        "word": "Compass",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["north", "direction", "needle", "get lost", "forest"],
+        "hint": "A device for orientation on the terrain"
+      },
+      "DE": {
+        "word": "Kompass",
+        "antonyms": [],
+        "synonyms": [],
+        "tabooWords": ["Norden", "Richtung", "Nadel", "verirren", "Wald"],
+        "hint": "Ein Gerät zur Orientierung im Gelände"
+      }
+    }
+  },
+  {
+    "conceptId": "general-binoculars",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Бінокль",
+        "antonyms": [],
+        "synonyms": ["підзорна труба"],
+        "tabooWords": ["дивитися", "далеко", "очі", "лінзи", "наближати"],
+        "hint": "Оптичний прилад для спостереження вдалину"
+      },
+      "EN": {
+        "word": "Binoculars",
+        "antonyms": [],
+        "synonyms": ["spyglass", "telescope"],
+        "tabooWords": ["look", "far", "eyes", "lenses", "zoom"],
+        "hint": "An optical device for observing far away"
+      },
+      "DE": {
+        "word": "Fernglas",
+        "antonyms": [],
+        "synonyms": ["Fernrohr", "Teleskop"],
+        "tabooWords": ["schauen", "weit", "Augen", "Linsen", "vergrößern"],
+        "hint": "Ein optisches Gerät, um in die Ferne zu sehen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-flag",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Прапор",
+        "antonyms": [],
+        "synonyms": ["стяг"],
+        "tabooWords": ["країна", "символ", "вітер", "тканина", "гімн"],
+        "hint": "Державний символ з кольорової тканини"
+      },
+      "EN": {
+        "word": "Flag",
+        "antonyms": [],
+        "synonyms": ["banner", "pennant"],
+        "tabooWords": ["country", "symbol", "wind", "fabric", "anthem"],
+        "hint": "A national symbol made of colored fabric"
+      },
+      "DE": {
+        "word": "Flagge",
+        "antonyms": [],
+        "synonyms": ["Fahne", "Banner"],
+        "tabooWords": ["Land", "Symbol", "Wind", "Stoff", "Hymne"],
+        "hint": "Ein staatliches Symbol aus farbigem Stoff"
+      }
+    }
+  },
+  {
+    "conceptId": "general-medal",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Медаль",
+        "antonyms": [],
+        "synonyms": ["відзнака", "орден"],
+        "tabooWords": ["спорт", "перемога", "шия", "золото", "нагорода"],
+        "hint": "Металева нагорода на стрічці"
+      },
+      "EN": {
+        "word": "Medal",
+        "antonyms": [],
+        "synonyms": ["badge", "decoration"],
+        "tabooWords": ["sport", "victory", "neck", "gold", "award"],
+        "hint": "A metal award on a ribbon"
+      },
+      "DE": {
+        "word": "Medaille",
+        "antonyms": [],
+        "synonyms": ["Auszeichnung", "Orden"],
+        "tabooWords": ["Sport", "Sieg", "Hals", "Gold", "Auszeichnung"],
+        "hint": "Eine Metallauszeichnung an einem Band"
+      }
+    }
+  },
+  {
+    "conceptId": "general-trophy",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Кубок",
+        "antonyms": [],
+        "synonyms": ["чаша", "трофей"],
+        "tabooWords": ["чемпіон", "змагання", "нагорода", "пити", "золото"],
+        "hint": "Головна спортивна нагорода у формі чаші"
+      },
+      "EN": {
+        "word": "Trophy",
+        "antonyms": [],
+        "synonyms": ["cup", "prize"],
+        "tabooWords": ["champion", "competition", "award", "drink", "gold"],
+        "hint": "The main sports award in the shape of a bowl"
+      },
+      "DE": {
+        "word": "Pokal",
+        "antonyms": [],
+        "synonyms": ["Trophäe", "Kelch"],
+        "tabooWords": ["Champion", "Wettbewerb", "Auszeichnung", "trinken", "Gold"],
+        "hint": "Die sportliche Hauptauszeichnung in Form einer Schale"
+      }
+    }
+  },
+  {
+    "conceptId": "general-diploma",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Диплом",
+        "antonyms": [],
+        "synonyms": ["сертифікат", "атестат"],
+        "tabooWords": ["університет", "випускник", "документ", "навчання", "папір"],
+        "hint": "Офіційний документ про закінчення навчання"
+      },
+      "EN": {
+        "word": "Diploma",
+        "antonyms": [],
+        "synonyms": ["certificate", "degree"],
+        "tabooWords": ["university", "graduate", "document", "study", "paper"],
+        "hint": "An official document of graduation"
+      },
+      "DE": {
+        "word": "Diplom",
+        "antonyms": [],
+        "synonyms": ["Zertifikat", "Zeugnis"],
+        "tabooWords": ["Universität", "Absolvent", "Dokument", "Studium", "Papier"],
+        "hint": "Ein offizielles Dokument über den Studienabschluss"
+      }
+    }
+  },
+  {
+    "conceptId": "general-antenna",
+    "difficulty": 2,
+    "translations": {
+      "UA": {
+        "word": "Антена",
+        "antonyms": [],
+        "synonyms": ["приймач"],
+        "tabooWords": ["сигнал", "дах", "телевізор", "радіо", "ловити"],
+        "hint": "Пристрій для прийому телесигналу"
+      },
+      "EN": {
+        "word": "Antenna",
+        "antonyms": [],
+        "synonyms": ["aerial", "receiver"],
+        "tabooWords": ["signal", "roof", "television", "radio", "catch"],
+        "hint": "A device for receiving television signals"
+      },
+      "DE": {
+        "word": "Antenne",
+        "antonyms": [],
+        "synonyms": ["Empfänger"],
+        "tabooWords": ["Signal", "Dach", "Fernseher", "Radio", "empfangen"],
+        "hint": "Ein Gerät zum Empfang von Fernsehsignalen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-radio",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Радіо",
+        "antonyms": [],
+        "synonyms": ["приймач"],
+        "tabooWords": ["слухати", "музика", "новини", "машина", "хвиля"],
+        "hint": "Пристрій для прослуховування звукових станцій"
+      },
+      "EN": {
+        "word": "Radio",
+        "antonyms": [],
+        "synonyms": ["receiver", "stereo"],
+        "tabooWords": ["listen", "music", "news", "car", "wave"],
+        "hint": "A device for listening to audio stations"
+      },
+      "DE": {
+        "word": "Radio",
+        "antonyms": [],
+        "synonyms": ["Empfänger", "Rundfunk"],
+        "tabooWords": ["hören", "Musik", "Nachrichten", "Auto", "Welle"],
+        "hint": "Ein Gerät zum Hören von Audiostationen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-television",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Телевізор",
+        "antonyms": [],
+        "synonyms": ["екран", "плазма"],
+        "tabooWords": ["дивитися", "фільм", "пульт", "новини", "канали"],
+        "hint": "Пристрій для перегляду відео та передач"
+      },
+      "EN": {
+        "word": "Television",
+        "antonyms": [],
+        "synonyms": ["TV", "screen"],
+        "tabooWords": ["watch", "movie", "remote", "news", "channels"],
+        "hint": "A device for watching videos and programs"
+      },
+      "DE": {
+        "word": "Fernseher",
+        "antonyms": [],
+        "synonyms": ["TV", "Bildschirm"],
+        "tabooWords": ["schauen", "Film", "Fernbedienung", "Nachrichten", "Kanäle"],
+        "hint": "Ein Gerät zum Ansehen von Videos und Sendungen"
+      }
+    }
+  },
+  {
+    "conceptId": "general-remote",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Пульт",
+        "antonyms": [],
+        "synonyms": ["контролер"],
+        "tabooWords": ["телевізор", "перемикати", "канали", "кнопки", "батарейка"],
+        "hint": "Пристрій для керування телевізором на відстані"
+      },
+      "EN": {
+        "word": "Remote control",
+        "antonyms": [],
+        "synonyms": ["controller", "clicker"],
+        "tabooWords": ["television", "switch", "channels", "buttons", "battery"],
+        "hint": "A device to control the TV from a distance"
+      },
+      "DE": {
+        "word": "Fernbedienung",
+        "antonyms": [],
+        "synonyms": ["Controller"],
+        "tabooWords": ["Fernseher", "umschalten", "Kanäle", "Tasten", "Batterie"],
+        "hint": "Ein Gerät zur Steuerung des Fernsehers aus der Ferne"
+      }
+    }
+  },
+  {
+    "conceptId": "general-headphones",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Навушники",
+        "antonyms": ["колонка"],
+        "synonyms": ["гарнітура"],
+        "tabooWords": ["вуха", "слухати", "музика", "телефон", "звук"],
+        "hint": "Пристрій для індивідуального прослуховування музики"
+      },
+      "EN": {
+        "word": "Headphones",
+        "antonyms": ["speaker"],
+        "synonyms": ["earphones", "headset"],
+        "tabooWords": ["ears", "listen", "music", "phone", "sound"],
+        "hint": "A device for personal music listening"
+      },
+      "DE": {
+        "word": "Kopfhörer",
+        "antonyms": ["Lautsprecher"],
+        "synonyms": ["Headset", "Ohrhörer"],
+        "tabooWords": ["Ohren", "hören", "Musik", "Telefon", "Klang"],
+        "hint": "Ein Gerät zum individuellen Musikhören"
+      }
+    }
+  },
+  {
+    "conceptId": "general-microphone",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Мікрофон",
+        "antonyms": ["динамік"],
+        "synonyms": ["рупор"],
+        "tabooWords": ["співати", "голос", "караоке", "сцена", "гучно"],
+        "hint": "Пристрій для підсилення та запису голосу"
+      },
+      "EN": {
+        "word": "Microphone",
+        "antonyms": ["speaker"],
+        "synonyms": ["mic", "megaphone"],
+        "tabooWords": ["sing", "voice", "karaoke", "stage", "loud"],
+        "hint": "A device for amplifying and recording voice"
+      },
+      "DE": {
+        "word": "Mikrofon",
+        "antonyms": ["Lautsprecher"],
+        "synonyms": ["Mikro", "Megafon"],
+        "tabooWords": ["singen", "Stimme", "Karaoke", "Bühne", "laut"],
+        "hint": "Ein Gerät zur Verstärkung und Aufnahme der Stimme"
+      }
+    }
+  },
+  {
+    "conceptId": "general-speaker",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Колонка",
+        "antonyms": ["навушники", "мікрофон"],
+        "synonyms": ["динамік", "акустика"],
+        "tabooWords": ["звук", "музика", "слухати", "гучно", "бас"],
+        "hint": "Пристрій для відтворення звуку в кімнаті"
+      },
+      "EN": {
+        "word": "Speaker",
+        "antonyms": ["headphones", "microphone"],
+        "synonyms": ["loudspeaker", "monitor"],
+        "tabooWords": ["sound", "music", "listen", "loud", "bass"],
+        "hint": "A device for playing sound in a room"
+      },
+      "DE": {
+        "word": "Lautsprecher",
+        "antonyms": ["Kopfhörer", "Mikrofon"],
+        "synonyms": ["Box", "Monitor"],
+        "tabooWords": ["Klang", "Musik", "hören", "laut", "Bass"],
+        "hint": "Ein Gerät zur Tonwiedergabe in einem Raum"
+      }
+    }
+  },
+  {
+    "conceptId": "general-keyboard",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Клавіатура",
+        "antonyms": [],
+        "synonyms": ["панель"],
+        "tabooWords": ["кнопки", "друкувати", "комп'ютер", "літери", "текст"],
+        "hint": "Пристрій з кнопками для введення тексту"
+      },
+      "EN": {
+        "word": "Keyboard",
+        "antonyms": [],
+        "synonyms": ["keypad", "board"],
+        "tabooWords": ["buttons", "type", "computer", "letters", "text"],
+        "hint": "A device with buttons for typing text"
+      },
+      "DE": {
+        "word": "Tastatur",
+        "antonyms": [],
+        "synonyms": ["Tastenfeld", "Board"],
+        "tabooWords": ["Tasten", "tippen", "Computer", "Buchstaben", "Text"],
+        "hint": "Ein Gerät mit Tasten zur Texteingabe"
+      }
+    }
+  },
+  {
+    "conceptId": "general-computer-mouse",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Миша",
+        "antonyms": ["клавіатура"],
+        "synonyms": ["тачпад"],
+        "tabooWords": ["комп'ютер", "курсор", "клікати", "рука", "килимок"],
+        "hint": "Комп'ютерний пристрій, яким керують рукою по столу"
+      },
+      "EN": {
+        "word": "Mouse",
+        "antonyms": ["keyboard"],
+        "synonyms": ["touchpad", "trackball"],
+        "tabooWords": ["computer", "cursor", "click", "hand", "pad"],
+        "hint": "A computer device controlled by hand on a desk"
+      },
+      "DE": {
+        "word": "Maus",
+        "antonyms": ["Tastatur"],
+        "synonyms": ["Touchpad", "Trackball"],
+        "tabooWords": ["Computer", "Zeiger", "klicken", "Hand", "Pad"],
+        "hint": "Ein Computergerät, das mit der Hand auf dem Tisch gesteuert wird"
+      }
+    }
+  },
+  {
+    "conceptId": "general-screen",
+    "difficulty": 1,
+    "translations": {
+      "UA": {
+        "word": "Екран",
+        "antonyms": [],
+        "synonyms": ["монітор", "дисплей"],
+        "tabooWords": ["телевізор", "дивитися", "зображення", "телефон", "світитися"],
+        "hint": "Поверхня, на якій показується картинка або відео"
+      },
+      "EN": {
+        "word": "Screen",
+        "antonyms": [],
+        "synonyms": ["monitor", "display"],
+        "tabooWords": ["television", "watch", "image", "phone", "glow"],
+        "hint": "A surface where a picture or video is shown"
+      },
+      "DE": {
+        "word": "Bildschirm",
+        "antonyms": [],
+        "synonyms": ["Monitor", "Display"],
+        "tabooWords": ["Fernseher", "schauen", "Bild", "Telefon", "leuchten"],
+        "hint": "Eine Oberfläche, auf der ein Bild oder Video gezeigt wird"
+      }
+    }
+  }
+]
