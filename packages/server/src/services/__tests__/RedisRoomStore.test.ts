@@ -118,14 +118,15 @@ describe('RedisRoomStore — room state + socket mapping + stats', () => {
   });
 
   it('persists and reads room state snapshot', async () => {
-    const state = { roomCode: '12345', gameState: 'LOBBY' } as never;
+    // normalizeGameSyncState requires `settings` (and string gameState / roomCode) or getRoomState returns null.
+    const state = { roomCode: '12345', gameState: 'LOBBY', settings: {} } as never;
     await redisStore.saveRoomState('12345', state);
     const loaded = await redisStore.getRoomState('12345');
-    expect(loaded).toMatchObject({ roomCode: '12345', gameState: 'LOBBY' });
+    expect(loaded).toMatchObject({ roomCode: '12345', gameState: 'LOBBY', settings: {} });
   });
 
   it('persists and reads room writer id', async () => {
-    const state = { roomCode: '12345', gameState: 'LOBBY' } as never;
+    const state = { roomCode: '12345', gameState: 'LOBBY', settings: {} } as never;
     await redisStore.saveRoomState('12345', state, 'inst-1');
     const writer = await redisStore.getRoomWriter('12345');
     expect(writer).toBe('inst-1');
