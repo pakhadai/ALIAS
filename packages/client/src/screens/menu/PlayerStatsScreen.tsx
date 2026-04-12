@@ -35,7 +35,7 @@ export const PlayerStatsScreen = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
+    <div className="flex flex-col min-h-screen items-center bg-ui-bg">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
           <button
@@ -54,11 +54,11 @@ export const PlayerStatsScreen = () => {
           {rows.map((row) => (
             <div
               key={row.label}
-              className="flex items-center justify-between px-5 py-4 rounded-2xl bg-(--ui-card) border border-(--ui-border)"
+              className="flex items-center justify-between px-5 py-4 rounded-2xl bg-ui-card border border-ui-border"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{row.icon}</span>
-                <span className="text-[13px] font-medium text-(--ui-fg)">{row.label}</span>
+                <span className="text-[13px] font-medium text-ui-fg">{row.label}</span>
               </div>
               <span className={`text-xl font-bold font-serif ${currentTheme.textMain}`}>
                 {row.value}
@@ -67,14 +67,14 @@ export const PlayerStatsScreen = () => {
           ))}
 
           {stats.lastPlayed && (
-            <p className="text-center text-[11px] pt-4 text-(--ui-fg-muted) opacity-70">
+            <p className="text-center text-[11px] pt-4 text-ui-fg-muted opacity-70">
               {t.statsLastPlayedPrefix} {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
             </p>
           )}
 
           {!isAuthenticated && (
             <div className="mt-6 rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
-              <p className="text-[13px] leading-relaxed font-sans text-(--ui-fg)">
+              <p className="text-[13px] leading-relaxed font-sans text-ui-fg">
                 {t.statsGuestBannerBody}
               </p>
               <button

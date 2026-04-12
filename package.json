@@ -1,6 +1,9 @@
 {
   "name": "alias-master-monorepo",
   "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "prepare": "husky || echo 'husky not found, skipping prepare script'",

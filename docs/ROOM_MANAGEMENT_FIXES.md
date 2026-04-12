@@ -1,5 +1,7 @@
 # Room Management & Mobile State Sync Fixes (2026-04-07)
 
+> Актуальна архітектура та протоколи — **[`README.md`](../README.md)**. Цей файл — **історичний журнал** конкретної сесії виправлень (не індекс модулів).
+
 ## Overview
 
 This session focused on critical bug fixes in room management and mobile state synchronization. The issues were causing rooms to become unusable, players to get stuck on screens, and data inconsistencies in cluster deployments.

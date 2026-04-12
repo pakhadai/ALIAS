@@ -137,7 +137,7 @@ export const EnterNameScreen = () => {
               <X size={24} className={currentTheme.iconColor} />
             </button>
             <div className="flex justify-center mb-4">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
             </div>
             <h2
               id="enter-name-title"
@@ -153,7 +153,7 @@ export const EnterNameScreen = () => {
                 onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
                 data-testid="enter-name"
                 placeholder={t.namePlaceholder}
-                className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
+                className="w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-sans font-bold text-center text-sm"
               />
               <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
                 {AVATARS.map((a) => (
@@ -164,7 +164,7 @@ export const EnterNameScreen = () => {
                     className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
                       avatar === a
                         ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                        : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                        : 'hover:bg-ui-surface-hover opacity-60 hover:opacity-100'
                     }`}
                   >
                     {a}
@@ -201,8 +201,8 @@ export const EnterNameScreen = () => {
             role="status"
             aria-live="polite"
           >
-            <Loader2 className="w-11 h-11 shrink-0 animate-spin text-(--ui-accent)" aria-hidden />
-            <p className="text-sm font-sans text-(--ui-fg-muted) text-center max-w-[280px] leading-relaxed">
+            <Loader2 className="w-11 h-11 shrink-0 animate-spin text-ui-accent" aria-hidden />
+            <p className="text-sm font-sans text-ui-fg-muted text-center max-w-[280px] leading-relaxed">
               {t.enteringRoom}
             </p>
           </div>

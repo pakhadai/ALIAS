@@ -51,7 +51,7 @@ export const PreRoundScreen = () => {
           >
             {t.playingNow}
           </h2>
-          <div className="inline-block px-8 py-3 rounded-full border border-(--ui-border) bg-(--ui-surface)">
+          <div className="inline-block px-8 py-3 rounded-full border border-ui-border bg-ui-surface">
             <div className="flex items-center gap-3">
               <div className={`w-3 h-3 rounded-full ${activeTeam.color}`} />
               <span className={`font-serif text-3xl ${currentTheme.textMain}`}>

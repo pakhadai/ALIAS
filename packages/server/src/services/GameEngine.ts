@@ -123,6 +123,55 @@ export class GameEngine {
     });
   }
 
+  private clearTimeUpFallback(room: Room): void {
+    if (room.timeUpFallbackTimeout) {
+      clearTimeout(room.timeUpFallbackTimeout);
+      room.timeUpFallbackTimeout = null;
+    }
+  }
+
+  /** If classic overtime (`timeUp`) and explainer is idle, auto-finish the round. */
+  private scheduleTimeUpFallback(room: Room): void {
+    this.clearTimeUpFallback(room);
+    if (room.settings.mode.gameMode === GameMode.QUIZ) return;
+    if (room.gameState !== GameState.PLAYING || !room.timeUp) return;
+    room.timeUpFallbackTimeout = setTimeout(() => {
+      room.timeUpFallbackTimeout = null;
+      if (room.gameState === GameState.PLAYING && room.timeUp) {
+        this.transitionToRoundSummary(room);
+        this.timerBroadcast?.(room);
+        this.roomManager.persistRoom(room);
+      }
+    }, 5000);
+  }
+
+  /** Wall-clock target for countdown UIs (reduces client drift vs setInterval). */
+  private refreshRoundEndsAt(room: Room): void {
+    if (room.isPaused) {
+      room.roundEndsAt = undefined;
+      return;
+    }
+    const imposterDiscussion =
+      room.settings.mode.gameMode === GameMode.IMPOSTER && room.imposterPhase === 'DISCUSSION';
+
+    if (room.gameState === GameState.PLAYING || imposterDiscussion) {
+      const quizMode = room.settings.mode.gameMode === GameMode.QUIZ ? room.settings.mode : null;
+      const now = Date.now();
+      if (quizMode && room.quizTaskLockUntil !== undefined && now < room.quizTaskLockUntil) {
+        room.roundEndsAt = room.quizTaskLockUntil + Math.max(0, room.timeLeft) * 1000;
+        return;
+      }
+      if (room.timeLeft <= 0) {
+        room.roundEndsAt = now;
+        return;
+      }
+      room.roundEndsAt = now + room.timeLeft * 1000;
+      return;
+    }
+
+    room.roundEndsAt = undefined;
+  }
+
   private removePlayerFromTeams(room: Room, playerId: string): void {
     room.teams = (room.teams ?? []).map((t) => {
       const filtered = t.players.filter((p) => p.id !== playerId);
@@ -204,6 +253,7 @@ export class GameEngine {
       case 'GUESS_OPTION': {
         if (room.isPaused) break;
         if (!room.currentTask) break;
+        this.clearTimeUpFallback(room);
 
         const handler = this.getActiveHandler(room);
         const result = handler.handleAction(payload, room.currentTask, {
@@ -290,6 +340,8 @@ export class GameEngine {
       }
 
       case 'START_ROUND': {
+        this.clearTimeUpFallback(room);
+        room.roundEndsAt = undefined;
         const team = room.teams[room.currentTeamIndex];
         if (!team || team.players.length === 0) {
           room.gameState = GameState.LOBBY;
@@ -310,6 +362,7 @@ export class GameEngine {
       }
 
       case 'START_PLAYING': {
+        this.clearTimeUpFallback(room);
         room.gameState = GameState.PLAYING;
         if (room.settings.mode.gameMode === GameMode.QUIZ) {
           const mode = room.settings.mode;
@@ -330,6 +383,7 @@ export class GameEngine {
         room.timeUp = false;
         await this.nextWord(room);
         this.startTimer(room);
+        this.refreshRoundEndsAt(room);
         break;
       }
 
@@ -440,6 +494,8 @@ export class GameEngine {
 
       case 'NEXT_ROUND': {
         if (room.teams.length === 0) break;
+        this.clearTimeUpFallback(room);
+        room.roundEndsAt = undefined;
         room.currentTeamIndex = (room.currentTeamIndex + 1) % room.teams.length;
         room.gameState =
           room.settings.mode.gameMode === GameMode.QUIZ ? GameState.COUNTDOWN : GameState.PRE_ROUND;
@@ -450,9 +506,12 @@ export class GameEngine {
         const nextPaused = !room.isPaused;
         room.isPaused = nextPaused;
         if (nextPaused) {
+          this.clearTimeUpFallback(room);
           this.stopTimer(room);
+          this.refreshRoundEndsAt(room);
         } else if (room.gameState === GameState.PLAYING && room.timeLeft > 0 && !room.timeUp) {
           this.startTimer(room);
+          this.refreshRoundEndsAt(room);
         }
         break;
       }
@@ -472,6 +531,7 @@ export class GameEngine {
           room.timeLeft = room.settings.mode.imposterDiscussionTime;
           room.timeUp = false;
           this.startTimer(room);
+          this.refreshRoundEndsAt(room);
         }
         break;
       }
@@ -479,10 +539,12 @@ export class GameEngine {
       case 'IMPOSTER_END_GAME': {
         if (room.settings.mode.gameMode !== GameMode.IMPOSTER) break;
         if (room.imposterPhase !== 'DISCUSSION') break;
+        this.clearTimeUpFallback(room);
         this.stopTimer(room);
         room.imposterPhase = 'RESULTS';
         room.timeLeft = 0;
         room.timeUp = false;
+        room.roundEndsAt = undefined;
         break;
       }
 
@@ -577,6 +639,7 @@ export class GameEngine {
       }
 
       case 'RESET_GAME': {
+        this.clearTimeUpFallback(room);
         this.stopTimer(room);
         if (room.quizNextWordTimeout) {
           clearTimeout(room.quizNextWordTimeout);
@@ -593,8 +656,10 @@ export class GameEngine {
         room.currentTaskWrongAttempts = [];
         room.wordDeck = [];
         room.usedWords = [];
+        room.roundsPlayed = 0;
         room.timeLeft = 0;
         room.isPaused = false;
+        room.roundEndsAt = undefined;
         room.currentRoundStats = {
           correct: 0,
           skipped: 0,
@@ -606,6 +671,7 @@ export class GameEngine {
       }
 
       case 'REMATCH': {
+        this.clearTimeUpFallback(room);
         await this.persistNewGameSession(room);
         if (room.quizNextWordTimeout) {
           clearTimeout(room.quizNextWordTimeout);
@@ -618,11 +684,13 @@ export class GameEngine {
         }));
         room.gameState = GameState.PRE_ROUND;
         room.currentTeamIndex = 0;
+        room.roundsPlayed = 0;
         room.usedWords = [];
         room.currentWord = '';
         room.currentTask = null;
         room.currentTaskAnswered = undefined;
         room.currentTaskWrongAttempts = [];
+        room.roundEndsAt = undefined;
         break;
       }
 
@@ -649,6 +717,7 @@ export class GameEngine {
       }
 
       case 'TIME_UP': {
+        this.clearTimeUpFallback(room);
         if (room.quizNextWordTimeout) {
           clearTimeout(room.quizNextWordTimeout);
           room.quizNextWordTimeout = null;
@@ -701,6 +770,7 @@ export class GameEngine {
   }
 
   private transitionToRoundSummary(room: Room): void {
+    this.clearTimeUpFallback(room);
     this.stopTimer(room);
     if (room.quizNextWordTimeout) {
       clearTimeout(room.quizNextWordTimeout);
@@ -709,6 +779,7 @@ export class GameEngine {
     room.gameState = GameState.ROUND_SUMMARY;
     room.timeLeft = 0;
     room.timeUp = false;
+    room.roundEndsAt = undefined;
   }
 
   /** After a correct guess, per-question timeout, or all-wrong in QUIZ: brief pause then next task. */
@@ -719,6 +790,7 @@ export class GameEngine {
       room.quizNextWordTimeout = null;
     }
     room.quizTaskLockUntil = Date.now() + 2500;
+    this.refreshRoundEndsAt(room);
     const lockedTaskId = room.currentTask.id;
     room.quizNextWordTimeout = setTimeout(() => {
       if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
@@ -730,6 +802,7 @@ export class GameEngine {
         if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
         const m = room.settings.mode;
         if (m.quizTimerMode === 'PER_TASK') room.timeLeft = m.quizQuestionTime;
+        this.refreshRoundEndsAt(room);
       });
       this.timerBroadcast?.(room);
       this.roomManager.persistRoom(room);
@@ -758,6 +831,7 @@ export class GameEngine {
     if (deckReshuffled && room.currentRoundStats.words.length > 0) {
       this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
     }
+    this.refreshRoundEndsAt(room);
   }
 
   private startTimer(room: Room): void {
@@ -788,6 +862,7 @@ export class GameEngine {
           room.currentTaskAnswered = '__timeout__';
           this.scheduleQuizMicroPauseAndAdvance(room);
         }
+        this.refreshRoundEndsAt(room);
         this.timerBroadcast?.(room);
         this.roomManager.persistRoom(room);
         return;
@@ -817,14 +892,21 @@ export class GameEngine {
         // QUIZ has no "explainer" to send TIME_UP; end the round immediately.
         if (room.settings.mode.gameMode === GameMode.QUIZ && room.gameState === GameState.PLAYING) {
           this.transitionToRoundSummary(room);
+        } else if (room.gameState === GameState.PLAYING && room.timeUp) {
+          this.scheduleTimeUpFallback(room);
         }
+        this.refreshRoundEndsAt(room);
         this.timerBroadcast?.(room);
         this.roomManager.persistRoom(room);
-      } else if (ticksSinceSync >= 10) {
-        ticksSinceSync = 0;
-        this.timerBroadcast?.(room);
+      } else {
+        this.refreshRoundEndsAt(room);
+        if (ticksSinceSync >= 10) {
+          ticksSinceSync = 0;
+          this.timerBroadcast?.(room);
+        }
       }
     }, 1000);
+    this.refreshRoundEndsAt(room);
   }
 
   private stopTimer(room: Room): void {

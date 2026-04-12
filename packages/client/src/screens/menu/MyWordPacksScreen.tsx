@@ -43,11 +43,11 @@ export const MyWordPacksScreen = () => {
   const [createError, setCreateError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
+  const cardBg = 'bg-ui-card border border-ui-border';
   const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
     isDark
-      ? 'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)'
-      : 'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)'
+      ? 'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent'
+      : 'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent'
   }`;
 
   useEffect(() => {
@@ -127,21 +127,21 @@ export const MyWordPacksScreen = () => {
   };
 
   const STATUS_COLORS: Record<string, string> = {
-    approved: 'text-(--ui-success)',
-    pending: 'text-(--ui-accent)',
-    rejected: 'text-(--ui-danger)',
+    approved: 'text-ui-success',
+    pending: 'text-ui-accent',
+    rejected: 'text-ui-danger',
   };
 
   if (checkingAccess)
     return (
-      <div className="flex flex-col h-screen bg-(--ui-bg) items-center justify-center">
+      <div className="flex flex-col h-screen bg-ui-bg items-center justify-center">
         <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
       </div>
     );
 
   if (!isUnlocked)
     return (
-      <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
+      <div className="flex flex-col h-screen items-center bg-ui-bg">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
             <button
@@ -155,14 +155,14 @@ export const MyWordPacksScreen = () => {
             </h2>
           </header>
           <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
-            <div className="w-20 h-20 rounded-full bg-(--ui-surface) flex items-center justify-center border border-(--ui-border)">
+            <div className="w-20 h-20 rounded-full bg-ui-surface flex items-center justify-center border border-ui-border">
               <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
             </div>
             <div>
               <h3 className={`font-serif text-2xl mb-2 ${currentTheme.textMain}`}>
                 Функція заблокована
               </h3>
-              <p className="text-sm leading-relaxed text-(--ui-fg-muted) opacity-80">
+              <p className="text-sm leading-relaxed text-ui-fg-muted opacity-80">
                 Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}Розблокуйте цю
                 функцію в Магазині.
               </p>
@@ -181,7 +181,7 @@ export const MyWordPacksScreen = () => {
 
   if (view === 'create')
     return (
-      <div className="flex flex-col h-screen items-center bg-(--ui-bg)">
+      <div className="flex flex-col h-screen items-center bg-ui-bg">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
             <button
@@ -202,7 +202,7 @@ export const MyWordPacksScreen = () => {
             style={{ scrollbarWidth: 'none' }}
           >
             <div className="space-y-2">
-              <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+              <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
                 Назва паку
               </label>
               <input
@@ -214,7 +214,7 @@ export const MyWordPacksScreen = () => {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+                <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
                   Слова
                   <span className="ml-2 font-normal normal-case tracking-normal text-[10px] opacity-60">
                     (кожне з нового рядка або через кому)
@@ -222,7 +222,7 @@ export const MyWordPacksScreen = () => {
                 </label>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors"
+                  className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-ui-fg-muted hover:text-ui-fg transition-colors"
                 >
                   <Upload size={12} />
                   Завантажити .txt/.csv
@@ -242,13 +242,11 @@ export const MyWordPacksScreen = () => {
                 rows={10}
                 className={`${inputCls} resize-none`}
               />
-              <p className="text-[11px] text-(--ui-fg-muted) opacity-70">
+              <p className="text-[11px] text-ui-fg-muted opacity-70">
                 {wordsText.split(/[\n,;]+/).filter((w) => w.trim()).length} слів
               </p>
             </div>
-            {createError && (
-              <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>
-            )}
+            {createError && <p className="text-ui-danger text-[12px] font-sans">{createError}</p>}
           </div>
           <div className="px-6 md:px-8 pt-4 pb-safe-bottom">
             <button
@@ -264,23 +262,23 @@ export const MyWordPacksScreen = () => {
     );
 
   return (
-    <div className="flex flex-col h-screen bg-(--ui-bg)">
+    <div className="flex flex-col h-screen bg-ui-bg">
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col overflow-hidden">
         <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
+          <div className="w-12 h-1 bg-ui-border rounded-full" />
         </div>
         <div className="px-6 md:px-8 pb-5 pt-2 flex justify-between items-center">
           <div>
             <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>
               Мої паки слів
             </h2>
-            <p className="text-[10px] mt-1 text-(--ui-fg-muted) opacity-70">
+            <p className="text-[10px] mt-1 text-ui-fg-muted opacity-70">
               {decks.length} / {MAX_USER_PACKS}
             </p>
           </div>
           <button
             onClick={() => setGameState(GameState.PROFILE)}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
           >
             <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
           </button>
@@ -321,7 +319,7 @@ export const MyWordPacksScreen = () => {
                   <button
                     onClick={() => handleDelete(deck.id)}
                     disabled={deleting === deck.id}
-                    className="ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 text-(--ui-danger) opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+                    className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
                   >
                     {deleting === deck.id ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -343,7 +341,7 @@ export const MyWordPacksScreen = () => {
                   {deck.accessCode && (
                     <button
                       onClick={() => handleCopyCode(deck.accessCode!)}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg-muted) border border-(--ui-border)"
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border"
                     >
                       <Copy size={11} />
                       {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}

@@ -69,7 +69,7 @@ export const RoundSummaryScreen = () => {
         <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
           {t.timeIsUp}
         </h2>
-        <div className="inline-block px-6 py-2 rounded-full border border-(--ui-border) bg-(--ui-surface)">
+        <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
           <span
             className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
           >

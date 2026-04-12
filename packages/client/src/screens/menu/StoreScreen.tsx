@@ -102,14 +102,14 @@ export const StoreScreen = () => {
     });
 
   const TAB_LABELS: Record<StoreTab, string> = { packs: 'Набори слів', themes: 'Теми' };
-  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
-  const divider = 'border-(--ui-border)';
-  const chipBase = 'border border-(--ui-border) text-(--ui-fg-muted) bg-(--ui-surface)';
+  const cardBg = 'bg-ui-card border border-ui-border';
+  const divider = 'border-ui-border';
+  const chipBase = 'border border-ui-border text-ui-fg-muted bg-ui-surface';
   const chipActive =
-    'border-(--ui-accent) text-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)]';
+    'border-ui-accent text-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)]';
 
   return (
-    <div className="flex flex-col h-screen items-center bg-(--ui-bg) transition-colors duration-500">
+    <div className="flex flex-col h-screen items-center bg-ui-bg transition-colors duration-500">
       <div className="max-w-2xl w-full flex-1 flex flex-col overflow-hidden">
         {banner && (
           <div
@@ -118,11 +118,11 @@ export const StoreScreen = () => {
             <span className="text-xl">{banner === 'success' ? '🎉' : '↩️'}</span>
             <div className="flex-1">
               <p
-                className={`text-[12px] font-bold ${banner === 'success' ? 'text-(--ui-success)' : 'text-(--ui-danger)'}`}
+                className={`text-[12px] font-bold ${banner === 'success' ? 'text-ui-success' : 'text-ui-danger'}`}
               >
                 {banner === 'success' ? 'Оплату прийнято!' : 'Оплату скасовано'}
               </p>
-              <p className="text-[10px] text-(--ui-fg-muted) opacity-80">
+              <p className="text-[10px] text-ui-fg-muted opacity-80">
                 {banner === 'success' ? 'Ваша покупка активована' : 'Спробуй ще раз'}
               </p>
             </div>
@@ -133,13 +133,13 @@ export const StoreScreen = () => {
         )}
 
         <div className="flex justify-center pt-4 pb-2 shrink-0">
-          <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
+          <div className="w-12 h-1 bg-ui-border rounded-full" />
         </div>
         <div className="px-6 md:px-8 pb-4 pt-2 flex justify-between items-center shrink-0">
           <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Магазин</h2>
           <button
             onClick={() => setGameState(GameState.PROFILE)}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
           >
             <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
           </button>
@@ -151,7 +151,7 @@ export const StoreScreen = () => {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`pb-3 border-b-2 font-sans font-bold text-[11px] tracking-wider uppercase transition-colors ${tab === t ? 'border-(--ui-accent) text-(--ui-accent)' : 'border-transparent text-(--ui-fg-muted)'}`}
+                className={`pb-3 border-b-2 font-sans font-bold text-[11px] tracking-wider uppercase transition-all duration-200 ease-out active:scale-[0.99] ${tab === t ? 'border-ui-accent text-ui-accent' : 'border-transparent text-ui-fg-muted'}`}
               >
                 {TAB_LABELS[t]}
               </button>
@@ -189,12 +189,12 @@ export const StoreScreen = () => {
               {featurePacks.map((pack) => (
                 <div
                   key={pack.id}
-                  className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-150 ease-out active:scale-95 ${pack.owned ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]' : 'border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)] to-transparent'}`}
+                  className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-200 ease-out active:scale-95 ${pack.owned ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]' : 'border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)] to-transparent'}`}
                 >
                   <div className="flex justify-between items-start z-10">
                     <div className="max-w-[60%]">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] text-(--ui-accent)">
+                        <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] text-ui-accent">
                           ФУНКЦІЯ
                         </span>
                       </div>
@@ -209,8 +209,8 @@ export const StoreScreen = () => {
                     </div>
                     {pack.owned ? (
                       <div className="flex items-center gap-1 px-3 py-1 rounded-full shrink-0 bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]">
-                        <Check size={11} className="text-(--ui-success)" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-(--ui-success)">
+                        <Check size={11} className="text-ui-success" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-ui-success">
                           Куплено
                         </span>
                       </div>
@@ -218,7 +218,7 @@ export const StoreScreen = () => {
                       <button
                         onClick={() => handleBuy('wordPack', pack.id)}
                         disabled={acting === pack.id}
-                        className="shrink-0 bg-(--ui-accent) hover:brightness-110 active:scale-95 text-(--ui-accent-contrast) px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                        className="shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
                       >
                         {acting === pack.id ? (
                           <Loader2 size={12} className="animate-spin inline" />
@@ -243,10 +243,10 @@ export const StoreScreen = () => {
                     <div className="flex justify-between items-start z-10">
                       <div className="max-w-[60%]">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)">
+                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted">
                             {LANG_LABEL[pack.language] ?? pack.language}
                           </span>
-                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-(--ui-border) text-(--ui-fg-muted)">
+                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted">
                             {pack.difficulty.toUpperCase()}
                           </span>
                         </div>
@@ -265,10 +265,10 @@ export const StoreScreen = () => {
                         >
                           <Check
                             size={11}
-                            className={pack.isFree ? 'text-(--ui-accent)' : 'text-(--ui-success)'}
+                            className={pack.isFree ? 'text-ui-accent' : 'text-ui-success'}
                           />
                           <span
-                            className={`text-[10px] font-bold uppercase tracking-wide ${pack.isFree ? 'text-(--ui-accent)' : 'text-(--ui-success)'}`}
+                            className={`text-[10px] font-bold uppercase tracking-wide ${pack.isFree ? 'text-ui-accent' : 'text-ui-success'}`}
                           >
                             {pack.isFree ? 'Додано' : 'Куплено'}
                           </span>
@@ -277,7 +277,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleAddFree('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className="shrink-0 px-5 py-2 rounded-full font-bold text-[12px] transition-all active:scale-95 disabled:opacity-50 bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg) border border-(--ui-border)"
+                          className="shrink-0 px-5 py-2 rounded-full font-bold text-[12px] transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-fg border border-ui-border"
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -289,7 +289,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleBuy('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className="shrink-0 bg-(--ui-accent) hover:brightness-110 active:scale-95 transition-all text-(--ui-accent-contrast) px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                          className="shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 transition-all text-ui-accent-contrast px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -353,12 +353,12 @@ export const StoreScreen = () => {
                             {theme.name}
                           </p>
                           {theme.isFree && !isBuiltIn && (
-                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] text-(--ui-accent) border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
+                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] text-ui-accent border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
                               FREE
                             </span>
                           )}
                           {isBuiltIn && (
-                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-(--ui-surface) text-(--ui-fg-muted) border border-(--ui-border)">
+                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-ui-surface text-ui-fg-muted border border-ui-border">
                               БАЗОВА
                             </span>
                           )}
@@ -372,14 +372,14 @@ export const StoreScreen = () => {
                       <div className="px-3 flex items-center shrink-0">
                         {alreadyOwned ? (
                           <div
-                            className={`flex items-center gap-1 px-3 py-1 rounded-full border ${isBuiltIn ? 'bg-(--ui-surface) border-(--ui-border)' : 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]'}`}
+                            className={`flex items-center gap-1 px-3 py-1 rounded-full border ${isBuiltIn ? 'bg-ui-surface border-ui-border' : 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]'}`}
                           >
                             <Check
                               size={10}
-                              className={isBuiltIn ? 'text-(--ui-fg-muted)' : 'text-(--ui-success)'}
+                              className={isBuiltIn ? 'text-ui-fg-muted' : 'text-ui-success'}
                             />
                             <span
-                              className={`text-[9px] font-bold uppercase tracking-wide ${isBuiltIn ? 'text-(--ui-fg-muted)' : 'text-(--ui-success)'}`}
+                              className={`text-[9px] font-bold uppercase tracking-wide ${isBuiltIn ? 'text-ui-fg-muted' : 'text-ui-success'}`}
                             >
                               {isBuiltIn ? 'Стандарт' : 'Отримано'}
                             </span>
@@ -388,7 +388,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleAddFree('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className="px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-accent) border border-(--ui-border)"
+                            className="px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-accent border border-ui-border"
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -400,7 +400,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleBuy('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className="bg-(--ui-accent) hover:brightness-110 active:scale-95 text-(--ui-accent-contrast) px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
+                            className="bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -418,10 +418,10 @@ export const StoreScreen = () => {
           )}
         </div>
 
-        <div className="px-6 md:px-8 pt-4 pb-safe-bottom-sm border-t border-(--ui-border) bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0">
+        <div className="px-6 md:px-8 pt-4 pb-safe-bottom-sm border-t border-ui-border bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0">
           <div className="flex items-center justify-center gap-1.5">
-            <ShieldCheck size={12} className="text-(--ui-fg-muted) opacity-70" />
-            <p className="text-[10px] uppercase tracking-widest text-(--ui-fg-muted) opacity-70">
+            <ShieldCheck size={12} className="text-ui-fg-muted opacity-70" />
+            <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted opacity-70">
               Оплата через Stripe · Безпечно
             </p>
           </div>

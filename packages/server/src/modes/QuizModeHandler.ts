@@ -1,29 +1,56 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { GameActionPayload, GameSettings, GameTask } from '@alias/shared';
+import {
+  GameMode,
+  type GameActionPayload,
+  type GameSettings,
+  type GameTask,
+  type QuizTaskKind,
+} from '@alias/shared';
 import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
-
-type QuizTaskKind = 'BASIC' | 'SYNONYM' | 'ANTONYM' | 'TRANSLATION' | 'TABOO';
 
 type EncodedQuizTask = {
   v: 1;
   kind: QuizTaskKind;
   prompt: string;
   answer: string;
-  /** Optional extra info for UI (e.g., taboo hints already baked into prompt). */
   meta?: Record<string, unknown>;
 };
 
+const QUIZ_KINDS: ReadonlySet<string> = new Set([
+  'BASIC',
+  'SYNONYM',
+  'ANTONYM',
+  'TRANSLATION',
+  'TABOO',
+]);
+
+function isQuizTaskKind(value: unknown): value is QuizTaskKind {
+  return typeof value === 'string' && QUIZ_KINDS.has(value);
+}
+
+function isEncodedQuizTask(value: unknown): value is EncodedQuizTask {
+  if (!value || typeof value !== 'object') return false;
+  const o = value as Record<string, unknown>;
+  if (o.v !== 1) return false;
+  if (!isQuizTaskKind(o.kind)) return false;
+  if (typeof o.prompt !== 'string' || typeof o.answer !== 'string') return false;
+  return true;
+}
+
 function tryDecode(raw: string): EncodedQuizTask | null {
-  if (!raw) return null;
-  if (raw[0] !== '{') return null;
+  if (!raw || raw[0] !== '{') return null;
   try {
-    const parsed = JSON.parse(raw) as Partial<EncodedQuizTask>;
-    if (parsed?.v !== 1) return null;
-    if (!parsed.kind || !parsed.prompt || !parsed.answer) return null;
-    return parsed as EncodedQuizTask;
+    const parsed: unknown = JSON.parse(raw);
+    return isEncodedQuizTask(parsed) ? parsed : null;
   } catch {
     return null;
   }
+}
+
+function isQuizWrongPenaltyEnabled(settings: GameSettings): boolean {
+  const mode = settings.mode;
+  if (mode.gameMode !== GameMode.QUIZ) return false;
+  return mode.quizWrongPenaltyEnabled === true;
 }
 
 /**
@@ -59,13 +86,16 @@ export class QuizModeHandler implements IGameModeHandler {
       [options[i], options[j]] = [options[j], options[i]];
     }
 
-    return {
+    const task: GameTask = {
       id: uuidv4(),
       prompt,
       answer: correct,
       options,
-      ...(decoded?.kind ? { kind: decoded.kind } : {}),
-    } as GameTask & { kind?: QuizTaskKind };
+    };
+    if (decoded?.kind) {
+      task.kind = decoded.kind;
+    }
+    return task;
   }
 
   handleAction(
@@ -82,7 +112,6 @@ export class QuizModeHandler implements IGameModeHandler {
       return { isCorrect: false, points: 0, nextWord: false, endTurn: false };
     }
 
-    // Server-side anti-spam: after a wrong attempt, ignore repeats until task changes.
     if (context.senderId) {
       const wrongSet = new Set(room.currentTaskWrongAttempts ?? []);
       if (wrongSet.has(context.senderId)) {
@@ -92,10 +121,7 @@ export class QuizModeHandler implements IGameModeHandler {
 
     const selected = action.data.selectedOption;
     const isCorrect = !!selected && selected === currentTask.answer;
-    const penaltyEnabled =
-      room.settings?.mode?.gameMode === 'QUIZ' &&
-      (room.settings as { mode?: { quizWrongPenaltyEnabled?: boolean } } | undefined)?.mode
-        ?.quizWrongPenaltyEnabled === true;
+    const penaltyEnabled = isQuizWrongPenaltyEnabled(room.settings);
     const shouldPenalty =
       !isCorrect &&
       penaltyEnabled &&

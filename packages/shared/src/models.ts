@@ -23,13 +23,16 @@ export interface Team {
   nextPlayerIndex: number;
 }
 
+/** Quiz deck JSON kinds (server-generated QUIZ tasks). */
+export type QuizTaskKind = 'BASIC' | 'SYNONYM' | 'ANTONYM' | 'TRANSLATION' | 'TABOO';
+
 export interface GameTask {
   id: string;
   prompt: string;
   answer?: string;
   options?: string[];
   /** Optional mode-specific task kind (used by QUIZ UI for labels). */
-  kind?: string;
+  kind?: QuizTaskKind;
 }
 
 export interface GameSettings {

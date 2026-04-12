@@ -70,12 +70,12 @@ export const LobbySettingsScreen = () => {
   const chip = (active: boolean) =>
     `flex-1 py-3 rounded-xl border font-sans font-bold text-[11px] transition-all ${
       active
-        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+        ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+        : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
     }`;
 
   return (
-    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
+    <div className="flex flex-col min-h-screen items-center bg-ui-bg">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center justify-between px-6 md:px-8 pb-4 pt-safe-top">
           <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export const LobbySettingsScreen = () => {
           </div>
           <button
             onClick={handleReset}
-            className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-(--ui-fg-muted) hover:text-(--ui-fg)"
+            className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg"
           >
             Скинути
           </button>
@@ -126,7 +126,7 @@ export const LobbySettingsScreen = () => {
                 <>
                   <div className="flex justify-between items-center">
                     <p className={sectionLabel}>Час обговорення</p>
-                    <span className="text-(--ui-accent) font-bold text-sm">
+                    <span className="text-ui-accent font-bold text-sm">
                       {'imposterDiscussionTime' in local.mode
                         ? Math.round(local.mode.imposterDiscussionTime / 60)
                         : 3}{' '}
@@ -148,7 +148,7 @@ export const LobbySettingsScreen = () => {
                         typeof gameSettings.mode
                       >)
                     }
-                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                     style={{
                       background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
                     }}
@@ -164,7 +164,7 @@ export const LobbySettingsScreen = () => {
                 <>
                   <div className="flex justify-between items-center">
                     <p className={sectionLabel}>Час раунду</p>
-                    <span className="text-(--ui-accent) font-bold text-sm">
+                    <span className="text-ui-accent font-bold text-sm">
                       {'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 60}с
                     </span>
                   </div>
@@ -179,7 +179,7 @@ export const LobbySettingsScreen = () => {
                         typeof gameSettings.mode
                       >)
                     }
-                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                     style={{
                       background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
                     }}
@@ -197,9 +197,7 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Рахунок для перемоги</p>
-                <span className="text-(--ui-accent) font-bold text-sm">
-                  {local.general.scoreToWin}
-                </span>
+                <span className="text-ui-accent font-bold text-sm">{local.general.scoreToWin}</span>
               </div>
               <input
                 type="range"
@@ -208,7 +206,7 @@ export const LobbySettingsScreen = () => {
                 step="5"
                 value={local.general.scoreToWin}
                 onChange={(e) => setGeneral('scoreToWin', parseInt(e.target.value))}
-                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                 style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}
               />
             </div>
@@ -216,16 +214,16 @@ export const LobbySettingsScreen = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className={sectionLabel}>Штраф за пропуск</p>
-                <p className="text-[11px] mt-0.5 text-(--ui-fg-muted) opacity-70">
+                <p className="text-[11px] mt-0.5 text-ui-fg-muted opacity-70">
                   −1 очко за пропущене слово
                 </p>
               </div>
               <button
                 onClick={() => setGeneral('skipPenalty', !local.general.skipPenalty)}
-                className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'}`}
+                className={`w-12 h-7 rounded-full transition-all relative ${local.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'}`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-(--ui-fg) rounded-full shadow transition-all ${local.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
+                  className={`absolute top-0.5 w-6 h-6 bg-ui-fg rounded-full shadow transition-all ${local.general.skipPenalty ? 'right-0.5' : 'left-0.5'}`}
                 />
               </button>
             </div>
@@ -245,8 +243,8 @@ export const LobbySettingsScreen = () => {
                       }}
                       className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
                         active
-                          ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)'
-                          : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted)'
+                          ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
+                          : 'border-ui-border bg-ui-surface text-ui-fg-muted'
                       }`}
                     >
                       {cat}
@@ -263,7 +261,7 @@ export const LobbySettingsScreen = () => {
                   value={local.general.customWords || ''}
                   onChange={(e) => setGeneral('customWords', e.target.value)}
                   placeholder="Слова через кому…"
-                  className="w-full h-24 p-4 rounded-xl border resize-none bg-(--ui-surface) text-(--ui-fg) border-(--ui-border) focus:border-(--ui-accent) outline-none"
+                  className="w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none"
                 />
               </div>
             )}

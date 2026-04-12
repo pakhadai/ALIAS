@@ -42,14 +42,28 @@ export function createAdminRoutes(
    * Admin authentication middleware.
    *
    * Priority order:
-   * 1. ADMIN_ALLOWED_EMAILS (.env) — if configured, email match is sufficient.
-   *    No need to set isAdmin=true in the database. This is the recommended approach.
-   * 2. isAdmin flag in DB — fallback when no email whitelist is configured.
-   *
-   * This means you can grant admin access purely via .env without any DB changes.
+   * 1. **`x-admin-key`** — if `ADMIN_API_KEY` is set in env and the header matches, allow (for scripts / CI).
+   *    If the header is present but wrong → 403 (do not fall through to JWT).
+   * 2. **Bearer JWT** — then:
+   *    - `ADMIN_ALLOWED_EMAILS` — if configured, email match is sufficient (no DB `isAdmin` needed).
+   *    - else `User.isAdmin` in DB.
+   *    - else deny in production; dev fallback allows any authenticated non-anonymous user.
    */
   async function adminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const configuredAdminKey = config.adminApiKey?.trim();
+      if (configuredAdminKey) {
+        const provided = req.header('x-admin-key')?.trim();
+        if (provided) {
+          if (provided === configuredAdminKey) {
+            next();
+            return;
+          }
+          res.status(403).json({ error: 'Invalid admin key' });
+          return;
+        }
+      }
+
       const auth = req.headers.authorization;
 
       if (!auth?.startsWith('Bearer ')) {

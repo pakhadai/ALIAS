@@ -54,6 +54,7 @@ export const MenuScreen = () => {
   const [quickJoinVisible, setQuickJoinVisible] = useState(false);
   const [quickJoinCode, setQuickJoinCode] = useState('');
   const [quickJoinChecking, setQuickJoinChecking] = useState(false);
+  const [createRoomBusy, setCreateRoomBusy] = useState(false);
   const t = useT();
   const keyboardBottomInset = useVisualViewportBottomInset();
 
@@ -114,7 +115,7 @@ export const MenuScreen = () => {
   };
 
   const menuHeaderIconBtn =
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90';
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-200 ease-out active:scale-95';
   const menuHeaderIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
 
   const showProfileBadge = !isAuthenticated;
@@ -137,6 +138,16 @@ export const MenuScreen = () => {
     }
   };
 
+  const handleCreateRoom = async () => {
+    if (createRoomBusy) return;
+    setCreateRoomBusy(true);
+    try {
+      await createNewRoom();
+    } finally {
+      setCreateRoomBusy(false);
+    }
+  };
+
   return (
     <div
       className={`flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
@@ -152,7 +163,7 @@ export const MenuScreen = () => {
             <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
             {showProfileBadge && (
               <span
-                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-(--ui-danger) ring-2 ring-(--ui-bg)"
+                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ui-danger ring-2 ring-ui-bg"
                 aria-hidden
               />
             )}
@@ -192,8 +203,8 @@ export const MenuScreen = () => {
 
           {connectionError && (
             <div className="mt-8 p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake">
-              <AlertCircle className="text-(--ui-danger)" size={20} />
-              <p className="text-[10px] uppercase tracking-widest text-(--ui-danger) font-bold">
+              <AlertCircle className="text-ui-danger" size={20} />
+              <p className="text-xs uppercase tracking-wide text-ui-danger font-bold">
                 Server Error: {connectionError}
               </p>
             </div>
@@ -201,9 +212,11 @@ export const MenuScreen = () => {
 
           <div className="w-full space-y-6 flex flex-col items-center mt-12 animate-slide-up">
             <button
-              onClick={createNewRoom}
+              type="button"
+              onClick={() => void handleCreateRoom()}
+              disabled={createRoomBusy}
               data-testid="menu-create-game"
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-2xl relative overflow-hidden`}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 transition-all duration-200 ease-out active:scale-[0.98] shadow-2xl relative overflow-hidden disabled:opacity-70 disabled:pointer-events-none`}
             >
               <span
                 className="absolute inset-0 opacity-60"
@@ -213,16 +226,19 @@ export const MenuScreen = () => {
                 }}
                 aria-hidden
               />
-              <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
+              {createRoomBusy ? (
+                <span className="h-5 w-5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0" />
+              ) : null}
+              <span className="font-sans font-bold text-sm uppercase tracking-wide">
                 {t.createGame}
               </span>
             </button>
             <button
               onClick={() => setShowQuickJoin(true)}
               data-testid="menu-join-game"
-              className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)"
+              className="w-full h-14 rounded-full flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover"
             >
-              <span className="font-sans font-bold text-[10px] uppercase tracking-[0.4em]">
+              <span className="font-sans font-bold text-sm uppercase tracking-wide">
                 {quickJoinLabel}
               </span>
             </button>
@@ -230,7 +246,7 @@ export const MenuScreen = () => {
             <button
               onClick={startOfflineGame}
               data-testid="menu-offline"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] w-full"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 bg-ui-surface border border-ui-border hover:bg-ui-surface-hover transition-all duration-200 ease-out active:scale-[0.98] w-full"
             >
               <WifiOff
                 size={16}
@@ -238,7 +254,7 @@ export const MenuScreen = () => {
                 strokeWidth={2}
               />
               <span
-                className={`font-sans font-bold text-[10px] uppercase tracking-[0.35em] opacity-80 ${currentTheme.textMain}`}
+                className={`font-sans font-bold text-sm uppercase tracking-wide opacity-80 ${currentTheme.textMain}`}
               >
                 {t.playOffline}
               </span>
@@ -246,7 +262,7 @@ export const MenuScreen = () => {
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pt-4 pb-safe-bottom">
-            <div className="h-px w-12 bg-(--ui-border)" />
+            <div className="h-px w-12 bg-ui-border" />
             <span
               className={`font-sans text-[8px] uppercase tracking-widest opacity-20 ${currentTheme.textMain}`}
             >
@@ -278,31 +294,31 @@ export const MenuScreen = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-center pb-3">
-                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
               </div>
               <div className="flex justify-between items-start mb-4">
                 <p
                   id="fullscreen-hint-title"
-                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                  className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-4"
                 >
                   {t.fullscreenUnavailableTitle}
                 </p>
                 <button
                   type="button"
                   onClick={closeFullscreenHint}
-                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  className="text-ui-fg-muted hover:text-ui-fg p-1 shrink-0 transition-all duration-200 active:scale-95"
                   aria-label={t.close}
                 >
                   <X size={18} />
                 </button>
               </div>
-              <p className="text-(--ui-fg-muted) text-sm leading-relaxed font-sans mb-6">
+              <p className="text-ui-fg-muted text-sm leading-relaxed font-sans mb-6">
                 {t.fullscreenUnavailableBody}
               </p>
               <button
                 type="button"
                 onClick={closeFullscreenHint}
-                className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest ${currentTheme.button}`}
+                className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest transition-all duration-200 ease-out active:scale-[0.98] ${currentTheme.button}`}
               >
                 {t.close}
               </button>
@@ -329,27 +345,27 @@ export const MenuScreen = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-center pb-3">
-                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
               </div>
 
               <div className="flex justify-between items-start mb-4">
                 <p
                   id="quick-join-title"
-                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                  className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-4"
                 >
                   {t.enterCode}
                 </p>
                 <button
                   type="button"
                   onClick={closeQuickJoin}
-                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  className="text-ui-fg-muted hover:text-ui-fg p-1 shrink-0 transition-all duration-200 active:scale-95"
                   aria-label={t.close}
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="rounded-3xl bg-(--ui-surface) border border-(--ui-border) px-4 py-3">
+              <div className="rounded-3xl bg-ui-surface border border-ui-border px-4 py-3 transition-colors duration-200">
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
@@ -365,7 +381,7 @@ export const MenuScreen = () => {
                     }}
                     placeholder="00000"
                     data-testid="menu-quick-join-code"
-                    className="flex-1 bg-transparent text-(--ui-fg) font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-(--ui-fg-muted)"
+                    className="flex-1 bg-transparent text-ui-fg font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-ui-fg-muted"
                     aria-label={t.enterCode}
                     autoFocus
                   />
@@ -374,7 +390,7 @@ export const MenuScreen = () => {
                     onClick={() => void handleQuickJoin()}
                     disabled={!canQuickJoin || quickJoinChecking}
                     data-testid="menu-quick-join-submit"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-(--ui-accent) text-(--ui-accent-contrast) transition-all active:scale-95 disabled:opacity-40"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-ui-accent text-ui-accent-contrast transition-all duration-200 ease-out active:scale-95 disabled:opacity-40"
                     aria-label={t.enter}
                   >
                     {quickJoinChecking ? (
@@ -389,7 +405,7 @@ export const MenuScreen = () => {
               <button
                 type="button"
                 onClick={closeQuickJoin}
-                className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]`}
+                className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all duration-200 ease-out active:scale-[0.98]`}
               >
                 {t.cancel}
               </button>

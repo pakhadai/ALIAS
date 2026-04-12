@@ -208,7 +208,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           <div className="flex justify-end px-5 pt-5 pb-0">
             <button
               onClick={handleClose}
-              className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1"
+              className="text-ui-fg-muted hover:text-ui-fg transition-colors p-1"
             >
               <X size={18} />
             </button>
@@ -220,32 +220,30 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               {avatarId != null ? (
                 <AvatarDisplay avatarId={avatarId} size={76} />
               ) : (
-                <div className="w-[76px] h-[76px] rounded-full bg-(--ui-surface) border border-(--ui-border) flex items-center justify-center">
+                <div className="w-[76px] h-[76px] rounded-full bg-ui-surface border border-ui-border flex items-center justify-center">
                   <AvatarIcon />
                 </div>
               )}
               <span
                 className="absolute -bottom-3 left-1/2 -translate-x-1/2
-              bg-(--ui-accent) text-(--ui-accent-contrast) text-[7px] font-bold tracking-[0.18em]
+              bg-ui-accent text-ui-accent-contrast text-[7px] font-bold tracking-[0.18em]
               uppercase px-3 py-[3px] rounded-full whitespace-nowrap shadow-md"
               >
                 {badgeLabel}
               </span>
             </div>
 
-            <h2 className="mt-6 font-serif text-[22px] tracking-wide text-(--ui-fg)">
-              {displayName}
-            </h2>
-            <p className="text-[13px] font-sans mt-0.5 text-(--ui-fg-muted)">{displaySub}</p>
+            <h2 className="mt-6 font-serif text-[22px] tracking-wide text-ui-fg">{displayName}</h2>
+            <p className="text-[13px] font-sans mt-0.5 text-ui-fg-muted">{displaySub}</p>
 
-            <p className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-(--ui-fg-muted)">
+            <p className="text-center text-[11px] font-sans leading-relaxed mt-3 px-1 text-ui-fg-muted">
               {statsSummaryLine}
             </p>
 
             <button
               type="button"
               onClick={openDetailedStats}
-              className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-(--ui-accent) hover:text-(--ui-accent-hover) transition-colors"
+              className="mt-3 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-ui-accent hover:text-ui-accent-hover transition-colors"
             >
               {t.profileStatsDetailLink}
             </button>
@@ -255,7 +253,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                 type="button"
                 onClick={openAdminPanel}
                 className={`mt-4 w-full max-w-[280px] rounded-2xl py-3.5 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md
-                ${'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) border border-(--ui-border)'}`}
+                ${'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed border border-ui-border'}`}
               >
                 <Shield size={16} strokeWidth={2.25} aria-hidden />
                 {t.profileAdminPanel}
@@ -272,12 +270,12 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           )}
 
           {/* Divider */}
-          <div className="h-px bg-(--ui-border)" />
+          <div className="h-px bg-ui-border" />
 
           {/* Purchases / benefits */}
           <div className="relative overflow-y-auto" style={{ maxHeight: '40vh' }}>
             <div className="px-6 pt-5 pb-2">
-              <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-(--ui-fg-muted)">
+              <p className="text-[9px] font-sans font-bold tracking-[0.28em] uppercase mb-1 text-ui-fg-muted">
                 {purchases.length > 0 ? t.profilePurchasesTitle : t.profileBenefitsTitle}
               </p>
             </div>
@@ -287,17 +285,17 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                 {purchases.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between py-3 border-b border-(--ui-border)"
+                    className="flex items-center justify-between py-3 border-b border-ui-border"
                   >
                     <div>
-                      <p className="text-[14px] font-sans text-(--ui-fg)">
+                      <p className="text-[14px] font-sans text-ui-fg">
                         {p.wordPackId ? 'Word Pack' : p.themeId ? 'Theme' : 'Sound Pack'}
                       </p>
-                      <p className="text-[11px] font-sans mt-0.5 text-(--ui-fg-muted)">
+                      <p className="text-[11px] font-sans mt-0.5 text-ui-fg-muted">
                         {new Date(p.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <Check size={14} className="text-(--ui-accent)" />
+                    <Check size={14} className="text-ui-accent" />
                   </div>
                 ))}
               </div>
@@ -305,31 +303,28 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               <div className="px-6 pb-4">
                 <div className="grid grid-cols-2 gap-3">
                   {benefits.slice(0, 4).map((item, i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4"
-                    >
+                    <div key={i} className="rounded-2xl bg-ui-surface border border-ui-border p-4">
                       <div className="flex items-center gap-3">
                         <span className="text-[18px] leading-none">{item.emoji}</span>
-                        <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                        <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
                           {item.label}
                         </p>
                       </div>
-                      <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
+                      <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
                         {item.sub}
                       </p>
                     </div>
                   ))}
                 </div>
                 {benefits.length > 4 && (
-                  <div className="mt-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border) p-4">
+                  <div className="mt-3 rounded-2xl bg-ui-surface border border-ui-border p-4">
                     <div className="flex items-center gap-3">
                       <span className="text-[18px] leading-none">{benefits[4]?.emoji}</span>
-                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-(--ui-fg) line-clamp-2">
+                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
                         {benefits[4]?.label}
                       </p>
                     </div>
-                    <p className="text-[10px] font-sans mt-2 leading-snug text-(--ui-fg-muted) line-clamp-3">
+                    <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
                       {benefits[4]?.sub}
                     </p>
                   </div>
@@ -349,14 +344,14 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-(--ui-border)" />
+          <div className="h-px bg-ui-border" />
 
           {/* Logout */}
           <div className="px-6 pt-5 pb-safe-bottom-md">
             <button
               onClick={() => setShowLogoutConfirm(true)}
               disabled={loggingOut}
-              className="w-full text-center text-(--ui-danger) font-sans font-bold
+              className="w-full text-center text-ui-danger font-sans font-bold
               text-[10px] tracking-[0.3em] uppercase py-3
               hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
             >
@@ -381,20 +376,20 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-center pb-3">
-                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
               </div>
 
               <div className="flex justify-between items-start mb-4">
                 <p
                   id="profile-logout-confirm-title"
-                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                  className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-4"
                 >
                   Ви впевнені, що хочете вийти?
                 </p>
                 <button
                   type="button"
                   onClick={closeLogoutConfirm}
-                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  className="text-ui-fg-muted hover:text-ui-fg p-1 shrink-0"
                   aria-label={t.close}
                 >
                   <X size={18} />
@@ -405,7 +400,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                 <button
                   type="button"
                   onClick={closeLogoutConfirm}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
                 >
                   {t.cancel}
                 </button>
@@ -413,7 +408,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
                   type="button"
                   onClick={() => void handleLogout()}
                   disabled={loggingOut}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-ui-danger border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all duration-200 ease-out active:scale-[0.98] disabled:opacity-40"
                 >
                   {loggingOut ? (
                     <span className="inline-flex items-center justify-center gap-2">

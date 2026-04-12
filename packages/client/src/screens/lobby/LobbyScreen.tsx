@@ -316,10 +316,10 @@ export const LobbyScreen = () => {
                 aria-label={t.scanToJoin ?? 'QR code to join room'}
               >
                 <div className="flex justify-center pb-1">
-                  <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                  <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
                 </div>
                 {/* Fixed box avoids layout shift while the data-URL image paints */}
-                <div className="bg-(--ui-surface) p-4 rounded-2xl border border-(--ui-border) w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
+                <div className="bg-ui-surface p-4 rounded-2xl border border-ui-border w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
                   <img
                     src={qrCodeData}
                     alt=""
@@ -329,7 +329,7 @@ export const LobbyScreen = () => {
                     className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
                   />
                 </div>
-                <p className="text-(--ui-fg) text-[10px] uppercase tracking-[0.5em] font-bold px-1">
+                <p className="text-ui-fg text-[10px] uppercase tracking-[0.5em] font-bold px-1">
                   {t.scanToJoin ?? 'Відскануйте для приєднання'}
                 </p>
               </div>
@@ -368,37 +368,37 @@ export const LobbyScreen = () => {
           <div className="w-full max-w-sm mx-auto mb-6 space-y-3">
             {isRoomUnavailableError(connectionErrorCode) ? (
               <div className="bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] rounded-2xl p-6 text-center animate-shake">
-                <p className="text-(--ui-danger) font-sans text-sm mb-2 font-bold uppercase tracking-wider">
+                <p className="text-ui-danger font-sans text-sm mb-2 font-bold uppercase tracking-wider">
                   {t.connectionFailed}
                 </p>
-                <p className="text-(--ui-fg-muted) text-xs">
+                <p className="text-ui-fg-muted text-xs">
                   {t.roomNotFound.replace('{0}', roomCode)}
                 </p>
                 <button
                   type="button"
                   onClick={() => setGameState(GameState.JOIN_INPUT)}
-                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_35%,transparent)] rounded-xl text-(--ui-danger) text-xs uppercase tracking-wider transition-colors"
+                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_35%,transparent)] rounded-xl text-ui-danger text-xs uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
                 >
                   {t.tryAgain}
                 </button>
               </div>
             ) : connectionError ? (
               <div className="bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)] rounded-2xl p-6 text-center">
-                <p className="text-(--ui-warning) font-sans text-sm mb-2 font-bold uppercase tracking-wider">
+                <p className="text-ui-warning font-sans text-sm mb-2 font-bold uppercase tracking-wider">
                   {t.connectionFailed}
                 </p>
-                <p className="text-(--ui-fg-muted) text-xs">{connectionError}</p>
+                <p className="text-ui-fg-muted text-xs">{connectionError}</p>
                 <button
                   type="button"
                   onClick={() => setGameState(GameState.JOIN_INPUT)}
-                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-warning)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] rounded-xl text-(--ui-warning) text-xs uppercase tracking-wider transition-colors"
+                  className="mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-warning)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] rounded-xl text-ui-warning text-xs uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
                 >
                   {t.tryAgain}
                 </button>
               </div>
             ) : (
-              <div className="bg-(--ui-surface) border border-(--ui-border) rounded-2xl p-6 text-center">
-                <p className="text-(--ui-fg-muted) text-sm">{t.lostServerConnection}</p>
+              <div className="bg-ui-surface border border-ui-border rounded-2xl p-6 text-center">
+                <p className="text-ui-fg-muted text-sm">{t.lostServerConnection}</p>
               </div>
             )}
           </div>
@@ -468,17 +468,17 @@ export const LobbyScreen = () => {
                     <X size={24} className={currentTheme.iconColor} />
                   </button>
                   <div className="flex justify-center mb-4">
-                    <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                    <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
                   </div>
                   <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
                     {t.addPlayerTitle}
                   </h2>
                   {players.length >= MAX_PLAYERS && (
                     <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
-                      <p className="text-(--ui-danger) text-xs font-bold uppercase tracking-widest">
+                      <p className="text-ui-danger text-xs font-bold uppercase tracking-widest">
                         Ліміт гравців досягнуто
                       </p>
-                      <p className="text-[11px] text-(--ui-fg-muted) mt-2">
+                      <p className="text-[11px] text-ui-fg-muted mt-2">
                         Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
                       </p>
                     </div>
@@ -492,7 +492,7 @@ export const LobbyScreen = () => {
                         setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
                       }
                       placeholder={t.namePlaceholder}
-                      className="w-full bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-(--ui-accent) focus:border-(--ui-accent) transition-all font-sans font-bold text-center text-sm"
+                      className="w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-sans font-bold text-center text-sm"
                     />
                     <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
                       {AVATARS.map((a) => (
@@ -503,7 +503,7 @@ export const LobbyScreen = () => {
                           className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
                             newPlayerAvatar === a
                               ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                              : 'hover:bg-(--ui-surface-hover) opacity-60 hover:opacity-100'
+                              : 'hover:bg-ui-surface-hover opacity-60 hover:opacity-100'
                           }`}
                         >
                           {a}
@@ -544,7 +544,7 @@ export const LobbyScreen = () => {
                     <button
                       type="button"
                       onClick={() => sendAction({ action: 'TEAM_SHUFFLE_UNASSIGNED' })}
-                      className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                      className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-[9px] uppercase tracking-widest font-bold text-ui-fg-muted transition-all active:scale-[0.98]"
                       disabled={players.length < 2}
                     >
                       {t.shuffle}
@@ -552,7 +552,7 @@ export const LobbyScreen = () => {
                     <button
                       type="button"
                       onClick={() => setShowShuffleAllConfirm(true)}
-                      className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98]"
+                      className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-[9px] uppercase tracking-widest font-bold text-ui-fg-muted transition-all active:scale-[0.98]"
                       disabled={players.length < 2}
                     >
                       Shuffle all
@@ -562,7 +562,7 @@ export const LobbyScreen = () => {
                       onClick={() =>
                         sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
                       }
-                      className="p-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                      className="p-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
                       aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
                       title={teamsLocked ? 'Unlock' : 'Lock'}
                     >
@@ -623,7 +623,7 @@ export const LobbyScreen = () => {
           {isHost ? (
             <div className="space-y-3">
               {!startValidation.ok && startValidation.reason && (
-                <p className="text-center text-[10px] font-sans text-(--ui-fg-muted) opacity-80">
+                <p className="text-center text-[10px] font-sans text-ui-fg-muted opacity-80">
                   {startValidation.reason}
                 </p>
               )}

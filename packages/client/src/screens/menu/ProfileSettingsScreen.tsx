@@ -54,10 +54,10 @@ export const ProfileSettingsScreen = () => {
   };
 
   const inputCls =
-    'w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)';
+    'w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent';
 
   return (
-    <div className="flex flex-col min-h-screen items-center bg-(--ui-bg)">
+    <div className="flex flex-col min-h-screen items-center bg-ui-bg">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
           <button
@@ -83,7 +83,7 @@ export const ProfileSettingsScreen = () => {
           </div>
 
           <div className="space-y-2">
-            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
               Виберіть аватарку
             </p>
             <div className="grid grid-cols-6 gap-2 max-w-xs mx-auto">
@@ -91,15 +91,15 @@ export const ProfileSettingsScreen = () => {
                 <button
                   key={idx}
                   onClick={() => setSelectedAvatar(idx)}
-                  className={`relative flex items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${selectedAvatar === idx ? 'ring-2 ring-(--ui-accent) scale-105' : 'opacity-70 hover:opacity-100'}`}
+                  className={`relative flex items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${selectedAvatar === idx ? 'ring-2 ring-ui-accent scale-105' : 'opacity-70 hover:opacity-100'}`}
                   style={{
                     background: `color-mix(in_srgb, var(--ui-accent) ${av.mix}%, var(--ui-bg))`,
                   }}
                 >
                   <span className="text-xl">{av.emoji}</span>
                   {selectedAvatar === idx && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-(--ui-accent) rounded-full flex items-center justify-center">
-                      <Check size={7} className="text-(--ui-accent-contrast)" />
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-ui-accent rounded-full flex items-center justify-center">
+                      <Check size={7} className="text-ui-accent-contrast" />
                     </div>
                   )}
                 </button>
@@ -108,7 +108,7 @@ export const ProfileSettingsScreen = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+            <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
               {"Ім'я в грі"}
             </label>
             <input
@@ -117,45 +117,45 @@ export const ProfileSettingsScreen = () => {
               placeholder={"Твоє ім'я..."}
               className={inputCls}
             />
-            <p className="text-[10px] text-(--ui-fg-muted) opacity-70">{name.length}/20</p>
+            <p className="text-[10px] text-ui-fg-muted opacity-70">{name.length}/20</p>
           </div>
 
-          <div className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-3">
-            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+          <div className="rounded-2xl bg-ui-card border border-ui-border p-5 space-y-3">
+            <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
               Акаунт
             </p>
             {email && (
               <div className="flex justify-between items-center">
-                <span className="text-[12px] text-(--ui-fg-muted)">Email</span>
+                <span className="text-[12px] text-ui-fg-muted">Email</span>
                 <span className={`text-[12px] font-medium ${currentTheme.textMain}`}>{email}</span>
               </div>
             )}
             {provider && (
               <div className="flex justify-between items-center">
-                <span className="text-[12px] text-(--ui-fg-muted)">Провайдер</span>
+                <span className="text-[12px] text-ui-fg-muted">Провайдер</span>
                 <ProviderBadge provider={provider} />
               </div>
             )}
           </div>
 
           {(pushSupported || canInstall) && (
-            <div className="rounded-2xl bg-(--ui-card) border border-(--ui-border) p-5 space-y-4">
-              <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-(--ui-fg-muted) opacity-80">
+            <div className="rounded-2xl bg-ui-card border border-ui-border p-5 space-y-4">
+              <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
                 Сповіщення і застосунок
               </p>
               {pushSupported && (
                 <div className="flex justify-between items-center">
-                  <span className="text-[12px] text-(--ui-fg)">Push-сповіщення</span>
+                  <span className="text-[12px] text-ui-fg">Push-сповіщення</span>
                   {pushPermission === 'granted' ? (
                     <button
                       onClick={pushUnsubscribe}
                       disabled={pushLoading}
-                      className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all bg-[color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-(--ui-success) hover:bg-[color-mix(in_srgb,var(--ui-success)_24%,transparent)] disabled:opacity-50"
+                      className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all bg-[color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_24%,transparent)] disabled:opacity-50"
                     >
                       {pushLoading ? '...' : '✓ Увімкнено'}
                     </button>
                   ) : pushPermission === 'denied' ? (
-                    <span className="text-[11px] text-(--ui-fg-muted)">Заблоковано</span>
+                    <span className="text-[11px] text-ui-fg-muted">Заблоковано</span>
                   ) : (
                     <button
                       onClick={pushSubscribe}
@@ -170,10 +170,10 @@ export const ProfileSettingsScreen = () => {
               {canInstall && (
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px]! text-(--ui-fg-muted) opacity-80">
+                    <span className="material-symbols-outlined text-[18px]! text-ui-fg-muted opacity-80">
                       install_mobile
                     </span>
-                    <span className="text-[12px] text-(--ui-fg)">На головний екран</span>
+                    <span className="text-[12px] text-ui-fg">На головний екран</span>
                   </div>
                   <button
                     onClick={install}

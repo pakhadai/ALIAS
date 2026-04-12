@@ -47,10 +47,10 @@ export function TeamCard(props: {
 
   return (
     <div
-      className={`rounded-3xl border bg-(--ui-surface) p-4 ${
+      className={`rounded-3xl border bg-ui-surface p-4 ${
         overfilled
           ? 'border-[color-mix(in_srgb,var(--ui-warning)_40%,var(--ui-border))]'
-          : 'border-(--ui-border)'
+          : 'border-ui-border'
       }`}
       style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
     >
@@ -63,7 +63,7 @@ export function TeamCard(props: {
               value={teamNameDraft}
               onChange={(e) => setTeamNameDraft(e.target.value)}
               maxLength={18}
-              className="flex-1 bg-transparent border-b border-(--ui-border) text-(--ui-fg) font-serif text-lg tracking-wide outline-none focus:border-(--ui-accent)"
+              className="flex-1 bg-transparent border-b border-ui-border text-ui-fg font-serif text-lg tracking-wide outline-none focus:border-ui-accent"
               autoFocus
             />
             <button
@@ -75,7 +75,7 @@ export function TeamCard(props: {
                 setEditingTeamId(null);
                 setTeamNameDraft('');
               }}
-              className="p-2 rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
+              className="p-2 rounded-xl border border-ui-border hover:bg-ui-surface-hover transition-colors"
               aria-label="Save"
             >
               <Check size={16} className={theme.iconColor} />
@@ -91,7 +91,7 @@ export function TeamCard(props: {
                   setEditingTeamId(team.id);
                   setTeamNameDraft(team.name);
                 }}
-                className="p-1.5 rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
+                className="p-1.5 rounded-xl border border-ui-border hover:bg-ui-surface-hover transition-colors"
                 aria-label="Rename team"
                 title="Rename"
               >
@@ -101,14 +101,14 @@ export function TeamCard(props: {
           </div>
         )}
 
-        <span className="ml-auto text-[10px] text-(--ui-fg-muted) font-bold tracking-widest">
+        <span className="ml-auto text-[10px] text-ui-fg-muted font-bold tracking-widest">
           {team.players.length}
         </span>
       </div>
 
       <div className="flex flex-wrap gap-2 mt-3">
         {team.players.length === 0 ? (
-          <span className="text-[10px] italic text-(--ui-fg-muted) opacity-70">
+          <span className="text-[10px] italic text-ui-fg-muted opacity-70">
             {t.noPlayersInTeam}
           </span>
         ) : (
@@ -120,9 +120,9 @@ export function TeamCard(props: {
                 if (!canHostAssignOffline) return;
                 onAssignPick(p);
               }}
-              className={`px-3 py-1.5 rounded-full border border-(--ui-border) bg-(--ui-card) text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted) inline-flex items-center gap-2 transition-all active:scale-[0.98] ${
-                p.id === myPlayerId ? 'ring-2 ring-(--ui-accent-ring)' : ''
-              } ${canHostAssignOffline ? 'hover:bg-(--ui-surface-hover)' : ''}`}
+              className={`px-3 py-1.5 rounded-full border border-ui-border bg-ui-card text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted inline-flex items-center gap-2 transition-all active:scale-[0.98] ${
+                p.id === myPlayerId ? 'ring-2 ring-ui-accent-ring' : ''
+              } ${canHostAssignOffline ? 'hover:bg-ui-surface-hover' : ''}`}
             >
               {p.avatarId != null ? (
                 <AvatarDisplay avatarId={p.avatarId} size={18} />
@@ -141,7 +141,7 @@ export function TeamCard(props: {
             type="button"
             onClick={() => sendAction({ action: 'TEAM_LEAVE' })}
             disabled={joinDisabled}
-            className="flex-1 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted) transition-all active:scale-[0.98] disabled:opacity-40"
+            className="flex-1 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-[9px] uppercase tracking-widest font-bold text-ui-fg-muted transition-all active:scale-[0.98] disabled:opacity-40"
           >
             Вийти
           </button>
@@ -152,8 +152,8 @@ export function TeamCard(props: {
             disabled={joinDisabled}
             className={`flex-1 py-3 rounded-2xl text-[9px] uppercase tracking-widest font-bold transition-all active:scale-[0.98] disabled:opacity-40 ${
               overfilled
-                ? 'border border-(--ui-border) bg-[color-mix(in_srgb,var(--ui-warning)_10%,var(--ui-surface))] text-(--ui-fg-muted)'
-                : 'bg-(--ui-accent) text-(--ui-accent-contrast) border border-(--ui-accent)'
+                ? 'border border-ui-border bg-[color-mix(in_srgb,var(--ui-warning)_10%,var(--ui-surface))] text-ui-fg-muted'
+                : 'bg-ui-accent text-ui-accent-contrast border border-ui-accent'
             }`}
           >
             Приєднатися
@@ -161,7 +161,7 @@ export function TeamCard(props: {
         )}
 
         {overfilled && (
-          <span className="text-[9px] uppercase tracking-widest font-bold text-(--ui-warning) opacity-90">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-ui-warning opacity-90">
             Забагато
           </span>
         )}

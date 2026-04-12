@@ -28,6 +28,41 @@
 - Чому (контекст, причина)
 ```
 
+## [2026-04-12] — Документація: один канонічний README
+
+### Added
+
+- **`PROJECT_STATE.md`**: архітектурний знімок монорепо (пакети, потік даних Socket.IO + REST, Prisma, ключові залежності).
+- **`package.json`** (корінь): поле **`engines.node`** `>=18` для узгодження з README.
+
+### Changed
+
+- **`README.md`**: посилання на **`PROJECT_STATE.md`**; діаграма клієнта — **`useSocketConnection`**; таблиця **GameSession** узгоджена з **`schema.prisma`**; уточнено версії **Sentry** (SDK ~10.x, Vite plugin ~5.x) та **express-rate-limit** (~8.x) у таблицях стеку / залежностей.
+- **`README.md`**: приведено до фактичного коду — `GameSettings` (`general` + `mode`), усі **`GameMode`** (включно з **HARDCORE**, **IMPOSTER**), повний перелік **`GameAction`**, події **`room:exists`**, **`imposter:secret`**, розширений **`GameSyncState`**, Prisma **WordConcept** / **WordTranslation** замість застарілої моделі `Word`, Redis для IMPOSTER, HTTP limiters (admin/custom-decks, dev-розслаблення auth), env **`TRUST_PROXY_HOPS`**, **`ADMIN_ALLOWED_*`**, **`SENTRY_DSN`**, клієнтський Sentry; оновлено дерево репозиторію, Quick Reference, примітки для розробників; додано розділ **«Довідник модулів (код)»** (заміна втраченого змісту окремого довідника).
+- **`README.md`** / **`PROJECT_STATE.md`**: узгоджено з поточною структурою UI та сервера — **`modes/explainerModeActions.ts`**, екран **`TEAMS`** → **`TeamSetupScreen`**, підкаталоги **`components/Auth`**, **`Settings`**, **`CustomDeck`**, **`Store`**, глобальні банери в **`App.tsx`**, уточнено маршрутизацію **IMPOSTER** у **`GameFlow.tsx`**; у **`PROJECT_STATE.md`** — розділ про канонічність документації та точки розширення.
+- **`packages/client/src/README.md`**: посилання на **`docs/LOBBY_TEAM_BUILDER.md`**, точка входу **`index.tsx`** / **`App.tsx`**.
+
+### Removed
+
+- **`CODE_REFERENCE.md`**: видалено як дублікат; єдиний обов’язковий огляд — **`README.md`** (тематичні доповнення лишаються в **`docs/`**).
+
+### Changed (документація тестів)
+
+- **`docs/TESTING_ACCEPTANCE.md`**: додано критерії для **IMPOSTER**, **team builder**, **`room:exists`**.
+
+### Fixed (документація + вирівнювання з кодом)
+
+- **Seed / теми:** таблиця в **`README.md`** узгоджена з **`packages/server/prisma/data/themes.json`** (7 slug-ів, free/premium).
+- **Стек:** у **`README.md`** розділено версію **Redis server (7)** і клієнт **ioredis 5.x**.
+- **Адмін REST:** додано **`POST /api/admin/upload-csv`**; опис **`ADMIN_API_KEY` / `x-admin-key`** приведено у відповідність до коду.
+- **Навігація по `docs/`:** у **`README.md`** додано посилання на **`docs/ROOM_MANAGEMENT_FIXES.md`**.
+- **`packages/server/.env.example`**: додано закоментовані **`ADMIN_*`**, **`TRUST_PROXY_HOPS`**, relay / instance.
+- **`packages/client/src/README.md`**: замість плейсхолдера — посилання на кореневий README.
+
+### Fixed (код)
+
+- **`packages/server/src/routes/admin.ts`**: якщо **`ADMIN_API_KEY`** задано, **`x-admin-key`** з тим самим значенням проходить **`adminAuth`** (інакше при наявному, але невірному заголовку — **403**); без ключа логіка лишається на JWT + whitelist / `isAdmin`.
+
 ## [2026-04-09] — Режим Solo, i18n профілю, join-sheet, тости та bottom sheets
 
 ### Added
@@ -340,7 +375,7 @@
 - Перша спроба створити лобі після входу через Google могла розходитись з актуальним JWT на Socket.IO handshake.
 
 ### Docs
-- Оновлено `README.md`, `CODE_REFERENCE.md` (ендпоінти, User, адмін, хуки).
+- Оновлено `README.md` (ендпоінти, User, адмін, хуки). *(Окремий `CODE_REFERENCE.md` згодом консолідовано в README 2026-04-12.)*
 
 ---
 
@@ -352,7 +387,7 @@
 - **@alias/client**: `PlayingScreen` як оболонка; `GameFlow/modes/ClassicUI` (`ClassicWordCard`, `ClassicActionFooter`), `QuizUI` (сітка 2×2); синхронізація `currentTask` з сервера; офлайн `buildOfflineTask` + `sendGuessOption`; хук `useHapticFeedback`, розширення `HAPTIC` (`quizCorrect`, `quizWrong`); легка вібрація на базовій `Button`; модальне вікно QR у лобі (більше біле поле для сканування); семантичні `--ui-*` у елементах таймера/гри замість жорсткого `text-white` на екрані гри.
 
 ### Changed
-- Документація: `README.md` (новий підрозділ про GameMode/GameTask/Стратегія, оновлені таблиці дій і `GameSyncState`, структура репо, Quick Reference, примітки для розробників); `CODE_REFERENCE.md` (детальний довідник по `modes/`, оновлені `shared`/`GameEngine`/`Room`/`schemas`/`GameContext`/клієнтські модулі); цей запис у `CHANGELOG.md`.
+- Документація: `README.md` (новий підрозділ про GameMode/GameTask/Стратегія, оновлені таблиці дій і `GameSyncState`, структура репо, Quick Reference, примітки для розробників); окремий довідник по модулях (тоді `CODE_REFERENCE.md`, з 2026-04-12 — розділ у `README.md`); цей запис у `CHANGELOG.md`.
 - **Лобі — налаштування:** вибір **режиму гри** (`CLASSIC` / `TRANSLATION` / `SYNONYMS` / `QUIZ`) з короткими підказками; для перекладу — додатковий вибір **мови відповіді** (`targetLanguage`). У лобі для гостей показується чіп поточного режиму. Файли: `LobbyFlow.tsx`, `constants.ts` (UA/DE/EN).
 
 ### Refactored
@@ -622,14 +657,14 @@
 
 ---
 
-## [2026-03-29] — Довідник коду CODE_REFERENCE.md
+## [2026-03-29] — Довідник коду CODE_REFERENCE.md *(історичний запис)*
 
 ### Fixed
 - `GameContextType.handleJoin` у `packages/client/src/types.ts`: додано опційний параметр `avatarId`, як у реалізації `GameContext`.
 
 ### Added
-- Файл [`CODE_REFERENCE.md`](./CODE_REFERENCE.md): структурований опис пакетів `@alias/shared`, `@alias/server`, `@alias/client`, `@alias/e2e`; таблиці зовнішніх бібліотек; перелік класів і методів (`GameEngine`, `RoomManager`, `WordService`, `RedisRoomStore`, `AuthService`); функції роутів, middleware, валідації, socket handlers; експорти React (екрани, компоненти, хуки, `api.ts`, `audio.ts`); моделі Prisma; покриття існуючими Vitest-файлами; рекомендації для наступних тестів.
-- У [`README.md`](./README.md) додано посилання на `CODE_REFERENCE.md` та `CHANGELOG.md` (на початку та в змісті).
+- Файл `CODE_REFERENCE.md` (з **2026-04-12** видалено; зміст перенесено в розділ **«Довідник модулів (код)»** у [`README.md`](./README.md)): структурований опис пакетів `@alias/shared`, `@alias/server`, `@alias/client`, `@alias/e2e`; таблиці зовнішніх бібліотек; перелік класів і методів (`GameEngine`, `RoomManager`, `WordService`, `RedisRoomStore`, `AuthService`); функції роутів, middleware, валідації, socket handlers; експорти React (екрани, компоненти, хуки, `api.ts`, `audio.ts`); моделі Prisma; покриття існуючими Vitest-файлами; рекомендації для наступних тестів.
+- У [`README.md`](./README.md) додано посилання на зовнішній довідник та `CHANGELOG.md` (на початку та в змісті).
 
 ---
 

@@ -6,6 +6,7 @@ export type {
   Team,
   GameSettings,
   GameTask,
+  QuizTaskKind,
   RoundStats,
   GameActionPayload,
   GameActionType,
@@ -121,6 +122,16 @@ export interface AppState {
   currentTaskAnswered?: string;
   currentRoundStats: RoundStats;
   timeLeft: number;
+  /** Server wall-clock ms target for countdown (online); offline may set for drift-free UI. */
+  roundEndsAt?: number;
+  /** QUIZ (PER_TASK): round seconds remaining (synced online). */
+  quizRoundTimeLeft?: number;
+  /** QUIZ: ms timestamp until input lock ends (synced online). */
+  quizTaskLockUntil?: number;
+  /** Session rounds completed (synced online; offline optional). */
+  roundsPlayed?: number;
+  /** Words used this deck cycle (synced online). */
+  usedWords?: string[];
   isPaused: boolean;
   timeUp?: boolean;
   isConnected: boolean;
@@ -144,7 +155,7 @@ export interface GameContextType extends AppState {
   isReconnecting: boolean;
   currentTheme: ThemeConfig;
   setGameState: (state: GameState) => void;
-  createNewRoom: () => void;
+  createNewRoom: () => Promise<void>;
   /** Resolves false if validation/local storage failed or room:create|join failed. */
   handleJoin: (
     id: string,

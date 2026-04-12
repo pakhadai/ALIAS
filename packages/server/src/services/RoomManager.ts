@@ -46,6 +46,10 @@ export interface Room {
   isPaused: boolean;
   timeUp?: boolean;
   timerInterval: ReturnType<typeof setInterval> | null;
+  /** Wall-clock ms target for current countdown (PLAYING / IMPOSTER discussion). */
+  roundEndsAt?: number;
+  /** After classic overtime (`timeUp`), auto-advance to ROUND_SUMMARY if explainer is idle. */
+  timeUpFallbackTimeout?: ReturnType<typeof setTimeout> | null;
   socketToPlayer: Map<string, string>;
   sessionId?: string;
   roundsPlayed: number;
@@ -102,6 +106,10 @@ export class RoomManager {
         const cutoff = Date.now() - 2 * 60 * 60 * 1000;
         for (const [code, room] of this.rooms) {
           if (room.players.length === 0 && room.createdAt < cutoff) {
+            if (room.timeUpFallbackTimeout) {
+              clearTimeout(room.timeUpFallbackTimeout);
+              room.timeUpFallbackTimeout = null;
+            }
             if (room.timerInterval) clearInterval(room.timerInterval);
             this.rooms.delete(code);
             this.clearWriterMismatchThrottle(code);
@@ -228,6 +236,8 @@ export class RoomManager {
       timeLeft: 0,
       isPaused: false,
       timerInterval: null,
+      roundEndsAt: undefined,
+      timeUpFallbackTimeout: null,
       socketToPlayer: new Map(),
       roundsPlayed: 0,
       createdAt: Date.now(),
@@ -289,14 +299,18 @@ export class RoomManager {
       timeLeft: syncState.timeLeft,
       isPaused: true, // always pause on restore — server timer was lost
       timerInterval: null,
+      roundEndsAt: undefined,
+      timeUpFallbackTimeout: null,
       socketToPlayer: new Map(),
-      roundsPlayed: 0,
+      roundsPlayed: typeof syncState.roundsPlayed === 'number' ? syncState.roundsPlayed : 0,
       createdAt: Date.now(),
-      usedWords: [], // can't restore from Redis; new deck will be built fresh
+      usedWords: Array.isArray(syncState.usedWords) ? [...syncState.usedWords] : [],
       currentTaskWrongAttempts: [],
       quizNextWordTimeout: null,
-      quizRoundTimeLeft: undefined,
-      quizTaskLockUntil: undefined,
+      quizRoundTimeLeft:
+        typeof syncState.quizRoundTimeLeft === 'number' ? syncState.quizRoundTimeLeft : undefined,
+      quizTaskLockUntil:
+        typeof syncState.quizTaskLockUntil === 'number' ? syncState.quizTaskLockUntil : undefined,
       // Restore IMPOSTER secret word — it was stored separately to keep it out of GameSyncState.
       // Without this, the RESULTS screen would show null after a server restart.
       imposterWord: imposterWord ?? undefined,
@@ -381,6 +395,10 @@ export class RoomManager {
 
     // Очищення, якщо кімната порожня
     if (room.players.length === 0) {
+      if (room.timeUpFallbackTimeout) {
+        clearTimeout(room.timeUpFallbackTimeout);
+        room.timeUpFallbackTimeout = null;
+      }
       if (room.timerInterval) clearInterval(room.timerInterval);
       this.rooms.delete(roomCode);
       this.clearWriterMismatchThrottle(roomCode);
@@ -533,6 +551,10 @@ export class RoomManager {
     }
 
     if (room.players.length === 0) {
+      if (room.timeUpFallbackTimeout) {
+        clearTimeout(room.timeUpFallbackTimeout);
+        room.timeUpFallbackTimeout = null;
+      }
       if (room.timerInterval) clearInterval(room.timerInterval);
       this.rooms.delete(roomCode);
       this.clearWriterMismatchThrottle(roomCode);
@@ -645,6 +667,11 @@ export class RoomManager {
       timeLeft: room.timeLeft,
       isPaused: room.isPaused,
       timeUp: room.timeUp,
+      roundEndsAt: room.roundEndsAt,
+      quizRoundTimeLeft: room.quizRoundTimeLeft,
+      quizTaskLockUntil: room.quizTaskLockUntil,
+      roundsPlayed: room.roundsPlayed,
+      usedWords: room.usedWords,
       wordDeck: room.wordDeck,
       imposterPhase: room.imposterPhase,
       imposterPlayerId: room.imposterPlayerId,
@@ -655,6 +682,10 @@ export class RoomManager {
 
   deleteRoom(code: string): void {
     const room = this.rooms.get(code);
+    if (room?.timeUpFallbackTimeout) {
+      clearTimeout(room.timeUpFallbackTimeout);
+      room.timeUpFallbackTimeout = null;
+    }
     if (room?.timerInterval) clearInterval(room.timerInterval);
     this.rooms.delete(code);
     this.clearWriterMismatchThrottle(code);

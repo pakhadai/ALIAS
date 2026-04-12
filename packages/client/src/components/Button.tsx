@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-medium transition-all duration-150 ease-out active:scale-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-[0.2em] text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--ui-accent-ring) focus-visible:ring-offset-(--ui-bg)';
+    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-semibold transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-wide text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
 
   // Strict theme integration
   const getVariantStyle = () => {
@@ -32,17 +32,17 @@ export const Button: React.FC<ButtonProps> = ({
 
     switch (variant) {
       case 'outline':
-        return 'bg-transparent border border-(--ui-border) text-(--ui-fg) hover:bg-(--ui-surface-hover)';
+        return 'bg-transparent border border-ui-border text-ui-fg hover:bg-ui-surface-hover';
       case 'danger':
-        return 'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-(--ui-danger) hover:bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
+        return 'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-ui-danger hover:bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
       case 'success':
-        return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-(--ui-success) hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
+        return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':
-        return 'bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover)';
+        return 'bg-ui-surface text-ui-fg-muted hover:text-ui-fg border border-ui-border hover:bg-ui-surface-hover';
       case 'ghost':
-        return 'bg-transparent text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)';
+        return 'bg-transparent text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover';
       default:
-        return 'bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed)';
+        return 'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed';
     }
   };
 
@@ -69,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
     sm: 'px-4 py-2',
     md: 'px-6 py-3',
     lg: 'px-8 py-4',
-    xl: 'px-10 py-5 text-[11px] tracking-[0.3em]',
+    xl: 'px-10 py-5 text-sm tracking-wide',
   };
 
   return (

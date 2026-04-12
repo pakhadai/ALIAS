@@ -5,7 +5,7 @@ import { HAPTIC } from '../../../utils/haptics';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 
 const OPTION_BTN =
-  'flex items-center justify-center text-center px-3 py-6 rounded-2xl font-sans font-bold text-sm sm:text-base uppercase tracking-wide transition-all duration-200 border active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none';
+  'min-h-[60px] min-w-0 flex items-center justify-center text-center px-4 py-5 rounded-2xl font-sans font-bold text-sm sm:text-base uppercase tracking-wide transition-all duration-200 border active:scale-95 active:opacity-90 disabled:opacity-40 disabled:pointer-events-none';
 
 const OPTION_MIX = [62, 52, 58, 48] as const;
 
@@ -15,7 +15,7 @@ export interface QuizUIProps {
   currentTheme: ThemeConfig;
   promptLabel?: string;
   solvedByName?: string | null;
-  /** From server sync: playerId who solved current task (if any). */
+  /** From server sync: playerId who solved the current task (if set). */
   currentTaskAnswered?: string;
   onAction: (payload: GameActionPayload) => void;
 }
@@ -23,7 +23,7 @@ export interface QuizUIProps {
 /**
  * Quiz (Blitz): prompt + 2×2 option grid; sends GUESS_OPTION with selectedOption.
  */
-export const QuizUI: React.FC<QuizUIProps> = ({
+export function QuizUI({
   task,
   disabled,
   currentTheme,
@@ -31,7 +31,7 @@ export const QuizUI: React.FC<QuizUIProps> = ({
   solvedByName,
   currentTaskAnswered,
   onAction,
-}) => {
+}: QuizUIProps): React.ReactElement {
   const haptic = useHapticFeedback();
   const [picked, setPicked] = useState<string | null>(null);
   const [lockedOut, setLockedOut] = useState(false);
@@ -98,7 +98,7 @@ export const QuizUI: React.FC<QuizUIProps> = ({
   return (
     <div className="w-full max-w-sm flex flex-col gap-8 items-center pb-28">
       {kindLabel && (
-        <div className="px-4 py-2 rounded-full border border-(--ui-border) bg-(--ui-surface) shadow-sm">
+        <div className="px-4 py-2 rounded-full border border-ui-border bg-ui-surface shadow-sm transition-colors duration-200">
           <span
             className={`text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
           >
@@ -106,7 +106,10 @@ export const QuizUI: React.FC<QuizUIProps> = ({
           </span>
         </div>
       )}
-      <div className="w-full min-h-[140px] flex items-center justify-center p-8 rounded-4xl border border-(--ui-border) bg-(--ui-surface) shadow-2xl">
+      <div
+        key={task.id}
+        className="w-full min-h-[140px] flex items-center justify-center p-8 rounded-4xl border border-ui-border bg-ui-surface shadow-2xl transition-all duration-200 animate-fade-in"
+      >
         <h2
           className={`${currentTheme.textMain} font-sans font-black text-3xl sm:text-4xl text-center leading-tight tracking-tight wrap-break-word w-full`}
         >
@@ -116,7 +119,7 @@ export const QuizUI: React.FC<QuizUIProps> = ({
 
       {solvedBySomeone && (
         <div className="w-full text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-(--ui-border) bg-(--ui-surface)">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-ui-border bg-ui-surface transition-all duration-200 animate-fade-in">
             <span className={`text-sm font-sans font-bold ${currentTheme.textMain}`}>
               {solvedByName
                 ? `${solvedByName} +1`
@@ -141,8 +144,8 @@ export const QuizUI: React.FC<QuizUIProps> = ({
               type="button"
               disabled={disabled || solved || solvedBySomeone || lockedOut || isWrongPick}
               onClick={() => handlePick(opt)}
-              className={`${OPTION_BTN} text-(--ui-accent-contrast) hover:brightness-105 ${
-                isCorrect ? 'ring-2 ring-(--ui-success) scale-[1.02]' : ''
+              className={`${OPTION_BTN} text-ui-accent-contrast hover:brightness-105 ${
+                isCorrect ? 'ring-2 ring-ui-success scale-[1.02]' : ''
               } ${isWrongPick ? 'opacity-50 line-through' : ''}`}
               style={{
                 backgroundColor: `color-mix(in_srgb, var(--ui-accent) ${mix}%, var(--ui-bg))`,
@@ -156,4 +159,4 @@ export const QuizUI: React.FC<QuizUIProps> = ({
       </div>
     </div>
   );
-};
+}

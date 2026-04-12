@@ -10,13 +10,13 @@ export function UnassignedPool(props: {
   const { unassigned, canHostAssignOffline, onPick } = props;
 
   return (
-    <div className="rounded-3xl border border-(--ui-border) bg-(--ui-surface) p-4">
-      <p className="text-[9px] uppercase tracking-widest font-bold text-(--ui-fg-muted)">
+    <div className="rounded-3xl border border-ui-border bg-ui-surface p-4">
+      <p className="text-[9px] uppercase tracking-widest font-bold text-ui-fg-muted">
         Нерозподілені ({unassigned.length})
       </p>
       <div className="flex flex-wrap gap-2 mt-3">
         {unassigned.length === 0 ? (
-          <span className="text-[10px] italic text-(--ui-fg-muted) opacity-70">—</span>
+          <span className="text-[10px] italic text-ui-fg-muted opacity-70">—</span>
         ) : (
           unassigned.map((p) => (
             <button
@@ -26,8 +26,8 @@ export function UnassignedPool(props: {
                 if (!canHostAssignOffline) return;
                 onPick(p);
               }}
-              className={`px-3 py-1.5 rounded-full border border-(--ui-border) bg-(--ui-card) text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted) inline-flex items-center gap-2 transition-all active:scale-[0.98] ${
-                canHostAssignOffline ? 'hover:bg-(--ui-surface-hover)' : 'cursor-default'
+              className={`px-3 py-1.5 rounded-full border border-ui-border bg-ui-card text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted inline-flex items-center gap-2 transition-all duration-200 ease-out active:scale-[0.98] ${
+                canHostAssignOffline ? 'hover:bg-ui-surface-hover' : 'cursor-default'
               }`}
               aria-label={`Assign ${p.name}`}
             >

@@ -71,7 +71,7 @@ export const JoinInputScreen = () => {
             onChange={handleInputChange}
             data-testid="join-room-code"
             placeholder="00000"
-            className="w-full bg-transparent border-b border-(--ui-border) text-(--ui-fg) text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-(--ui-accent) transition-all pb-8"
+            className="w-full bg-transparent border-b border-ui-border text-ui-fg text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-ui-accent transition-all pb-8"
           />
         </div>
         <div className="space-y-8 pt-4">

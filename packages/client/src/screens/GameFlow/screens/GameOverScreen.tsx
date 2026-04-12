@@ -235,7 +235,7 @@ export const GameOverScreen = () => {
   };
 
   const medals = ['🥇', '🥈', '🥉'];
-  const cardBg = 'bg-(--ui-card) border-(--ui-border)';
+  const cardBg = 'bg-ui-card border-ui-border';
 
   return (
     <div
@@ -245,8 +245,8 @@ export const GameOverScreen = () => {
 
       {/* Winner banner */}
       <div className="w-full max-w-sm pb-6 text-center animate-slide-up">
-        <Trophy size={56} className="text-(--ui-accent) mx-auto mb-4 animate-bounce" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-(--ui-accent) mb-2">
+        <Trophy size={56} className="text-ui-accent mx-auto mb-4 animate-bounce" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-ui-accent mb-2">
           {t.winners}
         </p>
         <h2 className={`text-4xl font-serif ${currentTheme.textMain}`}>{winner?.name}</h2>
@@ -274,7 +274,7 @@ export const GameOverScreen = () => {
               )}
             </div>
             <span
-              className={`font-bold text-base tabular-nums ${i === 0 ? 'text-(--ui-accent)' : currentTheme.textMain}`}
+              className={`font-bold text-base tabular-nums ${i === 0 ? 'text-ui-accent' : currentTheme.textMain}`}
             >
               {team.score}{' '}
               <span className={`text-[10px] ${currentTheme.textSecondary}`}>{t.pts}</span>
@@ -308,7 +308,7 @@ export const GameOverScreen = () => {
               </div>
               <div className="text-right">
                 <span
-                  className={`font-bold text-base tabular-nums ${i === 0 ? 'text-(--ui-accent)' : currentTheme.textMain}`}
+                  className={`font-bold text-base tabular-nums ${i === 0 ? 'text-ui-accent' : currentTheme.textMain}`}
                 >
                   {p.stats?.guessed ?? 0}
                 </span>
@@ -328,7 +328,7 @@ export const GameOverScreen = () => {
           onClick={handleShare}
           disabled={isSharing}
           aria-busy={isSharing}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-all text-[12px] font-bold uppercase tracking-widest disabled:pointer-events-none disabled:opacity-70"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover transition-all text-[12px] font-bold uppercase tracking-widest disabled:pointer-events-none disabled:opacity-70"
         >
           {isSharing ? (
             <>
@@ -359,7 +359,7 @@ export const GameOverScreen = () => {
             <button
               type="button"
               onClick={leaveRoom}
-              className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} hover:text-(--ui-fg) transition-colors`}
+              className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} hover:text-ui-fg transition-colors`}
             >
               {t.toMainMenu}
             </button>

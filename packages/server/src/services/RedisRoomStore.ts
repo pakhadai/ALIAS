@@ -13,6 +13,20 @@ const SOCKET_KEY_PREFIX = 'alias:socket:';
  */
 const IMPOSTER_WORD_PREFIX = 'alias:imposter:';
 
+/** Older Redis snapshots may omit fields added in newer releases. */
+function normalizeGameSyncState(raw: unknown): GameSyncState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const s = raw as Partial<GameSyncState>;
+  if (typeof s.gameState !== 'string' || !s.settings || typeof s.roomCode !== 'string') {
+    return null;
+  }
+  return {
+    ...(s as GameSyncState),
+    roundsPlayed: typeof s.roundsPlayed === 'number' ? s.roundsPlayed : 0,
+    usedWords: Array.isArray(s.usedWords) ? s.usedWords : [],
+  };
+}
+
 export class RedisRoomStore {
   private redis: Redis | null = null;
 
@@ -66,7 +80,7 @@ export class RedisRoomStore {
     if (!this.redis) return null;
     try {
       const data = await this.redis.get(`${ROOM_PREFIX}${roomCode}`);
-      return data ? JSON.parse(data) : null;
+      return data ? normalizeGameSyncState(JSON.parse(data)) : null;
     } catch (_err) {
       void _err;
       return null;

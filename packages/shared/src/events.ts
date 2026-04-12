@@ -75,6 +75,19 @@ export interface GameSyncState {
   timeLeft: number;
   isPaused: boolean;
   timeUp?: boolean;
+  /**
+   * Wall-clock ms when the current playing countdown reaches 0 (server authority).
+   * Omitted when paused or not in a timed playing segment; clients derive display from `Date.now()` to avoid drift.
+   */
+  roundEndsAt?: number;
+  /** QUIZ (PER_TASK): overall round seconds remaining (server). */
+  quizRoundTimeLeft?: number;
+  /** QUIZ: wall-clock ms until per-task input lock ends (server). */
+  quizTaskLockUntil?: number;
+  /** Completed rounds in this session (persisted for Redis restore). */
+  roundsPlayed: number;
+  /** Words already shown this cycle (persisted for Redis restore). */
+  usedWords: string[];
   wordDeck: string[];
   /** IMPOSTER (public state only; word is never included here). */
   imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';

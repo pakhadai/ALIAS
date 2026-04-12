@@ -10,10 +10,20 @@ import {
   GraduationCap,
   Flame,
   UserSearch,
+  Utensils,
+  Plane,
+  FlaskConical,
+  Clapperboard,
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameMode } from '../../types';
+
+const LOBBY_LANG_FLAG: Record<Language, string> = {
+  [Language.UA]: '🇺🇦',
+  [Language.DE]: '🇩🇪',
+  [Language.EN]: '🇬🇧',
+};
 import type { GameSettings } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { initialState } from '../../context/gameReducer';
@@ -39,12 +49,12 @@ function SectionHeader({
       className="w-full flex items-center justify-between py-3"
       aria-expanded={open}
     >
-      <p className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-(--ui-fg)">
+      <p className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-ui-fg">
         {title}
       </p>
       <ChevronDown
         size={16}
-        className={`text-(--ui-fg-muted) transition-transform ${open ? 'rotate-180' : ''}`}
+        className={`text-ui-fg-muted transition-transform ${open ? 'rotate-180' : ''}`}
       />
     </button>
   );
@@ -165,6 +175,26 @@ export const SettingsScreen = () => {
     Category.MOVIES,
     Category.CUSTOM,
   ];
+
+  const categoryIcon = (cat: Category) => {
+    const common = 'shrink-0 opacity-85';
+    switch (cat) {
+      case Category.GENERAL:
+        return <Sparkles size={18} strokeWidth={2} className={common} aria-hidden />;
+      case Category.FOOD:
+        return <Utensils size={18} strokeWidth={2} className={common} aria-hidden />;
+      case Category.TRAVEL:
+        return <Plane size={18} strokeWidth={2} className={common} aria-hidden />;
+      case Category.SCIENCE:
+        return <FlaskConical size={18} strokeWidth={2} className={common} aria-hidden />;
+      case Category.MOVIES:
+        return <Clapperboard size={18} strokeWidth={2} className={common} aria-hidden />;
+      case Category.CUSTOM:
+        return <FileText size={18} strokeWidth={2} className={common} aria-hidden />;
+      default:
+        return null;
+    }
+  };
   const packLanguage = (settings.general.targetLanguage ?? settings.general.language) as Language;
   const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === packLanguage);
 
@@ -234,7 +264,7 @@ export const SettingsScreen = () => {
             <button
               type="button"
               onClick={resetAllRoomSettings}
-              className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-(--ui-fg-muted) hover:text-(--ui-fg)"
+              className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg"
             >
               {t.reset ?? 'Скинути'}
             </button>
@@ -261,8 +291,8 @@ export const SettingsScreen = () => {
                     onClick={() => setActiveTab(id)}
                     className={`py-2.5 rounded-xl border text-center text-[10px] font-bold uppercase tracking-widest transition-all duration-200 ease-out active:scale-95 ${
                       active
-                        ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                        : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                        ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                        : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                     }`}
                   >
                     {label}
@@ -274,14 +304,14 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 1: Game Mode */}
           {activeTab === 'mode' && (
-            <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-5">
+            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
               <div className="space-y-2">
                 <h3
                   className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
                 >
                   {t.gameMode ?? 'Режим гри'}
                 </h3>
-                <div className="h-px w-full bg-(--ui-border)" />
+                <div className="h-px w-full bg-ui-border" />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -329,8 +359,8 @@ export const SettingsScreen = () => {
                       onClick={() => updateMode({ gameMode: mode })}
                       className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
                         active
-                          ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                          : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                          ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                          : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                       }`}
                       aria-label={`${label}. ${hint}`}
                     >
@@ -356,14 +386,14 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 2: Content */}
           {activeTab === 'content' && (
-            <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6">
+            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
               <div className="space-y-2">
                 <h3
                   className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
                 >
                   {t.content ?? 'Словник'}
                 </h3>
-                <div className="h-px w-full bg-(--ui-border)" />
+                <div className="h-px w-full bg-ui-border" />
               </div>
 
               <div className="flex items-center justify-between">
@@ -372,16 +402,16 @@ export const SettingsScreen = () => {
                 >
                   {t.gameMode ?? 'Режим'}
                 </p>
-                <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+                <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted">
                   {modeIcon}
                   {settings.mode.gameMode ?? GameMode.CLASSIC}
                 </span>
               </div>
 
               {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
-                <div className="space-y-2">
+                <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_28%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-accent)_10%,var(--ui-surface))] p-4">
                   <p
-                    className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    className={`text-[9px] uppercase tracking-widest font-bold opacity-60 ${currentTheme.textMain}`}
                   >
                     {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                   </p>
@@ -391,16 +421,29 @@ export const SettingsScreen = () => {
                         key={l}
                         type="button"
                         onClick={() => updateGeneral('targetLanguage', l)}
-                        className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                        className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 text-xs font-bold transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
                           (settings.general.targetLanguage ?? Language.EN) === l
-                            ? `border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)`
-                            : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted)'
+                            ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] text-ui-fg`
+                            : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
                         }`}
                       >
-                        {l}
+                        <span className="text-2xl leading-none" aria-hidden>
+                          {LOBBY_LANG_FLAG[l]}
+                        </span>
+                        <span>{l}</span>
                       </button>
                     ))}
                   </div>
+                  <p className="text-[11px] leading-relaxed text-ui-fg-muted">
+                    {t.translationLobbyFlowHint
+                      .replace('{0}', LOBBY_LANG_FLAG[settings.general.language])
+                      .replace('{1}', settings.general.language)
+                      .replace(
+                        '{2}',
+                        LOBBY_LANG_FLAG[settings.general.targetLanguage ?? Language.EN]
+                      )
+                      .replace('{3}', settings.general.targetLanguage ?? Language.EN)}
+                  </p>
                 </div>
               )}
 
@@ -417,19 +460,21 @@ export const SettingsScreen = () => {
                       return (
                         <button
                           key={cat}
+                          type="button"
                           onClick={() => {
                             const newCats = settings.general.categories.includes(cat)
                               ? settings.general.categories.filter((c) => c !== cat)
                               : [...settings.general.categories, cat];
                             if (newCats.length > 0) updateGeneral('categories', newCats);
                           }}
-                          className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                          className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
                             settings.general.categories.includes(cat)
-                              ? 'border-(--ui-accent) bg-(--ui-accent) text-(--ui-accent-contrast)'
-                              : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                              ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
+                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                           }`}
                         >
-                          {t[catKey] || cat}
+                          {categoryIcon(cat)}
+                          <span className="leading-tight">{t[catKey] || cat}</span>
                         </button>
                       );
                     })}
@@ -449,7 +494,7 @@ export const SettingsScreen = () => {
                       value={settings.general.customWords || ''}
                       onChange={(e) => updateGeneral('customWords', e.target.value)}
                       placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
-                      className="w-full h-24 p-4 rounded-xl border resize-none bg-(--ui-surface) text-(--ui-fg) border-(--ui-border) focus:border-(--ui-accent) outline-none"
+                      className="w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none"
                     />
                   )}
                 </div>
@@ -473,7 +518,7 @@ export const SettingsScreen = () => {
                         {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
                           <button
                             onClick={() => isHost && updateGeneral('selectedPackIds', [])}
-                            className={`text-[9px] uppercase tracking-widest font-bold transition-opacity text-(--ui-fg-muted) hover:text-(--ui-fg) ${!isHost ? 'pointer-events-none' : ''}`}
+                            className={`text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
                           >
                             Скинути
                           </button>
@@ -491,17 +536,20 @@ export const SettingsScreen = () => {
                               key={l}
                               type="button"
                               onClick={() => updateGeneral('targetLanguage', l)}
-                              className={`flex-1 py-2.5 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                 packLanguage === l
-                                  ? `border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)`
-                                  : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted)'
+                                  ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent`
+                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted'
                               }`}
                             >
-                              {l}
+                              <span className="text-lg leading-none" aria-hidden>
+                                {LOBBY_LANG_FLAG[l]}
+                              </span>
+                              <span>{l}</span>
                             </button>
                           ))}
                         </div>
-                        <p className="text-[10px] text-(--ui-fg-muted) opacity-70 leading-relaxed">
+                        <p className="text-[10px] text-ui-fg-muted opacity-70 leading-relaxed">
                           {t.packLanguageHint ??
                             'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
                         </p>
@@ -518,14 +566,14 @@ export const SettingsScreen = () => {
                               disabled={!isHost}
                               className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
                                 isSelected
-                                  ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-accent)'
-                                  : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
+                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                               }`}
                             >
                               {isSelected && <Check size={10} />}
                               <span>{pack.name}</span>
                               <span
-                                className={`font-normal ${isSelected ? 'text-(--ui-fg-muted)' : 'opacity-40'}`}
+                                className={`font-normal ${isSelected ? 'text-ui-fg-muted' : 'opacity-40'}`}
                               >
                                 {pack.wordCount}
                               </span>
@@ -534,11 +582,11 @@ export const SettingsScreen = () => {
                         })}
                       </div>
                       {filteredOwnedPacks.length === 0 ? (
-                        <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
+                        <p className="text-[10px] text-ui-fg-muted opacity-70">
                           {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
                         </p>
                       ) : (settings.general.selectedPackIds?.length ?? 0) === 0 ? (
-                        <p className="text-[10px] text-(--ui-fg-muted) opacity-70">
+                        <p className="text-[10px] text-ui-fg-muted opacity-70">
                           Не вибрано — використовуються стандартні слова
                         </p>
                       ) : null}
@@ -555,14 +603,14 @@ export const SettingsScreen = () => {
                 />
                 {contentOpen.customDeck &&
                   (settings.general.customDeckCode ? (
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-(--ui-border) bg-(--ui-surface)">
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-ui-border bg-ui-surface">
                       <div className="flex items-start gap-2 min-w-0">
-                        <FileText size={14} className="text-(--ui-accent) shrink-0 mt-0.5" />
+                        <FileText size={14} className="text-ui-accent shrink-0 mt-0.5" />
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-(--ui-fg) leading-tight truncate">
+                          <p className="text-xs font-semibold text-ui-fg leading-tight truncate">
                             {settings.general.customDeckName || settings.general.customDeckCode}
                           </p>
-                          <p className="text-[10px] text-(--ui-fg-muted) font-mono mt-0.5">
+                          <p className="text-[10px] text-ui-fg-muted font-mono mt-0.5">
                             {settings.general.customDeckCode}
                           </p>
                         </div>
@@ -571,7 +619,7 @@ export const SettingsScreen = () => {
                         <button
                           type="button"
                           onClick={clearCustomDeck}
-                          className="text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors p-1 shrink-0"
+                          className="text-ui-fg-muted hover:text-ui-fg transition-colors p-1 shrink-0"
                           aria-label={t.close}
                         >
                           <X size={14} />
@@ -582,7 +630,7 @@ export const SettingsScreen = () => {
                     <button
                       onClick={() => isHost && setShowCustomDeckPicker(true)}
                       disabled={!isHost}
-                      className="w-full p-3 rounded-xl border border-dashed border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
+                      className="w-full p-3 rounded-xl border border-dashed border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
                     >
                       <FileText size={14} />
                       <span className="text-xs">Вибрати зі своїх словників…</span>
@@ -594,14 +642,14 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 3: Rules (dynamic) */}
           {activeTab === 'rules' && (
-            <div className="p-6 rounded-3xl border border-(--ui-border) bg-(--ui-surface) space-y-6">
+            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
               <div className="space-y-2">
                 <h3
                   className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
                 >
                   {t.rules ?? 'Правила'}
                 </h3>
-                <div className="h-px w-full bg-(--ui-border)" />
+                <div className="h-px w-full bg-ui-border" />
               </div>
 
               {(() => {
@@ -629,8 +677,8 @@ export const SettingsScreen = () => {
                               onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
                               className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                 active
-                                  ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                                  : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                  ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                               }`}
                             >
                               {min} {t.min ?? 'хв'}
@@ -678,8 +726,8 @@ export const SettingsScreen = () => {
                                 }
                                 className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                   active
-                                    ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                                    : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                                 }`}
                               >
                                 {label}
@@ -701,8 +749,8 @@ export const SettingsScreen = () => {
                           }
                           className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
                             mode.quizWrongPenaltyEnabled
-                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                              : 'border-(--ui-border) bg-(--ui-surface) opacity-70'
+                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                              : 'border-ui-border bg-ui-surface opacity-70'
                           }`}
                         >
                           <span className={currentTheme.textMain}>
@@ -712,11 +760,11 @@ export const SettingsScreen = () => {
                           </span>
                           <div
                             className={`w-12 h-6 rounded-full transition-all relative ${
-                              mode.quizWrongPenaltyEnabled ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'
+                              mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
                             }`}
                           >
                             <div
-                              className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
+                              className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
                                 mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
                               }`}
                             />
@@ -745,8 +793,8 @@ export const SettingsScreen = () => {
                                 onClick={() => updateMode({ quizTimerMode: id })}
                                 className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                   active
-                                    ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                                    : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                                 }`}
                               >
                                 {label}
@@ -798,7 +846,7 @@ export const SettingsScreen = () => {
                                     classicRoundTime: localQuizRoundTime,
                                   })
                             }
-                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                           />
                         </div>
 
@@ -837,7 +885,7 @@ export const SettingsScreen = () => {
                                   classicRoundTime: localQuizRoundTime,
                                 })
                               }
-                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                             />
                           </div>
                         )}
@@ -847,76 +895,48 @@ export const SettingsScreen = () => {
                 }
 
                 return (
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <p
-                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                      >
-                        {t.roundTime}
-                      </p>
-                      <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                        {'classicRoundTime' in mode ? mode.classicRoundTime : 0}s
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="30"
-                      max="180"
-                      step="10"
-                      value={localRoundTime}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value);
-                        setLocalRoundTime(v);
-                        if (v !== lastHapticRoundTime.current) {
-                          lastHapticRoundTime.current = v;
-                          vibrate(HAPTIC.nav);
-                        }
-                      }}
-                      onMouseUp={() => updateMode({ classicRoundTime: localRoundTime })}
-                      onTouchEnd={() => updateMode({ classicRoundTime: localRoundTime })}
-                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
-                    />
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-3">
+                    <p
+                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                    >
+                      {t.roundTime}
+                    </p>
+                    <div className="flex items-stretch gap-2">
                       <button
                         type="button"
                         onClick={() => {
                           const next = Math.max(30, localRoundTime - 10);
                           setLocalRoundTime(next);
+                          lastHapticRoundTime.current = next;
+                          vibrate(HAPTIC.nav);
                           updateMode({ classicRoundTime: next });
                         }}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        disabled={!isHost}
+                        className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                        aria-label={t.roundTime + ' −10'}
                       >
                         −
                       </button>
-                      <input
-                        type="number"
-                        min={30}
-                        max={180}
-                        step={10}
-                        value={localRoundTime}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          if (!Number.isFinite(v)) return;
-                          setLocalRoundTime(v);
-                        }}
-                        onBlur={() => {
-                          const clamped = Math.max(
-                            30,
-                            Math.min(180, Math.round(localRoundTime / 10) * 10)
-                          );
-                          setLocalRoundTime(clamped);
-                          updateMode({ classicRoundTime: clamped });
-                        }}
-                        className="w-28 text-center rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg) px-3 py-2 outline-none focus:border-(--ui-accent)"
-                      />
+                      <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
+                        <span
+                          className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
+                        >
+                          {localRoundTime}
+                        </span>
+                        <span className="mt-1 text-xs font-semibold text-ui-fg-muted">s</span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
                           const next = Math.min(180, localRoundTime + 10);
                           setLocalRoundTime(next);
+                          lastHapticRoundTime.current = next;
+                          vibrate(HAPTIC.nav);
                           updateMode({ classicRoundTime: next });
                         }}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        disabled={!isHost}
+                        className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                        aria-label={t.roundTime + ' +10'}
                       >
                         +
                       </button>
@@ -954,7 +974,7 @@ export const SettingsScreen = () => {
                       }}
                       onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
                       onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                     />
                     <div className="flex items-center justify-between gap-3">
                       <button
@@ -964,7 +984,7 @@ export const SettingsScreen = () => {
                           setLocalScoreToWin(next);
                           updateGeneral('scoreToWin', next);
                         }}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
                       >
                         −
                       </button>
@@ -987,7 +1007,7 @@ export const SettingsScreen = () => {
                           setLocalScoreToWin(clamped);
                           updateGeneral('scoreToWin', clamped);
                         }}
-                        className="w-28 text-center rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg) px-3 py-2 outline-none focus:border-(--ui-accent)"
+                        className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
                       />
                       <button
                         type="button"
@@ -996,7 +1016,7 @@ export const SettingsScreen = () => {
                           setLocalScoreToWin(next);
                           updateGeneral('scoreToWin', next);
                         }}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
                       >
                         +
                       </button>
@@ -1014,8 +1034,8 @@ export const SettingsScreen = () => {
                         {settings.general.teamCount}
                       </span>
                     </div>
-                    <div className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-3">
-                      <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-(--ui-fg-muted) mb-2">
+                    <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
+                      <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-ui-fg-muted mb-2">
                         {t.teamMode ?? 'Team mode'}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
@@ -1024,8 +1044,8 @@ export const SettingsScreen = () => {
                           onClick={() => updateGeneral('teamMode', 'TEAMS')}
                           className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
                             (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
-                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-fg)'
-                              : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:bg-(--ui-surface-hover)'
+                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
                           }`}
                         >
                           {t.teamModeTeams ?? 'Teams'}
@@ -1035,15 +1055,15 @@ export const SettingsScreen = () => {
                           onClick={() => updateGeneral('teamMode', 'SOLO')}
                           className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
                             (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
-                              ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-(--ui-fg)'
-                              : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:bg-(--ui-surface-hover)'
+                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
                           }`}
                         >
                           {t.teamModeSolo ?? 'Solo'}
                         </button>
                       </div>
                       {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
-                        <p className="mt-2 text-[10px] text-(--ui-fg-muted) opacity-80">
+                        <p className="mt-2 text-[10px] text-ui-fg-muted opacity-80">
                           {t.teamModeSoloHint ??
                             'Teams are disabled — each player plays for themselves.'}
                         </p>
@@ -1066,7 +1086,7 @@ export const SettingsScreen = () => {
                       onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
                       onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
                       disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-(--ui-accent) bg-(--ui-border)"
+                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                     />
                     <div className="flex items-center justify-between gap-3">
                       <button
@@ -1077,7 +1097,7 @@ export const SettingsScreen = () => {
                           updateGeneral('teamCount', next);
                         }}
                         disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
                       >
                         −
                       </button>
@@ -1098,7 +1118,7 @@ export const SettingsScreen = () => {
                           updateGeneral('teamCount', clamped);
                         }}
                         disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="w-28 text-center rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg) px-3 py-2 outline-none focus:border-(--ui-accent)"
+                        className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
                       />
                       <button
                         type="button"
@@ -1108,7 +1128,7 @@ export const SettingsScreen = () => {
                           updateGeneral('teamCount', next);
                         }}
                         disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="px-3 py-2 rounded-xl border border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) text-xs font-bold"
+                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
                       >
                         +
                       </button>
@@ -1122,25 +1142,30 @@ export const SettingsScreen = () => {
                       {t.skipPenalty}
                     </p>
                     <button
+                      type="button"
+                      role="switch"
+                      aria-checked={settings.general.skipPenalty}
                       onClick={() => updateGeneral('skipPenalty', !settings.general.skipPenalty)}
-                      className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                      className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
                         settings.general.skipPenalty
-                          ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                          : 'border-(--ui-border) bg-(--ui-surface) opacity-50'
+                          ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                          : 'border-ui-border bg-ui-surface'
                       }`}
                     >
                       <span className={currentTheme.textMain}>
                         {settings.general.skipPenalty ? t.enabled : t.disabled}
                       </span>
-                      <div
-                        className={`w-12 h-6 rounded-full transition-all relative ${settings.general.skipPenalty ? 'bg-(--ui-accent)' : 'bg-(--ui-border)'}`}
+                      <span
+                        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
+                          settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
+                        }`}
                       >
-                        <div
-                          className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
-                            settings.general.skipPenalty ? 'right-0.5' : 'left-0.5'
+                        <span
+                          className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
+                            settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
                           }`}
                         />
-                      </div>
+                      </span>
                     </button>
                   </div>
                 </>

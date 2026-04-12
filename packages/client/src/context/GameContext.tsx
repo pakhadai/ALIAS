@@ -509,15 +509,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         case 'START_PLAYING': {
           playSound('start');
-          const roundTime =
-            'classicRoundTime' in stateRef.current.settings.mode
-              ? stateRef.current.settings.mode.classicRoundTime
-              : 0;
+          const mode = stateRef.current.settings.mode;
+          const isQuiz = mode.gameMode === GameMode.QUIZ;
+          const classicTime = 'classicRoundTime' in mode ? mode.classicRoundTime : 0;
+          const roundTime = isQuiz ? (mode.quizRoundTime ?? classicTime) : classicTime;
+          const timeLeft = isQuiz
+            ? mode.quizTimerMode === 'PER_TASK'
+              ? mode.quizQuestionTime
+              : (mode.quizRoundTime ?? roundTime)
+            : classicTime;
+          const quizRoundTimeLeft = isQuiz ? roundTime : undefined;
           dispatch({
             type: 'SET_STATE',
             payload: {
               gameState: GameState.PLAYING,
-              timeLeft: roundTime,
+              timeLeft,
+              quizRoundTimeLeft,
+              quizTaskLockUntil: undefined,
+              roundEndsAt: timeLeft > 0 ? Date.now() + timeLeft * 1000 : undefined,
               isPaused: false,
               timeUp: false,
             },
@@ -563,6 +572,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         }
         case 'START_GAME':
+          if (stateRef.current.settings.mode.gameMode === GameMode.QUIZ) {
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                gameState: GameState.COUNTDOWN,
+                currentTeamIndex: 0,
+                teamsLocked: true,
+                currentRoundStats: {
+                  correct: 0,
+                  skipped: 0,
+                  words: [],
+                  teamId: '',
+                  explainerName: '',
+                  explainerId: undefined,
+                },
+              },
+            });
+            break;
+          }
           if (stateRef.current.settings.mode.gameMode === GameMode.IMPOSTER) {
             const ps = stateRef.current.players;
             const imposter = ps[Math.floor(Math.random() * Math.max(1, ps.length))];
@@ -587,7 +615,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             dispatch({
               type: 'SET_STATE',
-              payload: { gameState: GameState.PRE_ROUND, currentTeamIndex: 0, teamsLocked: true },
+              payload: {
+                gameState: GameState.PRE_ROUND,
+                currentTeamIndex: 0,
+                teamsLocked: true,
+                roundsPlayed: 0,
+                usedWords: [],
+              },
             });
           }
           break;
@@ -596,15 +630,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dispatch({
             type: 'SET_STATE',
             payload: {
-              gameState: GameState.PRE_ROUND,
+              gameState:
+                stateRef.current.settings.mode.gameMode === GameMode.QUIZ
+                  ? GameState.COUNTDOWN
+                  : GameState.PRE_ROUND,
               currentTeamIndex:
                 (stateRef.current.currentTeamIndex + 1) % stateRef.current.teams.length,
             },
           });
           break;
-        case 'PAUSE_GAME':
-          dispatch({ type: 'SET_STATE', payload: { isPaused: !stateRef.current.isPaused } });
+        case 'PAUSE_GAME': {
+          const nextPaused = !stateRef.current.isPaused;
+          const tl = stateRef.current.timeLeft;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              isPaused: nextPaused,
+              roundEndsAt: nextPaused
+                ? undefined
+                : stateRef.current.gameState === GameState.PLAYING &&
+                    tl > 0 &&
+                    !stateRef.current.timeUp
+                  ? Date.now() + tl * 1000
+                  : stateRef.current.roundEndsAt,
+            },
+          });
           break;
+        }
         case 'IMPOSTER_READY': {
           if (stateRef.current.settings.mode.gameMode !== GameMode.IMPOSTER) break;
           const { players, revealedPlayerIds, imposterOfflineRevealIndex } = stateRef.current;
@@ -753,6 +805,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               currentTask: null,
               wordDeck: [],
               timeLeft: 0,
+              roundEndsAt: undefined,
+              quizRoundTimeLeft: undefined,
+              quizTaskLockUntil: undefined,
+              roundsPlayed: 0,
+              usedWords: [],
               isPaused: false,
               currentRoundStats: initialState.currentRoundStats,
               imposterPhase: undefined,
@@ -777,6 +834,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               teams: remTeams,
               gameState: GameState.PRE_ROUND,
               currentTeamIndex: 0,
+              roundsPlayed: 0,
+              usedWords: [],
+              roundEndsAt: undefined,
+              quizRoundTimeLeft: undefined,
+              quizTaskLockUntil: undefined,
               wordDeck: stateRef.current.wordDeck,
               currentWord: '',
               currentTask: null,
@@ -819,7 +881,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           playSound('end');
           dispatch({
             type: 'SET_STATE',
-            payload: { gameState: GameState.ROUND_SUMMARY, timeLeft: 0 },
+            payload: {
+              gameState: GameState.ROUND_SUMMARY,
+              timeLeft: 0,
+              roundEndsAt: undefined,
+            },
           });
           break;
         }
@@ -846,7 +912,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const hasWinner = updatedTeams.some((t) => t.score >= settings.general.scoreToWin);
           const nextState = isLastTeam && hasWinner ? GameState.GAME_OVER : GameState.SCOREBOARD;
 
-          dispatch({ type: 'SET_STATE', payload: { teams: updatedTeams, gameState: nextState } });
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              teams: updatedTeams,
+              gameState: nextState,
+              roundsPlayed: (stateRef.current.roundsPlayed ?? 0) + 1,
+              roundEndsAt: undefined,
+            },
+          });
           break;
         }
         case 'ADD_OFFLINE_PLAYER': {
@@ -937,6 +1011,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentTaskAnswered: syncState.currentTaskAnswered,
         currentRoundStats: syncState.currentRoundStats,
         timeLeft: syncState.timeLeft,
+        roundEndsAt: syncState.roundEndsAt,
+        quizRoundTimeLeft: syncState.quizRoundTimeLeft,
+        quizTaskLockUntil: syncState.quizTaskLockUntil,
+        roundsPlayed: syncState.roundsPlayed ?? 0,
+        usedWords: syncState.usedWords ?? [],
         isPaused: syncState.isPaused,
         timeUp: syncState.timeUp,
         wordDeck: syncState.wordDeck,
@@ -1133,6 +1212,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ? `color-mix(in_srgb, ${tokens.elevated} 88%, ${tokens.bg} 12%)`
           : `color-mix(in_srgb, ${tokens.surface} 70%, ${tokens.bg} 30%)`
       );
+      if (currentTheme.isDark) {
+        r.style.setProperty(
+          '--ui-word-card-bg',
+          `color-mix(in_srgb, ${tokens.fg} 90%, #ffffff 10%)`
+        );
+        r.style.setProperty(
+          '--ui-word-card-fg',
+          `color-mix(in_srgb, ${tokens.bg} 76%, #0a0a0a 24%)`
+        );
+        r.style.setProperty(
+          '--ui-word-card-border',
+          `color-mix(in_srgb, ${tokens.fg} 14%, ${tokens.border} 86%)`
+        );
+      } else {
+        r.style.setProperty('--ui-word-card-bg', tokens.elevated ?? tokens.surface);
+        r.style.setProperty('--ui-word-card-fg', tokens.fg);
+        r.style.setProperty('--ui-word-card-border', tokens.border);
+      }
       r.style.setProperty('--ui-divider', tokens.divider ?? tokens.border);
       r.style.setProperty(
         '--ui-border-subtle',
@@ -1263,7 +1360,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGameState: (s: GameState) => {
         dispatch({ type: 'SET_STATE', payload: { gameState: s } });
       },
-      createNewRoom: () => {
+      createNewRoom: async () => {
+        let saved: unknown = null;
+        try {
+          saved = await fetchLobbySettings();
+        } catch {
+          // offline / network errors: still allow creating a room with local defaults
+        }
+
+        let mergedSettings = stateRef.current.settings;
+        if (saved && typeof saved === 'object') {
+          const roomSettings = saved as Partial<GameSettings>;
+          mergedSettings = {
+            ...stateRef.current.settings,
+            ...(roomSettings.general
+              ? {
+                  general: {
+                    ...stateRef.current.settings.general,
+                    ...roomSettings.general,
+                    theme: stateRef.current.settings.general.theme,
+                    soundEnabled: stateRef.current.settings.general.soundEnabled,
+                    soundPreset: stateRef.current.settings.general.soundPreset,
+                    language: stateRef.current.uiLanguage,
+                  },
+                }
+              : {}),
+            ...(roomSettings.mode
+              ? { mode: roomSettings.mode as unknown as GameSettings['mode'] }
+              : {}),
+          };
+        }
+
         dispatch({
           type: 'SET_STATE',
           payload: {
@@ -1272,42 +1399,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             gameMode: 'ONLINE',
             connectionError: null,
             connectionErrorCode: null,
+            settings: mergedSettings,
           },
         });
-        // Auto-apply saved lobby settings (roundTime, categories, etc.) but keep
-        // personal preferences (theme, language, sound) from the user's device.
-        fetchLobbySettings()
-          .then((saved) => {
-            if (saved && typeof saved === 'object') {
-              const roomSettings = saved as Partial<GameSettings>;
-              dispatch({
-                type: 'SET_STATE',
-                payload: {
-                  settings: {
-                    ...stateRef.current.settings,
-                    ...(roomSettings.general
-                      ? {
-                          general: {
-                            ...stateRef.current.settings.general,
-                            ...roomSettings.general,
-                            // Keep personal prefs from device
-                            theme: stateRef.current.settings.general.theme,
-                            soundEnabled: stateRef.current.settings.general.soundEnabled,
-                            soundPreset: stateRef.current.settings.general.soundPreset,
-                            // Default word deck language to the user's personal UI language
-                            language: stateRef.current.uiLanguage,
-                          },
-                        }
-                      : {}),
-                    ...(roomSettings.mode
-                      ? { mode: roomSettings.mode as unknown as GameSettings['mode'] }
-                      : {}),
-                  },
-                },
-              });
-            }
-          })
-          .catch(() => {});
       },
       handleJoin: async (id: string, name: string, avatar: string, avatarId?: string | null) => {
         const sanitizedName = name
@@ -1481,14 +1575,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       handleNextRound: () => sendAction({ action: 'NEXT_ROUND' }),
       togglePause: () => sendAction({ action: 'PAUSE_GAME' }),
       setTimeLeft: (val: number | ((p: number) => number)) => {
-        const next = typeof val === 'function' ? val(stateRef.current.timeLeft) : val;
-        const payload: Record<string, unknown> = { timeLeft: Math.max(0, next) };
-        if (
-          next <= 0 &&
+        const prev = stateRef.current.timeLeft;
+        const next = typeof val === 'function' ? val(prev) : val;
+        const clamped = Math.max(0, next);
+        const mode = stateRef.current.settings.mode;
+        const tickQuizRound =
+          typeof val === 'function' &&
+          stateRef.current.gameMode === 'OFFLINE' &&
           stateRef.current.gameState === GameState.PLAYING &&
-          stateRef.current.gameMode === 'OFFLINE'
+          !stateRef.current.isPaused &&
+          mode.gameMode === GameMode.QUIZ &&
+          'quizTimerMode' in mode &&
+          mode.quizTimerMode === 'PER_TASK';
+
+        const payload: Partial<AppState> = { timeLeft: clamped };
+        if (tickQuizRound) {
+          const roundLeft = stateRef.current.quizRoundTimeLeft;
+          if (roundLeft !== undefined && roundLeft > 0) {
+            payload.quizRoundTimeLeft = Math.max(0, roundLeft - 1);
+          }
+        }
+        if (
+          stateRef.current.gameMode === 'OFFLINE' &&
+          stateRef.current.gameState === GameState.PLAYING &&
+          !stateRef.current.isPaused
         ) {
-          payload.timeUp = true;
+          if (clamped <= 0) {
+            payload.timeUp = true;
+            payload.roundEndsAt = undefined;
+          } else {
+            payload.roundEndsAt = Date.now() + clamped * 1000;
+          }
         }
         dispatch({ type: 'SET_STATE', payload });
       },

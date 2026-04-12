@@ -48,9 +48,9 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Item summary */}
-      <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-(--ui-surface) border border-(--ui-border)">
-        <span className="text-sm font-semibold text-(--ui-fg)">{itemName}</span>
-        <span className="text-(--ui-accent) font-bold text-base">${(amount / 100).toFixed(2)}</span>
+      <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-ui-surface border border-ui-border">
+        <span className="text-sm font-semibold text-ui-fg">{itemName}</span>
+        <span className="text-ui-accent font-bold text-base">${(amount / 100).toFixed(2)}</span>
       </div>
 
       {/* Stripe Payment Element — renders Apple Pay / Google Pay / Card automatically */}
@@ -68,12 +68,12 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
         />
       </div>
 
-      {error && <p className="text-(--ui-danger) text-[12px] text-center">{error}</p>}
+      {error && <p className="text-ui-danger text-[12px] text-center">{error}</p>}
 
       <button
         type="submit"
         disabled={paying || !stripe}
-        className="w-full bg-(--ui-accent) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed) active:scale-[0.98] text-(--ui-accent-contrast) font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed active:scale-[0.98] text-ui-accent-contrast font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {paying ? (
           <>
@@ -86,7 +86,7 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
 
       <div className="flex items-center justify-center gap-2 opacity-40">
         <ShieldCheck size={13} />
-        <span className="text-[10px] uppercase tracking-widest font-medium text-(--ui-fg-muted)">
+        <span className="text-[10px] uppercase tracking-widest font-medium text-ui-fg-muted">
           Захищено Stripe
         </span>
       </div>
@@ -166,30 +166,30 @@ export function QuickBuyModal({
         >
           {/* Handle */}
           <div className="flex justify-center mb-5">
-            <div className="w-10 h-1 rounded-full bg-(--ui-border)" />
+            <div className="w-10 h-1 rounded-full bg-ui-border" />
           </div>
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-xl tracking-wide text-(--ui-fg)">Швидка оплата</h2>
+            <h2 className="font-serif text-xl tracking-wide text-ui-fg">Швидка оплата</h2>
             <button
               onClick={requestClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
             >
-              <X size={16} className="text-(--ui-fg-muted)" />
+              <X size={16} className="text-ui-fg-muted" />
             </button>
           </div>
 
           {/* Content */}
           {loadError ? (
-            <p className="text-(--ui-danger) text-[13px] text-center py-8">{loadError}</p>
+            <p className="text-ui-danger text-[13px] text-center py-8">{loadError}</p>
           ) : !stripePromise ? (
-            <p className="text-[12px] text-center py-8 opacity-40 text-(--ui-fg-muted)">
+            <p className="text-[12px] text-center py-8 opacity-40 text-ui-fg-muted">
               Платіжна система не налаштована
             </p>
           ) : !clientSecret ? (
             <div className="flex justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-(--ui-fg-muted)" />
+              <Loader2 size={24} className="animate-spin text-ui-fg-muted" />
             </div>
           ) : (
             <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>

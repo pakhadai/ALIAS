@@ -72,6 +72,8 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     timeLeft: 0,
     isPaused: false,
     timerInterval: null,
+    roundEndsAt: undefined,
+    timeUpFallbackTimeout: null,
     socketToPlayer: new Map(),
     roundsPlayed: 0,
     createdAt: Date.now(),
@@ -952,6 +954,24 @@ describe('Timer', () => {
     expect(room.timeUp).toBe(true);
     expect(room.timeLeft).toBe(0);
     expect(room.timerInterval).toBeNull();
+  });
+
+  it('auto-advances to ROUND_SUMMARY 5s after timeUp if explainer sends no action', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 2 } },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    vi.advanceTimersByTime(2000);
+    expect(room.timeUp).toBe(true);
+    expect(room.gameState).toBe(GameState.PLAYING);
+    vi.advanceTimersByTime(5000);
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
   });
 
   it('does not decrement while paused', async () => {

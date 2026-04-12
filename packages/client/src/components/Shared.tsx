@@ -40,9 +40,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-(--ui-bg) text-(--ui-fg) p-10 text-center">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-ui-bg text-ui-fg p-10 text-center">
           <h1 className="text-3xl font-serif mb-4 tracking-wide">Unexpected Error</h1>
-          <p className="text-(--ui-fg-muted) mb-10 max-w-xs text-sm font-sans font-light leading-relaxed">
+          <p className="text-ui-fg-muted mb-10 max-w-xs text-sm font-sans font-light leading-relaxed">
             We encountered a slight issue. Please try reloading the app.
           </p>
           <Button onClick={this.handleReload} variant="secondary" size="lg">
@@ -90,7 +90,7 @@ export function bottomSheetPanelClass(open: boolean, extraClassName = ''): strin
     // (common on mobile with browser chrome / safe areas).
     // Prefer dvh when supported (keyboard / dynamic toolbars); svh fallback for older engines.
     'relative w-full max-w-md mx-auto min-h-0 shrink-0 rounded-t-4xl max-h-[85svh] supports-[height:100dvh]:max-h-[85dvh] overflow-y-auto overscroll-y-contain touch-pan-y',
-    'bg-(--ui-card) border border-(--ui-border)',
+    'bg-ui-card border border-ui-border',
     'transition-transform duration-300 ease-out will-change-transform',
     open ? 'translate-y-0' : 'translate-y-full',
     extraClassName,
@@ -182,7 +182,7 @@ export const ToastNotification: React.FC<{
       ? 'text-[color:color-mix(in_srgb,var(--ui-danger)_25%,var(--ui-fg)_75%)]'
       : type === 'success'
         ? 'text-[color:color-mix(in_srgb,var(--ui-success)_18%,var(--ui-fg)_82%)]'
-        : 'text-(--ui-fg)';
+        : 'text-ui-fg';
 
   return (
     <ModalPortal>
@@ -199,7 +199,7 @@ export const ToastNotification: React.FC<{
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-(--ui-fg-muted) opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ui-fg-muted opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
               aria-label="Close"
             >
               <X size={18} strokeWidth={2.25} />
@@ -256,8 +256,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   if (!shouldRender) return null;
 
-  const textMain = theme?.textMain || 'text-(--ui-fg)';
-  const textSecondary = theme?.textSecondary || 'text-(--ui-fg-muted)';
+  const textMain = theme?.textMain || 'text-ui-fg';
+  const textSecondary = theme?.textSecondary || 'text-ui-fg-muted';
   const sheetOpen = !isClosing;
 
   return (
@@ -276,7 +276,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           aria-describedby="confirm-modal-desc"
         >
           <div className="flex justify-center pt-1 pb-3">
-            <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+            <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
           </div>
           <h3
             id="confirm-modal-title"
@@ -360,15 +360,15 @@ export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({
   return (
     <ModalPortal>
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-150 w-full px-10 text-center animate-pop-in">
-        <div className="bg-(--ui-card) border border-(--ui-border) p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-(--ui-border)">
+        <div className="bg-ui-card border border-ui-border p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-ui-border">
           <Star
-            className="w-16 h-16 text-(--ui-accent) mx-auto mb-8 animate-pulse"
+            className="w-16 h-16 text-ui-accent mx-auto mb-8 animate-pulse"
             fill="currentColor"
           />
-          <h2 className="text-(--ui-fg) text-4xl font-serif mb-4 tracking-widest uppercase">
+          <h2 className="text-ui-fg text-4xl font-serif mb-4 tracking-widest uppercase">
             {milestoneText || 'Milestone'}
           </h2>
-          <p className="text-(--ui-accent) text-xl tracking-[0.3em] font-sans font-light uppercase">
+          <p className="text-ui-accent text-xl tracking-[0.3em] font-sans font-light uppercase">
             {displayText}
           </p>
         </div>
@@ -389,7 +389,7 @@ export const Logo: React.FC<LogoProps> = ({ theme }) => {
       >
         ALIAS
       </h1>
-      <div className="h-px w-16 bg-(--ui-border) mb-6"></div>
+      <div className="h-px w-16 bg-ui-border mb-6"></div>
       <p
         className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${theme.textSecondary}`}
       >

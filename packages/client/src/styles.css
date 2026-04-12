@@ -1,6 +1,35 @@
 @import 'tailwindcss';
 @config "../tailwind.config.ts";
 
+/* Semantic UI palette → utilities: bg-ui-bg, text-ui-fg, border-ui-border, … */
+@theme {
+  --color-ui-bg: var(--ui-bg);
+  --color-ui-fg: var(--ui-fg);
+  --color-ui-surface: var(--ui-surface);
+  --color-ui-card: var(--ui-card);
+  --color-ui-elevated: var(--ui-elevated);
+  --color-ui-border: var(--ui-border);
+  --color-ui-border-subtle: var(--ui-border-subtle);
+  --color-ui-divider: var(--ui-divider);
+  --color-ui-fg-muted: var(--ui-fg-muted);
+  --color-ui-fg-subtle: var(--ui-fg-subtle);
+  --color-ui-fg-disabled: var(--ui-fg-disabled);
+  --color-ui-accent: var(--ui-accent);
+  --color-ui-accent-hover: var(--ui-accent-hover);
+  --color-ui-accent-pressed: var(--ui-accent-pressed);
+  --color-ui-accent-contrast: var(--ui-accent-contrast);
+  --color-ui-accent-muted: var(--ui-accent-muted);
+  --color-ui-accent-soft: var(--ui-accent-soft);
+  --color-ui-accent-ring: var(--ui-accent-ring);
+  --color-ui-success: var(--ui-success);
+  --color-ui-warning: var(--ui-warning);
+  --color-ui-danger: var(--ui-danger);
+  --color-ui-word-card-bg: var(--ui-word-card-bg);
+  --color-ui-word-card-fg: var(--ui-word-card-fg);
+  --color-ui-word-card-border: var(--ui-word-card-border);
+  --color-ui-surface-hover: var(--ui-surface-hover);
+}
+
 /* Keep Material Symbols baseline consistent */
 .material-symbols-outlined {
   font-variation-settings:
@@ -28,11 +57,17 @@ body {
 /* Theme-aware font overrides — updated at runtime by GameContext */
 :root {
   --font-heading: 'Playfair Display', serif;
-  --font-body: 'Lato', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
   --theme-radius: 9999px;
   /* First paint before React applies THEME_CONFIG tokens (default PREMIUM_DARK ≈ Midnight Ruby) */
   --ui-bg: #0a0809;
   --ui-fg: #f4eff1;
+  --ui-card: #141012;
+  --ui-border: #382a31;
+  /* Word card: overridden per theme in GameContext */
+  --ui-word-card-bg: var(--ui-card);
+  --ui-word-card-fg: var(--ui-fg);
+  --ui-word-card-border: var(--ui-border);
   --ui-accent: #e11d48;
   --ui-accent-hover: #f43f5e;
   --ui-accent-pressed: #be123c;

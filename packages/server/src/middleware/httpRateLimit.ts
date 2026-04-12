@@ -39,3 +39,12 @@ export const adminLimiter = rateLimit({
   legacyHeaders: false,
   message,
 });
+
+/** Custom decks (uploads + CRUD): tighter cap to limit CSV/multer abuse */
+export const customDecksLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isDev ? 1000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message,
+});

@@ -48,10 +48,10 @@ export function OnlineLobbyIntro(props: {
         <button
           type="button"
           onClick={onShare}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
         >
           <Share2 size={16} className={theme.iconColor} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+          <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
             {t.share ?? 'Share'}
           </span>
         </button>
@@ -59,10 +59,10 @@ export function OnlineLobbyIntro(props: {
           type="button"
           onClick={onShowQr}
           disabled={!qrCodeData}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98] disabled:opacity-40"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] disabled:opacity-40"
         >
           <QrCode size={16} className={theme.iconColor} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+          <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
             {t.qrCode ?? 'QR'}
           </span>
         </button>
@@ -74,51 +74,51 @@ export function OnlineLobbyIntro(props: {
           if (isHost) onOpenSettings();
         }}
         disabled={!isHost}
-        className="w-full rounded-3xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.99] px-5 py-4 disabled:opacity-60"
+        className="w-full rounded-3xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.99] px-5 py-4 disabled:opacity-60"
       >
         <div className="grid grid-cols-2 gap-3 text-left">
           <div className="flex items-center gap-2">
             <Timer size={14} className={theme.iconColor} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted">
               {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 0}s
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Trophy size={14} className={theme.iconColor} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted">
               {settings.general.scoreToWin} {t.pts}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Gamepad2 size={14} className={theme.iconColor} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted)">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted">
               {modeLabel}
             </span>
           </div>
           <div className="flex items-center gap-2 min-w-0">
             <BookOpen size={14} className={theme.iconColor} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-(--ui-fg-muted) truncate">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted truncate">
               {categoriesPreview || '—'}
             </span>
           </div>
         </div>
 
         {settings.general.customDeckCode && (
-          <div className="mt-3 rounded-2xl border border-(--ui-border) bg-(--ui-card) px-4 py-3 text-left">
-            <p className="text-[8px] uppercase tracking-[0.25em] font-bold text-(--ui-fg-muted)">
+          <div className="mt-3 rounded-2xl border border-ui-border bg-ui-card px-4 py-3 text-left">
+            <p className="text-[8px] uppercase tracking-[0.25em] font-bold text-ui-fg-muted">
               {t.customDeckLobbyLabel}
             </p>
             <p className={`text-sm font-semibold leading-snug ${theme.textMain}`}>
               {settings.general.customDeckName || settings.general.customDeckCode}
             </p>
-            <p className="text-[10px] font-mono mt-0.5 opacity-60 text-(--ui-fg-muted)">
+            <p className="text-[10px] font-mono mt-0.5 opacity-60 text-ui-fg-muted">
               {settings.general.customDeckCode}
             </p>
           </div>
         )}
 
         {isHost && (
-          <p className="mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 text-(--ui-fg-muted)">
+          <p className="mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 text-ui-fg-muted">
             {t.tapToEdit ?? 'Натисніть, щоб змінити'}
           </p>
         )}

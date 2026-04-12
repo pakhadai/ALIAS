@@ -25,9 +25,9 @@ export const MyDecksScreen = () => {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  const cardBg = 'bg-(--ui-card) border border-(--ui-border)';
+  const cardBg = 'bg-ui-card border border-ui-border';
   const inputCls =
-    'bg-(--ui-surface) border border-(--ui-border) text-(--ui-fg) placeholder:text-(--ui-fg-muted) focus:border-(--ui-accent)';
+    'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent';
 
   useEffect(() => {
     fetchMyDecks()
@@ -86,14 +86,14 @@ export const MyDecksScreen = () => {
   };
 
   const STATUS_COLORS: Record<string, string> = {
-    approved: 'text-(--ui-success)',
-    pending: 'text-(--ui-accent)',
-    rejected: 'text-(--ui-danger)',
+    approved: 'text-ui-success',
+    pending: 'text-ui-accent',
+    rejected: 'text-ui-danger',
   };
 
   if (view === 'create') {
     return (
-      <div className="flex flex-col h-screen bg-(--ui-bg)">
+      <div className="flex flex-col h-screen bg-ui-bg">
         <header className="flex items-center px-6 pb-4 pt-safe-top gap-3">
           <button
             onClick={() => {
@@ -145,7 +145,7 @@ export const MyDecksScreen = () => {
               {wordsText.split(/[\n,]+/).filter((w) => w.trim()).length} words
             </p>
           </div>
-          {createError && <p className="text-(--ui-danger) text-[12px] font-sans">{createError}</p>}
+          {createError && <p className="text-ui-danger text-[12px] font-sans">{createError}</p>}
         </div>
         <div className="px-6 pt-4 pb-safe-bottom">
           <button
@@ -161,15 +161,15 @@ export const MyDecksScreen = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-(--ui-bg)">
+    <div className="flex flex-col h-screen bg-ui-bg">
       <div className="flex justify-center pt-4 pb-2">
-        <div className="w-12 h-1 bg-(--ui-border) rounded-full" />
+        <div className="w-12 h-1 bg-ui-border rounded-full" />
       </div>
       <div className="px-6 pb-5 pt-2 flex justify-between items-center">
         <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>My Decks</h2>
         <button
           onClick={() => setGameState(GameState.PROFILE)}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-(--ui-surface) hover:bg-(--ui-surface-hover) border border-(--ui-border)"
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
         >
           <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
         </button>
@@ -208,7 +208,7 @@ export const MyDecksScreen = () => {
                 <button
                   onClick={() => handleDelete(deck.id)}
                   disabled={deleting === deck.id}
-                  className="ml-4 p-2 rounded-xl transition-all active:scale-90 disabled:opacity-30 text-(--ui-danger) opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+                  className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
                 >
                   {deleting === deck.id ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -226,7 +226,7 @@ export const MyDecksScreen = () => {
                 {deck.accessCode && (
                   <button
                     onClick={() => handleCopyCode(deck.accessCode!)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-(--ui-surface) hover:bg-(--ui-surface-hover) text-(--ui-fg-muted) border border-(--ui-border)"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border"
                   >
                     <Copy size={11} />
                     {copied === deck.accessCode ? 'Copied!' : deck.accessCode}

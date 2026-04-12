@@ -19,15 +19,15 @@
 ## 🚨 CRITICAL RULES FOR AI DEVELOPERS (MUST FOLLOW)
 - **Rule 1 (GameSyncState)**: НІКОЛИ не змінюй інтерфейс `GameSyncState` без одночасного оновлення логіки і клієнта, і сервера — вони жорстко пов'язані.
 - **Rule 2 (Game Actions)**: При додаванні нової дії (`GameAction`) ОБОВ'ЯЗКОВО:
-  1. Додати її в union-тип в `packages/shared/src/types.ts`.
+  1. Додати її в union-тип у `packages/shared/src/actions.ts` (`GameActionType` / `GameActionPayload`).
   2. Додати її в Set `validActions` у `packages/server/src/validation/schemas.ts`.
-  3. Обробити її в `packages/server/src/services/GameEngine.ts` (метод `handleAction`).
+  3. Обробити її в `packages/server/src/services/GameEngine.ts` (і за потреби в `game/authorizeGameAction.ts`, `game/gameActionPipeline.ts`, `modes/*`).
 - **Rule 3 (Game State)**: При додаванні нового екрану чи стану (`GameState`) ОБОВ'ЯЗКОВО:
   1. Додати його в enum `GameState` (`packages/shared/src/enums.ts`).
   2. Оновити `GameRouter` у `packages/client/src/App.tsx`.
-- **Rule 4 (Security & Auth)**: Завжди перевіряй авторизацію дій в `packages/server/src/handlers/socketHandlers.ts`. Дії хоста (host-only) та дії того, хто пояснює (explainer-only), повинні суворо перевірятися.
+- **Rule 4 (Security & Auth)**: Перевіряй дозволи в `packages/server/src/handlers/socketHandlers.ts`, `packages/server/src/game/authorizeGameAction.ts` та `GameEngine` (host / explainer / кімната).
 - **Rule 5 (Shared Package)**: Якщо ти змінюєш файли в `packages/shared/`, ти МАЄШ виконати команду `pnpm build:shared`, інакше зміни не підтягнуться в клієнт чи сервер.
-- **Rule 6 (Context)**: Перед написанням коду завжди звертайся до `CODE_REFERENCE.md` та `CHANGELOG.md`, щоб розуміти існуючу структуру та історію змін.
+- **Rule 6 (Context)**: Перед написанням коду звертайся до **`README.md`** (канонічна документація), тематичних файлів у **`docs/`**, та **`CHANGELOG.md`**.
 
 ## 💻 Commands
 - **Dev**: `pnpm run dev` (паралельний запуск клієнта і сервера)

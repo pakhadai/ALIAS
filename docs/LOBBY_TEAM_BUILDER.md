@@ -1,5 +1,7 @@
 # Lobby Team Builder (2026-04-09)
 
+> Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — про **UX лобі та команди** (team builder, Solo).
+
 ## Goal
 
 Move team formation into `LobbyScreen` so players don’t need a separate “team setup” screen, and add a host-friendly OFFLINE assignment flow.

@@ -58,7 +58,7 @@ export function AppSettingsModal({ onClose }: Props) {
         >
           <div className="shrink-0 px-5 pt-5">
             <div className="flex justify-center pt-1 pb-2">
-              <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+              <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
             </div>
             <div className="flex justify-between items-center mb-5">
               <div className="flex items-center gap-2">
@@ -98,8 +98,8 @@ export function AppSettingsModal({ onClose }: Props) {
                       onClick={() => setPreferences({ language: l })}
                       className={`flex-1 py-3 rounded-xl border transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                         uiLanguage === l
-                          ? 'bg-(--ui-accent) text-(--ui-accent-contrast) border-(--ui-accent)'
-                          : 'bg-(--ui-surface) border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover)'
+                          ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                          : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                       }`}
                     >
                       {l}
@@ -131,7 +131,7 @@ export function AppSettingsModal({ onClose }: Props) {
                         handleClose();
                       }}
                       className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden ${
-                        isActive ? 'ring-2 ring-offset-2 ring-offset-(--ui-bg)' : ''
+                        isActive ? 'ring-2 ring-offset-2 ring-offset-ui-bg' : ''
                       }`}
                       style={{
                         background: theme.preview.bg,
@@ -147,7 +147,7 @@ export function AppSettingsModal({ onClose }: Props) {
                       <span
                         className="text-[13px] font-bold leading-tight"
                         style={{
-                          color: theme.isDark ? '#fff' : '#111',
+                          color: theme.tokens?.fg ?? 'var(--ui-fg)',
                           fontFamily: theme.fonts.heading,
                         }}
                       >
@@ -155,19 +155,19 @@ export function AppSettingsModal({ onClose }: Props) {
                       </span>
                       <span
                         className="text-[10px] opacity-50 leading-snug"
-                        style={{ color: theme.isDark ? '#fff' : '#111' }}
+                        style={{ color: theme.tokens?.fg ?? 'var(--ui-fg)' }}
                       >
                         {themeDesc}
                       </span>
                       {locked && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[color-mix(in_srgb,var(--ui-bg)_70%,transparent)] backdrop-blur-[2px] px-3">
-                          <div className="flex items-center gap-2 text-(--ui-fg)">
+                          <div className="flex items-center gap-2 text-ui-fg">
                             <Lock size={12} />
                             <span className="text-[10px] font-bold uppercase tracking-wider">
                               {t.statsGuestBannerCta}
                             </span>
                           </div>
-                          <span className="text-[10px] text-(--ui-fg-muted) text-center leading-snug">
+                          <span className="text-[10px] text-ui-fg-muted text-center leading-snug">
                             {t.themeLockedAuthRequired}
                           </span>
                         </div>
@@ -177,7 +177,7 @@ export function AppSettingsModal({ onClose }: Props) {
                           className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
                           style={{ background: theme.preview.accent }}
                         >
-                          <Check size={10} className="text-(--ui-accent-contrast)" />
+                          <Check size={10} className="text-ui-accent-contrast" />
                         </div>
                       )}
                     </button>
@@ -190,7 +190,7 @@ export function AppSettingsModal({ onClose }: Props) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Volume2 size={16} className="text-(--ui-fg-muted) opacity-80" />
+                  <Volume2 size={16} className="text-ui-fg-muted opacity-80" />
                   <p className={sectionLabel}>{t.sound}</p>
                 </div>
                 <button
@@ -206,12 +206,12 @@ export function AppSettingsModal({ onClose }: Props) {
                     }
                   }}
                   className={`w-12 h-6 rounded-full transition-all relative ${
-                    settings.general.soundEnabled ? 'bg-(--ui-accent)' : 'bg-(--ui-surface)'
+                    settings.general.soundEnabled ? 'bg-ui-accent' : 'bg-ui-surface'
                   }`}
                   aria-pressed={settings.general.soundEnabled}
                 >
                   <div
-                    className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
+                    className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
                       settings.general.soundEnabled ? 'right-0.5' : 'left-0.5'
                     }`}
                   />
@@ -232,8 +232,8 @@ export function AppSettingsModal({ onClose }: Props) {
                         }}
                         className={`p-3 rounded-xl border text-[9px] uppercase tracking-widest font-bold transition-all ${
                           active
-                            ? 'border-(--ui-accent) bg-(--ui-accent) text-(--ui-accent-contrast)'
-                            : 'border-(--ui-border) bg-(--ui-surface) text-(--ui-fg-muted) hover:text-(--ui-fg)'
+                            ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
+                            : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg'
                         }`}
                       >
                         {preset.replace('_', ' ')}
@@ -248,7 +248,7 @@ export function AppSettingsModal({ onClose }: Props) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Vibrate size={16} className="text-(--ui-fg-muted) opacity-80" />
+                  <Vibrate size={16} className="text-ui-fg-muted opacity-80" />
                   <p className={sectionLabel}>{t.vibration}</p>
                 </div>
                 <button
@@ -265,18 +265,18 @@ export function AppSettingsModal({ onClose }: Props) {
                     }
                   }}
                   className={`w-12 h-6 rounded-full transition-all relative ${
-                    haptics ? 'bg-(--ui-accent)' : 'bg-(--ui-surface)'
+                    haptics ? 'bg-ui-accent' : 'bg-ui-surface'
                   }`}
                   aria-pressed={haptics}
                 >
                   <div
-                    className={`absolute w-5 h-5 bg-(--ui-fg) rounded-full top-0.5 transition-all ${
+                    className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
                       haptics ? 'right-0.5' : 'left-0.5'
                     }`}
                   />
                 </button>
               </div>
-              <p className="text-[10px] leading-relaxed text-(--ui-fg-muted) opacity-70">
+              <p className="text-[10px] leading-relaxed text-ui-fg-muted opacity-70">
                 {t.vibrationHint}
               </p>
             </div>

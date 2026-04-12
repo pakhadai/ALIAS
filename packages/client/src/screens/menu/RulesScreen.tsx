@@ -70,7 +70,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
 
   const activeMode = settings?.mode?.gameMode as GameMode | undefined;
   const sectionTitle = `text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`;
-  const cardBase = 'rounded-3xl border border-(--ui-border) bg-(--ui-surface) px-5 py-4';
+  const cardBase = 'rounded-3xl border border-ui-border bg-ui-surface px-5 py-4';
 
   const renderGameRules = () => (
     <div className="space-y-4">
@@ -103,7 +103,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             return (
               <div
                 key={m.id}
-                className={`rounded-3xl border px-5 py-4 transition-colors ${isActive ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]' : 'border-(--ui-border) bg-(--ui-surface)'}`}
+                className={`rounded-3xl border px-5 py-4 transition-all duration-200 ease-out active:scale-[0.99] ${isActive ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]' : 'border-ui-border bg-ui-surface'}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -113,7 +113,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
                     </p>
                   </div>
                   {isActive && (
-                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-[0.18em] text-(--ui-accent)">
+                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-[0.18em] text-ui-accent">
                       {t.enabled}
                     </span>
                   )}
@@ -126,25 +126,25 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
       <div className={cardBase}>
         <p className={sectionTitle}>{t.helpRulesCurrentSettingsTitle}</p>
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
             </p>
           </div>
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.scoreToWin ?? '—'}
             </p>
           </div>
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.skipPenalty ? t.enabled : t.disabled}
             </p>
           </div>
-          <div className="rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {settings?.general?.teamCount ?? '—'}
@@ -152,7 +152,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
           </div>
         </div>
         {activeMode === GameMode.IMPOSTER && (
-          <div className="mt-3 rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+          <div className="mt-3 rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
             <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
             <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
               {'imposterDiscussionTime' in settings.mode
@@ -215,7 +215,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
         <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
           {t.helpImpressumBody}
         </p>
-        <div className="mt-3 rounded-3xl border border-(--ui-border) bg-(--ui-bg) px-4 py-3">
+        <div className="mt-3 rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
           <p className={`${sectionTitle} opacity-60`}>{t.helpImpressumHost}</p>
           <p className={`mt-1 text-sm font-mono ${currentTheme.textMain}`}>
             {typeof window !== 'undefined' ? window.location.host : '—'}
@@ -273,7 +273,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
           aria-label={t.rulesTitle}
         >
           <div className="flex justify-center pt-2 pb-0 shrink-0">
-            <div className="h-1 w-10 rounded-full bg-(--ui-border)" />
+            <div className="h-1 w-10 rounded-full bg-ui-border" />
           </div>
           <div className="shrink-0 px-7 pt-2 pb-3 flex items-center justify-between">
             <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>

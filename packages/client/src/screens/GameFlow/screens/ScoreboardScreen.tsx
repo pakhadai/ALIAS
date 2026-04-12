@@ -10,8 +10,8 @@ export const ScoreboardScreen = () => {
   const [mounted, setMounted] = useState(false);
 
   const bgColor = currentTheme.bg;
-  const textColor = 'text-(--ui-fg)';
-  const subTextColor = 'text-(--ui-fg-muted)';
+  const textColor = 'text-ui-fg';
+  const subTextColor = 'text-ui-fg-muted';
 
   const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
   const goal = settings.general.scoreToWin;
@@ -35,22 +35,22 @@ export const ScoreboardScreen = () => {
       <main className="flex-1 flex flex-col w-full relative overflow-y-auto no-scrollbar pb-32">
         {/* Visual Ladder/Path */}
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
-          <div className="absolute top-4 flex flex-col items-center z-0 text-(--ui-fg-muted)">
-            <span className="material-symbols-outlined mb-1 text-(--ui-accent)">emoji_events</span>
-            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-(--ui-accent)">
+          <div className="absolute top-4 flex flex-col items-center z-0 text-ui-fg-muted">
+            <span className="material-symbols-outlined mb-1 text-ui-accent">emoji_events</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-ui-accent">
               {t.goal}: {goal}
             </span>
           </div>
 
           <div className="flex flex-col items-center h-[280px] w-full justify-between relative my-10 px-10 overflow-visible">
-            <div className="absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 bg-(--ui-border)"></div>
+            <div className="absolute w-px h-full left-1/2 -translate-x-1/2 top-0 bottom-0 bg-ui-border"></div>
 
-            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-(--ui-surface-hover) border-(--ui-bg)"></div>
-            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
-            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
-            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
-            <div className="w-2 h-2 rounded-full z-10 relative bg-(--ui-border)"></div>
-            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-(--ui-surface) border-(--ui-bg)"></div>
+            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-ui-surface-hover border-ui-bg"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-ui-border"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-ui-border"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-ui-border"></div>
+            <div className="w-2 h-2 rounded-full z-10 relative bg-ui-border"></div>
+            <div className="w-3 h-3 rounded-full border-4 z-10 relative bg-ui-surface border-ui-bg"></div>
 
             {teams.map((team, idx) => {
               const progress = Math.min(1, team.score / goal);
@@ -65,7 +65,7 @@ export const ScoreboardScreen = () => {
                   style={{ transform: `translateY(${translateY}px)` }}
                 >
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-(--ui-border) transition-transform hover:scale-110"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-ui-border transition-transform hover:scale-110"
                     style={{
                       backgroundColor:
                         team.colorHex || 'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
@@ -75,7 +75,7 @@ export const ScoreboardScreen = () => {
                     {idx + 1}
                   </div>
                   <div
-                    className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} bg-(--ui-card) border border-(--ui-border) text-(--ui-fg)`}
+                    className={`absolute top-0 -translate-y-1/2 px-2 py-1 rounded shadow-sm whitespace-nowrap ${isEven ? 'left-[calc(50%+24px)]' : 'right-[calc(50%+24px)]'} bg-ui-card border border-ui-border text-ui-fg`}
                   >
                     <span className="text-[10px] font-bold tracking-wider">
                       {team.score} {t.pts}
@@ -118,7 +118,7 @@ export const ScoreboardScreen = () => {
                     <span className={`font-serif text-lg tracking-wide ${textColor}`}>
                       {team.name}
                     </span>
-                    <div className="h-1 mt-1.5 rounded-full overflow-hidden w-24 bg-(--ui-surface)">
+                    <div className="h-1 mt-1.5 rounded-full overflow-hidden w-24 bg-ui-surface">
                       <div
                         className="h-full rounded-full transition-all duration-1000 ease-out"
                         style={{
@@ -148,7 +148,7 @@ export const ScoreboardScreen = () => {
         {isHost ? (
           <button
             onClick={handleNextRound}
-            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-(--ui-accent) text-(--ui-accent-contrast) hover:bg-(--ui-accent-hover) active:bg-(--ui-accent-pressed)"
+            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed"
           >
             <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
               {t.nextRound}

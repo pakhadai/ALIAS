@@ -298,6 +298,10 @@ describe('getSyncState', () => {
     expect(state).toHaveProperty('timeLeft');
     expect(state).toHaveProperty('isPaused');
     expect(state).toHaveProperty('wordDeck');
+    expect(state).toHaveProperty('roundsPlayed');
+    expect(state).toHaveProperty('usedWords');
+    expect(state.roundsPlayed).toBe(0);
+    expect(state.usedWords).toEqual([]);
   });
 
   it('does not expose timerInterval or socketToPlayer', async () => {

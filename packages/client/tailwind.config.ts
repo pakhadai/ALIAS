@@ -18,7 +18,7 @@ export default {
         'env-bottom': 'env(safe-area-inset-bottom)',
       },
       fontFamily: {
-        sans: ['Lato', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
         serif: ["'Playfair Display'", 'serif'],
       },
       colors: {

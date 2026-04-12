@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FloatingParticle } from '../../../components/Shared';
 import { GameState, GameMode } from '../../../types';
 import { useGame } from '../../../context/GameContext';
@@ -19,6 +19,9 @@ export const PlayingScreen = () => {
     playSound,
     timeLeft,
     setTimeLeft,
+    roundEndsAt,
+    quizTaskLockUntil,
+    quizRoundTimeLeft,
     settings,
     currentWord,
     currentTask,
@@ -51,7 +54,38 @@ export const PlayingScreen = () => {
   const activeTeam = teams[currentTeamIndex];
   const modeSetting = settings.mode.gameMode ?? GameMode.CLASSIC;
   const isQuizMode = modeSetting === GameMode.QUIZ;
-  const roundTime = 'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : 0;
+  const isQuizPerTask =
+    isQuizMode && 'quizTimerMode' in settings.mode && settings.mode.quizTimerMode === 'PER_TASK';
+  const countdownMax = useMemo(() => {
+    const m = settings.mode;
+    if (m.gameMode === GameMode.QUIZ && 'quizTimerMode' in m) {
+      return m.quizTimerMode === 'PER_TASK'
+        ? m.quizQuestionTime
+        : (m.quizRoundTime ?? m.classicRoundTime);
+    }
+    return 'classicRoundTime' in m ? m.classicRoundTime : 0;
+  }, [settings.mode]);
+
+  const [displayTick, setDisplayTick] = useState(0);
+  const displayTimeLeft = useMemo(() => {
+    if (gameMode !== 'ONLINE' || !roundEndsAt || gameState !== GameState.PLAYING || isPaused) {
+      return timeLeft;
+    }
+    const now = Date.now();
+    if (quizTaskLockUntil != null && quizTaskLockUntil > now && modeSetting === GameMode.QUIZ) {
+      return timeLeft;
+    }
+    return Math.max(0, Math.ceil((roundEndsAt - now) / 1000));
+  }, [
+    gameMode,
+    roundEndsAt,
+    timeLeft,
+    gameState,
+    isPaused,
+    displayTick,
+    quizTaskLockUntil,
+    modeSetting,
+  ]);
 
   const playerIdx =
     activeTeam && activeTeam.players.length > 0
@@ -66,9 +100,8 @@ export const PlayingScreen = () => {
   const solvedByName =
     isQuizMode && solvedBy ? (players.find((p) => p.id === solvedBy)?.name ?? null) : null;
   const prevSolvedByRef = useRef<string | undefined>(undefined);
-  const isCriticalTime = timeLeft <= 10;
-  const isUrgentTime = timeLeft <= 5;
-  const [wordExit, setWordExit] = useState<null | 'left' | 'right'>(null);
+  const isCriticalTime = displayTimeLeft <= 10;
+  const isUrgentTime = displayTimeLeft <= 5;
   const timeUpVibratedRef = useRef(false);
 
   // Safety check: use useEffect instead of dispatching during render
@@ -90,15 +123,22 @@ export const PlayingScreen = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Both host and client run local timer for smooth display
+  /** Online: re-render from `roundEndsAt` (server authority). Offline: decrement `timeLeft` locally. */
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
-    const interval = window.setInterval(
-      () => setTimeLeft((prev: number) => Math.max(0, prev - 1)),
-      1000
-    );
-    return () => clearInterval(interval);
-  }, [gameState, isPaused, setTimeLeft]);
+    if (gameMode === 'ONLINE' && roundEndsAt) {
+      const id = window.setInterval(() => setDisplayTick((n) => n + 1), 200);
+      return () => clearInterval(id);
+    }
+    if (gameMode === 'OFFLINE') {
+      const interval = window.setInterval(
+        () => setTimeLeft((prev: number) => Math.max(0, prev - 1)),
+        1000
+      );
+      return () => clearInterval(interval);
+    }
+    return undefined;
+  }, [gameState, isPaused, gameMode, roundEndsAt, setTimeLeft]);
 
   useEffect(() => {
     if (timeUp && isActualExplainer && !timeUpVibratedRef.current) {
@@ -128,8 +168,9 @@ export const PlayingScreen = () => {
 
   useEffect(() => {
     if (gameState !== GameState.PLAYING || isPaused) return;
-    if (timeLeft <= 10 && timeLeft > 0 && settings.general.soundEnabled) playSound('tick');
-  }, [timeLeft, gameState, isPaused, settings.general.soundEnabled, playSound]);
+    if (displayTimeLeft <= 10 && displayTimeLeft > 0 && settings.general.soundEnabled)
+      playSound('tick');
+  }, [displayTimeLeft, gameState, isPaused, settings.general.soundEnabled, playSound]);
 
   if (!activeTeam || activeTeam.players.length === 0) {
     return null;
@@ -145,39 +186,35 @@ export const PlayingScreen = () => {
         ? 'var(--ui-success)'
         : 'var(--ui-danger)';
 
-    setWordExit(type === 'correct' ? 'right' : 'left');
-    if (type === 'correct') haptic(HAPTIC.correct);
-    else haptic(HAPTIC.skip);
+    if (type === 'correct') {
+      haptic(HAPTIC.correct);
+      playerStats.increment('wordsGuessed');
+      handleCorrect();
+      setParticles((prev) => [...prev, { id: Date.now(), x, y, text: '+1', color: teamColor }]);
+    } else {
+      haptic(HAPTIC.skip);
+      playerStats.increment('wordsSkipped');
+      handleSkip();
+      setParticles((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          x,
+          y,
+          text: settings.general.skipPenalty ? '-1' : '0',
+          color: teamColor,
+        },
+      ]);
+    }
 
+    /** Short guard against double taps without adding perceived input lag. */
+    const ACTION_DEBOUNCE_MS = 140;
     window.setTimeout(() => {
-      if (type === 'correct') {
-        playerStats.increment('wordsGuessed');
-        handleCorrect();
-        setParticles((prev) => [...prev, { id: Date.now(), x, y, text: '+1', color: teamColor }]);
-      } else {
-        playerStats.increment('wordsSkipped');
-        handleSkip();
-        setParticles((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
-            x,
-            y,
-            text: settings.general.skipPenalty ? '-1' : '0',
-            color: teamColor,
-          },
-        ]);
-      }
-      setWordExit(null);
-    }, 120);
-
-    const ACTION_DEBOUNCE_MS = 300;
-    setTimeout(() => {
       actionProcessingRef.current = false;
     }, ACTION_DEBOUNCE_MS);
   };
 
-  const pctLeft = roundTime > 0 ? timeLeft / roundTime : 0;
+  const pctLeft = countdownMax > 0 ? displayTimeLeft / countdownMax : 0;
   const dangerBar = pctLeft <= 0.2;
 
   return (
@@ -203,26 +240,28 @@ export const PlayingScreen = () => {
       {/* Progress Bar Header */}
       <header className="w-full px-6 pb-2 pt-safe-top flex flex-col gap-5 z-20">
         {timeUp && canUseClassicButtons && !isQuizMode && (
-          <p className="text-center text-(--ui-accent) text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
+          <p className="text-center text-ui-accent text-xs font-bold uppercase tracking-wide animate-pulse">
             {t.finishWord}
           </p>
         )}
-        <div className="w-full h-[5px] bg-(--ui-surface) rounded-full overflow-hidden">
+        <div className="w-full h-[5px] bg-ui-surface rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-[width,background-color,box-shadow] duration-300 ease-linear ${
               dangerBar
-                ? 'bg-(--ui-danger) shadow-[0_0_14px_color-mix(in_srgb,var(--ui-danger)_55%,transparent)]'
+                ? 'bg-ui-danger shadow-[0_0_14px_color-mix(in_srgb,var(--ui-danger)_55%,transparent)]'
                 : `${currentTheme.progressBar} shadow-[0_0_14px_color-mix(in_srgb,var(--ui-accent)_35%,transparent)]`
             }`}
-            style={{ width: `${roundTime > 0 ? (timeLeft / roundTime) * 100 : 0}%` }}
+            style={{
+              width: `${countdownMax > 0 ? (displayTimeLeft / countdownMax) * 100 : 0}%`,
+            }}
           />
         </div>
 
         <div className="flex justify-between items-center w-full">
           <div
-            className={`text-(--ui-accent) font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-colors ${isCriticalTime ? 'text-(--ui-danger) animate-pulse' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}
+            className={`text-ui-accent font-sans font-light tracking-widest text-lg w-20 tabular-nums transition-all duration-200 ${isCriticalTime ? 'text-ui-danger animate-pulse' : ''} ${isUrgentTime ? 'animate-bounce' : ''}`}
           >
-            {formatTime(timeLeft)}
+            {formatTime(displayTimeLeft)}
           </div>
 
           <button
@@ -231,16 +270,23 @@ export const PlayingScreen = () => {
               haptic(HAPTIC.nav);
               togglePause();
             }}
-            className="w-10 h-10 flex items-center justify-center rounded-full active:bg-(--ui-surface-hover) transition-colors"
+            className="w-11 h-11 min-h-11 min-w-11 flex items-center justify-center rounded-full active:bg-ui-surface-hover transition-all duration-200 active:scale-95"
           >
-            <span className="material-symbols-outlined text-(--ui-accent) text-2xl">
+            <span className="material-symbols-outlined text-ui-accent text-2xl">
               {isPaused ? 'play_arrow' : 'pause'}
             </span>
           </button>
 
-          <div className="text-text-sub-dark font-sans text-sm tracking-wide w-20 text-right">
-            {t.score}:{' '}
-            <span className="text-(--ui-fg) font-medium">{currentRoundStats.correct}</span>
+          <div className="text-ui-fg-muted font-sans text-sm tracking-wide w-24 text-right flex flex-col gap-0.5 items-end">
+            <div>
+              {t.score}: <span className="text-ui-fg font-medium">{currentRoundStats.correct}</span>
+            </div>
+            {isQuizPerTask && quizRoundTimeLeft != null && (
+              <div className="text-[11px] uppercase tracking-wide opacity-90 leading-tight">
+                <span className="font-bold">{t.quizRoundClock}:</span>{' '}
+                <span className="tabular-nums">{formatTime(quizRoundTimeLeft)}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -260,8 +306,13 @@ export const PlayingScreen = () => {
           <ClassicWordCard
             displayPrompt={displayPrompt}
             isCriticalTime={isCriticalTime}
-            wordExit={wordExit}
-            currentTheme={currentTheme}
+            swipeDisabled={isPaused}
+            onSwipe={
+              canUseClassicButtons
+                ? (dir, origin) =>
+                    onAction(dir === 'correct' ? 'correct' : 'skip', origin.x, origin.y)
+                : undefined
+            }
           />
         ) : (
           <GuesserFeedback

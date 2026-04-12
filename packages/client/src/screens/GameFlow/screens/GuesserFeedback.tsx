@@ -44,7 +44,9 @@ export const GuesserFeedback = memo(function GuesserFeedback({
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 text-center w-full max-w-sm animate-fade-in">
-      <p className={`text-[9px] uppercase tracking-[0.5em] font-bold ${theme.textSecondary}`}>
+      <p
+        className={`text-[11px] sm:text-xs uppercase tracking-widest font-bold ${theme.textSecondary}`}
+      >
         {t.youGuess}
       </p>
 
@@ -58,7 +60,7 @@ export const GuesserFeedback = memo(function GuesserFeedback({
       </div>
 
       <p
-        className={`text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 ${theme.textMain}`}
+        className={`text-[11px] sm:text-xs uppercase tracking-widest font-bold opacity-50 ${theme.textMain}`}
       >
         {t.guessed}
       </p>
@@ -75,12 +77,12 @@ export const GuesserFeedback = memo(function GuesserFeedback({
           }}
         >
           <p
-            className="text-2xl font-serif uppercase tracking-wide"
+            className="text-2xl font-sans font-black uppercase tracking-tight antialiased"
             style={{ color: `color-mix(in_srgb, ${accentColor} 80%, transparent)` }}
           >
             {lastCorrect.word}
           </p>
-          <p className="text-[9px] uppercase tracking-widest font-bold mt-1 text-(--ui-success)">
+          <p className="text-xs uppercase tracking-wide font-bold mt-1 text-ui-success">
             ✓ {t.correct}
           </p>
         </div>
@@ -88,16 +90,14 @@ export const GuesserFeedback = memo(function GuesserFeedback({
 
       {correct === 0 && (
         <p
-          className={`text-[10px] uppercase tracking-widest font-bold opacity-30 ${theme.textMain} animate-pulse`}
+          className={`text-[11px] sm:text-xs uppercase tracking-widest font-bold opacity-50 ${theme.textMain} animate-pulse`}
         >
           {t.guesserListenHint}
         </p>
       )}
 
       {skipped > 0 && (
-        <p
-          className={`text-[10px] uppercase tracking-widest font-bold opacity-20 ${theme.textMain}`}
-        >
+        <p className="text-[11px] sm:text-xs uppercase tracking-widest font-bold text-ui-fg-muted">
           {t.skippedWord}: {skipped}
         </p>
       )}

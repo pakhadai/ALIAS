@@ -26,7 +26,7 @@ export function ProviderBadge({ provider }: { provider: string }) {
   const label =
     provider === 'google' ? 'GOOGLE' : provider === 'apple' ? 'APPLE' : provider.toUpperCase();
   return (
-    <span className="bg-(--ui-accent) text-(--ui-accent-contrast) text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
+    <span className="bg-ui-accent text-ui-accent-contrast text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
       {label}
     </span>
   );
@@ -76,11 +76,11 @@ export const ProfileScreen = () => {
 
   const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
     isDark
-      ? 'bg-(--ui-surface) border border-(--ui-border) hover:bg-(--ui-surface-hover)'
-      : 'bg-(--ui-card) border border-(--ui-border) hover:bg-(--ui-surface-hover) shadow-sm'
+      ? 'bg-ui-surface border border-ui-border hover:bg-ui-surface-hover'
+      : 'bg-ui-card border border-ui-border hover:bg-ui-surface-hover shadow-sm'
   }`;
   const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
-  const sectionTitle = `text-[9px] font-sans font-bold tracking-[0.28em] uppercase text-(--ui-fg-muted)`;
+  const sectionTitle = `text-[9px] font-sans font-bold tracking-[0.28em] uppercase text-ui-fg-muted`;
 
   return (
     <div
@@ -113,11 +113,11 @@ export const ProfileScreen = () => {
           >
             <div className="grid grid-cols-3 gap-3">
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-(--ui-border) ${
-                  isDark ? 'bg-(--ui-surface)' : 'bg-(--ui-card) shadow-sm'
+                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
+                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
                 }`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardGames ?? t.statsRowGamesPlayed ?? 'Played'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
@@ -125,11 +125,11 @@ export const ProfileScreen = () => {
                 </p>
               </div>
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-(--ui-border) ${
-                  isDark ? 'bg-(--ui-surface)' : 'bg-(--ui-card) shadow-sm'
+                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
+                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
                 }`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardGuessed ?? t.statsRowWordsGuessed ?? 'Guessed'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
@@ -137,11 +137,11 @@ export const ProfileScreen = () => {
                 </p>
               </div>
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-(--ui-border) ${
-                  isDark ? 'bg-(--ui-surface)' : 'bg-(--ui-card) shadow-sm'
+                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
+                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
                 }`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardAccuracy ?? t.statsRowAccuracy ?? 'Accuracy'}
                 </p>
                 <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
@@ -185,7 +185,7 @@ export const ProfileScreen = () => {
                     className={
                       hasCustomPacks
                         ? currentTheme.iconColor
-                        : 'text-[color-mix(in_srgb,var(--ui-accent)_85%,#ffffff_15%)]'
+                        : 'text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]'
                     }
                   />
                   <div className="text-left">
@@ -195,7 +195,7 @@ export const ProfileScreen = () => {
                         : (t.profileNavUnlockPacks ?? 'Unlock custom packs')}
                     </span>
                     {!hasCustomPacks && (
-                      <p className="text-[9px] mt-0.5 uppercase tracking-widest text-(--ui-fg-muted)">
+                      <p className="text-[9px] mt-0.5 uppercase tracking-widest text-ui-fg-muted">
                         {t.profileNavUnlockPacksSub ?? 'Available in the store'}
                       </p>
                     )}
@@ -206,7 +206,7 @@ export const ProfileScreen = () => {
                 ) : (
                   <Lock
                     size={14}
-                    className="text-[color-mix(in_srgb,var(--ui-accent)_85%,#ffffff_15%)]"
+                    className="text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]"
                   />
                 )}
               </button>
@@ -257,10 +257,10 @@ export const ProfileScreen = () => {
           {profile?.isAdmin && (
             <button onClick={() => (window.location.href = '/admin.html')} className={navBtn}>
               <div className="flex items-center gap-3">
-                <ShieldCheck size={16} className="text-(--ui-danger)" />
-                <span className={navLabel + ' text-(--ui-danger)'}>Адмін-панель</span>
+                <ShieldCheck size={16} className="text-ui-danger" />
+                <span className={navLabel + ' text-ui-danger'}>Адмін-панель</span>
               </div>
-              <ChevronRight size={16} className="text-(--ui-danger) opacity-30" />
+              <ChevronRight size={16} className="text-ui-danger opacity-30" />
             </button>
           )}
         </div>
@@ -269,7 +269,7 @@ export const ProfileScreen = () => {
           <button
             onClick={() => setShowLogoutConfirm(true)}
             disabled={loggingOut}
-            className="w-full text-center text-(--ui-danger) font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
+            className="w-full text-center text-ui-danger font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
           >
             {loggingOut ? (
               <Loader2 size={14} className="animate-spin inline" />
@@ -297,19 +297,19 @@ export const ProfileScreen = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-center pb-3">
-                <div className="h-1 w-10 rounded-full bg-(--ui-border)" aria-hidden />
+                <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
               </div>
               <div className="flex justify-between items-start mb-4">
                 <p
                   id="logout-confirm-title"
-                  className="text-(--ui-fg) text-sm font-sans font-semibold tracking-wide pr-4"
+                  className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-4"
                 >
                   {t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
                 </p>
                 <button
                   type="button"
                   onClick={closeLogoutConfirm}
-                  className="text-(--ui-fg-muted) hover:text-(--ui-fg) p-1 shrink-0"
+                  className="text-ui-fg-muted hover:text-ui-fg p-1 shrink-0"
                   aria-label={t.close ?? 'Close'}
                 >
                   <X size={18} />
@@ -320,7 +320,7 @@ export const ProfileScreen = () => {
                 <button
                   type="button"
                   onClick={closeLogoutConfirm}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-(--ui-surface) text-(--ui-fg) border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
                 >
                   {t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
                 </button>
@@ -328,7 +328,7 @@ export const ProfileScreen = () => {
                   type="button"
                   onClick={() => void handleLogout()}
                   disabled={loggingOut}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-(--ui-danger) border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
+                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-ui-danger border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
                 >
                   {loggingOut ? (
                     <span className="inline-flex items-center justify-center gap-2">

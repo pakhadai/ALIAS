@@ -46,10 +46,10 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
           }}
         >
           <div className="flex justify-center mb-6">
-            <div className="h-1.5 w-16 rounded-full bg-(--ui-border)" aria-hidden />
+            <div className="h-1.5 w-16 rounded-full bg-ui-border" aria-hidden />
           </div>
 
-          <span className="material-symbols-outlined text-(--ui-accent) text-[80px] mb-6 block">
+          <span className="material-symbols-outlined text-ui-accent text-[80px] mb-6 block">
             play_circle
           </span>
 

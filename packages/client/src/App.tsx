@@ -128,7 +128,7 @@ const GameRouter = () => {
 
 const AppContent = () => {
   return (
-    <div className="min-h-screen w-full bg-(--ui-bg) text-(--ui-fg) font-sans selection:bg-(--ui-accent) selection:text-(--ui-accent-contrast)">
+    <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
       <ConnectionStatusBanner />
       <PwaUpdateBanner />
       <GameRouter />

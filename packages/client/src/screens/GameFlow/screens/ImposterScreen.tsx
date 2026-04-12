@@ -36,15 +36,15 @@ function ImposterMiniHeader({
       className={[
         'flex shrink-0 items-center justify-between gap-3 px-4 py-2',
         imposterDrama
-          ? 'border-b border-white/10 bg-black/25 text-white'
-          : 'border-b border-(--ui-border) bg-(--ui-surface)/80 backdrop-blur-sm',
+          ? 'border-b border-[color-mix(in_srgb,var(--ui-fg)_12%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-bg))] text-ui-fg'
+          : 'border-b border-ui-border bg-ui-surface/80 backdrop-blur-sm',
       ].join(' ')}
     >
       {showReadyRatio ? (
         <span
           className={[
             'tabular-nums text-sm font-semibold',
-            imposterDrama ? 'text-white/90' : 'text-(--ui-fg) opacity-80',
+            imposterDrama ? 'text-ui-fg/90' : 'text-ui-fg opacity-80',
           ].join(' ')}
           aria-label={`Готові гравці: ${readyCount} з ${total}`}
         >
@@ -59,8 +59,8 @@ function ImposterMiniHeader({
         className={[
           'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
           imposterDrama
-            ? 'text-white/90 hover:bg-white/10 active:bg-white/15'
-            : 'text-(--ui-fg) hover:bg-(--ui-surface-hover) active:scale-95',
+            ? 'text-ui-fg/90 hover:bg-[color-mix(in_srgb,var(--ui-fg)_10%,transparent)] active:bg-[color-mix(in_srgb,var(--ui-fg)_16%,transparent)]'
+            : 'text-ui-fg hover:bg-ui-surface-hover active:scale-95',
         ].join(' ')}
         aria-label={isPaused ? 'Продовжити' : 'Пауза'}
       >
@@ -136,8 +136,8 @@ function ImposterRevealPhase({
       className={[
         'animate-page-in flex min-h-dvh flex-col',
         imposterDrama
-          ? 'bg-linear-to-b from-[#3a0a12] via-[#1f0508] to-[#0a0204] text-white'
-          : 'bg-(--ui-bg)',
+          ? 'bg-linear-to-b from-[color-mix(in_srgb,var(--ui-danger)_38%,var(--ui-bg))] via-[color-mix(in_srgb,var(--ui-danger)_18%,var(--ui-bg))] to-ui-bg text-ui-fg'
+          : 'bg-ui-bg',
       ].join(' ')}
     >
       <ImposterMiniHeader
@@ -154,7 +154,7 @@ function ImposterRevealPhase({
           <div className="flex flex-1 flex-col items-center justify-center gap-10 text-center">
             <p className="max-w-md text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
               Передай телефон{' '}
-              <span className={imposterDrama ? 'text-red-300' : 'text-(--ui-accent)'}>{name}</span>
+              <span className={imposterDrama ? 'text-ui-danger' : 'text-ui-accent'}>{name}</span>
             </p>
             <Button
               className="w-full max-w-md py-4 text-lg font-semibold"
@@ -175,11 +175,11 @@ function ImposterRevealPhase({
                 'will-change-transform active:scale-[0.98]',
                 !isFlipped
                   ? imposterDrama
-                    ? 'border-white/20 bg-white/5 hover:bg-white/10'
-                    : 'border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover)'
+                    ? 'border-[color-mix(in_srgb,var(--ui-fg)_18%,transparent)] bg-[color-mix(in_srgb,var(--ui-fg)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-fg)_10%,transparent)]'
+                    : 'border-ui-border bg-ui-surface hover:bg-ui-surface-hover'
                   : revealIsImposter
-                    ? 'border-red-500/40 bg-linear-to-br from-red-950/90 to-black/90 shadow-[0_0_60px_-12px_rgba(220,38,38,0.55)]'
-                    : 'border-(--ui-border) bg-(--ui-card)',
+                    ? 'border-[color-mix(in_srgb,var(--ui-danger)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-danger)_42%,var(--ui-bg))] to-[color-mix(in_srgb,var(--ui-bg)_92%,var(--ui-fg)_8%)] shadow-[0_0_60px_-12px_color-mix(in_srgb,var(--ui-danger)_55%,transparent)]'
+                    : 'border-ui-border bg-ui-card',
               ].join(' ')}
               style={
                 isFlipped && !revealIsImposter
@@ -193,19 +193,21 @@ function ImposterRevealPhase({
               {!isFlipped ? (
                 <div className="space-y-3">
                   <div className="text-2xl font-semibold sm:text-3xl">Натисни, щоб перевернути</div>
-                  <div className={imposterDrama ? 'text-sm text-white/70' : 'text-sm opacity-70'}>
+                  <div className={imposterDrama ? 'text-sm text-ui-fg/70' : 'text-sm opacity-70'}>
                     Не показуй іншим
                   </div>
                 </div>
               ) : revealIsImposter ? (
                 <div className="flex flex-col items-center gap-5 animate-reveal-in">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-red-600/30 text-red-200 ring-2 ring-red-500/50">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--ui-danger)_32%,transparent)] text-[color-mix(in_srgb,var(--ui-danger)_78%,var(--ui-fg)_22%)] ring-2 ring-[color-mix(in_srgb,var(--ui-danger)_48%,transparent)]">
                     <Ghost className="h-11 w-11" strokeWidth={1.75} aria-hidden />
                   </div>
-                  <div className="text-4xl font-black uppercase tracking-tight text-red-100 sm:text-5xl">
+                  <div className="text-4xl font-black uppercase tracking-tight text-ui-danger sm:text-5xl">
                     Ти — імпостер
                   </div>
-                  <div className="max-w-xs text-base text-red-200/85">Спробуй не видати себе</div>
+                  <div className="max-w-xs text-base text-[color-mix(in_srgb,var(--ui-danger)_72%,var(--ui-fg-muted)_28%)]">
+                    Спробуй не видати себе
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 animate-reveal-in px-2">
@@ -256,7 +258,7 @@ function ImposterDiscussionPhase({
   }, [confirmEnd]);
 
   return (
-    <div className="animate-page-in flex min-h-dvh flex-col bg-(--ui-bg)">
+    <div className="animate-page-in flex min-h-dvh flex-col bg-ui-bg">
       <ImposterMiniHeader
         readyCount={0}
         total={0}
@@ -276,9 +278,7 @@ function ImposterDiscussionPhase({
             className={[
               'font-black tabular-nums tracking-tight',
               'text-[clamp(4rem,18vw,9rem)] leading-none',
-              urgent
-                ? 'motion-reduce:animate-none animate-pulse text-(--ui-danger)'
-                : 'text-(--ui-fg)',
+              urgent ? 'motion-reduce:animate-none animate-pulse text-ui-danger' : 'text-ui-fg',
             ].join(' ')}
           >
             {formatTime(timeLeft)}
@@ -288,7 +288,7 @@ function ImposterDiscussionPhase({
         <div className="mt-auto space-y-3 pt-6">
           {confirmEnd ? (
             <div
-              className="rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4 text-center"
+              className="rounded-2xl border border-ui-border bg-ui-surface p-4 text-center"
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="imposter-end-confirm-title"
@@ -320,7 +320,7 @@ function ImposterDiscussionPhase({
             <button
               type="button"
               onClick={() => setConfirmEnd(true)}
-              className="w-full rounded-xl py-3 text-center text-sm font-medium text-(--ui-fg-muted) opacity-70 transition-opacity hover:opacity-100"
+              className="w-full rounded-xl py-3 min-h-[48px] text-center text-sm font-medium text-ui-fg-muted opacity-70 transition-all duration-200 hover:opacity-100 active:scale-[0.99]"
             >
               Завершити гру / відгадали
             </button>
@@ -352,20 +352,20 @@ function ImposterResultsPhase({
       <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center gap-4">
           <div
-            className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-(--ui-danger) bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-6xl shadow-lg"
+            className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-ui-danger bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-6xl shadow-lg transition-transform duration-200"
             aria-hidden
           >
             {imposter?.avatar ?? '?'}
           </div>
           <div>
             <h2 className="text-2xl font-bold sm:text-3xl">{title}</h2>
-            <p className="mt-2 text-xl font-semibold text-(--ui-accent)">
+            <p className="mt-2 text-xl font-semibold text-ui-accent">
               {imposter ? imposter.name : 'Дані гравця недоступні'}
             </p>
           </div>
         </div>
 
-        <div className="w-full rounded-2xl border border-(--ui-border) bg-(--ui-surface) px-6 py-4">
+        <div className="w-full rounded-2xl border border-ui-border bg-ui-surface px-6 py-4">
           <div className="text-xs font-semibold uppercase tracking-wider opacity-60">
             Секретне слово
           </div>
@@ -386,7 +386,7 @@ function ImposterResultsPhase({
 function ImposterLoadingFallback() {
   return (
     <div className="animate-page-in px-4 py-6">
-      <div className="mx-auto w-full max-w-lg rounded-2xl border border-(--ui-border) bg-(--ui-surface) p-4">
+      <div className="mx-auto w-full max-w-lg rounded-2xl border border-ui-border bg-ui-surface p-4">
         <div className="text-sm opacity-70">Імпостер</div>
         <div className="mt-2 text-lg font-semibold">Завантаження…</div>
       </div>
@@ -406,6 +406,7 @@ export function ImposterScreen() {
     imposterOfflineRevealIndex,
     imposterWord,
     timeLeft,
+    roundEndsAt,
     isPaused,
     sendAction,
     setTimeLeft,
@@ -425,15 +426,28 @@ export function ImposterScreen() {
 
   const secretWord = isOffline ? imposterWord : imposterSecret?.word;
 
+  const [discussionTick, setDiscussionTick] = useState(0);
   useEffect(() => {
     if (imposterPhase !== 'DISCUSSION') return;
     if (isPaused) return;
-    if (timeLeft <= 0) return;
-    const t = window.setTimeout(() => {
-      setTimeLeft((prev) => Math.max(0, (typeof prev === 'number' ? prev : 0) - 1));
-    }, 1000);
-    return () => window.clearTimeout(t);
-  }, [imposterPhase, isPaused, timeLeft, setTimeLeft]);
+    if (isOffline) {
+      if (timeLeft <= 0) return;
+      const t = window.setTimeout(() => {
+        setTimeLeft((prev) => Math.max(0, (typeof prev === 'number' ? prev : 0) - 1));
+      }, 1000);
+      return () => window.clearTimeout(t);
+    }
+    if (!roundEndsAt) return;
+    const id = window.setInterval(() => setDiscussionTick((n) => n + 1), 200);
+    return () => clearInterval(id);
+  }, [imposterPhase, isPaused, isOffline, timeLeft, setTimeLeft, roundEndsAt]);
+
+  const discussionTimeLeft = useMemo(() => {
+    if (imposterPhase !== 'DISCUSSION' || isPaused) return timeLeft;
+    if (isOffline) return timeLeft;
+    if (!roundEndsAt) return timeLeft;
+    return Math.max(0, Math.ceil((roundEndsAt - Date.now()) / 1000));
+  }, [imposterPhase, isPaused, isOffline, timeLeft, roundEndsAt, discussionTick]);
 
   const discussionAutoEndSent = useRef(false);
   useEffect(() => {
@@ -441,12 +455,12 @@ export function ImposterScreen() {
       discussionAutoEndSent.current = false;
       return;
     }
-    if (timeLeft > 0) return;
+    if (discussionTimeLeft > 0) return;
     if (!isOffline) return;
     if (discussionAutoEndSent.current) return;
     discussionAutoEndSent.current = true;
     sendAction({ action: 'IMPOSTER_END_GAME' });
-  }, [imposterPhase, timeLeft, isOffline, sendAction]);
+  }, [imposterPhase, discussionTimeLeft, isOffline, sendAction]);
 
   if (imposterPhase === 'REVEAL') {
     return (
@@ -468,7 +482,7 @@ export function ImposterScreen() {
   if (imposterPhase === 'DISCUSSION') {
     return (
       <ImposterDiscussionPhase
-        timeLeft={timeLeft}
+        timeLeft={discussionTimeLeft}
         isPaused={isPaused}
         togglePause={togglePause}
         sendAction={sendAction}

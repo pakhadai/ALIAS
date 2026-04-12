@@ -72,7 +72,7 @@ export const TeamSetupScreen = () => {
         <button
           onClick={() => setGameState(GameState.LOBBY)}
           type="button"
-          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl text-(--ui-fg-muted) hover:text-(--ui-fg) transition-colors"
+          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl text-ui-fg-muted hover:text-ui-fg transition-colors"
           aria-label={t.backToLobby}
         >
           <X size={22} className={currentTheme.iconColor} />
@@ -92,10 +92,10 @@ export const TeamSetupScreen = () => {
           return (
             <div
               key={team.id}
-              className={`p-6 rounded-3xl border bg-(--ui-surface) transition-[border-color,box-shadow,background-color] duration-200 ${
+              className={`p-6 rounded-3xl border bg-ui-surface transition-[border-color,box-shadow,background-color] duration-200 ${
                 isDropTarget
-                  ? 'border-2 border-dashed border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_12%,var(--ui-surface))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--ui-accent)_18%,transparent)] motion-safe:animate-pulse'
-                  : 'border border-(--ui-border)'
+                  ? 'border-2 border-dashed border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_12%,var(--ui-surface))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--ui-accent)_18%,transparent)] motion-safe:animate-pulse'
+                  : 'border border-ui-border'
               }`}
               style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
             >
@@ -106,14 +106,14 @@ export const TeamSetupScreen = () => {
                     <input
                       value={teamNameDraft}
                       onChange={(e) => setTeamNameDraft(e.target.value)}
-                      className="flex-1 bg-transparent border-b border-(--ui-border) text-(--ui-fg) font-serif text-xl tracking-wide outline-none focus:border-(--ui-accent)"
+                      className="flex-1 bg-transparent border-b border-ui-border text-ui-fg font-serif text-xl tracking-wide outline-none focus:border-ui-accent"
                       autoFocus
                       maxLength={18}
                     />
                     <button
                       type="button"
                       onClick={applyRename}
-                      className="min-h-11 min-w-11 inline-flex shrink-0 items-center justify-center rounded-xl border border-(--ui-border) hover:bg-(--ui-surface-hover) transition-colors"
+                      className="min-h-11 min-w-11 inline-flex shrink-0 items-center justify-center rounded-xl border border-ui-border hover:bg-ui-surface-hover transition-colors"
                       aria-label="Save"
                     >
                       <Check size={18} className={currentTheme.iconColor} />
@@ -131,7 +131,7 @@ export const TeamSetupScreen = () => {
                           setEditingTeamId(team.id);
                           setTeamNameDraft(team.name);
                         }}
-                        className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border border-(--ui-border) text-(--ui-fg-muted) hover:text-(--ui-fg) hover:bg-(--ui-surface-hover) transition-colors"
+                        className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover transition-colors"
                         aria-label="Rename team"
                         title="Rename"
                       >
@@ -167,11 +167,11 @@ export const TeamSetupScreen = () => {
                           );
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-full flex items-center gap-2 border bg-(--ui-surface) border-(--ui-border) transition-all ${
+                      className={`px-3 py-1.5 rounded-full flex items-center gap-2 border bg-ui-surface border-ui-border transition-all ${
                         gameMode === 'ONLINE' && !online
                           ? 'opacity-70 border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)]'
                           : ''
-                      } ${isSelected ? 'border-(--ui-accent) bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]' : ''}`}
+                      } ${isSelected ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]' : ''}`}
                     >
                       {p.avatarId != null ? (
                         <AvatarDisplay avatarId={p.avatarId} size={20} />
@@ -184,7 +184,7 @@ export const TeamSetupScreen = () => {
                         {p.name}
                       </span>
                       {gameMode === 'ONLINE' && !online && (
-                        <span className="text-[10px] font-bold uppercase text-(--ui-warning)">
+                        <span className="text-[10px] font-bold uppercase text-ui-warning">
                           {t.playerDisconnected}
                         </span>
                       )}
@@ -202,10 +202,10 @@ export const TeamSetupScreen = () => {
                 <button
                   type="button"
                   onClick={() => moveSelectedTo(team.id)}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--ui-border) bg-(--ui-surface) hover:bg-(--ui-surface-hover) transition-all active:scale-[0.98]"
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
                 >
                   <MoveRight size={16} className={currentTheme.iconColor} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-(--ui-fg-muted)">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                     Перемістити сюди
                   </span>
                 </button>
@@ -227,7 +227,7 @@ export const TeamSetupScreen = () => {
           <button
             type="button"
             onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-            className={`w-full text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary} hover:text-(--ui-fg) transition-colors mb-4`}
+            className={`w-full text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary} hover:text-ui-fg transition-colors mb-4`}
           >
             {t.shuffle}
           </button>
