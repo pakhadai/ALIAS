@@ -11,12 +11,14 @@ export function socketAuthMiddleware(socket: Socket, next: (err?: Error) => void
 
   if (!token) {
     // Allow unauthenticated connections (backward compat / dev mode)
+    console.warn(`[SocketAuth] No token provided: socket=${socket.id}`);
     next();
     return;
   }
 
   const payload = authService.verifyToken(token);
   if (!payload) {
+    console.error(`[SocketAuth] Invalid/expired token: socket=${socket.id}`);
     next(new Error('Invalid or expired token'));
     return;
   }

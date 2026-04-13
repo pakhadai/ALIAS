@@ -165,12 +165,14 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     const { initData: fromBody } = req.body as { initData?: string };
     const initData = (fromBody || fromHeader || '').trim();
     if (!initData) {
+      console.error('[Auth][Telegram] initData missing (body/header)');
       res.status(400).json({ error: 'initData is required (body.initData or X-Init-Data header)' });
       return;
     }
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
     if (!botToken) {
+      console.error('[Auth][Telegram] TELEGRAM_BOT_TOKEN missing');
       res.status(500).json({ error: 'Server misconfigured: TELEGRAM_BOT_TOKEN is not set' });
       return;
     }
@@ -179,6 +181,10 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       const verified = authService.validateTelegramInitData(initData, botToken);
       const telegramUserId = verified.user?.id;
       if (!telegramUserId) {
+        console.error('[Auth][Telegram] user id missing in initData', {
+          hasUser: Boolean(verified.user),
+          keys: Object.keys(verified),
+        });
         res.status(400).json({ error: 'Telegram user id is missing in initDataUnsafe.user' });
         return;
       }
@@ -213,8 +219,15 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       });
       res.json({ token, userId: user.id });
     } catch (err) {
-      console.error('[Auth] telegram error:', err);
-      res.status(401).json({ error: (err as Error).message || 'Invalid Telegram initData' });
+      const msg = (err as Error)?.message || 'Invalid Telegram initData';
+      // Avoid logging raw initData (it contains PII). Log only length + error type.
+      console.error('[Auth][Telegram] auth failed', {
+        error: msg,
+        initDataLength: initData.length,
+        hasHeader: Boolean(fromHeader),
+        hasBody: Boolean(fromBody),
+      });
+      res.status(401).json({ error: msg });
     }
   });
 

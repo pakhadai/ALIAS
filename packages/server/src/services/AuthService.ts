@@ -84,20 +84,23 @@ export class AuthService {
   validateTelegramInitData(
     initData: string,
     botToken: string,
-    maxAgeSeconds = 3600
+    maxAgeSeconds?: number
   ): TelegramInitData {
     const raw = String(initData || '').trim();
     if (!raw) {
+      console.error('[Auth][Telegram] initData missing/empty');
       throw new Error('initData is required');
     }
     const token = String(botToken || '').trim();
     if (!token) {
+      console.error('[Auth][Telegram] botToken missing/empty');
       throw new Error('botToken is required');
     }
 
     const params = new URLSearchParams(raw);
     const receivedHash = params.get('hash') ?? '';
     if (!receivedHash) {
+      console.error('[Auth][Telegram] missing hash');
       throw new Error('Hash is missing');
     }
 
@@ -107,7 +110,20 @@ export class AuthService {
       const authDate = parseInt(authDateRaw, 10);
       if (Number.isFinite(authDate) && authDate > 0) {
         const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
-        if (ageSeconds > maxAgeSeconds) {
+        const maxAgeFromEnvRaw = process.env.TELEGRAM_INITDATA_MAX_AGE_SECONDS;
+        const maxAgeFromEnv = maxAgeFromEnvRaw ? parseInt(String(maxAgeFromEnvRaw), 10) : NaN;
+        const effectiveMaxAge =
+          typeof maxAgeSeconds === 'number' && Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0
+            ? maxAgeSeconds
+            : Number.isFinite(maxAgeFromEnv) && maxAgeFromEnv > 0
+              ? maxAgeFromEnv
+              : 86400; // 24 hours default
+
+        if (ageSeconds > effectiveMaxAge) {
+          console.error('[Auth][Telegram] expired auth_date', {
+            ageSeconds,
+            maxAgeSeconds: effectiveMaxAge,
+          });
           throw new Error('initData is too old');
         }
       }
@@ -127,6 +143,10 @@ export class AuthService {
     const a = Buffer.from(computedHash, 'hex');
     const b = Buffer.from(receivedHash, 'hex');
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      console.error('[Auth][Telegram] invalid signature', {
+        computedHashLen: a.length,
+        receivedHashLen: b.length,
+      });
       throw new Error('Invalid hash — data may be tampered');
     }
 

@@ -57,26 +57,33 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const myPlayerIdRef = useRef('');
   /** Скасовує попередній `connect`-слухач для room:create / room:join (мобільні: disconnect не завжди синхронний). */
   const pendingRoomConnectHandlerRef = useRef<(() => void) | null>(null);
+  /** Pending room op rejecter so connect_error can fail fast (handshake can be rejected). */
+  const pendingRoomOpRejectRef = useRef<((err: Error) => void) | null>(null);
 
-  const scheduleEmitAfterHandshakeConnect = useCallback((emitWhenConnected: () => void) => {
-    const socket = socketRef.current;
-    if (!socket) return;
-    if (pendingRoomConnectHandlerRef.current) {
-      socket.off('connect', pendingRoomConnectHandlerRef.current);
-      pendingRoomConnectHandlerRef.current = null;
-    }
-    prepareSocketForRoomHandshake(socket);
-    const onConnected = () => {
-      socket.off('connect', onConnected);
-      pendingRoomConnectHandlerRef.current = null;
-      emitWhenConnected();
-    };
-    pendingRoomConnectHandlerRef.current = onConnected;
-    socket.on('connect', onConnected);
-    window.setTimeout(() => {
-      socket.connect();
-    }, 0);
-  }, []);
+  const scheduleEmitAfterHandshakeConnect = useCallback(
+    (emitWhenConnected: () => void, onConnectError?: (err: Error) => void) => {
+      const socket = socketRef.current;
+      if (!socket) return;
+      if (pendingRoomConnectHandlerRef.current) {
+        socket.off('connect', pendingRoomConnectHandlerRef.current);
+        pendingRoomConnectHandlerRef.current = null;
+      }
+      pendingRoomOpRejectRef.current = onConnectError ?? null;
+      prepareSocketForRoomHandshake(socket);
+      const onConnected = () => {
+        socket.off('connect', onConnected);
+        pendingRoomConnectHandlerRef.current = null;
+        pendingRoomOpRejectRef.current = null;
+        emitWhenConnected();
+      };
+      pendingRoomConnectHandlerRef.current = onConnected;
+      socket.on('connect', onConnected);
+      window.setTimeout(() => {
+        socket.connect();
+      }, 0);
+    },
+    []
+  );
 
   useEffect(() => {
     const token = getAuthToken();
@@ -102,6 +109,23 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         setIsReconnecting(true);
         socket.emit('room:rejoin', { roomCode: storedRoom, playerId: storedPlayer });
       }
+    });
+
+    socket.on('connect_error', (err) => {
+      setIsConnected(false);
+      setIsReconnecting(false);
+      // If a room operation is waiting for handshake connect, fail it immediately.
+      if (pendingRoomOpRejectRef.current) {
+        try {
+          pendingRoomOpRejectRef.current(err instanceof Error ? err : new Error(String(err)));
+        } finally {
+          pendingRoomOpRejectRef.current = null;
+        }
+      }
+      const msg =
+        (err instanceof Error && err.message) ||
+        'Socket connection failed (handshake rejected or network error)';
+      optionsRef.current.onError({ code: 'SOCKET_CONNECT_ERROR', message: msg });
     });
 
     socket.on('disconnect', () => {
@@ -153,6 +177,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         socket.off('connect', pendingRoomConnectHandlerRef.current);
         pendingRoomConnectHandlerRef.current = null;
       }
+      pendingRoomOpRejectRef.current = null;
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
@@ -240,7 +265,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           socket.emit('room:create', payload);
         };
 
-        scheduleEmitAfterHandshakeConnect(doEmit);
+        scheduleEmitAfterHandshakeConnect(doEmit, (err) => {
+          detach();
+          reject(err);
+        });
       });
     },
     [scheduleEmitAfterHandshakeConnect]
@@ -314,7 +342,10 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           });
         };
 
-        scheduleEmitAfterHandshakeConnect(doEmit);
+        scheduleEmitAfterHandshakeConnect(doEmit, (err) => {
+          detach();
+          reject(err);
+        });
       });
     },
     [scheduleEmitAfterHandshakeConnect]

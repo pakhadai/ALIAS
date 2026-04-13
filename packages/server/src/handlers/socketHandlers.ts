@@ -75,120 +75,130 @@ export function registerSocketHandlers(
   });
 
   onSocket(socket, 'room:create', async (rawData) => {
-    // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо створювати нову
-    if (socket.data.roomCode) {
-      socket.emit(
-        'room:error',
-        roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
-      );
-      return;
-    }
-
-    const data = validatePayload(roomCreateSchema, rawData);
-    if (!data) {
-      socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
-      return;
-    }
-
-    const room = await roomManager.createRoom(socket.id);
-    const player = roomManager.addPlayer(
-      room.code,
-      socket.id,
-      data.playerName,
-      data.avatar,
-      data.avatarId
-    );
-    if (!player) {
-      roomManager.deleteRoom(room.code); // Clean up the zombie room
-      socket.emit('room:error', roomError('ROOM_CREATE_FAILED', 'Failed to create room'));
-      return;
-    }
-
-    player.isHost = true;
-    room.hostUserId = socket.data.userId as string | undefined;
-    void socket.join(room.code);
-    socket.data.playerId = player.id;
-    socket.data.playerName = data.playerName;
-    socket.data.roomCode = room.code;
-
-    socket.emit('room:created', { roomCode: room.code, playerId: player.id });
-    broadcastRoomState(io, room.code, roomManager);
-  });
-
-  onSocket(socket, 'room:join', async (rawData) => {
-    const data = validatePayload(roomJoinSchema, rawData);
-    if (!data) {
-      socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
-      return;
-    }
-
-    // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо приєднуватися до іншої
-    if (socket.data.roomCode) {
-      socket.emit(
-        'room:error',
-        roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
-      );
-      return;
-    }
-
-    const selfId = config.serverInstanceId;
-    const writer = await getRoomWriterId(relayDeps, data.roomCode);
-    const useRelay =
-      writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
-
-    if (useRelay && relayDeps) {
-      const requestId = newRelayRequestId();
-      relayDeps.relay.registerPending(requestId, socket);
-      const published = await relayDeps.relay.publishRoomJoin(writer, {
-        roomCode: data.roomCode,
-        requestingSocketId: socket.id,
-        playerName: data.playerName,
-        avatar: data.avatar,
-        avatarId: data.avatarId,
-        replyToInstanceId: selfId,
-        requestId,
-      });
-      if (!published) {
-        relayDeps.relay.cancelPending(requestId);
+    try {
+      // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо створювати нову
+      if (socket.data.roomCode) {
         socket.emit(
           'room:error',
-          roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
+          roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
         );
-      }
-      return;
-    }
-
-    await roomQueue.run(data.roomCode, async () => {
-      let room = roomManager.getRoom(data.roomCode);
-      if (!room) {
-        room = (await roomManager.restoreRoomFromRedis(data.roomCode)) ?? undefined;
-      }
-      if (!room) {
-        socket.emit('room:error', roomError('ROOM_NOT_FOUND', `Room ${data.roomCode} not found`));
         return;
       }
 
+      const data = validatePayload(roomCreateSchema, rawData);
+      if (!data) {
+        socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
+        return;
+      }
+
+      const room = await roomManager.createRoom(socket.id);
       const player = roomManager.addPlayer(
-        data.roomCode,
+        room.code,
         socket.id,
         data.playerName,
         data.avatar,
         data.avatarId
       );
       if (!player) {
-        socket.emit('room:error', roomError('ROOM_FULL', 'Room is full'));
+        roomManager.deleteRoom(room.code); // Clean up the zombie room
+        socket.emit('room:error', roomError('ROOM_CREATE_FAILED', 'Failed to create room'));
         return;
       }
 
-      void socket.join(data.roomCode);
+      player.isHost = true;
+      room.hostUserId = socket.data.userId as string | undefined;
+      void socket.join(room.code);
       socket.data.playerId = player.id;
       socket.data.playerName = data.playerName;
-      socket.data.roomCode = data.roomCode;
+      socket.data.roomCode = room.code;
 
-      socket.emit('room:joined', { roomCode: data.roomCode, playerId: player.id });
-      io.to(data.roomCode).emit('room:player-joined', { player });
-      broadcastRoomState(io, data.roomCode, roomManager);
-    });
+      socket.emit('room:created', { roomCode: room.code, playerId: player.id });
+      broadcastRoomState(io, room.code, roomManager);
+    } catch (err) {
+      console.error('[Socket][room:create] failed', { socketId: socket.id }, err);
+      socket.emit('room:error', roomError('SERVER_ROOM_ERROR', 'Server error while creating room'));
+    }
+  });
+
+  onSocket(socket, 'room:join', async (rawData) => {
+    try {
+      const data = validatePayload(roomJoinSchema, rawData);
+      if (!data) {
+        socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid data'));
+        return;
+      }
+
+      // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо приєднуватися до іншої
+      if (socket.data.roomCode) {
+        socket.emit(
+          'room:error',
+          roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
+        );
+        return;
+      }
+
+      const selfId = config.serverInstanceId;
+      const writer = await getRoomWriterId(relayDeps, data.roomCode);
+      const useRelay =
+        writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
+
+      if (useRelay && relayDeps) {
+        const requestId = newRelayRequestId();
+        relayDeps.relay.registerPending(requestId, socket);
+        const published = await relayDeps.relay.publishRoomJoin(writer, {
+          roomCode: data.roomCode,
+          requestingSocketId: socket.id,
+          playerName: data.playerName,
+          avatar: data.avatar,
+          avatarId: data.avatarId,
+          replyToInstanceId: selfId,
+          requestId,
+        });
+        if (!published) {
+          relayDeps.relay.cancelPending(requestId);
+          socket.emit(
+            'room:error',
+            roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
+          );
+        }
+        return;
+      }
+
+      await roomQueue.run(data.roomCode, async () => {
+        let room = roomManager.getRoom(data.roomCode);
+        if (!room) {
+          room = (await roomManager.restoreRoomFromRedis(data.roomCode)) ?? undefined;
+        }
+        if (!room) {
+          socket.emit('room:error', roomError('ROOM_NOT_FOUND', `Room ${data.roomCode} not found`));
+          return;
+        }
+
+        const player = roomManager.addPlayer(
+          data.roomCode,
+          socket.id,
+          data.playerName,
+          data.avatar,
+          data.avatarId
+        );
+        if (!player) {
+          socket.emit('room:error', roomError('ROOM_FULL', 'Room is full'));
+          return;
+        }
+
+        void socket.join(data.roomCode);
+        socket.data.playerId = player.id;
+        socket.data.playerName = data.playerName;
+        socket.data.roomCode = data.roomCode;
+
+        socket.emit('room:joined', { roomCode: data.roomCode, playerId: player.id });
+        io.to(data.roomCode).emit('room:player-joined', { player });
+        broadcastRoomState(io, data.roomCode, roomManager);
+      });
+    } catch (err) {
+      console.error('[Socket][room:join] failed', { socketId: socket.id }, err);
+      socket.emit('room:error', roomError('SERVER_ROOM_ERROR', 'Server error while joining room'));
+    }
   });
 
   onSocket(socket, 'room:leave', async () => {
@@ -241,66 +251,74 @@ export function registerSocketHandlers(
   });
 
   onSocket(socket, 'room:rejoin', async (rawData) => {
-    const data = validatePayload(roomRejoinSchema, rawData);
-    if (!data) {
-      socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid rejoin data'));
-      return;
-    }
+    try {
+      const data = validatePayload(roomRejoinSchema, rawData);
+      if (!data) {
+        socket.emit('room:error', roomError('INVALID_PAYLOAD', 'Invalid rejoin data'));
+        return;
+      }
 
-    const selfId = config.serverInstanceId;
-    const writer = await getRoomWriterId(relayDeps, data.roomCode);
-    const useRelay =
-      writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
+      const selfId = config.serverInstanceId;
+      const writer = await getRoomWriterId(relayDeps, data.roomCode);
+      const useRelay =
+        writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
 
-    if (useRelay && relayDeps) {
-      const requestId = newRelayRequestId();
-      relayDeps.relay.registerPending(requestId, socket);
-      const published = await relayDeps.relay.publishRoomRejoin(writer, {
-        roomCode: data.roomCode,
-        playerId: data.playerId,
-        requestingSocketId: socket.id,
-        replyToInstanceId: selfId,
-        requestId,
+      if (useRelay && relayDeps) {
+        const requestId = newRelayRequestId();
+        relayDeps.relay.registerPending(requestId, socket);
+        const published = await relayDeps.relay.publishRoomRejoin(writer, {
+          roomCode: data.roomCode,
+          playerId: data.playerId,
+          requestingSocketId: socket.id,
+          replyToInstanceId: selfId,
+          requestId,
+        });
+        if (!published) {
+          relayDeps.relay.cancelPending(requestId);
+          socket.emit(
+            'room:error',
+            roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
+          );
+        }
+        return;
+      }
+
+      await roomQueue.run(data.roomCode, async () => {
+        let room = roomManager.getRoom(data.roomCode);
+        if (!room) {
+          room = (await roomManager.restoreRoomFromRedis(data.roomCode)) ?? undefined;
+        }
+        if (!room) {
+          socket.emit('room:error', roomError('ROOM_NOT_FOUND', 'Room not found'));
+          return;
+        }
+
+        cancelGraceRemoval(data.playerId);
+
+        const applied = roomManager.applyRejoinSocket(data.roomCode, data.playerId, socket.id);
+        if (!applied) {
+          socket.emit('room:error', roomError('PLAYER_NOT_IN_ROOM', 'Player not found in room'));
+          return;
+        }
+
+        void socket.join(data.roomCode);
+        socket.data.playerId = data.playerId;
+        socket.data.playerName = applied.playerName;
+        socket.data.roomCode = data.roomCode;
+
+        socket.emit('room:rejoined', { roomCode: data.roomCode, playerId: data.playerId });
+        const live = roomManager.getRoom(data.roomCode);
+        if (live) {
+          io.to(data.roomCode).emit('game:state-sync', roomManager.getSyncState(live));
+        }
       });
-      if (!published) {
-        relayDeps.relay.cancelPending(requestId);
-        socket.emit(
-          'room:error',
-          roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
-        );
-      }
-      return;
+    } catch (err) {
+      console.error('[Socket][room:rejoin] failed', { socketId: socket.id }, err);
+      socket.emit(
+        'room:error',
+        roomError('SERVER_ROOM_ERROR', 'Server error while rejoining room')
+      );
     }
-
-    await roomQueue.run(data.roomCode, async () => {
-      let room = roomManager.getRoom(data.roomCode);
-      if (!room) {
-        room = (await roomManager.restoreRoomFromRedis(data.roomCode)) ?? undefined;
-      }
-      if (!room) {
-        socket.emit('room:error', roomError('ROOM_NOT_FOUND', 'Room not found'));
-        return;
-      }
-
-      cancelGraceRemoval(data.playerId);
-
-      const applied = roomManager.applyRejoinSocket(data.roomCode, data.playerId, socket.id);
-      if (!applied) {
-        socket.emit('room:error', roomError('PLAYER_NOT_IN_ROOM', 'Player not found in room'));
-        return;
-      }
-
-      void socket.join(data.roomCode);
-      socket.data.playerId = data.playerId;
-      socket.data.playerName = applied.playerName;
-      socket.data.roomCode = data.roomCode;
-
-      socket.emit('room:rejoined', { roomCode: data.roomCode, playerId: data.playerId });
-      const live = roomManager.getRoom(data.roomCode);
-      if (live) {
-        io.to(data.roomCode).emit('game:state-sync', roomManager.getSyncState(live));
-      }
-    });
   });
 
   onSocket(socket, 'game:action', async (rawPayload) => {
