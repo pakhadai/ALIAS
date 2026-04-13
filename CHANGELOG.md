@@ -87,6 +87,9 @@
 ### Fixed
 
 - **Server build** падав через розбіжність резолву типів `@alias/shared` між `tsconfig` та `tsconfig.typecheck`.
+- **Telegram auth** міг ламатись у монорепо, якщо `TELEGRAM_BOT_TOKEN` був заданий лише в кореневому `.env`: сервер читав тільки `packages/server/.env`.
+  - Файли: `packages/server/src/config.ts`, `packages/server/src/routes/auth.ts`, `packages/client/src/App.tsx`
+  - Додано діагностичні логи (клієнт/сервер) без виводу raw `initData`.
 
 ## [2026-04-09] — Режим Solo, i18n профілю, join-sheet, тости та bottom sheets
 

@@ -136,6 +136,7 @@ const AppContent = () => {
   const [telegramLoginPending, setTelegramLoginPending] = React.useState(false);
   const attemptedRef = React.useRef(false);
   const consumedStartParamRef = React.useRef<string | null>(null);
+  const telegramAuthErrorShownRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!isTelegram) return;
@@ -147,10 +148,25 @@ const AppContent = () => {
     attemptedRef.current = true;
     setTelegramLoginPending(true);
 
+    console.log('[TelegramAuth] attempting telegram login', {
+      initDataLength: initData.length,
+      authState: authState.status,
+    });
+
     void loginWithTelegram(initData).finally(() => {
       setTelegramLoginPending(false);
     });
   }, [authState.status, initData, isAuthenticated, isTelegram, loginWithTelegram]);
+
+  React.useEffect(() => {
+    if (!isTelegram) return;
+    if (authState.status !== 'error') return;
+    if (telegramAuthErrorShownRef.current) return;
+    telegramAuthErrorShownRef.current = true;
+
+    console.error('[TelegramAuth] login failed', { message: authState.message });
+    showNotification(`Telegram auth failed: ${authState.message}`, 'error');
+  }, [authState, isTelegram, showNotification]);
 
   React.useEffect(() => {
     if (!isAuthenticated) return;

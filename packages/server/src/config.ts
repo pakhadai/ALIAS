@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto';
 import dotenv from 'dotenv';
 import path from 'path';
+
+// Monorepo env loading:
+// - root `.env` is convenient for local development (repo-wide vars)
+// - `packages/server/.env` should override root for server-specific values
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const instanceFromEnv = process.env.INSTANCE_ID?.trim();

@@ -172,12 +172,19 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
     if (!botToken) {
-      console.error('[Auth][Telegram] TELEGRAM_BOT_TOKEN missing');
+      console.error('[Auth][Telegram] TELEGRAM_BOT_TOKEN missing', {
+        hint: 'Set TELEGRAM_BOT_TOKEN in packages/server/.env or repo root .env (server loads both).',
+      });
       res.status(500).json({ error: 'Server misconfigured: TELEGRAM_BOT_TOKEN is not set' });
       return;
     }
 
     try {
+      console.log('[Auth][Telegram] auth attempt', {
+        initDataLength: initData.length,
+        hasHeader: Boolean(fromHeader),
+        hasBody: Boolean(fromBody),
+      });
       const verified = authService.validateTelegramInitData(initData, botToken);
       const telegramUserId = verified.user?.id;
       if (!telegramUserId) {
