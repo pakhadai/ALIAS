@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
-import { createPaymentIntent } from '../../services/api';
+import { buyWithStars, createPaymentIntent } from '../../services/api';
 import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
+import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
@@ -111,11 +112,18 @@ export function QuickBuyModal({
   onClose,
   onSuccess,
 }: QuickBuyModalProps) {
+  const haptic = useHapticFeedback();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [amount, setAmount] = useState(0);
   const [itemName, setItemName] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [starsLoading, setStarsLoading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = () => {
+    setIsClosing(true);
+    setTimeout(() => onClose(), 300);
+  };
 
   useEffect(() => {
     createPaymentIntent(itemType, itemId)
@@ -129,9 +137,30 @@ export function QuickBuyModal({
       });
   }, [itemId, itemType]);
 
-  const requestClose = () => {
-    setIsClosing(true);
-    setTimeout(() => onClose(), 300);
+  const canUseStars =
+    Boolean(window.Telegram?.WebApp?.initData) &&
+    typeof window.Telegram?.WebApp?.openInvoice === 'function';
+
+  const handleBuyStars = async () => {
+    if (!canUseStars) return;
+    setStarsLoading(true);
+    setLoadError(null);
+    try {
+      const { invoiceUrl } = await buyWithStars({ itemType, itemId });
+      window.Telegram?.WebApp?.openInvoice?.(invoiceUrl, (status) => {
+        if (status === 'paid') {
+          haptic.notificationOccurred('success');
+          onSuccess();
+          requestClose();
+        } else if (status === 'cancelled') {
+          haptic.notificationOccurred('warning');
+        }
+        setStarsLoading(false);
+      });
+    } catch (err) {
+      setLoadError((err as Error).message ?? 'Не вдалося ініціювати оплату через Stars');
+      setStarsLoading(false);
+    }
   };
 
   const handleSuccess = () => {
@@ -192,9 +221,28 @@ export function QuickBuyModal({
               <Loader2 size={24} className="animate-spin text-ui-fg-muted" />
             </div>
           ) : (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-              <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
-            </Elements>
+            <div className="flex flex-col gap-5">
+              {canUseStars && (
+                <button
+                  type="button"
+                  onClick={handleBuyStars}
+                  disabled={starsLoading}
+                  className="w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold text-[13px] flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {starsLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Відкриваємо оплату…
+                    </>
+                  ) : (
+                    <>⭐ Купити за Telegram Stars</>
+                  )}
+                </button>
+              )}
+
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+                <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
+              </Elements>
+            </div>
           )}
         </div>
       </div>

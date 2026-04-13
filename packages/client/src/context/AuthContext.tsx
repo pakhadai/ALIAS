@@ -10,6 +10,7 @@ interface AuthContextType {
   /** Refresh profile after update — call after updateProfile/save */
   refreshProfile: () => Promise<import('../services/api').UserProfile | null>;
   loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithTelegram: (initData: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 

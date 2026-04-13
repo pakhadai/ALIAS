@@ -4,6 +4,13 @@ import { authService } from '../services/AuthService';
 import { maxDate, parseNonNegInt } from '../utils/playerStats';
 import { gameSettingsPartialSchema } from '../validation/schemas';
 
+function sanitizeDisplayName(name: string): string {
+  return String(name)
+    .replace(/<[^>]*>/g, '')
+    .trim()
+    .slice(0, 20);
+}
+
 function playerStatsJson(u: {
   statsGamesPlayed: number;
   statsWordsGuessed: number;
@@ -144,6 +151,66 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     }
   });
 
+  // ─── Telegram Mini App ─────────────────────────────────────────────────
+
+  /**
+   * POST /api/auth/telegram
+   * Body: { initData?: string }
+   * Header fallback: X-Init-Data: <initData>
+   * Validates Telegram Mini App initData, finds/creates User by telegramId, returns JWT.
+   */
+  router.post('/telegram', async (req, res) => {
+    const headerInitData = req.headers['x-init-data'];
+    const fromHeader = typeof headerInitData === 'string' ? headerInitData : undefined;
+    const { initData: fromBody } = req.body as { initData?: string };
+    const initData = (fromBody || fromHeader || '').trim();
+    if (!initData) {
+      res.status(400).json({ error: 'initData is required (body.initData or X-Init-Data header)' });
+      return;
+    }
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+    if (!botToken) {
+      res.status(500).json({ error: 'Server misconfigured: TELEGRAM_BOT_TOKEN is not set' });
+      return;
+    }
+
+    try {
+      const verified = authService.validateTelegramInitData(initData, botToken);
+      const telegramUserId = verified.user?.id;
+      if (!telegramUserId) {
+        res.status(400).json({ error: 'Telegram user id is missing in initDataUnsafe.user' });
+        return;
+      }
+
+      const telegramId = String(telegramUserId);
+
+      const displayNameRaw = [verified.user?.first_name || '', verified.user?.last_name || '']
+        .join(' ')
+        .trim();
+
+      const user = await prisma.user.upsert({
+        where: { telegramId },
+        update: { authProvider: 'telegram' },
+        create: {
+          telegramId,
+          authProvider: 'telegram',
+          ...(displayNameRaw ? { displayName: sanitizeDisplayName(displayNameRaw) } : {}),
+        },
+      });
+
+      const token = authService.createToken({
+        sub: user.id,
+        type: 'telegram',
+        isAdmin: user.isAdmin,
+      });
+      res.json({ token, userId: user.id });
+    } catch (err) {
+      console.error('[Auth] telegram error:', err);
+      res.status(401).json({ error: (err as Error).message || 'Invalid Telegram initData' });
+    }
+  });
+
   // ─── Update profile ───────────────────────────────────────────────────
 
   router.patch('/profile', async (req, res) => {
@@ -162,10 +229,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     const data: Record<string, unknown> = {};
 
     if (displayName !== undefined) {
-      const name = String(displayName)
-        .replace(/<[^>]*>/g, '')
-        .trim()
-        .slice(0, 20);
+      const name = sanitizeDisplayName(displayName);
       if (name) data.displayName = name;
     }
     if (avatarId !== undefined) {

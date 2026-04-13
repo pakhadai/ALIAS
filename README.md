@@ -100,6 +100,7 @@
 | **Монорепо** | pnpm workspaces + Turbo | pnpm **9.0.0** (`packageManager`), Turbo **^2.9** |
 | **Клієнт** | React + TypeScript + Vite | React 19, Vite 7 |
 | **Сервер** | Node.js + Express + TypeScript | Express 4 |
+| **Telegram** | Mini App SDK + Telegraf | Bot API 9.6 (квітень 2026), Telegraf 4 |
 | **Реальний час** | Socket.IO | 4.8 |
 | **ORM** | Prisma | 6.19 |
 | **БД** | PostgreSQL | 16 |
@@ -505,6 +506,7 @@ interface GameSyncState {
 |-------|------|------|
 | `POST` | `/api/auth/anonymous` | Створити анонімного юзера. Body: `{ deviceId }`. Повертає JWT. |
 | `POST` | `/api/auth/google` | Google OAuth. Body: `{ idToken, deviceId? }`. Мерджить анонімні покупки, колоди та **агреговану статистику** з пристрою. |
+| `POST` | `/api/auth/telegram` | Telegram Mini App auth. Приймає `initData` (body або `X-Init-Data`), валідує HMAC, створює/знаходить `User.telegramId`, повертає JWT. |
 | `GET` | `/api/auth/me` | Профіль + `purchases` + **`playerStats`** (ігри, вгадано, пропущено, `lastPlayed`). Bearer token. |
 | `POST` | `/api/auth/player-stats/delta` | Атомарні інкременти лічильників. Body: `{ gamesPlayed?, wordsGuessed?, wordsSkipped? }` (≥0). |
 | `POST` | `/api/auth/player-stats/merge-local` | Одноразовий імпорт легасі-об’єкта з клієнта (сума до профілю). |
@@ -517,6 +519,7 @@ interface GameSyncState {
 | Метод | Шлях | Опис |
 |-------|------|------|
 | `GET` | `/api/store` | Каталог (wordPacks, themes, soundPacks). Опціональний Bearer — помічає owned. |
+| `POST` | `/api/store/buy-stars` | Telegram Stars: створює invoice link (XTR) для itemType/itemId, повертає `invoiceUrl` для `openInvoice`. |
 
 ### Purchases
 
@@ -1033,6 +1036,9 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 | `STRIPE_WEBHOOK_SECRET` | Опційно | Stripe webhook secret |
 | `STRIPE_SUCCESS_URL` | Опційно | URL перенаправлення після оплати |
 | `STRIPE_CANCEL_URL` | Опційно | URL при скасуванні оплати |
+| `TELEGRAM_BOT_TOKEN` | Опційно | Токен бота (вимагатиметься для Telegram Mini App auth, Stars і webhook). |
+| `TELEGRAM_WEBHOOK_URL` | Prod | Публічний HTTPS URL для webhook, напр. `https://alias.example.com/api/bot/webhook`. |
+| `TELEGRAM_WEBHOOK_SECRET` | Prod | Secret token для заголовка `X-Telegram-Bot-Api-Secret-Token` (обов’язковий у webhook-режимі). |
 | `VAPID_PUBLIC_KEY` | Опційно | VAPID ключ для push |
 | `VAPID_PRIVATE_KEY` | Опційно | VAPID private key |
 | `VAPID_EMAIL` | Опційно | Email для VAPID |

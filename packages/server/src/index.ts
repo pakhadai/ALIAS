@@ -49,6 +49,12 @@ import type {
 } from '@alias/shared';
 import { roomError } from './utils/roomError';
 import { initServerSentry, registerExpressSentryErrorHandler } from './sentry/bootstrap';
+import {
+  getTelegramWebhookCallback,
+  setTelegramWebhook,
+  startTelegramLongPolling,
+  stopTelegramBot,
+} from './bot';
 
 const app = express();
 initServerSentry(app, config.nodeEnv);
@@ -60,6 +66,16 @@ app.use(cors({ origin: config.cors.origin }));
 // Stripe webhook needs raw body BEFORE express.json()
 app.use('/api/purchases/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
+
+// Telegram bot webhook (production only)
+if (config.nodeEnv === 'production') {
+  const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+  if (!webhookSecret) {
+    console.warn('[Telegram] TELEGRAM_WEBHOOK_SECRET not set — webhook will not be mounted');
+  } else {
+    app.use(getTelegramWebhookCallback({ path: '/api/bot/webhook', secretToken: webhookSecret }));
+  }
+}
 
 // Services (initialized early so routes can use prisma)
 const prisma = new PrismaClient();
@@ -453,10 +469,37 @@ httpServer.listen(config.port, () => {
   console.log(`[Server] Instance: ${config.serverInstanceId}`);
   console.log(`[Server] Environment: ${config.nodeEnv}`);
   console.log(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);
+
+  if (config.nodeEnv === 'production') {
+    const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL?.trim();
+    const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+
+    if (!webhookUrl || !webhookSecret) {
+      console.warn(
+        '[Telegram] Webhook not configured: set TELEGRAM_WEBHOOK_URL and TELEGRAM_WEBHOOK_SECRET'
+      );
+      return;
+    }
+
+    void setTelegramWebhook({ webhookUrl, secretToken: webhookSecret })
+      .then(() => {
+        console.log('[Telegram] Webhook configured');
+      })
+      .catch((err: unknown) => {
+        console.warn(
+          '[Telegram] setWebhook failed:',
+          err instanceof Error ? err.message : String(err)
+        );
+      });
+    return;
+  }
+
+  void startTelegramLongPolling();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
+  stopTelegramBot('SIGTERM');
   await roomActionRelay.disconnect();
   await redisStore.disconnect();
   await prisma.$disconnect();

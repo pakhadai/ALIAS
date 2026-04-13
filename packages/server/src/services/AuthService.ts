@@ -1,16 +1,35 @@
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
+import crypto from 'crypto';
 import { config } from '../config';
 
 export type TokenPayload = {
   sub: string; // userId (UUID)
-  type: 'anonymous' | 'google';
+  type: 'anonymous' | 'google' | 'telegram';
   email?: string;
   isAdmin?: boolean;
 };
 
 const TOKEN_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 const googleClient = new OAuth2Client(config.google.clientId);
+
+export type TelegramInitDataUser = {
+  id: number;
+  is_bot?: boolean;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+};
+
+export type TelegramInitData = {
+  query_id?: string;
+  user?: TelegramInitDataUser;
+  receiver?: TelegramInitDataUser;
+  start_param?: string;
+  auth_date?: number;
+  hash: string;
+};
 
 export class AuthService {
   private secret = config.jwt.secret;
@@ -54,6 +73,84 @@ export class AuthService {
       console.error('[Auth] Google token verification failed:', (err as Error).message);
       return null;
     }
+  }
+
+  /**
+   * Validate Telegram Mini App `initData` payload (HMAC-SHA256).
+   *
+   * Reference: TELEGRAM_SKILL.md §8.4
+   */
+  validateTelegramInitData(
+    initData: string,
+    botToken: string,
+    maxAgeSeconds = 3600
+  ): TelegramInitData {
+    const raw = String(initData || '').trim();
+    if (!raw) {
+      throw new Error('initData is required');
+    }
+    const token = String(botToken || '').trim();
+    if (!token) {
+      throw new Error('botToken is required');
+    }
+
+    const params = new URLSearchParams(raw);
+    const receivedHash = params.get('hash') ?? '';
+    if (!receivedHash) {
+      throw new Error('Hash is missing');
+    }
+
+    // Optional replay protection
+    const authDateRaw = params.get('auth_date');
+    if (authDateRaw) {
+      const authDate = parseInt(authDateRaw, 10);
+      if (Number.isFinite(authDate) && authDate > 0) {
+        const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+        if (ageSeconds > maxAgeSeconds) {
+          throw new Error('initData is too old');
+        }
+      }
+    }
+
+    params.delete('hash');
+
+    const entries = Array.from(params.entries()).sort(([a], [b]) => a.localeCompare(b));
+    const dataCheckString = entries.map(([k, v]) => `${k}=${v}`).join('\n');
+
+    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(token).digest();
+    const computedHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    const a = Buffer.from(computedHash, 'hex');
+    const b = Buffer.from(receivedHash, 'hex');
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      throw new Error('Invalid hash — data may be tampered');
+    }
+
+    const result: TelegramInitData = {
+      hash: receivedHash,
+    };
+
+    for (const [k, v] of entries) {
+      if (k === 'user' || k === 'receiver') {
+        try {
+          (result as Record<string, unknown>)[k] = JSON.parse(v) as TelegramInitDataUser;
+        } catch {
+          // ignore invalid JSON, treat as absent
+        }
+        continue;
+      }
+      if (k === 'auth_date') {
+        const n = parseInt(v, 10);
+        if (Number.isFinite(n)) result.auth_date = n;
+        continue;
+      }
+      (result as Record<string, unknown>)[k] = v;
+    }
+
+    return result;
   }
 }
 

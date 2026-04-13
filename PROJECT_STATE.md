@@ -2,7 +2,7 @@
 
 Цей файл — **стислий, але глибший архітектурний аудит** монорепозиторію: фактичні `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig*`, `docker-compose.yml`, `packages/server/prisma/schema.prisma` та пайплайни **GitHub Actions**. Детальні протоколи Socket.IO, ігрові правила, env і деплой — у канонічному [`README.md`](./README.md).
 
-**Оновлено:** 2026-04-12 (синхронізовано з README: `explainerModeActions`, клієнтські shell-компоненти, `TeamSetupScreen`).
+**Оновлено:** 2026-04-13 (Telegram Mini App + seamless auth + Stars + webhook).
 
 ---
 

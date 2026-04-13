@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   fetchAnonymousToken,
   signInWithGoogle,
+  signInWithTelegram,
   fetchProfile,
   getAuthToken,
   clearAuthToken,
@@ -90,6 +91,24 @@ export function useAuth() {
     }
   }, []);
 
+  const loginWithTelegram = useCallback(async (initData: string) => {
+    try {
+      const { userId } = await signInWithTelegram(initData);
+      const profile = await fetchProfile();
+      await hydratePlayerStats(profile);
+      setAuthState({
+        status: 'authenticated',
+        userId,
+        email: profile.email || '',
+        provider: 'telegram',
+        isAdmin: profile.isAdmin ?? false,
+        profile,
+      });
+    } catch (e) {
+      setAuthState({ status: 'error', message: (e as Error).message });
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     clearAuthToken();
     // Revert to anonymous
@@ -141,6 +160,7 @@ export function useAuth() {
       profile,
       refreshProfile,
       loginWithGoogle,
+      loginWithTelegram,
       logout,
       initialize,
     }),
@@ -151,6 +171,7 @@ export function useAuth() {
       profile,
       refreshProfile,
       loginWithGoogle,
+      loginWithTelegram,
       logout,
       initialize,
     ]

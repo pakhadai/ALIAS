@@ -159,6 +159,19 @@ export async function signInWithGoogle(idToken: string): Promise<AuthResponse> {
   return data;
 }
 
+/** Sign in with Telegram Mini App initData */
+export async function signInWithTelegram(initData: string): Promise<AuthResponse> {
+  const data = await apiFetch<AuthResponse>('/api/auth/telegram', {
+    method: 'POST',
+    headers: {
+      'X-Init-Data': initData,
+    },
+    body: JSON.stringify({ initData }),
+  });
+  setAuthToken(data.token);
+  return data;
+}
+
 /** Get current user profile */
 export async function fetchProfile(): Promise<UserProfile> {
   return apiFetch<UserProfile>('/api/auth/me');
@@ -255,6 +268,19 @@ export interface StoreData {
 
 export async function fetchStore(): Promise<StoreData> {
   return apiFetch<StoreData>('/api/store');
+}
+
+export async function buyWithStars(payload: {
+  itemType: 'wordPack' | 'theme' | 'soundPack';
+  itemId: string;
+}): Promise<{ invoiceUrl: string; purchaseId: string; starsAmount: number }> {
+  return apiFetch<{ invoiceUrl: string; purchaseId: string; starsAmount: number }>(
+    '/api/store/buy-stars',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
 }
 
 // ─── Purchases API ─────────────────────────────────────────────────────

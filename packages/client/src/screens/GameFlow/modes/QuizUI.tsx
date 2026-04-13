@@ -73,7 +73,8 @@ export function QuizUI({
         wrongClearRef.current = null;
       }, 650);
     }
-    haptic(correct ? HAPTIC.quizCorrect : HAPTIC.quizWrong);
+    haptic.pattern(correct ? HAPTIC.quizCorrect : HAPTIC.quizWrong);
+    haptic.notificationOccurred(correct ? 'success' : 'warning');
     onAction({ action: 'GUESS_OPTION', data: { selectedOption: opt } });
   };
 

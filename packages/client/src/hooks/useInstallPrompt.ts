@@ -10,6 +10,9 @@ export function useInstallPrompt() {
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
+    // Telegram Mini App: PWA install prompt is not relevant (and can confuse users).
+    if (window.Telegram?.WebApp?.initData) return;
+
     const handler = (e: Event) => {
       e.preventDefault();
       setPrompt(e as BeforeInstallPromptEvent);

@@ -39,11 +39,36 @@
     'opsz' 24;
 }
 
+html,
+body {
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
 body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   background: var(--ui-bg);
   color: var(--ui-fg);
+}
+
+/* Telegram Mini App theming (when running inside Telegram) */
+:root[data-telegram-app='true'] {
+  --ui-bg: var(--tg-theme-bg-color, var(--ui-bg));
+  --ui-fg: var(--tg-theme-text-color, var(--ui-fg));
+  --ui-card: var(--tg-theme-secondary-bg-color, var(--ui-card));
+  --ui-surface: var(--tg-theme-secondary-bg-color, var(--ui-surface));
+  --ui-accent: var(--tg-theme-button-color, var(--ui-accent));
+  --ui-accent-contrast: var(--tg-theme-button-text-color, var(--ui-accent-contrast));
+  --ui-fg-muted: var(--tg-theme-hint-color, var(--ui-fg-muted));
 }
 
 .no-scrollbar::-webkit-scrollbar {

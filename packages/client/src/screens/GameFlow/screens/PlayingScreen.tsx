@@ -142,7 +142,8 @@ export const PlayingScreen = () => {
 
   useEffect(() => {
     if (timeUp && isActualExplainer && !timeUpVibratedRef.current) {
-      haptic(HAPTIC.timeUp);
+      haptic.pattern(HAPTIC.timeUp);
+      haptic.notificationOccurred('error');
       timeUpVibratedRef.current = true;
     }
     if (!timeUp) timeUpVibratedRef.current = false;
@@ -187,12 +188,14 @@ export const PlayingScreen = () => {
         : 'var(--ui-danger)';
 
     if (type === 'correct') {
-      haptic(HAPTIC.correct);
+      haptic.pattern(HAPTIC.correct);
+      haptic.notificationOccurred('success');
       playerStats.increment('wordsGuessed');
       handleCorrect();
       setParticles((prev) => [...prev, { id: Date.now(), x, y, text: '+1', color: teamColor }]);
     } else {
-      haptic(HAPTIC.skip);
+      haptic.pattern(HAPTIC.skip);
+      haptic.notificationOccurred('warning');
       playerStats.increment('wordsSkipped');
       handleSkip();
       setParticles((prev) => [
@@ -267,7 +270,8 @@ export const PlayingScreen = () => {
           <button
             type="button"
             onClick={() => {
-              haptic(HAPTIC.nav);
+              haptic.pattern(HAPTIC.nav);
+              haptic.impactOccurred('light');
               togglePause();
             }}
             className="w-11 h-11 min-h-11 min-w-11 flex items-center justify-center rounded-full active:bg-ui-surface-hover transition-all duration-200 active:scale-95"

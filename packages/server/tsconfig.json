@@ -3,6 +3,9 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "node",
+    "paths": {
+      "@alias/shared": ["../shared/src/index.ts"]
+    },
     "resolveJsonModule": true,
     "outDir": "./dist",
     "declaration": true,

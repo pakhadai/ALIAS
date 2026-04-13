@@ -63,6 +63,31 @@
 
 - **`packages/server/src/routes/admin.ts`**: якщо **`ADMIN_API_KEY`** задано, **`x-admin-key`** з тим самим значенням проходить **`adminAuth`** (інакше при наявному, але невірному заголовку — **403**); без ключа логіка лишається на JWT + whitelist / `isAdmin`.
 
+## [2026-04-13] — Release 0.6.0: Telegram Mini App, auth, Stars, webhook, native UX
+
+### Added
+
+- **Telegram bot (Telegraf)** у `@alias/server`: `/start`, payments (`pre_checkout_query`, `successful_payment`) та продакшен **webhook** з `secret_token`.
+  - Файли: `packages/server/src/bot/index.ts`, `packages/server/src/index.ts`
+- **Telegram Mini App SDK** у клієнті + ініціалізація `ready()/expand()` + нативні UX фічі (fullscreen, disable vertical swipes, closing confirmation).
+  - Файли: `packages/client/index.html`, `packages/client/src/hooks/useTelegramApp.ts`, `packages/client/src/styles.css`
+- **Seamless Telegram auth**: `POST /api/auth/telegram` з валідацією `initData` (HMAC-SHA256) та `telegramId` у `User`.
+  - Файли: `packages/server/src/services/AuthService.ts`, `packages/server/src/routes/auth.ts`, `packages/server/prisma/schema.prisma`
+  - Міграція: `packages/server/prisma/migrations/20260413120000_add_user_telegram_id/migration.sql`
+- **Telegram Stars покупки**: `POST /api/store/buy-stars` → `createInvoiceLink` (XTR) + `openInvoice(...)` у Mini App.
+  - Файли: `packages/server/src/routes/store.ts`, `packages/client/src/components/Store/QuickBuyModal.tsx`, `packages/client/src/services/api.ts`
+
+### Changed
+
+- **Native UX у Telegram**: вимкнено PWA install prompt, додано Telegram haptics у базові кнопки/ігрові дії, BackButton інтегрований зі state-machine роутингом.
+  - Файли: `packages/client/src/hooks/useInstallPrompt.ts`, `packages/client/src/hooks/useHapticFeedback.ts`, `packages/client/src/components/Button.tsx`, `packages/client/src/App.tsx`, `packages/client/src/screens/GameFlow/screens/PlayingScreen.tsx`, `packages/client/src/screens/GameFlow/modes/QuizUI.tsx`
+- **Server build consistency**: `@alias/server build` тепер резолвить `@alias/shared` через `paths`, як і typecheck.
+  - Файл: `packages/server/tsconfig.json`
+
+### Fixed
+
+- **Server build** падав через розбіжність резолву типів `@alias/shared` між `tsconfig` та `tsconfig.typecheck`.
+
 ## [2026-04-09] — Режим Solo, i18n профілю, join-sheet, тости та bottom sheets
 
 ### Added

@@ -5,6 +5,8 @@ import { GameState } from './types';
 import { PageTransition } from './components/Shared';
 import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
+import { useTelegramApp } from './hooks/useTelegramApp';
+import { useAuthContext } from './context/AuthContext';
 import {
   MenuScreen,
   EnterNameScreen,
@@ -127,6 +129,82 @@ const GameRouter = () => {
 };
 
 const AppContent = () => {
+  const { initData, isTelegram } = useTelegramApp();
+  const { authState, isAuthenticated, loginWithTelegram } = useAuthContext();
+  const { gameState, setGameState } = useGame();
+  const [telegramLoginPending, setTelegramLoginPending] = React.useState(false);
+  const attemptedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!isTelegram) return;
+    if (!initData) return;
+    if (isAuthenticated) return;
+    if (attemptedRef.current) return;
+    if (authState.status === 'loading') return;
+
+    attemptedRef.current = true;
+    setTelegramLoginPending(true);
+
+    void loginWithTelegram(initData).finally(() => {
+      setTelegramLoginPending(false);
+    });
+  }, [authState.status, initData, isAuthenticated, isTelegram, loginWithTelegram]);
+
+  React.useEffect(() => {
+    if (!isTelegram) return;
+    const tg = window.Telegram?.WebApp;
+    const back = tg?.BackButton;
+    if (!back?.show || !back.hide || !back.onClick) return;
+
+    const isMain = gameState === GameState.MENU;
+    if (isMain) back.hide();
+    else back.show();
+
+    const onBack = () => {
+      // Minimal "navigate(-1)" for our state-based router.
+      switch (gameState) {
+        case GameState.PROFILE_SETTINGS:
+          setGameState(GameState.PROFILE);
+          return;
+        case GameState.LOBBY_SETTINGS:
+          setGameState(GameState.LOBBY);
+          return;
+        case GameState.PLAYER_STATS:
+          setGameState(isAuthenticated ? GameState.PROFILE : GameState.MENU);
+          return;
+        case GameState.SETTINGS:
+        case GameState.TEAMS:
+        case GameState.VS_SCREEN:
+        case GameState.PRE_ROUND:
+        case GameState.COUNTDOWN:
+        case GameState.PLAYING:
+        case GameState.ROUND_SUMMARY:
+        case GameState.SCOREBOARD:
+        case GameState.GAME_OVER:
+          setGameState(GameState.LOBBY);
+          return;
+        default:
+          setGameState(GameState.MENU);
+      }
+    };
+
+    back.onClick(onBack);
+    return () => {
+      back.offClick?.(onBack);
+    };
+  }, [gameState, isAuthenticated, isTelegram, setGameState]);
+
+  if (telegramLoginPending) {
+    return (
+      <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center">
+        <div className="flex items-center gap-3 rounded-2xl border border-ui-border bg-ui-surface px-5 py-4">
+          <span className="w-5 h-5 border-2 border-ui-accent border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-ui-fg-muted">Авторизація…</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
       <ConnectionStatusBanner />

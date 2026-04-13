@@ -1,7 +1,8 @@
 import React from 'react';
 import { playSoundEffect } from '../utils/audio';
 import { SoundPreset } from '../types';
-import { vibrate, HAPTIC } from '../utils/haptics';
+import { HAPTIC } from '../utils/haptics';
+import { useHapticFeedback } from '../hooks/useHapticFeedback';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
@@ -23,6 +24,8 @@ export const Button: React.FC<ButtonProps> = ({
   clickSound = true,
   ...props
 }) => {
+  const haptic = useHapticFeedback();
+
   const baseStyles =
     'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-semibold transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-wide text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
 
@@ -50,7 +53,7 @@ export const Button: React.FC<ButtonProps> = ({
     props.onPointerDown?.(e);
     if (e.defaultPrevented) return;
     if (!props.disabled) {
-      vibrate(HAPTIC.nav);
+      haptic.pattern(HAPTIC.nav);
     }
     if (!clickSound || props.disabled) return;
 
@@ -62,6 +65,14 @@ export const Button: React.FC<ButtonProps> = ({
       if (soundEnabled) playSoundEffect('click', soundPreset);
     } catch {
       // no-op: keep button interaction resilient (e.g. private mode / JSON errors)
+    }
+  };
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    props.onClick?.(e);
+    if (e.defaultPrevented) return;
+    if (!props.disabled) {
+      haptic.impactOccurred('light');
     }
   };
 
@@ -82,6 +93,7 @@ export const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
       onPointerDown={handlePointerDown}
+      onClick={handleClick}
       {...props}
     >
       {icon && <span className="mr-3">{icon}</span>}
