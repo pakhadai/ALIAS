@@ -187,4 +187,10 @@ jobs:
             fi
             echo "Deploy: project=${COMPOSE_PROJECT:-default} compose=$COMPOSE_FILE env=${ENV_OPT[1]:-?}"
             docker compose "${DC_PFX[@]}" "${ENV_OPT[@]}" -f "$COMPOSE_FILE" up -d --build
-            docker compose "${DC_PFX[@]}" "${ENV_OPT[@]}" -f "$COMPOSE_FILE" exec -T app sh -c "cd packages/server && npx prisma migrate deploy"
+            # docker-compose.npm.yml runs `prisma migrate deploy` on app boot (idempotent).
+            # Running it again via `exec` can overlap with container startup and OOM-kill small VPSes (exit 137).
+            if [ "$COMPOSE_FILE" = "docker-compose.npm.yml" ]; then
+              echo "Note: skipping explicit Prisma migrate (handled by app command in docker-compose.npm.yml)"
+            else
+              docker compose "${DC_PFX[@]}" "${ENV_OPT[@]}" -f "$COMPOSE_FILE" exec -T app sh -c "cd packages/server && npx prisma migrate deploy"
+            fi
