@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Gamepad2, QrCode, Share2, Timer, Trophy } from 'lucide-react';
+import { BookOpen, Gamepad2, QrCode, Share2, Timer, Trophy, Mail } from 'lucide-react';
 import type { GameSettings, ThemeConfig } from '../../../types';
 import { TRANSLATIONS } from '../../../constants';
 
@@ -15,6 +15,7 @@ export function OnlineLobbyIntro(props: {
   qrCodeData: string;
   isHost: boolean;
   onShare: () => void;
+  onInviteFriends: () => void;
   onShowQr: () => void;
   onOpenSettings: () => void;
 }): React.ReactNode {
@@ -28,6 +29,7 @@ export function OnlineLobbyIntro(props: {
     qrCodeData,
     isHost,
     onShare,
+    onInviteFriends,
     onShowQr,
     onOpenSettings,
   } = props;
@@ -53,6 +55,16 @@ export function OnlineLobbyIntro(props: {
           <Share2 size={16} className={theme.iconColor} />
           <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
             {t.share ?? 'Share'}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onInviteFriends}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-accent)_16%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-all active:scale-[0.98]"
+        >
+          <Mail size={16} className={theme.iconColor} />
+          <span className="text-[10px] font-bold tracking-[0.08em] text-ui-fg">
+            💌 Запросити друзів
           </span>
         </button>
         <button

@@ -18,6 +18,8 @@ const PWA_THEME = '#1A1A1A';
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim();
 
 export default defineConfig({
+  // Load .env* from repo root (monorepo convenience)
+  envDir: path.resolve(__dirname, '..', '..'),
   plugins: [
     react(),
     VitePWA({

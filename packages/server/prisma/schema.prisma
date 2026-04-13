@@ -19,6 +19,8 @@ model User {
   email             String?            @unique
   telegramId        String?            @unique
   authProvider      String             @default("anonymous")
+  name              String? // real name from OAuth/Telegram (non-game)
+  avatarUrl         String? // external avatar URL (e.g. Telegram photo_url)
   displayName       String? // custom in-game name
   avatarId          String? // preset avatar index "0"–"19"
   defaultSettings   Json? // saved GameSettings for lobby

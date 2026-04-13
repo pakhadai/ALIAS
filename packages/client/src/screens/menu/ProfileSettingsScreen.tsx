@@ -78,6 +78,8 @@ export const ProfileSettingsScreen = () => {
           <div className="flex justify-center pt-2">
             <AvatarDisplay
               avatarId={selectedAvatar >= 0 ? String(selectedAvatar) : null}
+              imageUrl={selectedAvatar >= 0 ? null : profile?.avatarUrl}
+              name={profile?.name || profile?.displayName || null}
               size={64}
             />
           </div>

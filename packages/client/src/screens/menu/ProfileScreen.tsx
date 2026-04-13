@@ -64,7 +64,8 @@ export const ProfileScreen = () => {
     setGameState(GameState.MENU);
   };
 
-  const displayName = profile?.displayName || (email ? email.split('@')[0] : 'Profile');
+  const displayName =
+    profile?.name || profile?.displayName || (email ? email.split('@')[0] : 'Profile');
   const hasCustomPacks =
     profile?.purchases?.some((p) => p.wordPack?.slug === 'feature-custom-packs') ?? false;
 
@@ -97,7 +98,12 @@ export const ProfileScreen = () => {
         </header>
 
         <div className="flex flex-col items-center pt-4 pb-8 px-6 md:px-8">
-          <AvatarDisplay avatarId={profile?.avatarId} size={88} />
+          <AvatarDisplay
+            avatarId={profile?.avatarId}
+            imageUrl={profile?.avatarId ? null : profile?.avatarUrl}
+            name={displayName}
+            size={88}
+          />
           <h1 className={`mt-4 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>
             {displayName}
           </h1>

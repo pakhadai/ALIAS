@@ -80,6 +80,8 @@ export interface UserProfile {
   id: string;
   email: string | null;
   authProvider: string;
+  name: string | null;
+  avatarUrl: string | null;
   displayName: string | null;
   avatarId: string | null;
   isAdmin: boolean;

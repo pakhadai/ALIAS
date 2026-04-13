@@ -7,6 +7,7 @@ import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { useTelegramApp } from './hooks/useTelegramApp';
 import { useAuthContext } from './context/AuthContext';
+import { ROOM_CODE_LENGTH } from './constants';
 import {
   MenuScreen,
   EnterNameScreen,
@@ -129,11 +130,12 @@ const GameRouter = () => {
 };
 
 const AppContent = () => {
-  const { initData, isTelegram } = useTelegramApp();
+  const { initData, isTelegram, startParam } = useTelegramApp();
   const { authState, isAuthenticated, loginWithTelegram } = useAuthContext();
-  const { gameState, setGameState } = useGame();
+  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification } = useGame();
   const [telegramLoginPending, setTelegramLoginPending] = React.useState(false);
   const attemptedRef = React.useRef(false);
+  const consumedStartParamRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (!isTelegram) return;
@@ -149,6 +151,44 @@ const AppContent = () => {
       setTelegramLoginPending(false);
     });
   }, [authState.status, initData, isAuthenticated, isTelegram, loginWithTelegram]);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    if (!startParam) return;
+    if (consumedStartParamRef.current === startParam) return;
+    if (gameState !== GameState.MENU) return;
+    if (!startParam.startsWith('lobby_')) return;
+
+    const roomCode = startParam.slice('lobby_'.length).trim();
+    consumedStartParamRef.current = startParam;
+
+    if (roomCode.length !== ROOM_CODE_LENGTH || !/^\d+$/.test(roomCode)) {
+      showNotification('Некоректний код кімнати в запрошенні', 'error');
+      return;
+    }
+
+    void (async () => {
+      try {
+        const exists = await checkRoomExists(roomCode);
+        if (!exists) {
+          showNotification(`Кімната ${roomCode} не знайдена`, 'error');
+          return;
+        }
+        setRoomCode(roomCode);
+        setGameState(GameState.ENTER_NAME);
+      } catch {
+        showNotification('Не вдалося приєднатись за запрошенням', 'error');
+      }
+    })();
+  }, [
+    checkRoomExists,
+    gameState,
+    isAuthenticated,
+    setGameState,
+    setRoomCode,
+    showNotification,
+    startParam,
+  ]);
 
   React.useEffect(() => {
     if (!isTelegram) return;

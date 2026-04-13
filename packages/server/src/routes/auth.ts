@@ -185,17 +185,24 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
       const telegramId = String(telegramUserId);
 
-      const displayNameRaw = [verified.user?.first_name || '', verified.user?.last_name || '']
-        .join(' ')
-        .trim();
+      const tgFirst = verified.user?.first_name || '';
+      const tgLast = verified.user?.last_name || '';
+      const tgUsername = verified.user?.username || '';
+      const tgNameRaw = [tgFirst, tgLast].join(' ').trim() || tgUsername.trim();
+      const tgAvatarUrl = verified.user?.photo_url?.trim() || '';
 
       const user = await prisma.user.upsert({
         where: { telegramId },
-        update: { authProvider: 'telegram' },
+        update: {
+          authProvider: 'telegram',
+          ...(tgNameRaw ? { name: tgNameRaw } : {}),
+          ...(tgAvatarUrl ? { avatarUrl: tgAvatarUrl } : {}),
+        },
         create: {
           telegramId,
           authProvider: 'telegram',
-          ...(displayNameRaw ? { displayName: sanitizeDisplayName(displayNameRaw) } : {}),
+          ...(tgNameRaw ? { name: tgNameRaw } : {}),
+          ...(tgAvatarUrl ? { avatarUrl: tgAvatarUrl } : {}),
         },
       });
 
@@ -465,6 +472,8 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
         id: user.id,
         email: user.email,
         authProvider: user.authProvider,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
         displayName: user.displayName,
         avatarId: user.avatarId,
         isAdmin: user.isAdmin,

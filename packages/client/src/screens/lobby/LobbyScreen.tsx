@@ -201,6 +201,44 @@ export const LobbyScreen = () => {
     }
   };
 
+  const inviteFriendsViaTelegram = () => {
+    if (!roomCode) return;
+
+    const appLink = (import.meta.env.VITE_TG_APP_LINK as string | undefined) ?? '';
+    if (!appLink) {
+      showNotification('VITE_TG_APP_LINK не налаштовано', 'error');
+      return;
+    }
+
+    let shareUrl = '';
+    try {
+      const u = new URL(appLink);
+      u.searchParams.set('startapp', `lobby_${roomCode}`);
+      shareUrl = u.toString();
+    } catch {
+      // Fallback for non-standard URLs (should not happen with a valid https://t.me/... link)
+      const sep = appLink.includes('?') ? '&' : '?';
+      shareUrl = `${appLink}${sep}startapp=lobby_${roomCode}`;
+    }
+
+    const text = 'Приєднуйся до моєї гри в Alias!';
+    const tgShareUrl =
+      'https://t.me/share/url?url=' +
+      encodeURIComponent(shareUrl) +
+      '&text=' +
+      encodeURIComponent(text);
+
+    const tg = window.Telegram?.WebApp as unknown as
+      | { openTelegramLink?: (url: string) => void }
+      | undefined;
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(tgShareUrl);
+      return;
+    }
+
+    window.open(tgShareUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const teamShells = useMemo(() => {
     if (isSolo) return [];
     const desiredCount = Math.max(2, Math.min(settings.general.teamCount, 8));
@@ -416,6 +454,7 @@ export const LobbyScreen = () => {
               qrCodeData={qrCodeData}
               isHost={isHost}
               onShare={() => void shareJoinLink()}
+              onInviteFriends={inviteFriendsViaTelegram}
               onShowQr={() => (qrCodeData ? setShowQrModal(true) : null)}
               onOpenSettings={() => setGameState(GameState.SETTINGS)}
             />

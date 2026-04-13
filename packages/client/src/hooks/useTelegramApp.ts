@@ -9,6 +9,7 @@ export type UseTelegramAppResult = {
   webApp: TelegramWebApp | null;
   initData: string | null;
   initDataUnsafe: TelegramWebAppInitDataUnsafe | null;
+  startParam: string | null;
   user: TelegramWebAppUser | null;
   themeParams: TelegramWebAppThemeParams | null;
   colorScheme: 'light' | 'dark' | null;
@@ -17,6 +18,8 @@ export type UseTelegramAppResult = {
 
 export function useTelegramApp(): UseTelegramAppResult {
   const webApp = getTelegramWebApp();
+  const isTelegram = Boolean(window.Telegram?.WebApp?.initData);
+  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || null;
 
   const [themeParams, setThemeParams] = useState<TelegramWebAppThemeParams | null>(
     webApp?.themeParams ?? null
@@ -26,15 +29,35 @@ export function useTelegramApp(): UseTelegramAppResult {
   );
 
   useEffect(() => {
-    if (!webApp) return;
+    if (!webApp || !isTelegram) return;
 
     document.documentElement.setAttribute('data-telegram-app', 'true');
 
-    webApp.ready();
-    webApp.expand();
-    webApp.requestFullscreen?.();
-    webApp.disableVerticalSwipes?.();
-    webApp.enableClosingConfirmation?.();
+    try {
+      webApp.ready();
+    } catch (_err) {
+      void _err;
+    }
+    try {
+      webApp.expand();
+    } catch (_err) {
+      void _err;
+    }
+    try {
+      webApp.requestFullscreen?.();
+    } catch (_err) {
+      void _err;
+    }
+    try {
+      webApp.disableVerticalSwipes?.();
+    } catch (_err) {
+      void _err;
+    }
+    try {
+      webApp.enableClosingConfirmation?.();
+    } catch (_err) {
+      void _err;
+    }
 
     const handleThemeChanged = () => {
       setThemeParams(webApp.themeParams ?? null);
@@ -46,14 +69,15 @@ export function useTelegramApp(): UseTelegramAppResult {
     return () => {
       webApp.offEvent?.('themeChanged', handleThemeChanged);
     };
-  }, [webApp]);
+  }, [isTelegram, webApp]);
 
   return useMemo(
     () => ({
-      isTelegram: Boolean(webApp),
+      isTelegram,
       webApp,
       initData: webApp?.initData ?? null,
       initDataUnsafe: webApp?.initDataUnsafe ?? null,
+      startParam,
       user: webApp?.initDataUnsafe?.user ?? null,
       themeParams,
       colorScheme,
@@ -61,6 +85,6 @@ export function useTelegramApp(): UseTelegramAppResult {
         webApp?.close();
       },
     }),
-    [colorScheme, themeParams, webApp]
+    [colorScheme, isTelegram, startParam, themeParams, webApp]
   );
 }

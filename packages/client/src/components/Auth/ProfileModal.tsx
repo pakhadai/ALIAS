@@ -115,6 +115,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
   const purchases = profile?.purchases ?? [];
   const profileDisplayName = profile?.displayName;
   const displayName =
+    profile?.name ??
     profileDisplayName ??
     (isAnonymous
       ? t.profileAnonymous
@@ -132,6 +133,7 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
       ? authState.provider?.toUpperCase()
       : '';
   const avatarId = profile?.avatarId ?? null;
+  const avatarUrl = profile?.avatarUrl ?? null;
 
   const stats = getStats();
   const statsAccuracy =
@@ -219,6 +221,8 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
             <div className="relative">
               {avatarId != null ? (
                 <AvatarDisplay avatarId={avatarId} size={76} />
+              ) : avatarUrl ? (
+                <AvatarDisplay avatarId={null} imageUrl={avatarUrl} name={displayName} size={76} />
               ) : (
                 <div className="w-[76px] h-[76px] rounded-full bg-ui-surface border border-ui-border flex items-center justify-center">
                   <AvatarIcon />

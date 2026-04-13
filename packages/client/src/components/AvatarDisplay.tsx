@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export const PRESET_AVATARS = [
   // Use theme-derived colors (no hardcoded HEX)
@@ -26,11 +26,43 @@ export const PRESET_AVATARS = [
 
 export function AvatarDisplay({
   avatarId,
+  imageUrl,
+  name,
   size = 44,
 }: {
   avatarId?: string | null;
+  imageUrl?: string | null;
+  name?: string | null;
   size?: number;
 }) {
+  const url = (imageUrl || '').trim();
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [url]);
+
+  const initial = useMemo(() => {
+    const n = String(name ?? '').trim();
+    if (!n) return '';
+    return n.charAt(0).toUpperCase();
+  }, [name]);
+
+  if (url && !imageError) {
+    return (
+      <img
+        src={url}
+        alt=""
+        width={size}
+        height={size}
+        referrerPolicy="no-referrer"
+        className="rounded-full object-cover bg-ui-surface border border-ui-border"
+        style={{ width: size, height: size }}
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+
   const idx = avatarId != null ? parseInt(avatarId) : -1;
   const preset = idx >= 0 && idx < PRESET_AVATARS.length ? PRESET_AVATARS[idx] : null;
   if (preset) {
@@ -51,6 +83,27 @@ export function AvatarDisplay({
       </div>
     );
   }
+
+  if (initial) {
+    return (
+      <div
+        className="rounded-full border border-ui-border bg-ui-surface text-ui-fg font-bold select-none"
+        style={{
+          width: size,
+          height: size,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: Math.max(12, Math.floor(size * 0.42)),
+          background: 'color-mix(in_srgb,var(--ui-accent)_18%,var(--ui-surface))',
+        }}
+        aria-hidden
+      >
+        {initial}
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
