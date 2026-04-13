@@ -10,11 +10,11 @@
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
 #   VPS_COMPOSE_FILE      — compose-файл у корені клону. Якщо не задано: спочатку docker-compose.npm.yml (якщо є), інакше docker-compose.prod.yml
-#   VPS_ENV_FILE          — env для compose (default: .env). Якщо файлу немає — деплой зупиняється
+#   VPS_ENV_FILE          — env для compose (default: .env.prod). Якщо файлу немає — fallback на .env у корені клону
 #   VPS_COMPOSE_PROJECT   — опційно: docker compose -p (наприклад alias), щоб імена контейнерів збігалися з VPS
 #
 # На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
-#   - .env у корені клону (з .env.example / .env.prod.example), НЕ в git
+#   - .env.prod (рекомендовано) або .env у корені клону (з .env.prod.example / .env.example), НЕ в git
 #   - docker compose v2, користувач у групі docker (або sudo без пароля для docker)
 #   - Перший запуск SSL: docker-compose.prod.yml (Let's Encrypt) або NPM + docker-compose.npm.yml
 
@@ -137,7 +137,7 @@ jobs:
             ENV_FILE="${ENV_FILE//$'\r'/}"
             ENV_FILE="${ENV_FILE#"${ENV_FILE%%[![:space:]]*}"}"
             ENV_FILE="${ENV_FILE%"${ENV_FILE##*[![:space:]]}"}"
-            [ -z "$ENV_FILE" ] && ENV_FILE=".env"
+            [ -z "$ENV_FILE" ] && ENV_FILE=".env.prod"
             COMPOSE_PROJECT="${{ secrets.VPS_COMPOSE_PROJECT }}"
             COMPOSE_PROJECT="${COMPOSE_PROJECT//$'\r'/}"
             COMPOSE_PROJECT="${COMPOSE_PROJECT#"${COMPOSE_PROJECT%%[![:space:]]*}"}"
@@ -179,8 +179,13 @@ jobs:
             if [ -f "$ENV_FILE" ]; then
               ENV_OPT=(--env-file "$ENV_FILE")
             else
-              echo "ERROR: no env file. On the server create $ENV_FILE (copy from .env.example / .env.prod.example)."
-              exit 1
+              if [ "$ENV_FILE" != ".env" ] && [ -f ".env" ]; then
+                ENV_OPT=(--env-file ".env")
+                echo "Note: $ENV_FILE not found — using .env"
+              else
+                echo "ERROR: no env file. On the server create $ENV_FILE or .env (copy from .env.prod.example / .env.example)."
+                exit 1
+              fi
             fi
             echo "Deploy: project=${COMPOSE_PROJECT:-default} compose=$COMPOSE_FILE env=${ENV_OPT[1]:-?}"
             docker compose "${DC_PFX[@]}" "${ENV_OPT[@]}" -f "$COMPOSE_FILE" up -d --build
