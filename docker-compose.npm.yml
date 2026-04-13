@@ -3,7 +3,7 @@
 # (це стабільніше, бо працює через спільну docker-мережу `proxy`).
 # Запасний варіант: forward на `http://<docker-host>:9080` (або зміни `GATEWAY_PUBLISH` у `.env.prod`).
 #
-# Запуск (як на VPS): docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
+# Запуск (як на VPS): docker compose -p alias --env-file .env -f docker-compose.npm.yml up -d --build
 
 services:
   postgres:
