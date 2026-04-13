@@ -56,7 +56,7 @@
 - **Стек:** у **`README.md`** розділено версію **Redis server (7)** і клієнт **ioredis 5.x**.
 - **Адмін REST:** додано **`POST /api/admin/upload-csv`**; опис **`ADMIN_API_KEY` / `x-admin-key`** приведено у відповідність до коду.
 - **Навігація по `docs/`:** у **`README.md`** додано посилання на **`docs/ROOM_MANAGEMENT_FIXES.md`**.
-- **`packages/server/.env.example`**: додано закоментовані **`ADMIN_*`**, **`TRUST_PROXY_HOPS`**, relay / instance.
+- **`.env.example`**: додано/уточнено закоментовані **`ADMIN_*`**, **`TRUST_PROXY_HOPS`**, relay / instance.
 - **`packages/client/src/README.md`**: замість плейсхолдера — посилання на кореневий README.
 
 ### Fixed (код)
@@ -87,7 +87,7 @@
 ### Fixed
 
 - **Server build** падав через розбіжність резолву типів `@alias/shared` між `tsconfig` та `tsconfig.typecheck`.
-- **Telegram auth** міг ламатись у монорепо, якщо `TELEGRAM_BOT_TOKEN` був заданий лише в кореневому `.env`: сервер читав тільки `packages/server/.env`.
+- **Telegram auth** міг ламатись у монорепо, якщо `TELEGRAM_BOT_TOKEN` був заданий лише в кореневому `.env`: сервер читав тільки package-local env. Тепер джерело істини — кореневий `.env`.
   - Файли: `packages/server/src/config.ts`, `packages/server/src/routes/auth.ts`, `packages/client/src/App.tsx`
   - Додано діагностичні логи (клієнт/сервер) без виводу raw `initData`.
 
@@ -248,12 +248,12 @@
 ### Added
 - **Admin button in profile:** додано умовну кнопку "Адмін-панель" у профіль користувача, яка відображається тільки для користувачів з `isAdmin: true`. Файл: `packages/client/src/screens/MenuFlow.tsx`.
 
-- **API key authentication for admin:** додано підтримку статичного API-ключа для доступу до адмін-функцій як альтернатива JWT-токенам. Це дозволяє входити в адмінку без авторизації через Google/Apple. Файли: `packages/server/src/config.ts` (нова змінна `adminApiKey`), `packages/server/src/routes/admin.ts` (оновлена функція `adminAuth`), `packages/server/.env` (нова змінна `ADMIN_API_KEY`).
+- **API key authentication for admin:** додано підтримку статичного API-ключа для доступу до адмін-функцій як альтернатива JWT-токенам. Це дозволяє входити в адмінку без авторизації через Google/Apple. Файли: `packages/server/src/config.ts` (нова змінна `adminApiKey`), `packages/server/src/routes/admin.ts` (оновлена функція `adminAuth`), `.env` (нова змінна `ADMIN_API_KEY`).
 
 - **CSS variables for admin panel:** додано базові CSS-змінні для темної теми безпосередньо в admin.html, щоб адмін-панель виглядала як решта додатку. Файл: `packages/client/admin.html`.
 
 ### Fixed
-- **"Admin access is not configured" error:** виправлено помилку, що виникала при спробі доступу до адмінки в продакшені без налаштованих дозволених email. Тепер система правильно перевіряє конфігурацію та дозволяє доступ через API-ключ. Файли: `packages/server/src/routes/admin.ts`, `packages/server/.env` (додано `ADMIN_ALLOWED_EMAILS`).
+- **"Admin access is not configured" error:** виправлено помилку, що виникала при спробі доступу до адмінки в продакшені без налаштованих дозволених email. Тепер система правильно перевіряє конфігурацію та дозволяє доступ через API-ключ. Файли: `packages/server/src/routes/admin.ts`, `.env` (додано `ADMIN_ALLOWED_EMAILS`).
 
 - **TypeScript typing in CSV upload:** виправлено використання `as any` при призначенні мови словам у CSV завантаженні. Замінено на правильну типізацію `as Language` з імпортом типу. Файл: `packages/server/src/routes/admin.ts`.
 

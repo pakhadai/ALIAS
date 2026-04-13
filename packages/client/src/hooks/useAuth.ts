@@ -6,6 +6,7 @@ import {
   fetchProfile,
   getAuthToken,
   clearAuthToken,
+  onAuthChanged,
   type UserProfile,
 } from '../services/api';
 import { migrateLegacyPlayerStatsOnce, syncPlayerStatsFromProfile } from './usePlayerStats';
@@ -71,6 +72,13 @@ export function useAuth() {
 
   useEffect(() => {
     initialize();
+  }, [initialize]);
+
+  // React to token changes within the same tab (e.g. socket handshake rejected -> token cleared).
+  useEffect(() => {
+    return onAuthChanged(() => {
+      void initialize();
+    });
   }, [initialize]);
 
   const loginWithGoogle = useCallback(async (idToken: string) => {

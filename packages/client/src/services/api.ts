@@ -19,6 +19,23 @@ export const DEVICE_ID_KEY = 'alias_device_id';
 export const PLAYER_ID_KEY = 'alias_player_id';
 export const ROOM_CODE_KEY = 'alias_room_code';
 
+const AUTH_CHANGED_EVENT = 'alias:auth-changed';
+
+function notifyAuthChanged(): void {
+  try {
+    window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+  } catch (_err) {
+    void _err;
+  }
+}
+
+/** Subscribe to auth token changes within the same tab. */
+export function onAuthChanged(cb: () => void): () => void {
+  const handler = () => cb();
+  window.addEventListener(AUTH_CHANGED_EVENT, handler);
+  return () => window.removeEventListener(AUTH_CHANGED_EVENT, handler);
+}
+
 /** Generate or retrieve a persistent device ID */
 export function getDeviceId(): string {
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -37,11 +54,13 @@ export function getAuthToken(): string | null {
 /** Store JWT */
 export function setAuthToken(token: string): void {
   localStorage.setItem(AUTH_TOKEN_KEY, token);
+  notifyAuthChanged();
 }
 
 /** Remove JWT (logout) */
 export function clearAuthToken(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
+  notifyAuthChanged();
 }
 
 /** Authenticated fetch wrapper */

@@ -2,11 +2,12 @@ import { randomUUID } from 'crypto';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Monorepo env loading:
-// - root `.env` is convenient for local development (repo-wide vars)
-// - `packages/server/.env` should override root for server-specific values
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Single source of truth:
+// - Always load env from repo root `.env` (and never from package-local `.env`).
+// - This avoids accidental overrides and makes deployments predictable.
+const nodeEnv = (process.env.NODE_ENV || 'development').trim();
+const rootEnvPath = path.resolve(__dirname, '..', '..', '..', '.env');
+dotenv.config({ path: rootEnvPath });
 
 const instanceFromEnv = process.env.INSTANCE_ID?.trim();
 
@@ -20,7 +21,7 @@ function parseCsvList(raw: string | undefined): string[] {
 
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
   /** Set INSTANCE_ID when running multiple nodes so /health and Redis room markers are meaningful. */
   serverInstanceId: instanceFromEnv || randomUUID(),
   /**
@@ -87,3 +88,13 @@ export const config = {
     email: process.env.VAPID_EMAIL || 'mailto:admin@aliasmaster.app',
   },
 };
+
+// Fail fast on dangerous production misconfiguration.
+if (config.nodeEnv === 'production') {
+  const s = (process.env.JWT_SECRET || '').trim();
+  if (!s || s === 'dev-secret-change-me' || s.length < 32) {
+    throw new Error(
+      'JWT_SECRET is not set or too weak for production (must be a long random string, >= 32 chars)'
+    );
+  }
+}

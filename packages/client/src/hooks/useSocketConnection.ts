@@ -7,7 +7,13 @@ import type {
   Player,
   RoomErrorPayload,
 } from '@alias/shared';
-import { getAuthToken, getApiBaseUrl, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
+import {
+  clearAuthToken,
+  getAuthToken,
+  getApiBaseUrl,
+  PLAYER_ID_KEY,
+  ROOM_CODE_KEY,
+} from '../services/api';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -114,6 +120,13 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     socket.on('connect_error', (err) => {
       setIsConnected(false);
       setIsReconnecting(false);
+      // If server rejected the handshake due to an invalid/expired token, clear it and re-hydrate auth.
+      // Otherwise the app can get stuck in a loop of failing connections.
+      const msg =
+        (err instanceof Error && err.message) || 'Socket connection failed (handshake rejected)';
+      if (/invalid|expired token/i.test(msg) || /jwt/i.test(msg)) {
+        clearAuthToken();
+      }
       // If a room operation is waiting for handshake connect, fail it immediately.
       if (pendingRoomOpRejectRef.current) {
         try {
@@ -122,9 +135,6 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           pendingRoomOpRejectRef.current = null;
         }
       }
-      const msg =
-        (err instanceof Error && err.message) ||
-        'Socket connection failed (handshake rejected or network error)';
       optionsRef.current.onError({ code: 'SOCKET_CONNECT_ERROR', message: msg });
     });
 
