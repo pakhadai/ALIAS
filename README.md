@@ -941,6 +941,40 @@ Production конфіг включає: побудову Docker images для cl
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ```
 
+### Troubleshooting: `502 Bad Gateway` (openresty/Nginx Proxy Manager) + Telegram auth
+
+Якщо зовні домен віддає **502** на `/health` і `/api/*`, але SPA (статичні файли) відкривається, це майже завжди означає:
+
+- бекенд-контейнер `app` **падає / рестартується**, або
+- reverse proxy не може підʼєднатись до `app:3001` (upstream недоступний).
+
+Найчастіша причина “падає одразу” — **розʼїзд build/run entrypoint** (контейнер стартує з `dist/index.js`, а збірка поклала результат в інший шлях).
+
+У цьому репо бекенд у Docker стартує з:
+
+- `packages/server/dist/server/src/index.js` (див. `packages/server/Dockerfile` і `docker-compose.*.yml`)
+
+Швидка діагностика на VPS:
+
+```bash
+docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml ps
+docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 app
+docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 gateway
+curl -sS -D - https://<DOMAIN>/health -o /dev/null
+```
+
+Для Telegram Mini App auth в контейнер `app` мають потрапляти env:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_WEBHOOK_URL` (production)
+- `TELEGRAM_WEBHOOK_SECRET` (production)
+- `FRONTEND_URL` (кнопка web_app / посилання)
+
+Перевірка, що бекенд сконфігурований (без справжнього initData):
+
+- без `initData` → **400**
+- з фейковим `initData` → **401** (сервер живий, підпис невалідний)
+
 ### Деплой на VPS (GitHub Actions)
 
 Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml) запускається **після кожного push у гілку `main`** і за запитом (**Actions → Deploy to VPS → Run workflow**). Він підключається по SSH до сервера, оновлює код (`git fetch` + `reset` на `origin/main`), виконує `docker compose ... up -d --build` і **`npx prisma migrate deploy`** у контейнері сервісу `app`.

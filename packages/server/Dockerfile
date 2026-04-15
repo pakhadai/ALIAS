@@ -47,6 +47,9 @@ RUN pnpm --filter @alias/server exec prisma generate
 COPY --from=builder /app/packages/shared/dist/ packages/shared/dist/
 COPY --from=builder /app/packages/server/dist/ packages/server/dist/
 
+# Fail fast if build output layout changes unexpectedly.
+RUN test -f packages/server/dist/server/src/index.js
+
 EXPOSE 3001
 
-CMD ["node", "packages/server/dist/index.js"]
+CMD ["node", "packages/server/dist/server/src/index.js"]

@@ -39,7 +39,7 @@ services:
       dockerfile: packages/server/Dockerfile
     restart: unless-stopped
     # Apply DB migrations on boot (idempotent) then start server.
-    command: sh -c "pnpm --filter @alias/server exec prisma migrate deploy && node packages/server/dist/index.js"
+    command: sh -c "pnpm --filter @alias/server exec prisma migrate deploy && node packages/server/dist/server/src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -56,6 +56,10 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://${DOMAIN}/store?payment=success}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://${DOMAIN}/store}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+      FRONTEND_URL: ${FRONTEND_URL:-https://${DOMAIN}}
     depends_on:
       postgres:
         condition: service_healthy
