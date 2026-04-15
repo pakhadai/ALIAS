@@ -1089,6 +1089,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         payload: {
           gameMode: 'ONLINE',
           myPlayerId: playerId,
+          gameState: GameState.LOBBY,
           isConnected: true,
           connectionError: null,
           connectionErrorCode: null,

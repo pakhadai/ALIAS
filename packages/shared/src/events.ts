@@ -59,6 +59,8 @@ export interface ServerToClientEvents {
   'game:notification': (data: { message: string; type: 'info' | 'error' | 'success' }) => void;
   /** Emitted to the whole room so kicked clients work across Socket.IO nodes (adapter). */
   'player:kicked': (data: { playerId: string }) => void;
+  /** Store: emitted to a specific authenticated user after a successful purchase. */
+  'purchase:success': (data: { purchaseId: string }) => void;
 }
 
 // Full game state synced from server to clients

@@ -203,6 +203,13 @@ export class GameEngine {
             ? payload.data.playerId
             : senderId;
         this.removePlayerFromTeams(room, targetId);
+        if (
+          room.currentRoundStats.explainerId &&
+          room.currentRoundStats.explainerId === targetId &&
+          (room.gameState === GameState.COUNTDOWN || room.gameState === GameState.PLAYING)
+        ) {
+          this.transitionToRoundSummary(room);
+        }
         break;
       }
       case 'TEAM_JOIN': {
@@ -342,11 +349,25 @@ export class GameEngine {
       case 'START_ROUND': {
         this.clearTimeUpFallback(room);
         room.roundEndsAt = undefined;
-        const team = room.teams[room.currentTeamIndex];
-        if (!team || team.players.length === 0) {
+        const pickNextPlayableTeamIndex = (): number | null => {
+          const teamCount = room.teams.length;
+          if (teamCount === 0) return null;
+          for (let i = 0; i < teamCount; i += 1) {
+            const idx = (room.currentTeamIndex + i) % teamCount;
+            const t = room.teams[idx];
+            if (t && t.players.length > 0) return idx;
+          }
+          return null;
+        };
+
+        const nextIdx = pickNextPlayableTeamIndex();
+        if (nextIdx === null) {
+          // No playable teams (e.g. everyone left) — fall back to lobby without nuking the session state.
           room.gameState = GameState.LOBBY;
           break;
         }
+        room.currentTeamIndex = nextIdx;
+        const team = room.teams[room.currentTeamIndex];
         const playerIdx = Math.min(team.nextPlayerIndex, team.players.length - 1);
         const explainer = team.players[playerIdx];
         room.gameState = GameState.COUNTDOWN;
@@ -696,6 +717,10 @@ export class GameEngine {
 
       case 'KICK_PLAYER': {
         const kickedId = payload.data;
+        const kickedWasExplainer =
+          Boolean(room.currentRoundStats.explainerId) &&
+          room.currentRoundStats.explainerId === kickedId &&
+          (room.gameState === GameState.COUNTDOWN || room.gameState === GameState.PLAYING);
         room.players = room.players.filter((p) => p.id !== kickedId);
         room.teams = room.teams
           .map((team) => {
@@ -712,6 +737,9 @@ export class GameEngine {
           .filter((team) => team.players.length > 0);
         if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
           room.currentTeamIndex = 0;
+        }
+        if (kickedWasExplainer) {
+          this.transitionToRoundSummary(room);
         }
         break;
       }
@@ -837,6 +865,8 @@ export class GameEngine {
   private startTimer(room: Room): void {
     this.stopTimer(room);
     let ticksSinceSync = 0;
+    // Anchor countdown to a wall-clock deadline to reduce drift under event-loop lag.
+    this.refreshRoundEndsAt(room);
     room.timerInterval = setInterval(() => {
       if (room.isPaused) return;
       const quizMode = room.settings.mode.gameMode === GameMode.QUIZ ? room.settings.mode : null;
@@ -848,7 +878,11 @@ export class GameEngine {
         room.quizRoundTimeLeft = (room.quizRoundTimeLeft ?? quizMode.quizRoundTime) - 1;
         if (!quizLocked) room.timeLeft--;
       } else {
-        room.timeLeft--;
+        if (room.roundEndsAt !== undefined) {
+          room.timeLeft = Math.max(0, Math.ceil((room.roundEndsAt - now) / 1000));
+        } else {
+          room.timeLeft--;
+        }
       }
       ticksSinceSync++;
 
@@ -899,14 +933,12 @@ export class GameEngine {
         this.timerBroadcast?.(room);
         this.roomManager.persistRoom(room);
       } else {
-        this.refreshRoundEndsAt(room);
         if (ticksSinceSync >= 10) {
           ticksSinceSync = 0;
           this.timerBroadcast?.(room);
         }
       }
     }, 1000);
-    this.refreshRoundEndsAt(room);
   }
 
   private stopTimer(room: Room): void {

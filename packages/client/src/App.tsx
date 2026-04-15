@@ -132,11 +132,13 @@ const GameRouter = () => {
 const AppContent = () => {
   const { initData, isTelegram, startParam } = useTelegramApp();
   const { authState, isAuthenticated, loginWithTelegram } = useAuthContext();
-  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification } = useGame();
+  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification, leaveRoom } =
+    useGame();
   const [telegramLoginPending, setTelegramLoginPending] = React.useState(false);
   const attemptedRef = React.useRef(false);
   const consumedStartParamRef = React.useRef<string | null>(null);
   const telegramAuthErrorShownRef = React.useRef(false);
+  const [telegramAuthRetryNonce, setTelegramAuthRetryNonce] = React.useState(0);
 
   React.useEffect(() => {
     if (!isTelegram) return;
@@ -156,7 +158,14 @@ const AppContent = () => {
     void loginWithTelegram(initData).finally(() => {
       setTelegramLoginPending(false);
     });
-  }, [authState.status, initData, isAuthenticated, isTelegram, loginWithTelegram]);
+  }, [
+    authState.status,
+    initData,
+    isAuthenticated,
+    isTelegram,
+    loginWithTelegram,
+    telegramAuthRetryNonce,
+  ]);
 
   React.useEffect(() => {
     if (!isTelegram) return;
@@ -237,7 +246,8 @@ const AppContent = () => {
         case GameState.ROUND_SUMMARY:
         case GameState.SCOREBOARD:
         case GameState.GAME_OVER:
-          setGameState(GameState.LOBBY);
+          // Leaving any GameFlow screen must inform the server to avoid "ghost players".
+          leaveRoom();
           return;
         default:
           setGameState(GameState.MENU);
@@ -248,7 +258,7 @@ const AppContent = () => {
     return () => {
       back.offClick?.(onBack);
     };
-  }, [gameState, isAuthenticated, isTelegram, setGameState]);
+  }, [gameState, isAuthenticated, isTelegram, leaveRoom, setGameState]);
 
   if (telegramLoginPending) {
     return (
@@ -256,6 +266,29 @@ const AppContent = () => {
         <div className="flex items-center gap-3 rounded-2xl border border-ui-border bg-ui-surface px-5 py-4">
           <span className="w-5 h-5 border-2 border-ui-accent border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-ui-fg-muted">Авторизація…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isTelegram && !isAuthenticated && authState.status === 'error') {
+    return (
+      <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
+        <div className="w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-5">
+          <div className="text-base font-semibold">Не вдалося авторизуватись у Telegram</div>
+          <div className="mt-2 text-sm text-ui-fg-muted wrap-break-word">{authState.message}</div>
+          <div className="mt-4 flex gap-3">
+            <button
+              className="inline-flex items-center justify-center rounded-xl bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-contrast"
+              onClick={() => {
+                telegramAuthErrorShownRef.current = false;
+                attemptedRef.current = false;
+                setTelegramAuthRetryNonce((n) => n + 1);
+              }}
+            >
+              Повторити спробу
+            </button>
+          </div>
         </div>
       </div>
     );

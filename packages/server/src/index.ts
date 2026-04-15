@@ -54,6 +54,7 @@ import {
   setTelegramWebhook,
   startTelegramLongPolling,
   stopTelegramBot,
+  setTelegramSocketIo,
 } from './bot';
 
 const app = express();
@@ -111,6 +112,9 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
     },
   }
 );
+
+// Allow Telegram bot handlers to emit Socket.IO events (e.g. purchase updates)
+setTelegramSocketIo(io);
 
 io.engine.on('connection_error', (err) => {
   if (Sentry.isInitialized()) {
@@ -411,6 +415,11 @@ io.use(socketAuthMiddleware);
 io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
   applyRateLimit(socket);
+
+  // Personal room for user-scoped server pushes (store purchases, etc.)
+  if (socket.data.userId) {
+    void socket.join(socket.data.userId);
+  }
   registerSocketHandlers(io, socket, roomManager, gameEngine, roomQueue, {
     redisStore,
     relay: roomActionRelay,

@@ -99,6 +99,21 @@ export class RoomManager {
   /** Throttle cross-instance writer warnings (persistRoom is hot). */
   private writerMismatchLoggedAt = new Map<string, number>();
 
+  private clearRoomTimers(room: Room): void {
+    if (room.timeUpFallbackTimeout) {
+      clearTimeout(room.timeUpFallbackTimeout);
+      room.timeUpFallbackTimeout = null;
+    }
+    if (room.quizNextWordTimeout) {
+      clearTimeout(room.quizNextWordTimeout);
+      room.quizNextWordTimeout = null;
+    }
+    if (room.timerInterval) {
+      clearInterval(room.timerInterval);
+      room.timerInterval = null;
+    }
+  }
+
   constructor() {
     // Clean up stale empty rooms every 30 minutes (rooms idle for 2+ hours)
     setInterval(
@@ -106,11 +121,7 @@ export class RoomManager {
         const cutoff = Date.now() - 2 * 60 * 60 * 1000;
         for (const [code, room] of this.rooms) {
           if (room.players.length === 0 && room.createdAt < cutoff) {
-            if (room.timeUpFallbackTimeout) {
-              clearTimeout(room.timeUpFallbackTimeout);
-              room.timeUpFallbackTimeout = null;
-            }
-            if (room.timerInterval) clearInterval(room.timerInterval);
+            this.clearRoomTimers(room);
             this.rooms.delete(code);
             this.clearWriterMismatchThrottle(code);
             this.redisStore?.deleteRoom(code).catch(() => {});
@@ -370,23 +381,19 @@ export class RoomManager {
     const wasHost = room.hostPlayerId === playerId; // Перевіряємо чи був це хост
 
     room.players = room.players.filter((p) => p.id !== playerId);
-    const keepEmptyTeams =
-      room.gameState === GameState.LOBBY ||
-      room.gameState === GameState.SETTINGS ||
-      room.gameState === GameState.TEAMS;
-    room.teams = room.teams
-      .map((team) => {
-        const newPlayers = team.players.filter((p) => p.id !== playerId);
-        return {
-          ...team,
-          players: newPlayers,
-          nextPlayerIndex:
-            team.nextPlayerIndex >= newPlayers.length
-              ? Math.max(0, newPlayers.length - 1)
-              : team.nextPlayerIndex,
-        };
-      })
-      .filter((team) => keepEmptyTeams || team.players.length > 0); // drop empty teams only during active game
+    room.teams = room.teams.map((team) => {
+      const newPlayers = team.players.filter((p) => p.id !== playerId);
+      return {
+        ...team,
+        players: newPlayers,
+        nextPlayerIndex:
+          team.nextPlayerIndex >= newPlayers.length
+            ? Math.max(0, newPlayers.length - 1)
+            : team.nextPlayerIndex,
+      };
+    });
+    // Never drop teams from the array — team ids/indexes are referenced by round stats.
+    // Empty teams are valid during a game (disconnects / removals), and must not shift indices.
     // Clamp currentTeamIndex in case a team was removed
     if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
@@ -395,11 +402,7 @@ export class RoomManager {
 
     // Очищення, якщо кімната порожня
     if (room.players.length === 0) {
-      if (room.timeUpFallbackTimeout) {
-        clearTimeout(room.timeUpFallbackTimeout);
-        room.timeUpFallbackTimeout = null;
-      }
-      if (room.timerInterval) clearInterval(room.timerInterval);
+      this.clearRoomTimers(room);
       this.rooms.delete(roomCode);
       this.clearWriterMismatchThrottle(roomCode);
       if (this.redisStore?.isConnected) {
@@ -497,9 +500,18 @@ export class RoomManager {
 
       let wasHostMigration = false;
       if (wasHost) {
-        // Host migration is now handled only in finalizeGraceRemoval
-        room.hostSocketId = '';
-        wasHostMigration = false;
+        // Migrate host immediately to an active player to avoid a "dead room" during reconnect grace.
+        const nextHost = room.players.find((p) => p.isConnected && p.id !== playerId);
+        if (nextHost) {
+          room.hostPlayerId = nextHost.id;
+          room.hostSocketId = this.getPlayerSocketId(room, nextHost.id) ?? '';
+          this.applyHostFlags(room, nextHost.id);
+          wasHostMigration = true;
+        } else {
+          // No connected players to host right now.
+          room.hostSocketId = '';
+          wasHostMigration = false;
+        }
       }
 
       this.persistRoom(room);
@@ -529,33 +541,24 @@ export class RoomManager {
     const wasHost = room.hostPlayerId === playerId;
 
     room.players = room.players.filter((p) => p.id !== playerId);
-    const keepEmptyTeams =
-      room.gameState === GameState.LOBBY ||
-      room.gameState === GameState.SETTINGS ||
-      room.gameState === GameState.TEAMS;
-    room.teams = room.teams
-      .map((team) => {
-        const newPlayers = team.players.filter((p) => p.id !== playerId);
-        return {
-          ...team,
-          players: newPlayers,
-          nextPlayerIndex:
-            team.nextPlayerIndex >= newPlayers.length
-              ? Math.max(0, newPlayers.length - 1)
-              : team.nextPlayerIndex,
-        };
-      })
-      .filter((team) => keepEmptyTeams || team.players.length > 0);
+    room.teams = room.teams.map((team) => {
+      const newPlayers = team.players.filter((p) => p.id !== playerId);
+      return {
+        ...team,
+        players: newPlayers,
+        nextPlayerIndex:
+          team.nextPlayerIndex >= newPlayers.length
+            ? Math.max(0, newPlayers.length - 1)
+            : team.nextPlayerIndex,
+      };
+    });
+    // Never drop teams from the array — team ids/indexes are referenced by round stats.
     if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
     }
 
     if (room.players.length === 0) {
-      if (room.timeUpFallbackTimeout) {
-        clearTimeout(room.timeUpFallbackTimeout);
-        room.timeUpFallbackTimeout = null;
-      }
-      if (room.timerInterval) clearInterval(room.timerInterval);
+      this.clearRoomTimers(room);
       this.rooms.delete(roomCode);
       this.clearWriterMismatchThrottle(roomCode);
       if (this.redisStore?.isConnected) {
@@ -682,11 +685,7 @@ export class RoomManager {
 
   deleteRoom(code: string): void {
     const room = this.rooms.get(code);
-    if (room?.timeUpFallbackTimeout) {
-      clearTimeout(room.timeUpFallbackTimeout);
-      room.timeUpFallbackTimeout = null;
-    }
-    if (room?.timerInterval) clearInterval(room.timerInterval);
+    if (room) this.clearRoomTimers(room);
     this.rooms.delete(code);
     this.clearWriterMismatchThrottle(code);
     if (this.redisStore?.isConnected) {

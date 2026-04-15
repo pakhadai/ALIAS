@@ -117,4 +117,41 @@ describe('useSocketConnection', () => {
       playerId: '11111111-1111-1111-8111-111111111111',
     });
   });
+
+  test('checkRoomExists: connects without emitting stored room:rejoin (prevents deep link hijack)', async () => {
+    localStorage.setItem(ROOM_CODE_KEY, '11111');
+    localStorage.setItem(PLAYER_ID_KEY, '11111111-1111-1111-8111-111111111111');
+
+    fakeSocket.emit.mockImplementation((event: unknown, _payload: unknown, ack?: unknown) => {
+      if (event === 'room:exists' && typeof ack === 'function') {
+        (ack as (res: { exists: boolean }) => void)({ exists: true });
+      }
+    });
+
+    const { useSocketConnection } = await import('./useSocketConnection');
+    const { result } = renderHook(() =>
+      useSocketConnection({
+        onStateSync: vi.fn(),
+        onPlayerJoined: vi.fn(),
+        onPlayerLeft: vi.fn(),
+        onKicked: vi.fn(),
+        onError: vi.fn(),
+        onNotification: vi.fn(),
+      })
+    );
+
+    let exists = false;
+    await act(async () => {
+      exists = await result.current.checkRoomExists('22222');
+    });
+
+    expect(exists).toBe(true);
+    expect(fakeSocket.connect).toHaveBeenCalled();
+    expect(fakeSocket.emit).toHaveBeenCalledWith(
+      'room:exists',
+      { roomCode: '22222' },
+      expect.any(Function)
+    );
+    expect(fakeSocket.emit).not.toHaveBeenCalledWith('room:rejoin', expect.anything());
+  });
 });

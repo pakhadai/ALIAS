@@ -48,6 +48,51 @@ export function registerSocketHandlers(
   roomQueue: PerRoomQueue,
   relayDeps: SocketRelayDeps | null = null
 ): void {
+  const forceLeaveIfInRoom = async (): Promise<void> => {
+    const existingRoomCode = socket.data.roomCode;
+    if (!existingRoomCode) return;
+
+    const selfId = config.serverInstanceId;
+    const writer = await getRoomWriterId(relayDeps, existingRoomCode);
+    const useRelay =
+      writer && writer !== selfId && config.roomActionRelayEnabled && relayDeps?.relay.isReady();
+
+    if (useRelay && relayDeps) {
+      const requestId = newRelayRequestId();
+      relayDeps.relay.registerPending(requestId, socket);
+      const published = await relayDeps.relay.publishRoomLeave(writer, {
+        roomCode: existingRoomCode,
+        socketId: socket.id,
+        replyToInstanceId: selfId,
+        requestId,
+      });
+      if (published) {
+        void socket.leave(existingRoomCode);
+        delete socket.data.roomCode;
+        delete socket.data.playerId;
+        delete socket.data.playerName;
+      } else {
+        relayDeps.relay.cancelPending(requestId);
+      }
+      return;
+    }
+
+    await roomQueue.run(existingRoomCode, async () => {
+      const removedId = roomManager.removePlayer(existingRoomCode, socket.id);
+      if (removedId) {
+        cancelGraceRemoval(removedId);
+      }
+      void socket.leave(existingRoomCode);
+      if (removedId) {
+        io.to(existingRoomCode).emit('room:player-left', { playerId: removedId });
+        broadcastRoomState(io, existingRoomCode, roomManager);
+      }
+      delete socket.data.roomCode;
+      delete socket.data.playerId;
+      delete socket.data.playerName;
+    });
+  };
+
   onSocket(socket, 'room:exists', async (...args) => {
     const rawData = args[0] as unknown;
     const ack =
@@ -76,13 +121,8 @@ export function registerSocketHandlers(
 
   onSocket(socket, 'room:create', async (rawData) => {
     try {
-      // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо створювати нову
       if (socket.data.roomCode) {
-        socket.emit(
-          'room:error',
-          roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
-        );
-        return;
+        await forceLeaveIfInRoom();
       }
 
       const data = validatePayload(roomCreateSchema, rawData);
@@ -128,13 +168,8 @@ export function registerSocketHandlers(
         return;
       }
 
-      // Захист від подвійного входу: якщо гравець вже в кімнаті, забороняємо приєднуватися до іншої
       if (socket.data.roomCode) {
-        socket.emit(
-          'room:error',
-          roomError('ALREADY_IN_ROOM', 'Спочатку вийдіть з поточної кімнати')
-        );
-        return;
+        await forceLeaveIfInRoom();
       }
 
       const selfId = config.serverInstanceId;
@@ -208,11 +243,6 @@ export function registerSocketHandlers(
       return;
     }
 
-    // Clear socket data synchronously to prevent race conditions
-    delete socket.data.roomCode;
-    delete socket.data.playerId;
-    delete socket.data.playerName;
-
     const selfId = config.serverInstanceId;
     const writer = await getRoomWriterId(relayDeps, roomCode);
     const useRelay =
@@ -233,7 +263,13 @@ export function registerSocketHandlers(
           'room:error',
           roomError('RELAY_UNAVAILABLE', 'Could not reach the room host instance')
         );
+        return;
       }
+      // Optimistically detach local socket state only after we successfully handed off to relay.
+      void socket.leave(roomCode);
+      delete socket.data.roomCode;
+      delete socket.data.playerId;
+      delete socket.data.playerName;
       return;
     }
 
@@ -247,6 +283,10 @@ export function registerSocketHandlers(
         io.to(roomCode).emit('room:player-left', { playerId: removedId });
         broadcastRoomState(io, roomCode, roomManager);
       }
+      // Clear socket data only after the leave logic completed successfully.
+      delete socket.data.roomCode;
+      delete socket.data.playerId;
+      delete socket.data.playerName;
     });
   });
 

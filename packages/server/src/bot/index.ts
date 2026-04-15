@@ -1,9 +1,28 @@
 import { Markup, Telegraf } from 'telegraf';
 import { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
+import type { Server } from 'socket.io';
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData,
+} from '@alias/shared';
 
 let botSingleton: Telegraf | null = null;
 let prismaSingleton: PrismaClient | null = null;
+let ioSingleton: Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+> | null = null;
+
+export function setTelegramSocketIo(
+  io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
+): void {
+  ioSingleton = io;
+}
 
 function getPrisma(): PrismaClient {
   if (prismaSingleton) return prismaSingleton;
@@ -45,7 +64,12 @@ export function getTelegramBot(): Telegraf {
   const bot = new Telegraf(getRequiredTelegramToken());
 
   bot.start(async (ctx) => {
-    const keyboard = Markup.inlineKeyboard([[Markup.button.webApp('🎮 Грати', getFrontendUrl())]]);
+    const startPayloadRaw = ctx.startPayload?.trim();
+    const startPayload = startPayloadRaw ? encodeURIComponent(startPayloadRaw) : '';
+    const payloadQuery = startPayload ? `?startapp=${startPayload}` : '';
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.webApp('🎮 Грати', `${getFrontendUrl()}${payloadQuery}`)],
+    ]);
 
     await ctx.replyWithHTML(buildStartMessage(), {
       ...keyboard,
@@ -82,6 +106,14 @@ export function getTelegramBot(): Telegraf {
       });
 
       if (updated.count > 0) {
+        const purchase = await prisma.purchase.findUnique({
+          where: { id: purchaseId },
+          select: { userId: true },
+        });
+        const userId = purchase?.userId;
+        if (userId && ioSingleton) {
+          ioSingleton.to(userId).emit('purchase:success', { purchaseId });
+        }
         await ctx.replyWithHTML('✅ <b>Оплату прийнято!</b>\nПокупку активовано.');
       } else {
         // Idempotency / already processed

@@ -57,6 +57,11 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [myPlayerId, setMyPlayerId] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  /**
+   * Some socket connects are "utility" (e.g. room:exists) and must NOT trigger localStorage-based
+   * `room:rejoin`, otherwise deep links can be hijacked by an old persisted room.
+   */
+  const suppressStoredRejoinRef = useRef(false);
   const optionsRef = useRef(options);
   optionsRef.current = options;
   /** Синхронний ref для myPlayerId — потрібен для onStateSync, щоб одразу мати актуальний id після room:created */
@@ -103,9 +108,23 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
     socket.on('connect', () => {
       setIsConnected(true);
+      if (suppressStoredRejoinRef.current) return;
       const storedRoom = localStorage.getItem(ROOM_CODE_KEY);
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (storedRoom && storedPlayer) {
+        // Telegram deep-link guard: if `start_param` points to another room, don't auto-rejoin the old one.
+        const tgStartParam = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.start_param as
+          | string
+          | undefined;
+        if (typeof tgStartParam === 'string' && tgStartParam.startsWith('lobby_')) {
+          const deepRoom = tgStartParam.slice('lobby_'.length).trim();
+          if (ROOM_CODE_RE.test(deepRoom) && deepRoom !== storedRoom) {
+            localStorage.removeItem(ROOM_CODE_KEY);
+            localStorage.removeItem(PLAYER_ID_KEY);
+            return;
+          }
+        }
+
         // Guard against legacy/corrupted localStorage values (avoids noisy "INVALID_PAYLOAD" errors).
         if (!ROOM_CODE_RE.test(storedRoom) || !UUID_RE.test(storedPlayer)) {
           localStorage.removeItem(ROOM_CODE_KEY);
@@ -165,12 +184,36 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
     socket.on('player:kicked', ({ playerId }) => {
       if (playerId === myPlayerIdRef.current) {
+        // Ensure we don't get stuck in a "kick -> refresh -> auto rejoin" loop.
+        try {
+          localStorage.removeItem(ROOM_CODE_KEY);
+          localStorage.removeItem(PLAYER_ID_KEY);
+        } catch {
+          /* ignore */
+        }
+        setIsReconnecting(false);
+        setRoomCode('');
+        setMyPlayerId('');
+        myPlayerIdRef.current = '';
+        socket.disconnect();
         optionsRef.current.onKicked();
       }
     });
 
     socket.on('room:error', (payload) => {
       setIsReconnecting(false);
+      // If the room is unavailable, clear stored join keys so we don't keep "zombie reconnecting".
+      if (payload.code === 'ROOM_NOT_FOUND' || payload.code === 'PLAYER_NOT_IN_ROOM') {
+        try {
+          localStorage.removeItem(ROOM_CODE_KEY);
+          localStorage.removeItem(PLAYER_ID_KEY);
+        } catch {
+          /* ignore */
+        }
+        setRoomCode('');
+        setMyPlayerId('');
+        myPlayerIdRef.current = '';
+      }
       optionsRef.current.onError(payload);
     });
 
@@ -215,6 +258,15 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         }
 
         setIsReconnecting(false);
+        // If we're already in a room (e.g. background rejoin), explicitly leave it first
+        // so server-side "already in room" guard never blocks room:create.
+        if (roomCode) {
+          socket.emit('room:leave');
+          socket.disconnect();
+          setRoomCode('');
+          setMyPlayerId('');
+          myPlayerIdRef.current = '';
+        }
         localStorage.removeItem(ROOM_CODE_KEY);
         localStorage.removeItem(PLAYER_ID_KEY);
 
@@ -281,7 +333,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       });
     },
-    [scheduleEmitAfterHandshakeConnect]
+    [roomCode, scheduleEmitAfterHandshakeConnect]
   );
 
   const joinRoom = useCallback(
@@ -294,6 +346,14 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         }
 
         setIsReconnecting(false);
+        // Same as createRoom: ensure we're not bound to a previous room.
+        if (roomCode) {
+          socket.emit('room:leave');
+          socket.disconnect();
+          setRoomCode('');
+          setMyPlayerId('');
+          myPlayerIdRef.current = '';
+        }
         localStorage.removeItem(ROOM_CODE_KEY);
         localStorage.removeItem(PLAYER_ID_KEY);
 
@@ -358,7 +418,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       });
     },
-    [scheduleEmitAfterHandshakeConnect]
+    [roomCode, scheduleEmitAfterHandshakeConnect]
   );
 
   const checkRoomExists = useCallback((code: string): Promise<boolean> => {
@@ -370,6 +430,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         socket.emit('room:exists', { roomCode: code }, (res) => {
           resolve(Boolean(res?.exists));
           // This check is used before joining a room; keep the socket clean/idle.
+          suppressStoredRejoinRef.current = false;
           if (socket.connected) socket.disconnect();
         });
       };
@@ -380,6 +441,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         return;
       }
 
+      suppressStoredRejoinRef.current = true;
       prepareSocketForRoomHandshake(socket);
       socket.once('connect', emitCheck);
       socket.connect();
