@@ -78,34 +78,11 @@ export function useTelegramApp(): UseTelegramAppResult {
 
     webApp.onEvent?.('themeChanged', handleThemeChanged);
 
-    const handleBackButtonClicked = () => {
-      const ev = new CustomEvent('telegram-back', { cancelable: true });
-      window.dispatchEvent(ev);
-      if (ev.defaultPrevented) return;
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        webApp.close();
-      }
-    };
-
-    try {
-      webApp.BackButton?.show();
-      webApp.onEvent?.('backButtonClicked', handleBackButtonClicked);
-    } catch (_err) {
-      void _err;
-    }
-
     // Apply initial theme vars as soon as possible.
     applyTelegramThemeCssVars(webApp.themeParams ?? null);
 
     return () => {
       webApp.offEvent?.('themeChanged', handleThemeChanged);
-      try {
-        webApp.offEvent?.('backButtonClicked', handleBackButtonClicked);
-      } catch (_err) {
-        void _err;
-      }
     };
   }, [isTelegram, webApp]);
 

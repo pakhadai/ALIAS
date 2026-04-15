@@ -7,11 +7,13 @@ import { useAuthContext } from '../../context/AuthContext';
 import { updateProfile } from '../../services/api';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 import { ProviderBadge } from './ProfileScreen';
 
 export const ProfileSettingsScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const { authState, profile, refreshProfile } = useAuthContext();
+  const { isTelegram } = useTelegramApp();
   const {
     permission: pushPermission,
     supported: pushSupported,
@@ -60,12 +62,14 @@ export const ProfileSettingsScreen = () => {
     <div className="flex flex-col min-h-screen items-center bg-ui-bg">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-          <button
-            onClick={() => setGameState(GameState.PROFILE)}
-            className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            <ArrowLeft size={22} />
-          </button>
+          {!isTelegram && (
+            <button
+              onClick={() => setGameState(GameState.PROFILE)}
+              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            >
+              <ArrowLeft size={22} />
+            </button>
+          )}
           <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
             Налаштування профілю
           </h2>

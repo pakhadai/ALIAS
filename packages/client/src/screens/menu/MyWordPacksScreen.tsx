@@ -14,6 +14,7 @@ import {
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -26,6 +27,7 @@ const MAX_USER_PACKS = 5;
 export const MyWordPacksScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const { authState, profile } = useAuthContext();
+  const { isTelegram } = useTelegramApp();
   const isDark = currentTheme.isDark;
 
   const isUnlocked =
@@ -144,12 +146,14 @@ export const MyWordPacksScreen = () => {
       <div className="flex flex-col h-screen items-center bg-ui-bg">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-            <button
-              onClick={() => setGameState(GameState.PROFILE)}
-              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-            >
-              <ArrowLeft size={22} />
-            </button>
+            {!isTelegram && (
+              <button
+                onClick={() => setGameState(GameState.PROFILE)}
+                className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+              >
+                <ArrowLeft size={22} />
+              </button>
+            )}
             <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
               Мої паки слів
             </h2>
@@ -184,15 +188,17 @@ export const MyWordPacksScreen = () => {
       <div className="flex flex-col h-screen items-center bg-ui-bg">
         <div className="max-w-2xl w-full flex-1 flex flex-col">
           <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-            <button
-              onClick={() => {
-                setView('list');
-                setCreateError('');
-              }}
-              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-            >
-              <ArrowLeft size={22} />
-            </button>
+            {!isTelegram && (
+              <button
+                onClick={() => {
+                  setView('list');
+                  setCreateError('');
+                }}
+                className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+              >
+                <ArrowLeft size={22} />
+              </button>
+            )}
             <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
               Новий пак
             </h2>

@@ -3,9 +3,11 @@ import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { GameState, Language, Category, GameMode } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { fetchLobbySettings, saveLobbySettings } from '../../services/api';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 
 export const LobbySettingsScreen = () => {
   const { setGameState, currentTheme, settings: gameSettings } = useGame();
+  const { isTelegram } = useTelegramApp();
   const isDark = currentTheme.isDark;
 
   const [local, setLocal] = useState({ ...gameSettings });
@@ -79,12 +81,14 @@ export const LobbySettingsScreen = () => {
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center justify-between px-6 md:px-8 pb-4 pt-safe-top">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setGameState(GameState.PROFILE)}
-              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-            >
-              <ArrowLeft size={22} />
-            </button>
+            {!isTelegram && (
+              <button
+                onClick={() => setGameState(GameState.PROFILE)}
+                className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+              >
+                <ArrowLeft size={22} />
+              </button>
+            )}
             <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
               Налаштування лоббі
             </h2>

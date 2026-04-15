@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ArrowLeft, Plus, Trash2, BookOpen, Copy, Loader2 } from 'lucide-react';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -13,6 +14,7 @@ type CreateDeckView = 'list' | 'create';
 
 export const MyDecksScreen = () => {
   const { setGameState, currentTheme } = useGame();
+  const { isTelegram } = useTelegramApp();
 
   const [view, setView] = useState<CreateDeckView>('list');
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
@@ -95,15 +97,17 @@ export const MyDecksScreen = () => {
     return (
       <div className="flex flex-col h-screen bg-ui-bg">
         <header className="flex items-center px-6 pb-4 pt-safe-top gap-3">
-          <button
-            onClick={() => {
-              setView('list');
-              setCreateError('');
-            }}
-            className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            <ArrowLeft size={22} />
-          </button>
+          {!isTelegram && (
+            <button
+              onClick={() => {
+                setView('list');
+                setCreateError('');
+              }}
+              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            >
+              <ArrowLeft size={22} />
+            </button>
+          )}
           <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>New Deck</h2>
         </header>
         <div

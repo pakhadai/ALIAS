@@ -6,10 +6,12 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
 import { LoginModal } from '../../components/Auth/LoginModal';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 
 export const PlayerStatsScreen = () => {
   const { setGameState, currentTheme, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
+  const { isTelegram } = useTelegramApp();
   const [showLogin, setShowLogin] = useState(false);
   const { get: getStats } = usePlayerStats();
   const stats = getStats();
@@ -38,13 +40,15 @@ export const PlayerStatsScreen = () => {
     <div className="flex flex-col min-h-screen items-center bg-ui-bg">
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-          <button
-            type="button"
-            onClick={goBack}
-            className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            <ArrowLeft size={22} />
-          </button>
+          {!isTelegram && (
+            <button
+              type="button"
+              onClick={goBack}
+              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            >
+              <ArrowLeft size={22} />
+            </button>
+          )}
           <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
             {t.statsScreenTitle}
           </h2>

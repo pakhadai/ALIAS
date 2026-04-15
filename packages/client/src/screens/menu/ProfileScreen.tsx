@@ -16,6 +16,7 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useT } from '../../hooks/useT';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 import {
   bottomSheetBackdropClass,
   bottomSheetPanelClass,
@@ -35,6 +36,7 @@ export function ProviderBadge({ provider }: { provider: string }) {
 export const ProfileScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const { authState, profile, logout } = useAuthContext();
+  const { isTelegram } = useTelegramApp();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
@@ -89,12 +91,14 @@ export const ProfileScreen = () => {
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <header className="flex items-center px-6 pb-4 pt-safe-top md:px-8">
-          <button
-            onClick={() => setGameState(GameState.MENU)}
-            className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-          >
-            <ArrowLeft size={22} />
-          </button>
+          {!isTelegram && (
+            <button
+              onClick={() => setGameState(GameState.MENU)}
+              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+            >
+              <ArrowLeft size={22} />
+            </button>
+          )}
         </header>
 
         <div className="flex flex-col items-center pt-4 pb-8 px-6 md:px-8">
