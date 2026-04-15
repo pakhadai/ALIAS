@@ -392,10 +392,14 @@ export class RoomManager {
             : team.nextPlayerIndex,
       };
     });
-    // Never drop teams from the array — team ids/indexes are referenced by round stats.
-    // Empty teams are valid during a game (disconnects / removals), and must not shift indices.
+    // During active gameplay states we must drop empty teams, otherwise the game can hang
+    // (e.g. next turn picks an empty team forever). In lobby/team-builder screens, keep
+    // empty team shells so players can fill them.
+    if (room.gameState !== GameState.LOBBY && room.gameState !== GameState.TEAMS) {
+      room.teams = room.teams.filter((t) => t.players.length > 0);
+    }
     // Clamp currentTeamIndex in case a team was removed
-    if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
+    if (room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
     }
     room.socketToPlayer.delete(socketId);
@@ -552,8 +556,12 @@ export class RoomManager {
             : team.nextPlayerIndex,
       };
     });
-    // Never drop teams from the array — team ids/indexes are referenced by round stats.
-    if (room.teams.length > 0 && room.currentTeamIndex >= room.teams.length) {
+    // During active gameplay states we must drop empty teams, otherwise the game can hang.
+    // In lobby/team-builder screens, keep empty team shells so players can fill them.
+    if (room.gameState !== GameState.LOBBY && room.gameState !== GameState.TEAMS) {
+      room.teams = room.teams.filter((t) => t.players.length > 0);
+    }
+    if (room.currentTeamIndex >= room.teams.length) {
       room.currentTeamIndex = 0;
     }
 
