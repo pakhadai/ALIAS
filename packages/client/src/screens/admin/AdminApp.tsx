@@ -10,7 +10,8 @@ import {
   X,
 } from 'lucide-react';
 import { api, AdminAuthError, type AdminUser } from './adminApi';
-import { ModalPortal } from '../../components/Shared';
+import { ModalSheet } from '../../components/ModalSheet';
+import { zIndex } from '../../constants/zIndex';
 import { StatsTab } from './tabs/StatsTab';
 import { DecksTab } from './tabs/DecksTab';
 import { PacksTab } from './tabs/PacksTab';
@@ -48,7 +49,9 @@ function ToastContainer({
   onDismiss: (id: number) => void;
 }) {
   return (
-    <div className="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none max-w-sm w-full">
+    <div
+      className={`fixed top-4 right-4 ${zIndex.toast} flex flex-col gap-2 pointer-events-none max-w-sm w-full`}
+    >
       {toasts.map((t) => (
         <div
           key={t.id}
@@ -63,6 +66,7 @@ function ToastContainer({
         >
           <span className="flex-1 text-sm leading-snug">{t.message}</span>
           <button
+            type="button"
             onClick={() => onDismiss(t.id)}
             className="opacity-50 hover:opacity-100 transition-opacity shrink-0 mt-0.5"
           >
@@ -85,44 +89,53 @@ function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setOpen(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   return (
-    <ModalPortal>
-      <div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        onClick={onCancel}
-      >
-        <div
-          className="bg-[#1a1a1a] border border-[#333] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-start gap-3 mb-4">
-            {opts.danger && <AlertCircle size={20} className="text-[#ff4444] shrink-0 mt-0.5" />}
-            <div>
-              <h3 className="text-white font-bold text-base">{opts.title}</h3>
-              <p className="text-[#888] text-sm mt-1 leading-relaxed">{opts.message}</p>
-            </div>
-          </div>
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 rounded-xl text-sm font-bold text-[#888] bg-[#222] border border-[#333] hover:bg-[#2a2a2a] transition-colors"
-            >
-              Скасувати
-            </button>
-            <button
-              onClick={onConfirm}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                opts.danger
-                  ? 'bg-[#ff4444] text-white hover:bg-[#ff5555]'
-                  : 'bg-[#E3FF5B] text-black hover:brightness-110'
-              }`}
-            >
-              {opts.confirmLabel ?? 'Підтвердити'}
-            </button>
-          </div>
+    <ModalSheet
+      open={open}
+      onClose={onCancel}
+      zLayer="modalConfirm"
+      maxWidth="sm"
+      showHandle
+      paddedContent={false}
+      panelClassName="px-5 pt-0 pb-safe-bottom-8"
+      role="alertdialog"
+    >
+      <div className="flex items-start gap-3 mb-5 pt-1">
+        {opts.danger && (
+          <AlertCircle size={20} className="text-ui-danger shrink-0 mt-0.5" aria-hidden />
+        )}
+        <div className="min-w-0">
+          <h3 className="text-ui-fg font-bold text-base font-sans leading-snug">{opts.title}</h3>
+          <p className="text-ui-fg-muted text-sm mt-1.5 leading-relaxed">{opts.message}</p>
         </div>
       </div>
-    </ModalPortal>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold text-ui-fg-muted bg-ui-surface border border-ui-border hover:bg-ui-surface-hover transition-colors"
+        >
+          Скасувати
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${
+            opts.danger
+              ? 'bg-ui-danger text-ui-accent-contrast hover:opacity-90'
+              : 'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover'
+          }`}
+        >
+          {opts.confirmLabel ?? 'Підтвердити'}
+        </button>
+      </div>
+    </ModalSheet>
   );
 }
 

@@ -3,9 +3,12 @@ import { X, ChevronDown } from 'lucide-react';
 import { Button } from '../../components/Button';
 import {
   bottomSheetBackdropClass,
+  bottomSheetHandleBarClass,
+  bottomSheetHandleRowClass,
   bottomSheetPanelClass,
   ModalPortal,
 } from '../../components/Shared';
+import { zIndex } from '../../constants/zIndex';
 import { GameState, GameMode } from '../../types';
 import type { GameSettings, ThemeConfig } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -339,7 +342,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   return (
     <ModalPortal>
       <div
-        className={`${bottomSheetBackdropClass(visible, 'z-100')}`}
+        className={bottomSheetBackdropClass(visible, zIndex.modal)}
         onClick={handleClose}
         role="presentation"
       >
@@ -350,10 +353,10 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
           aria-modal="true"
           aria-label={t.rulesTitle}
         >
-          <div className="flex justify-center pt-2 pb-0 shrink-0">
-            <div className="h-1 w-10 rounded-full bg-ui-border" />
+          <div className={bottomSheetHandleRowClass} aria-hidden>
+            <div className={bottomSheetHandleBarClass} />
           </div>
-          <div className="shrink-0 px-7 pt-2 pb-3 flex items-center justify-between">
+          <div className="shrink-0 px-7 pt-0 pb-3 flex items-center justify-between">
             <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
             <button
               onClick={handleClose}

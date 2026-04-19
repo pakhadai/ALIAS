@@ -3,7 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import { buyWithStars, createPaymentIntent } from '../../services/api';
-import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
+import { ModalSheet } from '../ModalSheet';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
@@ -181,71 +181,58 @@ export function QuickBuyModal({
   const sheetOpen = !isClosing;
 
   return (
-    <ModalPortal>
-      <div
-        className={bottomSheetBackdropClass(sheetOpen, 'z-50')}
-        onClick={requestClose}
-        role="presentation"
-      >
-        <div
-          className={bottomSheetPanelClass(sheetOpen, 'px-6 pt-5 pb-safe-bottom-8')}
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
+    <ModalSheet
+      open={sheetOpen}
+      onClose={requestClose}
+      showHandle
+      paddedContent={false}
+      panelClassName="px-6 pt-5 pb-safe-bottom-8"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-serif text-xl tracking-wide text-ui-fg">Швидка оплата</h2>
+        <button
+          type="button"
+          onClick={requestClose}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
         >
-          {/* Handle */}
-          <div className="flex justify-center mb-5">
-            <div className="w-10 h-1 rounded-full bg-ui-border" />
-          </div>
-
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-xl tracking-wide text-ui-fg">Швидка оплата</h2>
-            <button
-              onClick={requestClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
-            >
-              <X size={16} className="text-ui-fg-muted" />
-            </button>
-          </div>
-
-          {/* Content */}
-          {loadError ? (
-            <p className="text-ui-danger text-[13px] text-center py-8">{loadError}</p>
-          ) : !stripePromise ? (
-            <p className="text-[12px] text-center py-8 opacity-40 text-ui-fg-muted">
-              Платіжна система не налаштована
-            </p>
-          ) : !clientSecret ? (
-            <div className="flex justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-ui-fg-muted" />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5">
-              {canUseStars && (
-                <button
-                  type="button"
-                  onClick={handleBuyStars}
-                  disabled={starsLoading}
-                  className="w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold text-[13px] flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {starsLoading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Відкриваємо оплату…
-                    </>
-                  ) : (
-                    <>⭐ Купити за Telegram Stars</>
-                  )}
-                </button>
-              )}
-
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-                <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
-              </Elements>
-            </div>
-          )}
-        </div>
+          <X size={16} className="text-ui-fg-muted" />
+        </button>
       </div>
-    </ModalPortal>
+
+      {loadError ? (
+        <p className="text-ui-danger text-[13px] text-center py-8">{loadError}</p>
+      ) : !stripePromise ? (
+        <p className="text-[12px] text-center py-8 opacity-40 text-ui-fg-muted">
+          Платіжна система не налаштована
+        </p>
+      ) : !clientSecret ? (
+        <div className="flex justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-ui-fg-muted" />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {canUseStars && (
+            <button
+              type="button"
+              onClick={handleBuyStars}
+              disabled={starsLoading}
+              className="w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold text-[13px] flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {starsLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Відкриваємо оплату…
+                </>
+              ) : (
+                <>⭐ Купити за Telegram Stars</>
+              )}
+            </button>
+          )}
+
+          <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+            <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
+          </Elements>
+        </div>
+      )}
+    </ModalSheet>
   );
 }

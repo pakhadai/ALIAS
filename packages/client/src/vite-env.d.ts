@@ -2,6 +2,9 @@
 /// <reference types="vite-plugin-pwa/client" />
 
 declare global {
+  /** Injected from `packages/client/package.json` in `vite.config.ts` / `vitest.config.ts`. */
+  const __APP_VERSION__: string;
+
   type TelegramWebAppUser = {
     id: number;
     is_bot?: boolean;
@@ -57,6 +60,10 @@ declare global {
     ready: () => void;
     expand: () => void;
     close: () => void;
+    /** Syncs Mini App header chrome and status-bar icon contrast with the given color. */
+    setHeaderColor?: (color: string) => void;
+    /** Syncs Telegram wrapper background with the page theme. */
+    setBackgroundColor?: (color: string) => void;
     requestFullscreen?: () => void;
     disableVerticalSwipes?: () => void;
     enableClosingConfirmation?: () => void;

@@ -92,8 +92,11 @@ export const ProfileSettingsScreen = () => {
             <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
               Виберіть аватарку
             </p>
-            <div className="grid grid-cols-6 gap-2 max-w-xs mx-auto">
-              {PRESET_AVATARS.slice(0, 15).map((av, idx) => (
+            <div
+              className="grid grid-cols-6 gap-2 max-w-xs mx-auto max-h-52 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]"
+              style={{ scrollbarGutter: 'stable' }}
+            >
+              {PRESET_AVATARS.map((av, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedAvatar(idx)}

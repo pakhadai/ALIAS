@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 import type { Player } from '../../../types';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 
@@ -16,7 +17,10 @@ export function UnassignedPool(props: {
       </p>
       <div className="flex flex-wrap gap-2 mt-3">
         {unassigned.length === 0 ? (
-          <span className="text-[10px] italic text-ui-fg-muted opacity-70">—</span>
+          <div className="flex items-center gap-2 text-ui-fg-muted opacity-50">
+            <Check size={14} className="shrink-0" aria-hidden />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Всі розподілені</span>
+          </div>
         ) : (
           unassigned.map((p) => (
             <button

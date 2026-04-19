@@ -1,8 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
+
+/** Shown in the main menu; must stay in sync with nothing else — this is the only source. */
+const APP_VERSION = (
+  JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf8')) as { version: string }
+).version;
 
 /** PWA theme = main menu / premium dark shell (#1A1A1A). */
 const PWA_THEME = '#1A1A1A';
@@ -18,6 +24,9 @@ const PWA_THEME = '#1A1A1A';
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim();
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(APP_VERSION),
+  },
   // Load .env* from repo root (monorepo convenience)
   envDir: path.resolve(__dirname, '..', '..'),
   plugins: [

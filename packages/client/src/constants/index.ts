@@ -19,3 +19,4 @@ export type { TranslationValue } from './translations';
 export { TRANSLATIONS } from './translations';
 export { TEAM_NAMES } from './team-names';
 export { THEME_CONFIG } from './themes';
+export { zIndex } from './zIndex';

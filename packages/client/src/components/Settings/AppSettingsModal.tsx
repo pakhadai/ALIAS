@@ -7,7 +7,14 @@ import { useGame } from '../../context/GameContext';
 import { setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
 import { playSoundEffect } from '../../utils/audio';
-import { bottomSheetBackdropClass, bottomSheetPanelClass, ModalPortal } from '../Shared';
+import {
+  bottomSheetBackdropClass,
+  bottomSheetHandleBarClass,
+  bottomSheetHandleRowClass,
+  bottomSheetPanelClass,
+  ModalPortal,
+} from '../Shared';
+import { zIndex } from '../../constants/zIndex';
 
 type Props = {
   onClose: () => void;
@@ -45,7 +52,7 @@ export function AppSettingsModal({ onClose }: Props) {
   return (
     <ModalPortal>
       <div
-        className={bottomSheetBackdropClass(visible, 'z-50')}
+        className={bottomSheetBackdropClass(visible, zIndex.modal)}
         onClick={handleClose}
         role="presentation"
       >
@@ -56,9 +63,9 @@ export function AppSettingsModal({ onClose }: Props) {
           aria-modal="true"
           aria-labelledby="app-settings-title"
         >
-          <div className="shrink-0 px-5 pt-5">
-            <div className="flex justify-center pt-1 pb-2">
-              <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
+          <div className="shrink-0 px-5 pt-3">
+            <div className={bottomSheetHandleRowClass} aria-hidden>
+              <div className={bottomSheetHandleBarClass} />
             </div>
             <div className="flex justify-between items-center mb-5">
               <div className="flex items-center gap-2">

@@ -80,14 +80,6 @@ export function PlayersSection(props: {
                     />
                   )}
                 </span>
-
-                {gameMode === 'ONLINE' && !online && (
-                  <span
-                    className={`text-[9px] uppercase tracking-widest font-bold mt-0.5 ${theme.textSecondary}`}
-                  >
-                    {t.playerDisconnected}
-                  </span>
-                )}
               </div>
 
               <div className="ml-auto flex items-center gap-2 shrink-0">
@@ -138,16 +130,20 @@ export function PlayersSection(props: {
                 )}
 
                 {gameMode === 'ONLINE' && online && (
-                  <div
-                    className="w-3.5 h-3.5 rounded-full bg-ui-success shadow-[0_0_6px_color-mix(in_srgb,var(--ui-success)_60%,transparent)]"
+                  <span
+                    className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-success)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-success"
                     title={t.playerOnlineHint}
-                  />
+                  >
+                    {t.playerOnlineHint}
+                  </span>
                 )}
                 {gameMode === 'ONLINE' && !online && (
-                  <div
-                    className="w-3.5 h-3.5 rounded-full bg-ui-warning shadow-[0_0_6px_color-mix(in_srgb,var(--ui-warning)_60%,transparent)] animate-pulse"
+                  <span
+                    className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-warning)_40%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-warning"
                     title={t.playerDisconnected}
-                  />
+                  >
+                    {t.playerDisconnected}
+                  </span>
                 )}
               </div>
             </div>

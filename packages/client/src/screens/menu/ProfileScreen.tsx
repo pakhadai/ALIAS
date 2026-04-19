@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Settings,
@@ -6,9 +6,8 @@ import {
   ChevronRight,
   BookOpen,
   Lock,
-  ShieldCheck,
+  Shield,
   Loader2,
-  X,
 } from 'lucide-react';
 import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { GameState } from '../../types';
@@ -17,11 +16,11 @@ import { useAuthContext } from '../../context/AuthContext';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useT } from '../../hooks/useT';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
+import { LogoutConfirmBottomSheet } from '../../components/Auth/LogoutConfirmBottomSheet';
 import {
-  bottomSheetBackdropClass,
-  bottomSheetPanelClass,
-  ModalPortal,
-} from '../../components/Shared';
+  renderGoogleSignInButton,
+  type GoogleIdCredentialResponse,
+} from '../../utils/googleIdentity';
 
 export function ProviderBadge({ provider }: { provider: string }) {
   const label =
@@ -33,9 +32,21 @@ export function ProviderBadge({ provider }: { provider: string }) {
   );
 }
 
+function GuestAccountBadge({ label }: { label: string }) {
+  return (
+    <span className="bg-ui-accent text-ui-accent-contrast text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
+      {label}
+    </span>
+  );
+}
+
+const statCardInteractive = `rounded-2xl px-4 py-4 text-left border border-ui-border transition-all duration-200
+  group-hover:border-ui-accent/50 group-hover:bg-[color-mix(in_srgb,var(--ui-accent)_6%,var(--ui-surface))]
+  group-active:scale-[0.98]`;
+
 export const ProfileScreen = () => {
-  const { setGameState, currentTheme } = useGame();
-  const { authState, profile, logout } = useAuthContext();
+  const { setGameState, currentTheme, uiLanguage } = useGame();
+  const { authState, profile, logout, loginWithGoogle } = useAuthContext();
   const { isTelegram } = useTelegramApp();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -43,7 +54,10 @@ export const ProfileScreen = () => {
   const isDark = currentTheme.isDark;
   const { get: getStats } = usePlayerStats();
   const t = useT();
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
+  const loadingAuth = authState.status === 'loading';
+  const isGuest = authState.status === 'anonymous';
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
 
@@ -54,6 +68,33 @@ export const ProfileScreen = () => {
     }
     setLogoutConfirmVisible(false);
   }, [showLogoutConfirm]);
+
+  const locale = useMemo(() => {
+    if (uiLanguage === 'DE') return 'de';
+    if (uiLanguage === 'EN') return 'en';
+    return 'uk';
+  }, [uiLanguage]);
+
+  const handleGoogleSuccess = useCallback(
+    async (cred: GoogleIdCredentialResponse) => {
+      if (!cred.credential) return;
+      await loginWithGoogle(cred.credential);
+    },
+    [loginWithGoogle]
+  );
+
+  useEffect(() => {
+    if (!isGuest || isTelegram) return;
+    if (!googleButtonRef.current) return;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    if (!clientId) return;
+    renderGoogleSignInButton(googleButtonRef.current, {
+      clientId,
+      locale,
+      colorScheme: currentTheme.isDark ? 'dark' : 'light',
+      onCredential: handleGoogleSuccess,
+    });
+  }, [locale, currentTheme.isDark, handleGoogleSuccess, isGuest, isTelegram]);
 
   const closeLogoutConfirm = () => {
     setLogoutConfirmVisible(false);
@@ -66,8 +107,19 @@ export const ProfileScreen = () => {
     setGameState(GameState.MENU);
   };
 
+  const profileDisplayName = profile?.displayName;
   const displayName =
-    profile?.name || profile?.displayName || (email ? email.split('@')[0] : 'Profile');
+    profile?.name ??
+    profileDisplayName ??
+    (loadingAuth
+      ? '…'
+      : isGuest
+        ? t.profileAnonymous
+        : authState.status === 'authenticated'
+          ? authState.email?.split('@')[0]
+          : '');
+  const guestSub = loadingAuth ? '' : isGuest ? t.profileGuestUser : email;
+
   const hasCustomPacks =
     profile?.purchases?.some((p) => p.wordPack?.slug === 'feature-custom-packs') ?? false;
 
@@ -85,6 +137,45 @@ export const ProfileScreen = () => {
   const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
   const sectionTitle = `text-[9px] font-sans font-bold tracking-[0.28em] uppercase text-ui-fg-muted`;
 
+  const showAdminEntry =
+    authState.status === 'authenticated' && (authState.isAdmin || (profile?.isAdmin ?? false));
+
+  const openAdminPanel = () => {
+    window.location.href = '/admin.html';
+  };
+
+  /** Marketing bullets for guests — static copy (no store fetch, avoids “0 packs” flash). */
+  const guestBenefits: { emoji: string; label: string; sub: string }[] = useMemo(
+    () => [
+      {
+        emoji: '📝',
+        label: t.profileBenefitCustomListsLabel,
+        sub: t.profileBenefitCustomListsSub,
+      },
+      {
+        emoji: '📦',
+        label: t.profileBenefitWordPacksLabelZero,
+        sub: t.profileBenefitWordPacksSub,
+      },
+      {
+        emoji: '🎨',
+        label: t.profileBenefitVisualThemesLabelZero,
+        sub: t.profileBenefitVisualThemesSub,
+      },
+      {
+        emoji: '📊',
+        label: t.profileBenefitGameStatsLabel,
+        sub: t.profileBenefitGameStatsSub,
+      },
+      {
+        emoji: '☁️',
+        label: t.profileBenefitSyncLabel,
+        sub: t.profileBenefitSyncSub,
+      },
+    ],
+    [t]
+  );
+
   return (
     <div
       className={`flex flex-col min-h-screen items-center ${currentTheme.bg} transition-colors duration-500`}
@@ -93,6 +184,7 @@ export const ProfileScreen = () => {
         <header className="flex items-center px-6 pb-4 pt-safe-top md:px-8">
           {!isTelegram && (
             <button
+              type="button"
               onClick={() => setGameState(GameState.MENU)}
               className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
             >
@@ -101,31 +193,91 @@ export const ProfileScreen = () => {
           )}
         </header>
 
-        <div className="flex flex-col items-center pt-4 pb-8 px-6 md:px-8">
+        {/* HERO */}
+        <section className="flex flex-col items-center px-6 md:px-8 pt-2 pb-6">
           <AvatarDisplay
             avatarId={profile?.avatarId}
             imageUrl={profile?.avatarId ? null : profile?.avatarUrl}
             name={displayName}
-            size={88}
+            size={96}
           />
-          <h1 className={`mt-4 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>
+          <h1 className={`mt-5 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>
             {displayName}
           </h1>
-          {email && (
-            <p className={`text-[13px] mt-1 mb-3 ${currentTheme.textSecondary}`}>{email}</p>
+          {guestSub && (
+            <p className={`text-[13px] mt-1 mb-2 ${currentTheme.textSecondary}`}>{guestSub}</p>
           )}
-          {provider && <ProviderBadge provider={provider} />}
+          {!loadingAuth && isGuest ? (
+            <GuestAccountBadge label={t.profileFreeAccount} />
+          ) : provider ? (
+            <ProviderBadge provider={provider} />
+          ) : null}
+        </section>
 
+        {isGuest && !isTelegram && (
+          <div className="px-6 md:px-8 pb-6 flex flex-col items-center">
+            <div ref={googleButtonRef} className="w-full max-w-[320px] min-h-[44px]" />
+          </div>
+        )}
+
+        {isGuest && (
+          <>
+            <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
+            <div className="px-6 md:px-8 py-5">
+              <p className={`${sectionTitle} mb-3`}>{t.profileBenefitsTitle}</p>
+              <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+                {guestBenefits.slice(0, 4).map((item, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-2xl border border-ui-border p-4 ${
+                      isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-[18px] leading-none">{item.emoji}</span>
+                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
+                        {item.label}
+                      </p>
+                    </div>
+                    <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
+                      {item.sub}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {guestBenefits[4] && (
+                <div
+                  className={`mt-3 max-w-md mx-auto rounded-2xl border border-ui-border p-4 ${
+                    isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-[18px] leading-none">{guestBenefits[4].emoji}</span>
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
+                      {guestBenefits[4].label}
+                    </p>
+                  </div>
+                  <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
+                    {guestBenefits[4].sub}
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
+
+        {/* STATS → details */}
+        <section className="px-6 md:px-8 pt-6 pb-2">
           <button
             type="button"
             onClick={() => setGameState(GameState.PLAYER_STATS)}
-            className="mt-6 w-full max-w-md"
+            className="group w-full max-w-md mx-auto block text-left rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-(--ui-bg)"
           >
             <div className="grid grid-cols-3 gap-3">
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
-                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
-                }`}
+                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardGames ?? t.statsRowGamesPlayed ?? 'Played'}
@@ -135,9 +287,7 @@ export const ProfileScreen = () => {
                 </p>
               </div>
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
-                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
-                }`}
+                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardGuessed ?? t.statsRowWordsGuessed ?? 'Guessed'}
@@ -147,9 +297,7 @@ export const ProfileScreen = () => {
                 </p>
               </div>
               <div
-                className={`rounded-2xl px-4 py-4 text-left border border-ui-border ${
-                  isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
-                }`}
+                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
                 <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
                   {t.profileStatsCardAccuracy ?? t.statsRowAccuracy ?? 'Accuracy'}
@@ -160,28 +308,21 @@ export const ProfileScreen = () => {
               </div>
             </div>
             <p
-              className={`mt-3 text-[9px] uppercase tracking-[0.4em] font-bold opacity-40 ${currentTheme.textMain}`}
+              className={`mt-3 text-center text-[10px] uppercase tracking-[0.35em] font-bold text-ui-fg-muted group-hover:text-ui-accent transition-colors`}
             >
               {t.profileTapForDetails ?? 'Tap for details'}
             </p>
           </button>
-        </div>
+        </section>
 
-        <div className="flex-1 px-6 md:px-8 space-y-6">
+        <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border mt-4" />
+
+        <div className="flex-1 px-6 md:px-8 space-y-6 pt-6">
           <div>
             <p className={sectionTitle}>{t.profileSectionGame ?? t.game ?? 'GAME'}</p>
             <div className="mt-3 space-y-3">
-              <button onClick={() => setGameState(GameState.PLAYER_STATS)} className={navBtn}>
-                <div className="flex items-center gap-3">
-                  <ShieldCheck size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>
-                    {t.profileNavMyStats ?? t.profileStatsDetailLink ?? 'Statistics'}
-                  </span>
-                </div>
-                <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
-              </button>
-
               <button
+                type="button"
                 onClick={() =>
                   hasCustomPacks
                     ? setGameState(GameState.MY_WORD_PACKS)
@@ -226,7 +367,11 @@ export const ProfileScreen = () => {
           <div>
             <p className={sectionTitle}>{t.profileSectionSettings ?? t.settings ?? 'SETTINGS'}</p>
             <div className="mt-3 space-y-3">
-              <button onClick={() => setGameState(GameState.PROFILE_SETTINGS)} className={navBtn}>
+              <button
+                type="button"
+                onClick={() => setGameState(GameState.PROFILE_SETTINGS)}
+                className={navBtn}
+              >
                 <div className="flex items-center gap-3">
                   <Settings size={16} className={currentTheme.iconColor} />
                   <span className={navLabel}>
@@ -236,20 +381,20 @@ export const ProfileScreen = () => {
                 <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
               </button>
 
-              <button onClick={() => setGameState(GameState.LOBBY_SETTINGS)} className={navBtn}>
+              <button
+                type="button"
+                onClick={() => setGameState(GameState.LOBBY_SETTINGS)}
+                className={navBtn}
+              >
                 <div className="flex items-center gap-3">
                   <Settings size={16} className={currentTheme.iconColor} />
                   <span className={navLabel}>{t.profileNavLobbySettings ?? 'Lobby settings'}</span>
                 </div>
                 <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
               </button>
-            </div>
-          </div>
 
-          <div>
-            <p className={sectionTitle}>{t.profileSectionExtra ?? 'EXTRA'}</p>
-            <div className="mt-3 space-y-3">
               <button
+                type="button"
                 onClick={() => setGameState(GameState.STORE)}
                 className={`${navBtn} ${currentTheme.button}`}
               >
@@ -264,19 +409,20 @@ export const ProfileScreen = () => {
             </div>
           </div>
 
-          {profile?.isAdmin && (
-            <button onClick={() => (window.location.href = '/admin.html')} className={navBtn}>
+          {showAdminEntry && (
+            <button type="button" onClick={openAdminPanel} className={navBtn}>
               <div className="flex items-center gap-3">
-                <ShieldCheck size={16} className="text-ui-danger" />
-                <span className={navLabel + ' text-ui-danger'}>Адмін-панель</span>
+                <Shield size={16} className="text-ui-accent" strokeWidth={2.25} aria-hidden />
+                <span className={navLabel}>{t.profileAdminPanel}</span>
               </div>
-              <ChevronRight size={16} className="text-ui-danger opacity-30" />
+              <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
             </button>
           )}
         </div>
 
         <div className="px-6 md:px-8 pt-6 pb-safe-bottom">
           <button
+            type="button"
             onClick={() => setShowLogoutConfirm(true)}
             disabled={loggingOut}
             className="w-full text-center text-ui-danger font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
@@ -291,68 +437,19 @@ export const ProfileScreen = () => {
       </div>
 
       {showLogoutConfirm && (
-        <ModalPortal>
-          <div
-            className={bottomSheetBackdropClass(logoutConfirmVisible, 'z-50')}
-            onClick={closeLogoutConfirm}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="logout-confirm-title"
-          >
-            <div
-              className={bottomSheetPanelClass(
-                logoutConfirmVisible,
-                'px-5 pt-5 pb-safe-bottom-8 max-w-sm'
-              )}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-center pb-3">
-                <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
-              </div>
-              <div className="flex justify-between items-start mb-4">
-                <p
-                  id="logout-confirm-title"
-                  className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-4"
-                >
-                  {t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
-                </p>
-                <button
-                  type="button"
-                  onClick={closeLogoutConfirm}
-                  className="text-ui-fg-muted hover:text-ui-fg p-1 shrink-0"
-                  aria-label={t.close ?? 'Close'}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={closeLogoutConfirm}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
-                >
-                  {t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleLogout()}
-                  disabled={loggingOut}
-                  className="w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] text-ui-danger border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_24%,transparent)] transition-all active:scale-[0.98] disabled:opacity-40"
-                >
-                  {loggingOut ? (
-                    <span className="inline-flex items-center justify-center gap-2">
-                      <Loader2 size={16} className="animate-spin" />
-                      {t.profileLogoutLoading ?? 'Logging out...'}
-                    </span>
-                  ) : (
-                    (t.profileLogoutConfirm ?? 'Log out')
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </ModalPortal>
+        <LogoutConfirmBottomSheet
+          sheetOpen={logoutConfirmVisible}
+          titleId="profile-screen-logout-confirm"
+          onRequestClose={closeLogoutConfirm}
+          onCancel={closeLogoutConfirm}
+          onConfirm={handleLogout}
+          loggingOut={loggingOut}
+          title={t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
+          cancelLabel={t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
+          confirmLabel={t.profileLogoutConfirm ?? 'Log out'}
+          loadingLabel={t.profileLogoutLoading ?? 'Logging out...'}
+          closeAriaLabel={t.close ?? 'Close'}
+        />
       )}
     </div>
   );

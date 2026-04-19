@@ -45,6 +45,12 @@ export function TeamCard(props: {
 
   const overfilled = team.players.length > Math.ceil(playersTotal / teamCount) + 1;
 
+  const joinVariant = overfilled
+    ? 'border border-ui-border bg-ui-surface text-ui-warning'
+    : team.players.length === 0
+      ? 'bg-ui-accent text-ui-accent-contrast border border-ui-accent shadow-[0_0_12px_color-mix(in_srgb,var(--ui-accent)_30%,transparent)] animate-pulse'
+      : 'bg-ui-accent text-ui-accent-contrast border border-ui-accent';
+
   return (
     <div
       className={`rounded-3xl border bg-ui-surface p-4 ${
@@ -150,11 +156,7 @@ export function TeamCard(props: {
             type="button"
             onClick={() => sendAction({ action: 'TEAM_JOIN', data: { teamId: team.id } })}
             disabled={joinDisabled}
-            className={`flex-1 py-3 rounded-2xl text-[9px] uppercase tracking-widest font-bold transition-all active:scale-[0.98] disabled:opacity-40 ${
-              overfilled
-                ? 'border border-ui-border bg-[color-mix(in_srgb,var(--ui-warning)_10%,var(--ui-surface))] text-ui-fg-muted'
-                : 'bg-ui-accent text-ui-accent-contrast border border-ui-accent'
-            }`}
+            className={`flex-1 py-3 rounded-2xl text-[9px] uppercase tracking-widest font-bold transition-all active:scale-[0.98] disabled:opacity-40 ${joinVariant}`}
           >
             Приєднатися
           </button>

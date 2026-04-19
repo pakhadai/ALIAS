@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Gamepad2, QrCode, Share2, Timer, Trophy, Mail } from 'lucide-react';
+import { BookOpen, Copy, Gamepad2, Mail, QrCode, Share2, Timer, Trophy } from 'lucide-react';
 import type { GameSettings, ThemeConfig } from '../../../types';
 import { TRANSLATIONS } from '../../../constants';
 
@@ -42,11 +42,23 @@ export function OnlineLobbyIntro(props: {
       <p className={`text-[8px] uppercase tracking-[0.5em] font-bold ${theme.textSecondary}`}>
         {t.roomCode}
       </p>
-      <div
-        data-testid="lobby-room-code"
-        className={`text-4xl font-serif tracking-[0.2em] ${theme.textMain}`}
-      >
-        {roomCode}
+      <div className="flex justify-center">
+        <div
+          data-testid="lobby-room-code"
+          className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl border border-ui-border bg-ui-surface shadow-[0_0_0_1px_color-mix(in_srgb,var(--ui-accent)_15%,transparent),0_4px_24px_-4px_color-mix(in_srgb,var(--ui-accent)_20%,transparent)]"
+        >
+          <span className={`text-4xl font-serif tracking-[0.25em] ${theme.textMain}`}>
+            {roomCode}
+          </span>
+          <button
+            type="button"
+            onClick={onShare}
+            className="p-1.5 rounded-xl hover:bg-ui-surface-hover transition-all active:scale-95"
+            aria-label={(t as Record<string, string>).copyRoomCodeTitle ?? 'Copy room code'}
+          >
+            <Copy size={16} className={`${theme.iconColor} opacity-60`} />
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center justify-center gap-2">

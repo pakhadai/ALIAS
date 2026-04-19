@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Settings as SettingsIcon, Loader2, Lock, Unlock } from 'lucide-react';
 import { Button } from '../../components/Button';
-import {
-  ConfirmationModal,
-  bottomSheetBackdropClass,
-  bottomSheetPanelClass,
-  ModalPortal,
-} from '../../components/Shared';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { ModalSheet } from '../../components/ModalSheet';
 import { GameState, GameMode } from '../../types';
 import type { RoomErrorCode } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -359,42 +355,31 @@ export const LobbyScreen = () => {
         />
 
         {showQrModal && qrCodeData && (
-          <ModalPortal>
-            <div
-              className={bottomSheetBackdropClass(qrSheetOpen, 'z-120', 'fixed')}
-              onClick={closeQrModal}
-              role="presentation"
-            >
-              <div
-                className={bottomSheetPanelClass(
-                  qrSheetOpen,
-                  'px-5 py-5 pb-safe-bottom flex flex-col items-center gap-4 text-center max-w-sm'
-                )}
-                onClick={(e) => e.stopPropagation()}
-                role="dialog"
-                aria-modal="true"
-                aria-label={t.scanToJoin ?? 'QR code to join room'}
-              >
-                <div className="flex justify-center pb-1">
-                  <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
-                </div>
-                {/* Fixed box avoids layout shift while the data-URL image paints */}
-                <div className="bg-ui-surface p-4 rounded-2xl border border-ui-border w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
-                  <img
-                    src={qrCodeData}
-                    alt=""
-                    width={208}
-                    height={208}
-                    decoding="async"
-                    className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
-                  />
-                </div>
-                <p className="text-ui-fg text-[10px] uppercase tracking-[0.5em] font-bold px-1">
-                  {t.scanToJoin ?? 'Відскануйте для приєднання'}
-                </p>
-              </div>
+          <ModalSheet
+            open={qrSheetOpen}
+            onClose={closeQrModal}
+            zLayer="modalNested"
+            backdropPosition="fixed"
+            maxWidth="sm"
+            showHandle
+            paddedContent={false}
+            panelClassName="px-5 pt-0 pb-safe-bottom flex flex-col items-center gap-4 text-center"
+            ariaLabel={t.scanToJoin ?? 'QR code to join room'}
+          >
+            <div className="bg-ui-surface p-4 rounded-2xl border border-ui-border w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
+              <img
+                src={qrCodeData}
+                alt=""
+                width={208}
+                height={208}
+                decoding="async"
+                className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
+              />
             </div>
-          </ModalPortal>
+            <p className="text-ui-fg text-[10px] uppercase tracking-[0.5em] font-bold px-1">
+              {t.scanToJoin ?? 'Відскануйте для приєднання'}
+            </p>
+          </ModalSheet>
         )}
 
         <header className="flex justify-between items-center py-6 mb-4 shrink-0">
@@ -509,92 +494,82 @@ export const LobbyScreen = () => {
 
           {/* Add Player Modal */}
           {showAddPlayer && (
-            <ModalPortal>
-              <div
-                className={bottomSheetBackdropClass(addPlayerSheetOpen, 'z-100')}
-                style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
+            <ModalSheet
+              open={addPlayerSheetOpen}
+              onClose={closeAddPlayerModal}
+              showHandle
+              paddedContent={false}
+              panelClassName="relative p-8 pt-10 pb-safe-bottom"
+              backdropStyle={keyboardAvoidingBottomPadding(keyboardBottomInset)}
+            >
+              <button
+                type="button"
                 onClick={closeAddPlayerModal}
-                role="presentation"
+                className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
               >
-                <div
-                  className={`relative ${bottomSheetPanelClass(addPlayerSheetOpen, 'p-8 pt-10 pb-safe-bottom')}`}
-                  onClick={(e) => e.stopPropagation()}
-                  role="dialog"
-                  aria-modal="true"
-                >
-                  <button
-                    type="button"
-                    onClick={closeAddPlayerModal}
-                    className="absolute top-6 right-6 opacity-40 hover:opacity-100 transition-opacity"
-                  >
-                    <X size={24} className={currentTheme.iconColor} />
-                  </button>
-                  <div className="flex justify-center mb-4">
-                    <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
-                  </div>
-                  <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
-                    {t.addPlayerTitle}
-                  </h2>
-                  {players.length >= MAX_PLAYERS && (
-                    <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
-                      <p className="text-ui-danger text-xs font-bold uppercase tracking-widest">
-                        Ліміт гравців досягнуто
-                      </p>
-                      <p className="text-[11px] text-ui-fg-muted mt-2">
-                        Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
-                      </p>
-                    </div>
-                  )}
-                  <div className="space-y-6">
-                    <input
-                      autoFocus
-                      value={newPlayerName}
-                      onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
-                      onChange={(e) =>
-                        setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
-                      }
-                      placeholder={t.namePlaceholder}
-                      className="w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-sans font-bold text-center text-sm"
-                    />
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
-                      {AVATARS.map((a) => (
-                        <button
-                          key={a}
-                          type="button"
-                          onClick={() => setNewPlayerAvatar(a)}
-                          className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
-                            newPlayerAvatar === a
-                              ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
-                              : 'hover:bg-ui-surface-hover opacity-60 hover:opacity-100'
-                          }`}
-                        >
-                          {a}
-                        </button>
-                      ))}
-                    </div>
-                    <Button
-                      themeClass={currentTheme.button}
-                      fullWidth
-                      size="lg"
-                      onClick={() => {
-                        if (players.length >= MAX_PLAYERS) {
-                          showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
-                          return;
-                        }
-                        const name = newPlayerName.trim();
-                        if (name) {
-                          addOfflinePlayer(name, newPlayerAvatar);
-                          closeAddPlayerModal();
-                        }
-                      }}
-                      disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
-                    >
-                      {t.add}
-                    </Button>
-                  </div>
+                <X size={24} className={currentTheme.iconColor} />
+              </button>
+              <h2 className={`text-2xl font-serif mb-8 text-center ${currentTheme.textMain}`}>
+                {t.addPlayerTitle}
+              </h2>
+              {players.length >= MAX_PLAYERS && (
+                <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
+                  <p className="text-ui-danger text-xs font-bold uppercase tracking-widest">
+                    Ліміт гравців досягнуто
+                  </p>
+                  <p className="text-[11px] text-ui-fg-muted mt-2">
+                    Максимум: {MAX_PLAYERS}. Видаліть когось, щоб додати нового гравця.
+                  </p>
                 </div>
+              )}
+              <div className="space-y-6">
+                <input
+                  autoFocus
+                  value={newPlayerName}
+                  onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
+                  onChange={(e) =>
+                    setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))
+                  }
+                  placeholder={t.namePlaceholder}
+                  className="w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-sans font-bold text-center text-sm"
+                />
+                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+                  {AVATARS.map((a) => (
+                    <button
+                      key={a}
+                      type="button"
+                      onClick={() => setNewPlayerAvatar(a)}
+                      className={`shrink-0 text-2xl p-2 rounded-xl transition-all ${
+                        newPlayerAvatar === a
+                          ? 'bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] scale-110 shadow-lg'
+                          : 'hover:bg-ui-surface-hover opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  themeClass={currentTheme.button}
+                  fullWidth
+                  size="lg"
+                  onClick={() => {
+                    if (players.length >= MAX_PLAYERS) {
+                      showNotification(`Ліміт гравців: ${MAX_PLAYERS}`, 'error');
+                      return;
+                    }
+                    const name = newPlayerName.trim();
+                    if (name) {
+                      addOfflinePlayer(name, newPlayerAvatar);
+                      closeAddPlayerModal();
+                    }
+                  }}
+                  disabled={!newPlayerName.trim() || players.length >= MAX_PLAYERS}
+                >
+                  {t.add}
+                </Button>
               </div>
-            </ModalPortal>
+            </ModalSheet>
           )}
 
           {!isSolo && (
@@ -695,7 +670,11 @@ export const LobbyScreen = () => {
                 size="xl"
                 onClick={() => sendAction({ action: 'START_GAME' })}
                 disabled={!startValidation.ok}
-                className={startValidation.ok ? 'animate-pulse' : ''}
+                className={
+                  startValidation.ok
+                    ? 'shadow-[0_0_24px_color-mix(in_srgb,var(--ui-accent)_40%,transparent)]'
+                    : ''
+                }
               >
                 {t.startGame}
               </Button>

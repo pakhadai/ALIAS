@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo, ErrorInfo } from 'react';
+import React, { useEffect, useMemo, ErrorInfo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Star } from 'lucide-react';
 import { Button } from './Button';
 import { ThemeConfig } from '../types';
+import { zIndex } from '../constants/zIndex';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -63,15 +64,21 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
  * those keyframe animations override the transform/opacity CSS transitions on the
  * same property, breaking the slide animation. Pure CSS transitions are used instead.
  */
+/** Drag handle row — keep vertical rhythm consistent across bottom sheets */
+export const bottomSheetHandleRowClass = 'flex justify-center pt-2 pb-3 shrink-0';
+export const bottomSheetHandleBarClass = 'h-1 w-10 rounded-full bg-ui-border shrink-0';
+
+export type ZIndexLayerClass = (typeof zIndex)[keyof typeof zIndex];
+
 export const bottomSheetBackdropClass = (
   visible: boolean,
-  zIndex = 'z-50',
+  zClass: ZIndexLayerClass = zIndex.modal,
   position: 'fixed' | 'absolute' = 'fixed',
   extraClassName = ''
 ) =>
   // Scrollable overlay: when the keyboard shrinks the visual viewport, user can scroll to keep the sheet in view.
   // `pb-safe-bottom` insets the sheet above the home indicator / gesture bar.
-  `${position} inset-0 ${zIndex} flex min-h-0 flex-col items-stretch justify-end overflow-y-auto overscroll-y-contain pb-safe-bottom [-webkit-overflow-scrolling:touch] transition-[opacity,background-color] duration-300 ${extraClassName} ${
+  `${position} inset-0 ${zClass} flex min-h-0 flex-col items-stretch justify-end overflow-y-auto overscroll-y-contain pb-safe-bottom [-webkit-overflow-scrolling:touch] transition-[opacity,background-color] duration-300 ${extraClassName} ${
     visible
       ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl opacity-100'
       : 'bg-transparent opacity-0 pointer-events-none'
@@ -130,7 +137,7 @@ export const Confetti: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-100 overflow-hidden">
+    <div className={`fixed inset-0 pointer-events-none ${zIndex.fx} overflow-hidden`}>
       {particles.map((p) => (
         <div
           key={p.id}
@@ -186,7 +193,9 @@ export const ToastNotification: React.FC<{
 
   return (
     <ModalPortal>
-      <div className="fixed top-0 left-0 right-0 z-1000 flex justify-center px-4 pt-safe-top-sm pointer-events-none">
+      <div
+        className={`fixed top-0 left-0 right-0 ${zIndex.toast} flex justify-center px-4 pt-safe-top-sm pointer-events-none`}
+      >
         <div className="pointer-events-auto w-full max-w-md animate-slide-up">
           <div
             className={`${shell[type]} relative rounded-2xl border px-4 py-3.5 pr-11 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
@@ -211,106 +220,6 @@ export const ToastNotification: React.FC<{
   );
 };
 
-interface ConfirmationModalProps {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  isDanger?: boolean;
-  theme?: ThemeConfig;
-  confirmText?: string;
-  cancelText?: string;
-  backdropExtraClassName?: string;
-}
-
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-  isOpen,
-  title,
-  message,
-  onConfirm,
-  onCancel,
-  isDanger,
-  theme,
-  confirmText,
-  cancelText,
-  backdropExtraClassName,
-}) => {
-  const [shouldRender, setShouldRender] = useState(isOpen);
-  const [isClosing, setIsClosing] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true);
-      setIsClosing(false);
-      return;
-    }
-    if (!shouldRender) return;
-    setIsClosing(true);
-    const t = setTimeout(() => {
-      setShouldRender(false);
-      setIsClosing(false);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [isOpen, shouldRender]);
-
-  if (!shouldRender) return null;
-
-  const textMain = theme?.textMain || 'text-ui-fg';
-  const textSecondary = theme?.textSecondary || 'text-ui-fg-muted';
-  const sheetOpen = !isClosing;
-
-  return (
-    <ModalPortal>
-      <div
-        className={bottomSheetBackdropClass(sheetOpen, 'z-600', 'fixed', backdropExtraClassName)}
-        onClick={onCancel}
-        role="presentation"
-      >
-        <div
-          className={bottomSheetPanelClass(sheetOpen, 'px-8 pt-8 pb-safe-bottom text-center')}
-          onClick={(e) => e.stopPropagation()}
-          role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="confirm-modal-title"
-          aria-describedby="confirm-modal-desc"
-        >
-          <div className="flex justify-center pt-1 pb-3">
-            <div className="h-1 w-10 rounded-full bg-ui-border" aria-hidden />
-          </div>
-          <h3
-            id="confirm-modal-title"
-            className={`text-2xl md:text-3xl font-serif ${textMain} mb-4 tracking-wide leading-tight`}
-          >
-            {title}
-          </h3>
-          <p
-            id="confirm-modal-desc"
-            className={`${textSecondary} mb-8 text-sm font-sans leading-relaxed tracking-wide font-light px-1`}
-          >
-            {message}
-          </p>
-          <div className="flex flex-col gap-4">
-            <Button
-              variant={isDanger ? 'danger' : 'primary'}
-              fullWidth
-              size="xl"
-              onClick={onConfirm}
-            >
-              {confirmText || (isDanger ? 'Yes, Exit' : 'Confirm')}
-            </Button>
-            <Button variant="ghost" fullWidth onClick={onCancel} size="lg">
-              <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
-                {cancelText || 'Go Back'}
-              </span>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </ModalPortal>
-  );
-};
-
 export const FloatingParticle: React.FC<{
   x: number;
   y: number;
@@ -325,7 +234,7 @@ export const FloatingParticle: React.FC<{
 
   return (
     <div
-      className="fixed pointer-events-none z-100 font-serif text-4xl animate-float-up"
+      className={`fixed pointer-events-none ${zIndex.fx} font-serif text-4xl animate-float-up`}
       style={{ left: x, top: y, color }}
     >
       {text}
@@ -359,7 +268,9 @@ export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({
 
   return (
     <ModalPortal>
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-150 w-full px-10 text-center animate-pop-in">
+      <div
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${zIndex.milestone} w-full px-10 text-center animate-pop-in`}
+      >
         <div className="bg-ui-card border border-ui-border p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-ui-border">
           <Star
             className="w-16 h-16 text-ui-accent mx-auto mb-8 animate-pulse"

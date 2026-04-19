@@ -669,6 +669,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'apple-mobile-web-app-status-bar-style',
       currentTheme.isDark ? 'black-translucent' : 'default'
     );
+
+    const tgWebApp = window.Telegram?.WebApp;
+    if (tgWebApp) {
+      try {
+        tgWebApp.setHeaderColor?.(themeColor);
+      } catch {
+        /* API may be absent or reject unsupported values */
+      }
+      try {
+        tgWebApp.setBackgroundColor?.(themeColor);
+      } catch {
+        /* API may be absent or reject unsupported values */
+      }
+    }
   }, [currentTheme]);
 
   // <html lang> is now synced in the uiLanguage persistence effect above
