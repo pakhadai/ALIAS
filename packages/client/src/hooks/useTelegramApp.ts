@@ -14,6 +14,15 @@ function applyTelegramThemeCssVars(theme: TelegramWebAppThemeParams | null): voi
   }
 }
 
+function insetPx(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 /** Ensures `--tg-*-safe-area-inset-*` exist (SDK usually sets them; some clients need a sync after fullscreen). */
 function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
   const root = document.documentElement;
@@ -23,13 +32,26 @@ function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
   ) => {
     if (!inset) return;
     for (const side of ['top', 'right', 'bottom', 'left'] as const) {
-      const v = inset[side];
-      if (typeof v !== 'number' || Number.isNaN(v)) continue;
-      root.style.setProperty(`--tg-${prefix}-${side}`, `${v}px`);
+      const px = insetPx(inset[side]);
+      if (px == null || px < 0) continue;
+      root.style.setProperty(`--tg-${prefix}-${side}`, `${px}px`);
     }
   };
   applySide('safe-area-inset', webApp.safeAreaInset);
   applySide('content-safe-area-inset', webApp.contentSafeAreaInset);
+}
+
+/** Writes `--tg-viewport-height` / `--tg-viewport-stable-height` so CSS can match the WebView (not only `100vh`). */
+function applyTelegramViewportCssVars(webApp: TelegramWebApp): void {
+  const root = document.documentElement;
+  const stable = webApp.viewportStableHeight;
+  const current = webApp.viewportHeight;
+  if (typeof stable === 'number' && stable > 0) {
+    root.style.setProperty('--tg-viewport-stable-height', `${stable}px`);
+  }
+  if (typeof current === 'number' && current > 0) {
+    root.style.setProperty('--tg-viewport-height', `${current}px`);
+  }
 }
 
 export type UseTelegramAppResult = {
@@ -46,7 +68,10 @@ export type UseTelegramAppResult = {
 
 export function useTelegramApp(): UseTelegramAppResult {
   const webApp = getTelegramWebApp();
-  const isTelegram = Boolean(window.Telegram?.WebApp?.initData);
+  /** Mini App: almost always has initData; still init UX when object exists (e.g. dev / delayed init). */
+  const isTelegram = Boolean(
+    webApp && (webApp.initData || webApp.platform || webApp.initDataUnsafe)
+  );
   const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || null;
 
   const [themeParams, setThemeParams] = useState<TelegramWebAppThemeParams | null>(
@@ -87,8 +112,13 @@ export function useTelegramApp(): UseTelegramAppResult {
       void _err;
     }
 
-    applyTelegramSafeAreaCssVars(webApp);
-    const insetSyncRaf = requestAnimationFrame(() => applyTelegramSafeAreaCssVars(webApp));
+    const syncLayout = () => {
+      applyTelegramViewportCssVars(webApp);
+      applyTelegramSafeAreaCssVars(webApp);
+    };
+    syncLayout();
+    const insetSyncRaf = requestAnimationFrame(() => syncLayout());
+    const lateSync = window.setTimeout(syncLayout, 80);
 
     const handleThemeChanged = () => {
       setThemeParams(webApp.themeParams ?? null);
@@ -98,23 +128,26 @@ export function useTelegramApp(): UseTelegramAppResult {
     };
 
     const handleInsetsChanged = () => {
-      applyTelegramSafeAreaCssVars(webApp);
+      syncLayout();
     };
 
     webApp.onEvent?.('themeChanged', handleThemeChanged);
     webApp.onEvent?.('safeAreaChanged', handleInsetsChanged);
     webApp.onEvent?.('contentSafeAreaChanged', handleInsetsChanged);
     webApp.onEvent?.('fullscreenChanged', handleInsetsChanged);
+    webApp.onEvent?.('viewportChanged', handleInsetsChanged);
 
     // Apply initial theme vars as soon as possible.
     applyTelegramThemeCssVars(webApp.themeParams ?? null);
 
     return () => {
+      window.clearTimeout(lateSync);
       cancelAnimationFrame(insetSyncRaf);
       webApp.offEvent?.('themeChanged', handleThemeChanged);
       webApp.offEvent?.('safeAreaChanged', handleInsetsChanged);
       webApp.offEvent?.('contentSafeAreaChanged', handleInsetsChanged);
       webApp.offEvent?.('fullscreenChanged', handleInsetsChanged);
+      webApp.offEvent?.('viewportChanged', handleInsetsChanged);
     };
   }, [isTelegram, webApp]);
 

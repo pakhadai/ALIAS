@@ -82,6 +82,22 @@ body {
   --ui-fg-muted: var(--tg-theme-hint-color, var(--ui-fg-muted));
 }
 
+/*
+ * Telegram WebView: `100vh` / default layout height often disagrees with the visible Mini App
+ * (header, keyboard, fullscreen). SDK exposes viewport in JS and may set --tg-viewport-*; we also
+ * mirror them from useTelegramApp. Tie the scroll root to that height so padding/min-height match reality.
+ */
+html[data-telegram-app='true'],
+html[data-telegram-app='true'] body {
+  height: var(--tg-viewport-stable-height, var(--tg-viewport-height, 100dvh));
+  min-height: var(--tg-viewport-stable-height, var(--tg-viewport-height, 100dvh));
+}
+
+html[data-telegram-app='true'] #root {
+  min-height: 100%;
+  height: 100%;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

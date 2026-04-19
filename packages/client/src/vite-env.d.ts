@@ -38,10 +38,17 @@ declare global {
   }>;
 
   type TelegramWebApp = {
-    initData: string;
+    /** May be empty before auth or in some embed contexts. */
+    initData?: string;
     initDataUnsafe?: TelegramWebAppInitDataUnsafe;
     themeParams: TelegramWebAppThemeParams;
     colorScheme: 'light' | 'dark';
+    /** Present in real Mini App clients (e.g. ios, android, macos, web, webrtc, unknown). */
+    platform?: string;
+    /** Current viewport height in px (SDK). */
+    viewportHeight?: number;
+    /** Recommended layout height in px — avoids UI chrome jump (SDK). */
+    viewportStableHeight?: number;
     /** Device notch / system bars — mirrored as `var(--tg-safe-area-inset-*)` by the SDK */
     safeAreaInset?: TelegramSafeAreaInset;
     /** Insets avoiding Telegram chrome (header, etc.) — `var(--tg-content-safe-area-inset-*)` */
