@@ -83,28 +83,6 @@ body {
 }
 
 /*
- * Top inset for fixed headers: SDK vars first, then env(safe-area-*).
- * Telegram-only minimum (~56px) covers native close / ⋮ row when contentSafeAreaInset is 0 or late.
- * See https://core.telegram.org/bots/webapps#contentsafeareainset
- */
-:root {
-  --app-header-safe-top: max(
-    1.5rem,
-    var(--tg-content-safe-area-inset-top, 0px),
-    var(--tg-safe-area-inset-top, 0px),
-    env(safe-area-inset-top, 0px)
-  );
-}
-:root[data-telegram-app='true'] {
-  --app-header-safe-top: max(
-    3.5rem,
-    var(--tg-content-safe-area-inset-top, 0px),
-    var(--tg-safe-area-inset-top, 0px),
-    env(safe-area-inset-top, 0px)
-  );
-}
-
-/*
  * Telegram WebView: `100vh` / default layout height often disagrees with the visible Mini App
  * (header, keyboard, fullscreen). SDK exposes viewport in JS and may set --tg-viewport-*; we also
  * mirror them from useTelegramApp. Tie the scroll root to that height so padding/min-height match reality.

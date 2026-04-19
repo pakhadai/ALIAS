@@ -4,6 +4,12 @@ function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
 }
 
+/** Same detection as `useTelegramApp().isTelegram` — use for UI only to avoid duplicate hook effects. */
+export function isTelegramMiniApp(): boolean {
+  const webApp = getTelegramWebApp();
+  return Boolean(webApp && (webApp.initData || webApp.platform || webApp.initDataUnsafe));
+}
+
 function applyTelegramThemeCssVars(theme: TelegramWebAppThemeParams | null): void {
   if (!theme) return;
   const root = document.documentElement;
@@ -97,9 +103,13 @@ export function useTelegramApp(): UseTelegramAppResult {
     } catch (_err) {
       void _err;
     }
-    // Do NOT auto-call requestFullscreen(): it makes the WebView edge-to-edge; on many clients
-    // contentSafeAreaInset lags or stays 0 so fixed headers/icons sit under Telegram’s close/menu.
-    // Users can still enter fullscreen via the in-app control where we re-sync insets after toggling.
+    // Mini App fullscreen is expected in Telegram; SDK updates safe-area / viewport after this.
+    // We hide the in-app browser fullscreen button in MenuScreen when `isTelegram`.
+    try {
+      webApp.requestFullscreen?.();
+    } catch (_err) {
+      void _err;
+    }
     try {
       webApp.disableVerticalSwipes?.();
     } catch (_err) {

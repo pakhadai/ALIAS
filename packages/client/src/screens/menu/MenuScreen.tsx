@@ -13,6 +13,7 @@ import {
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
+import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesScreen';
 import { ROOM_CODE_LENGTH } from '../../constants';
 
@@ -41,6 +42,7 @@ export const MenuScreen = () => {
   const [createRoomBusy, setCreateRoomBusy] = useState(false);
   const t = useT();
   const keyboardBottomInset = useVisualViewportBottomInset();
+  const isTelegram = isTelegramMiniApp();
 
   void setSettings;
 
@@ -75,7 +77,7 @@ export const MenuScreen = () => {
   };
 
   const handleFullscreenClick = async () => {
-    if (isStandaloneDisplay()) return;
+    if (isStandaloneDisplay() || isTelegram) return;
     const result = await toggleFullscreen();
     if (result === 'unsupported') {
       setShowFullscreenHint(true);
@@ -148,11 +150,10 @@ export const MenuScreen = () => {
           'fixed left-0 right-0 top-0 z-20',
           'flex justify-end items-center gap-2 sm:gap-3',
           'px-4 pb-3',
-          'pt-(--app-header-safe-top)',
+          /* Лише офіційні інсети Mini App: --tg-content-safe-area-inset-top, --tg-safe-area-inset-top, env() */
+          'pt-env-top',
           'backdrop-blur-xl',
-          'border-b border-ui-border/50',
-          /* Окрема «панель»: інакше на світлій темі смуга зливалась з фоном і хедера «не було видно» */
-          'bg-ui-bg/92 shadow-[0_1px_0_color-mix(in_srgb,var(--ui-border)_40%,transparent)]',
+          'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--ui-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--ui-bg)_65%,transparent)_60%,transparent_100%)]',
         ].join(' ')}
       >
         <button
@@ -187,7 +188,7 @@ export const MenuScreen = () => {
         >
           <BookOpen size={22} className={menuHeaderIcon} strokeWidth={1.75} />
         </button>
-        {!isStandaloneDisplay() && (
+        {!isStandaloneDisplay() && !isTelegram && (
           <button
             type="button"
             onClick={() => void handleFullscreenClick()}
@@ -203,7 +204,8 @@ export const MenuScreen = () => {
         <div
           className="w-full shrink-0"
           style={{
-            height: 'calc(var(--app-header-safe-top) + 3.5rem)',
+            height:
+              'calc(max(var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px)) + 3.5rem)',
           }}
           aria-hidden
         />
