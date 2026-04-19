@@ -30,7 +30,7 @@ export const VSScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center overflow-hidden`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center overflow-hidden`}
     >
       <div className="flex flex-col items-center gap-6 w-full max-w-sm">
         {elements.map((el, i) => {

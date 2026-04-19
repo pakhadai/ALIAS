@@ -38,7 +38,9 @@ export const CountdownScreen = () => {
   }, [count, startGameplay, playSound, isActualExplainer, isQuiz]);
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} justify-center items-center`}>
+    <div
+      className={`flex flex-col min-h-screen ${currentTheme.bg} pt-safe-top justify-center items-center`}
+    >
       {count > 0 ? (
         <span
           key={count}

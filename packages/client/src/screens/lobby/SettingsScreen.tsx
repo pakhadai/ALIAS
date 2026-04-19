@@ -252,7 +252,7 @@ export const SettingsScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8 overflow-y-auto no-scrollbar`}
+      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-8 md:pb-8 overflow-y-auto no-scrollbar`}
     >
       <div className="max-w-2xl w-full">
         <header className="flex justify-between items-center py-6 mb-8">

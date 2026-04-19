@@ -307,7 +307,9 @@ export const LobbyScreen = () => {
   }, [isHost, isSolo, players.length, teamShells, unassigned.length]);
 
   return (
-    <div className={`flex flex-col min-h-screen items-center ${currentTheme.bg} p-6 md:p-8`}>
+    <div
+      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-8 md:pb-8`}
+    >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <ConfirmationModal
           isOpen={showExitConfirm}

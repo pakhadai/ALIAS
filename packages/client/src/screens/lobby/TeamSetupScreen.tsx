@@ -67,7 +67,7 @@ export const TeamSetupScreen = () => {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8`}>
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8`}>
       <header className="flex justify-between items-center py-6 mb-8">
         <button
           onClick={() => setGameState(GameState.LOBBY)}

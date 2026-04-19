@@ -53,7 +53,7 @@ export const RoundSummaryScreen = () => {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 relative`}>
+    <div className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 relative`}>
       {milestone && (
         <MilestoneNotification
           points={milestone.points}

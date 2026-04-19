@@ -33,7 +33,8 @@ function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
     if (!inset) return;
     for (const side of ['top', 'right', 'bottom', 'left'] as const) {
       const px = insetPx(inset[side]);
-      if (px == null || px < 0) continue;
+      // Never write 0px: inline styles on <html> override the SDK’s own --tg-* vars and can zero out a correct inset.
+      if (px == null || px <= 0) continue;
       root.style.setProperty(`--tg-${prefix}-${side}`, `${px}px`);
     }
   };

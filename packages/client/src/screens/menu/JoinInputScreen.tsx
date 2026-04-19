@@ -43,7 +43,7 @@ export const JoinInputScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-10 md:pb-10 justify-center items-center`}
       style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
     >
       <Logo theme={currentTheme} />

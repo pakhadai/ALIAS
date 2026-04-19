@@ -24,7 +24,7 @@ export const PreRoundScreen = () => {
   if (!activeTeam || activeTeam.players.length === 0) {
     return (
       <div
-        className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 justify-center items-center text-center`}
+        className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center text-center`}
       >
         <div className="space-y-8">
           <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
@@ -43,7 +43,9 @@ export const PreRoundScreen = () => {
   const isActualExplainer = explainer?.id === myPlayerId;
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} p-8 text-center relative`}>
+    <div
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 text-center relative`}
+    >
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="space-y-8 animate-pop-in w-full max-w-sm">
           <h2

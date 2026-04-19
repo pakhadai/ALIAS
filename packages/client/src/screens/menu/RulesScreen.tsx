@@ -390,7 +390,7 @@ export const RulesScreen = () => {
   const t = useT();
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} p-6 md:p-10 justify-center items-center`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-10 md:pb-10 justify-center items-center`}
     >
       <div
         className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`}
