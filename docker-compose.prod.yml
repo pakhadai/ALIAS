@@ -1,5 +1,7 @@
-# Production Docker Compose
-# Usage: docker-compose -f docker-compose.prod.yml up -d
+# Production Docker Compose — власний nginx + Let's Encrypt (порти 80/443 на хості).
+# Якщо на VPS уже зайняті 80/443 під Nginx Proxy Manager — використовуй docker-compose.npm.yml.
+#
+# Usage: docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 #
 # Before first run:
 #   1. Copy .env.prod.example → .env.prod and fill all values

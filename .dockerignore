@@ -6,4 +6,3 @@ dist
 *.md
 .env
 .env.*
-!.env.example

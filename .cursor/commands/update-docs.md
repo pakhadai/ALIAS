@@ -7,7 +7,7 @@ Sync documentation with the codebase, generating from source-of-truth files.
 | Source | Generates |
 |--------|-----------|
 | `package.json` scripts | Available commands reference |
-| `.env.example` | Environment variable documentation |
+| `.env.prod.example` | Environment variable documentation |
 | `openapi.yaml` / route files | API endpoint reference |
 | Source code exports | Public API documentation |
 | `Dockerfile` / `docker-compose.yml` | Infrastructure setup docs |
@@ -28,7 +28,7 @@ Sync documentation with the codebase, generating from source-of-truth files.
 
 ## Step 3: Generate Environment Documentation
 
-1. Read `.env.example` (or `.env.template`, `.env.sample`)
+1. Read `.env.prod.example` (or `.env.template`, `.env.sample`)
 2. Extract all variables with their purposes
 3. Categorize as required vs optional
 4. Document expected format and valid values

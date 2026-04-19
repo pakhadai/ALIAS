@@ -1,9 +1,16 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import dotenv from 'dotenv';
 import path from 'path';
+
+const monorepoRoot = path.resolve(__dirname, '..', '..');
+const envProdPath = path.join(monorepoRoot, '.env.prod');
+if (existsSync(envProdPath)) {
+  dotenv.config({ path: envProdPath });
+}
 
 /** Shown in the main menu; must stay in sync with nothing else — this is the only source. */
 const APP_VERSION = (
@@ -27,8 +34,8 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
   },
-  // Load .env* from repo root (monorepo convenience)
-  envDir: path.resolve(__dirname, '..', '..'),
+  // Repo root: same `.env.prod` as server + optional Vite `.env.*` overrides
+  envDir: monorepoRoot,
   plugins: [
     react(),
     VitePWA({

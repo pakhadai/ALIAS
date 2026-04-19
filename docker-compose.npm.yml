@@ -1,6 +1,6 @@
 # Production stack за Nginx Proxy Manager: TLS і 80/443 на хості займає NPM.
 # Рекомендовано для NPM: Proxy Host → Forward Hostname = `gateway`, Forward Port = `80`
-# (це стабільніше, бо працює через спільну docker-мережу `proxy`).
+# (через спільну зовнішню мережу Docker — типово `npm_network`, див. `NPM_DOCKER_NETWORK` у `.env.prod`).
 # Запасний варіант: forward на `http://<docker-host>:9080` (або зміни `GATEWAY_PUBLISH` у `.env.prod`).
 #
 # Запуск (як на VPS): docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
@@ -56,6 +56,10 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://${DOMAIN}/store?payment=success}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://${DOMAIN}/store}
+      ADMIN_ALLOWED_EMAILS: ${ADMIN_ALLOWED_EMAILS:-}
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:-}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
@@ -94,9 +98,8 @@ services:
 networks:
   proxy:
     external: true
-    # Ensure Docker uses the existing NPM network name.
-    # Without explicit `name`, some compose versions may treat it as a different network.
-    name: proxy
+    # Ім’я мережі NPM на хості (перевір: docker network ls). Типово у внутрішній документації VPS — npm_network.
+    name: ${NPM_DOCKER_NETWORK:-npm_network}
 
 volumes:
   postgres-data:

@@ -59,7 +59,9 @@ export class AuthService {
     idToken: string
   ): Promise<{ googleId: string; email: string; name: string } | null> {
     if (!config.google.clientId) {
-      console.error('[Auth] GOOGLE_CLIENT_ID is not set — set it in .env and restart the server');
+      console.error(
+        '[Auth] GOOGLE_CLIENT_ID is not set — set it in .env.prod and restart the server'
+      );
       return null;
     }
     try {

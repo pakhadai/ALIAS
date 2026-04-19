@@ -28,6 +28,13 @@
 - Чому (контекст, причина)
 ```
 
+## [Unreleased]
+
+### Changed
+
+- **Деплой (NPM):** зовнішня docker-мережа за замовчуванням **`npm_network`** (`NPM_DOCKER_NETWORK` у `.env.prod`); у `docker-compose.npm.yml` додано змінні admin / `TRUST_PROXY_HOPS` для паритету з `docker-compose.prod.yml`. Оновлено `.env.prod.example`, README та шаблон `docs/VPS-INFRASTRUCTURE.md.example`.
+- **Env:** єдиний канонічний файл — кореневий **`.env.prod`** (шаблон `.env.prod.example`); сервер завантажує лише його; `docker-compose.yml` і Vite підховують той самий файл. Файл **`.env.example`** прибрано; GitHub Deploy більше не падає назад на `.env`.
+
 ## [2026-04-19] — Release 0.6.2: лобі та правила (UX)
 
 ### Changed
@@ -600,7 +607,7 @@
 - [`nginx/npm-edge.conf`](./nginx/npm-edge.conf) — HTTP edge: `/api`, `/socket.io`, SPA.
 
 ### Fixed
-- [`docker-compose.npm.yml`](./docker-compose.npm.yml): `gateway` завжди підключається до зовнішньої мережі **`proxy`** через `networks.proxy.name: proxy`, щоб NPM резолвив `gateway` (інакше після деплою буде `502 Bad Gateway`).
+- [`docker-compose.npm.yml`](./docker-compose.npm.yml): `gateway` підключений до зовнішньої docker-мережі NPM (`NPM_DOCKER_NETWORK`, типово `npm_network`), щоб NPM резолвив `gateway` (інакше `502 Bad Gateway`).
 - [`.dockerignore`](./.dockerignore): прибрано `packages/client`, інакше збірка client-образа в Docker падає.
 - [`packages/client/Dockerfile`](./packages/client/Dockerfile): healthcheck на `/health`, `127.0.0.1`, довший `start-period`.
 

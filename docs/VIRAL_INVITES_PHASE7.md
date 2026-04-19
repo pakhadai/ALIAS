@@ -17,7 +17,7 @@
 
 ENV:
 - `VITE_TG_APP_LINK` — базовий URL Mini App (формат `https://t.me/<bot_username>/app`)
-- Для monorepo зручно зберігати в root `.env` — `packages/client` завантажує env через `envDir` у `packages/client/vite.config.ts`.
+- Для monorepo зручно тримати секрети в кореневому **`.env.prod`** — сервер читає його з кореня; Vite підхоплює той самий файл при старті (`vite.config.ts`).
 
 ### 3) Автоматичний вхід у кімнату по запрошенню
 - Де: `packages/client/src/App.tsx`
@@ -35,7 +35,7 @@ ENV:
 ## Як протестувати
 
 ### Локально
-1. Додай у root `.env`:
+1. Додай у кореневий `.env.prod`:
    - `VITE_TG_APP_LINK=https://t.me/<bot_username>/app`
 2. Запусти клієнт (`packages/client`) і створи/зайди в online-лоббі.
 3. Натисни “💌 Запросити друзів”:

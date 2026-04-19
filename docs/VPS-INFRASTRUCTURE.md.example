@@ -14,7 +14,7 @@
 - Шляхи проєктів (`~/apps/...`), де лежить клон Alias
 - NPM, VPN, UFW, бекапи (без паролів і секретів у тексті, якщо копіюєш кудись)
 - Домени та Proxy Hosts (якщо потрібно для пам’яті)
-- Примітки щодо `npm_network` vs власний nginx у `docker-compose.prod.yml`
+- Назва docker-мережі NPM (у `.env.prod`: `NPM_DOCKER_NETWORK`, типово `npm_network`) vs окремий стек `docker-compose.prod.yml`
 
 ## Деплой Alias з GitHub Actions
 

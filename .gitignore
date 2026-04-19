@@ -13,10 +13,9 @@ dist-ssr
 .turbo
 *.local
 
-# Environment
+# Environment (єдиний робочий файл у корені — `.env.prod`, у git лише `*.example`)
 .env
 .env.*
-!.env.example
 !.env.prod.example
 !.env.*.example
 

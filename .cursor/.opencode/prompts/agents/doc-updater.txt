@@ -79,7 +79,7 @@ Links to other codemaps that interact with this area
 ```
 - Read JSDoc/TSDoc comments
 - Extract README sections from package.json
-- Parse environment variables from .env.example
+- Parse environment variables from .env.prod.example
 - Collect API endpoint definitions
 ```
 
@@ -116,7 +116,7 @@ Brief description
 npm install
 
 # Environment variables
-cp .env.example .env.local
+cp .env.prod.example .env.prod
 # Fill in: OPENAI_API_KEY, REDIS_URL, etc.
 
 # Development

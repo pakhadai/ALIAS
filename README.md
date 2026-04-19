@@ -112,7 +112,7 @@
 | **PWA** | Service Worker + Manifest | - |
 | **Спостереження** | Sentry (`@sentry/node`, `@sentry/react` ~10.x; `@sentry/vite-plugin` ~5.x у збірці Vite) | 10.x / 5.x |
 | **Тести** | Vitest (unit: **server** + **client**) + Playwright (e2e) | див. [`ci.yml`](./.github/workflows/ci.yml) |
-| **Деплой** | Docker + docker-compose + nginx | - |
+| **Деплой** | Docker Compose; на VPS типово **Nginx Proxy Manager** + внутрішній `gateway` (nginx) | - |
 
 ---
 
@@ -127,8 +127,8 @@ ALIAS/                          ← Корінь монорепо
 ├── turbo.json                  ← Turbo (build / typecheck)
 ├── .github/workflows/          ← CI (Node 20), E2E (@smoke / @core), deploy VPS, secret scan
 ├── docker-compose.yml          ← Dev: Redis + Postgres (+ опційно сервіси)
-├── docker-compose.prod.yml     ← Production
-├── docker-compose.npm.yml      ← Стек за Nginx Proxy Manager
+├── docker-compose.npm.yml      ← Production за Nginx Proxy Manager (рекомендовано для типового VPS)
+├── docker-compose.prod.yml     ← Production: власний nginx + SSL (80/443; якщо NPM не займає порти)
 ├── nginx/                      ← nginx.conf, npm-edge.conf
 ├── scripts/                    ← Утилітні скрипти
 ├── docs/                       ← Тематичні доповнення (Prisma-дані, лобі, acceptance)
@@ -553,7 +553,7 @@ interface GameSyncState {
 
 Доступ контролюється **`packages/server/src/routes/admin.ts`** (після **`ipWhitelist`**):
 
-1. Якщо в **`.env`** задано **`ADMIN_API_KEY`**, можна викликати API з заголовком **`x-admin-key: <той самий ключ>`** без JWT (зручно для скриптів). Якщо заголовок передано, але значення не збігається — **403**.
+1. Якщо в **`.env.prod`** задано **`ADMIN_API_KEY`**, можна викликати API з заголовком **`x-admin-key: <той самий ключ>`** без JWT (зручно для скриптів). Якщо заголовок передано, але значення не збігається — **403**.
 2. Інакше потрібен **`Authorization: Bearer <JWT>`** (не anonymous). Далі:
    - якщо задано **`ADMIN_ALLOWED_EMAILS`** — email користувача має бути в списку;
    - інакше — **`User.isAdmin === true`** у БД;
@@ -847,59 +847,21 @@ CSS custom properties встановлюються динамічно: `--font-h
 
 ## Запуск проекту
 
-### Вимоги
+### Основний потік (production)
 
-- **Node.js** 18+ (`engines.node` у кореневому `package.json`). У **GitHub Actions** для CI зафіксовано **Node 20** (`.github/workflows/ci.yml`).
-- **pnpm** 9.x — версія **9.0.0** зафіксована полем **`packageManager`** у кореневому `package.json` (Corepack підхопить її автоматично).
-- **Docker** та **Docker Compose** (для Redis + PostgreSQL)
+Змінні середовища — **лише** кореневий **`.env.prod`** (на GitHub у репозиторії лежить шаблон [`.env.prod.example`](./.env.prod.example), на сервері — заповнений **`.env.prod`**, не в git).
 
-### Кроки
+Після push у **`main`** workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml) збирає образи й виконує **`docker compose --env-file .env.prod ... up -d --build`** у каталозі клону на VPS (деталі — розділ [Деплой на VPS](#деплой-на-vps-github-actions)).
 
-   ```bash
-# 1. Встановити залежності
-pnpm install
+### Локальний запуск (опційно)
 
-# 2. Скопіювати env
-cp .env.example .env
-# Відредагувати .env: DATABASE_URL (якщо потрібна своя), JWT_SECRET, GOOGLE_CLIENT_ID (опційно),
-# а також VITE_* змінні для клієнта за потреби.
+Якщо колись потрібно підняти Redis/Postgres і `pnpm dev` на машині розробника:
 
-# 3. Запустити Redis + PostgreSQL
-   docker-compose up -d redis postgres
+1. `pnpm install`
+2. `cp .env.prod.example .env.prod` і відредагувати (для локального Docker-Postgres з `docker-compose.yml` зручно **`DATABASE_URL=postgresql://alias:alias_dev@localhost:5432/alias`** тощо).
+3. `docker compose up -d redis postgres` → міграції / seed → `pnpm dev`
 
-# 4. Застосувати міграції та seed
-   pnpm --filter @alias/server db:migrate
-   pnpm --filter @alias/server db:seed
-
-# 5. Запустити dev-сервер (клієнт + сервер паралельно)
-   pnpm run dev
-   ```
-
-**Windows (PowerShell) еквівалент:**
-
-```powershell
-# 1. Встановити залежності
-pnpm install
-
-# 2. Скопіювати env
-Copy-Item .env.example .env
-# Відредагувати .env
-
-# 3. Запустити Redis + PostgreSQL
-docker compose up -d redis postgres
-
-# 4. Застосувати міграції та seed
-pnpm --filter @alias/server db:migrate
-pnpm --filter @alias/server db:seed
-
-# 5. Запустити dev-сервер (клієнт + сервер паралельно)
-pnpm dev
-```
-
-**Після запуску:**
-- Клієнт: `http://localhost:5173`
-- Сервер: `http://localhost:3001`
-- Health check: `http://localhost:3001/health`
+Після запуску: клієнт `http://localhost:5173`, сервер `http://localhost:3001`, health `http://localhost:3001/health`.
 
 ### Скрипти
 
@@ -929,13 +891,15 @@ pnpm run dev                           # локальний dev-сервер
 
 ### Production
 
+**Типовий VPS з Nginx Proxy Manager** (TLS на NPM, проєкт у спільній мережі на кшталт `npm_network`):
+
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
 ```
 
-Production конфіг включає: побудову Docker images для client та server, nginx reverse proxy.
+У `.env.prod` задай `NPM_DOCKER_NETWORK` так само, як називається мережа NPM (`docker network ls` на сервері). У Nginx Proxy Manager: Proxy Host → **Forward Hostname** `gateway`, **Port** `80` (або forward на `127.0.0.1:9080`, якщо змінено `GATEWAY_PUBLISH`).
 
-Типовий ручний запуск з env для compose (змінні підставляються з `.env.prod`):
+**Окремий nginx + Let's Encrypt у проєкті** (порти 80/443 на хості — лише якщо NPM їх не займає):
 
 ```bash
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
@@ -987,16 +951,16 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
 
-**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `ALIAS`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/ALIAS`** (`/root/apps/ALIAS` для root). **`VPS_COMPOSE_FILE`** — для стеку за Nginx Proxy Manager на хості: **`docker-compose.npm.yml`** (файл у репо разом із `nginx/npm-edge.conf`). **`VPS_COMPOSE_PROJECT`** — наприклад **`alias`**, щоб збігалося з `docker compose -p alias` на сервері. **`VPS_ENV_FILE`** — наприклад `.env`, якщо не `.env.prod`. Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
+**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `ALIAS`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/ALIAS`** (`/root/apps/ALIAS` для root). **`VPS_COMPOSE_FILE`** — для стеку за Nginx Proxy Manager на хості: **`docker-compose.npm.yml`** (файл у репо разом із `nginx/npm-edge.conf`). **`VPS_COMPOSE_PROJECT`** — наприклад **`alias`**, щоб збігалося з `docker compose -p alias` на сервері. **`VPS_ENV_FILE`** — за замовчуванням **`.env.prod`** (інше ім’я лише якщо свідомо змінюєте). Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
 
 **Що має бути на VPS до першого деплою:**
 
 1. Каталог деплою: за замовчуванням **`~/apps/ALIAS`**. Перший запуск без теки — автоматичний `git clone` (див. вище про публічний repo / credentials). Шлях у **`VPS_DEPLOY_PATH`** має **точно** збігатися з реальною текою (регістр літер).
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
-4. SSL і домен — за коментарями у `docker-compose.prod.yml` (certbot тощо), якщо потрібно.
+4. SSL і домен — через NPM (Force SSL) або через `docker-compose.prod.yml` + certbot, якщо не використовуєте NPM.
 
-**Примітка для Nginx Proxy Manager (NPM):** якщо NPM працює у зовнішній docker-мережі `proxy`, сервіс `gateway` (з `docker-compose.npm.yml`) також має бути підключений до цієї мережі, інакше NPM не резолвить хост `gateway` та віддає `502 Bad Gateway`. У репо це зафіксовано як `networks.proxy.name: proxy` + `gateway.networks: [default, proxy]`.
+**Nginx Proxy Manager:** сервіс `gateway` підключений до **тієї ж зовнішньої docker-мережі**, що й NPM. Ім’я мережі задається в `.env.prod` як **`NPM_DOCKER_NETWORK`** (типово **`npm_network`**). Якщо ім’я інше — підставте з `docker network ls`, інакше NPM не резолвить `gateway` і буде **502**.
 
 Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
@@ -1054,7 +1018,7 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 
 ## Конфігурація (env змінні)
 
-Єдиний канонічний файл конфігурації: **кореневий** `.env` (створити з [`.env.example`](./.env.example)).
+Єдиний канонічний файл конфігурації: **кореневий** `.env.prod` (шаблон у git — [`.env.prod.example`](./.env.prod.example); на сервері — той самий шлях у клоні).
 
 | Змінна | Обов'язковість | Опис |
 |--------|---------------|------|
@@ -1083,7 +1047,7 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 | `TRUST_PROXY_HOPS` | Опційно | Кількість проксі для `express.set('trust proxy')` (prod default **1** у коді, якщо змінна не задана) |
 | `SENTRY_DSN` | Опційно | Якщо задано — увімкнено **Sentry** на сервері (`sentry/bootstrap.ts`) |
 
-**Клієнтські env** (також у кореневому `.env`, але з префіксом `VITE_`):
+**Клієнтські env** (у тому ж **`.env.prod`**, префікс `VITE_`; для збірки в Docker значення передаються через compose `args`):
 
 | Змінна | Опис |
 |--------|------|
@@ -1206,8 +1170,10 @@ Seed **не** повинен “вшивати” адмінів (це ризи�
 | `packages/server/prisma/schema.prisma` | Повна схема БД |
 | `packages/server/prisma/seed.ts` | Seed |
 | `packages/server/src/config.ts` | Env |
-| `.env.example` | Шаблон env |
-| `docker-compose.yml` | Dev |
+| `.env.prod.example` | Шаблон єдиного `.env.prod` (репо + VPS) |
+| `docker-compose.yml` | Dev (Redis + Postgres) |
+| `docker-compose.npm.yml` | Prod за NPM |
+| `docker-compose.prod.yml` | Prod з власним nginx + SSL |
 
 ---
 

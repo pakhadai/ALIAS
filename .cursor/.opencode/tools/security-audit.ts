@@ -148,7 +148,7 @@ async function scanForSecrets(
     ".git",
     "dist",
     "build",
-    ".env.example",
+    ".env.prod.example",
     ".env.template",
   ]
 

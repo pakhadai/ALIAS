@@ -1,13 +1,16 @@
 import { randomUUID } from 'crypto';
+import { existsSync } from 'node:fs';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Single source of truth:
-// - Always load env from repo root `.env` (and never from package-local `.env`).
-// - This avoids accidental overrides and makes deployments predictable.
+// Single source of truth: repo root `.env.prod` (same file on VPS; never package-local `.env`).
+// Docker injects env at runtime — this load covers `pnpm dev`, tests, and Prisma CLI from the repo root.
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
-const rootEnvPath = path.resolve(__dirname, '..', '..', '..', '.env');
-dotenv.config({ path: rootEnvPath });
+const rootDir = path.resolve(__dirname, '..', '..', '..');
+const rootEnvProdPath = path.join(rootDir, '.env.prod');
+if (existsSync(rootEnvProdPath)) {
+  dotenv.config({ path: rootEnvProdPath });
+}
 
 const instanceFromEnv = process.env.INSTANCE_ID?.trim();
 
