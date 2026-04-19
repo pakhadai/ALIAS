@@ -736,7 +736,7 @@ switch (gameState) {
 **Три групи екранів** (реалізація в `screens/menu/*`, `screens/lobby/*`, `screens/GameFlow*`):
 
 - **MenuFlow** (barrel `MenuFlow.tsx`): **усі** стани з таблиці [Стан гри](#стан-гри-gamestate), де в колонці «Де відображається» вказано **MenuFlow** (MENU, PROFILE, …, JOIN_INPUT).
-- **LobbyFlow**: LOBBY, SETTINGS, TEAMS (`TeamSetupScreen` + `screens/lobby/components/*`).
+- **LobbyFlow**: LOBBY, SETTINGS, TEAMS (`TeamSetupScreen` + `screens/lobby/components/*`). **`SettingsScreen`**: вкладки «Режим / Словник / Правила»; на «Правила» довгі блоки згортаються секціями. **`RulesModal`** (`screens/menu/RulesScreen.tsx`): спочатку активний режим і зведення цифр; повний текст правил і решта режимів — після розгортання. **`OnlineLobbyIntro`**: коротка підказка для поточного `GameMode` над прев’ю таймера/очок.
 - **GameFlow**: VS_SCREEN … GAME_OVER. Для **IMPOSTER** стани PRE_ROUND / COUNTDOWN / PLAYING рендерять **`ImposterScreen`** замість класичних підекранів (див. `GameFlow.tsx`). Інакше: `CountdownScreen`, `PlayingScreen` (внутрішньо — пауза, **GuesserFeedback** тощо).
 
 ### Контексти

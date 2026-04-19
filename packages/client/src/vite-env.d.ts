@@ -30,11 +30,23 @@ declare global {
     hash: string;
   }>;
 
+  type TelegramSafeAreaInset = Partial<{
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  }>;
+
   type TelegramWebApp = {
     initData: string;
     initDataUnsafe?: TelegramWebAppInitDataUnsafe;
     themeParams: TelegramWebAppThemeParams;
     colorScheme: 'light' | 'dark';
+    /** Device notch / system bars — mirrored as `var(--tg-safe-area-inset-*)` by the SDK */
+    safeAreaInset?: TelegramSafeAreaInset;
+    /** Insets avoiding Telegram chrome (header, etc.) — `var(--tg-content-safe-area-inset-*)` */
+    contentSafeAreaInset?: TelegramSafeAreaInset;
+    isFullscreen?: boolean;
     ready: () => void;
     expand: () => void;
     close: () => void;

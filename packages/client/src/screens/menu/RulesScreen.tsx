@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import { Button } from '../../components/Button';
 import {
   bottomSheetBackdropClass,
@@ -26,6 +26,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
   const [visible, setVisible] = useState(false);
+  const [allModesOpen, setAllModesOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [settingsDetailOpen, setSettingsDetailOpen] = useState(false);
   const shouldRender = isOpen || isClosing;
 
   useEffect(() => {
@@ -48,6 +51,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
       onClose();
       setIsClosing(false);
       setActiveTab('rules');
+      setAllModesOpen(false);
+      setQuickOpen(false);
+      setSettingsDetailOpen(false);
     }, 300);
   };
 
@@ -72,99 +78,171 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   const sectionTitle = `text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`;
   const cardBase = 'rounded-3xl border border-ui-border bg-ui-surface px-5 py-4';
 
-  const renderGameRules = () => (
-    <div className="space-y-4">
-      <div className={cardBase}>
-        <p className={sectionTitle}>{t.helpRulesQuickTitle}</p>
-        <div className="mt-3 space-y-3">
-          {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
-            (rule: string, i: number) => (
-              <div key={i} className="flex gap-4 items-start">
-                <span
-                  className={`font-serif text-lg opacity-20 shrink-0 w-5 text-right ${currentTheme.textMain}`}
-                >
-                  {i + 1}
-                </span>
-                <p
-                  className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
-                >
-                  {rule}
-                </p>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-      <div className={cardBase}>
-        <p className={sectionTitle}>{t.helpRulesModesTitle}</p>
-        <div className="mt-3 grid gap-3">
-          {modeCards.map((m) => {
-            const isActive = activeMode === m.id;
-            return (
-              <div
-                key={m.id}
-                className={`rounded-3xl border px-5 py-4 transition-all duration-200 ease-out active:scale-[0.99] ${isActive ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]' : 'border-ui-border bg-ui-surface'}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className={`text-sm font-bold ${currentTheme.textMain}`}>{m.title}</p>
-                    <p className={`text-xs mt-1 leading-relaxed ${currentTheme.textSecondary}`}>
+  const renderGameRules = () => {
+    const modeGs = settings.mode;
+    const roundLabel =
+      modeGs.gameMode === GameMode.QUIZ
+        ? (modeGs.quizTimerMode ?? 'ROUND') === 'PER_TASK'
+          ? `${modeGs.quizQuestionTime}s`
+          : `${modeGs.quizRoundTime}s`
+        : 'classicRoundTime' in modeGs
+          ? `${modeGs.classicRoundTime}s`
+          : '—';
+    const summaryLine = `${roundLabel} · ${settings?.general?.scoreToWin ?? '—'} ${t.pts} · ${settings?.general?.teamCount ?? '—'} ${t.teams}`;
+
+    const activeCard = modeCards.find((m) => m.id === activeMode) ?? modeCards[0];
+
+    return (
+      <div className="space-y-4">
+        <div className={cardBase}>
+          <p className={sectionTitle}>{t.helpRulesModesTitle}</p>
+          <div
+            className={`mt-3 rounded-2xl border px-4 py-3.5 ${activeMode ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)]' : 'border-ui-border bg-ui-bg'}`}
+          >
+            <p className={`text-sm font-bold ${currentTheme.textMain}`}>{activeCard.title}</p>
+            <p className={`text-xs mt-1.5 leading-relaxed ${currentTheme.textSecondary}`}>
+              {activeCard.hint}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAllModesOpen((o) => !o)}
+            className={`mt-3 w-full flex items-center justify-between gap-2 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3 text-left transition-colors hover:bg-ui-surface ${currentTheme.textMain}`}
+          >
+            <span className="text-xs font-bold uppercase tracking-widest opacity-50">
+              {allModesOpen ? t.helpRulesHideModes : t.helpRulesShowAllModes}
+            </span>
+            <ChevronDown
+              size={16}
+              className={`shrink-0 text-ui-fg-muted transition-transform ${allModesOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {allModesOpen && (
+            <div className="mt-3 grid gap-2">
+              {modeCards
+                .filter((m) => m.id !== activeMode)
+                .map((m) => (
+                  <div
+                    key={m.id}
+                    className="rounded-2xl border border-ui-border bg-ui-surface px-4 py-3"
+                  >
+                    <p className={`text-xs font-bold ${currentTheme.textMain}`}>{m.title}</p>
+                    <p className={`text-[11px] mt-1 leading-relaxed ${currentTheme.textSecondary}`}>
                       {m.hint}
                     </p>
                   </div>
-                  {isActive && (
-                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-[0.18em] text-ui-accent">
-                      {t.enabled}
+                ))}
+            </div>
+          )}
+        </div>
+
+        <div className={cardBase}>
+          <button
+            type="button"
+            onClick={() => setQuickOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2"
+            aria-expanded={quickOpen}
+            aria-label={quickOpen ? t.helpRulesQuickCollapse : t.helpRulesQuickExpand}
+          >
+            <p className={sectionTitle}>{t.helpRulesQuickTitle}</p>
+            <ChevronDown
+              size={16}
+              className={`text-ui-fg-muted transition-transform shrink-0 ${quickOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {!quickOpen && (
+            <p className={`mt-2 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+              {t.infoRule1}
+            </p>
+          )}
+          {quickOpen && (
+            <div className="mt-3 space-y-3">
+              {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
+                (rule: string, i: number) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <span
+                      className={`font-serif text-base opacity-25 shrink-0 w-4 text-right ${currentTheme.textMain}`}
+                    >
+                      {i + 1}
                     </span>
-                  )}
+                    <p
+                      className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+                    >
+                      {rule}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className={cardBase}>
+          <button
+            type="button"
+            onClick={() => setSettingsDetailOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2"
+            aria-expanded={settingsDetailOpen}
+            aria-label={
+              settingsDetailOpen ? t.helpRulesSettingsCollapse : t.helpRulesSettingsExpand
+            }
+          >
+            <p className={sectionTitle}>{t.helpRulesCurrentSettingsTitle}</p>
+            <ChevronDown
+              size={16}
+              className={`text-ui-fg-muted transition-transform shrink-0 ${settingsDetailOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {!settingsDetailOpen && (
+            <p className={`mt-2 text-sm font-semibold tabular-nums ${currentTheme.textMain}`}>
+              {summaryLine}
+            </p>
+          )}
+          {settingsDetailOpen && (
+            <>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.scoreToWin ?? '—'}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.skipPenalty ? t.enabled : t.disabled}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.teamCount ?? '—'}
+                  </p>
                 </div>
               </div>
-            );
-          })}
+              {activeMode === GameMode.IMPOSTER && (
+                <div className="mt-3 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {'imposterDiscussionTime' in settings.mode
+                      ? settings.mode.imposterDiscussionTime
+                      : '—'}
+                    s
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
-      <div className={cardBase}>
-        <p className={sectionTitle}>{t.helpRulesCurrentSettingsTitle}</p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
-            <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
-            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
-            </p>
-          </div>
-          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
-            <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
-            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {settings?.general?.scoreToWin ?? '—'}
-            </p>
-          </div>
-          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
-            <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
-            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {settings?.general?.skipPenalty ? t.enabled : t.disabled}
-            </p>
-          </div>
-          <div className="rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
-            <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
-            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {settings?.general?.teamCount ?? '—'}
-            </p>
-          </div>
-        </div>
-        {activeMode === GameMode.IMPOSTER && (
-          <div className="mt-3 rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
-            <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
-            <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
-              {'imposterDiscussionTime' in settings.mode
-                ? settings.mode.imposterDiscussionTime
-                : '—'}
-              s
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderFaq = () => (
     <div className="space-y-4">

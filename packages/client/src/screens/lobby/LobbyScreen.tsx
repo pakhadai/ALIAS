@@ -190,6 +190,17 @@ export const LobbyScreen = () => {
                 ? (t.gameModeImposter ?? 'Imposter')
                 : '—';
 
+  const modeHint = useMemo(() => {
+    const gm = settings.mode.gameMode ?? GameMode.CLASSIC;
+    if (gm === GameMode.CLASSIC) return t.gameModeHintClassic;
+    if (gm === GameMode.TRANSLATION) return t.gameModeHintTranslation;
+    if (gm === GameMode.SYNONYMS) return t.gameModeHintSynonyms;
+    if (gm === GameMode.QUIZ) return t.gameModeHintQuiz;
+    if (gm === GameMode.HARDCORE) return t.gameModeHintHardcore;
+    if (gm === GameMode.IMPOSTER) return t.gameModeHintImposter;
+    return '';
+  }, [settings.mode.gameMode, t]);
+
   const shareJoinLink = async () => {
     if (!roomCode) return;
     const title = t.lobby ?? 'Lobby';
@@ -459,6 +470,7 @@ export const LobbyScreen = () => {
               roomCode={roomCode}
               settings={settings}
               modeLabel={modeLabel}
+              modeHint={modeHint}
               categoriesPreview={categoriesPreview}
               qrCodeData={qrCodeData}
               isHost={isHost}

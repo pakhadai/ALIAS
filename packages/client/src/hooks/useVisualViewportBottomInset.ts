@@ -40,7 +40,7 @@ export function useVisualViewportBottomInset(): number {
 export function keyboardAvoidingBottomPadding(insetPx: number): CSSProperties | undefined {
   if (insetPx <= 0) return undefined;
   return {
-    paddingBottom: `calc(${insetPx}px + max(1.5rem, env(safe-area-inset-bottom, 0px)))`,
+    paddingBottom: `calc(${insetPx}px + max(1.5rem, var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px)))`,
   };
 }
 

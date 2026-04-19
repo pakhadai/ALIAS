@@ -11,6 +11,8 @@ export function OnlineLobbyIntro(props: {
   roomCode: string;
   settings: GameSettings;
   modeLabel: string;
+  /** One-line hint for the selected game mode (same copy as in settings). */
+  modeHint: string;
   categoriesPreview: string;
   qrCodeData: string;
   isHost: boolean;
@@ -25,6 +27,7 @@ export function OnlineLobbyIntro(props: {
     roomCode,
     settings,
     modeLabel,
+    modeHint,
     categoriesPreview,
     qrCodeData,
     isHost,
@@ -88,6 +91,16 @@ export function OnlineLobbyIntro(props: {
         disabled={!isHost}
         className="w-full rounded-3xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.99] px-5 py-4 disabled:opacity-60"
       >
+        {modeHint ? (
+          <div className="text-left mb-3">
+            <p className="text-[8px] uppercase tracking-[0.28em] font-bold text-ui-fg-muted opacity-70">
+              {(t as Record<string, string>).lobbyModeHintLabel}
+            </p>
+            <p className={`text-[11px] leading-snug mt-1 line-clamp-3 ${theme.textSecondary}`}>
+              {modeHint}
+            </p>
+          </div>
+        ) : null}
         <div className="grid grid-cols-2 gap-3 text-left">
           <div className="flex items-center gap-2">
             <Timer size={14} className={theme.iconColor} />

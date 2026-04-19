@@ -73,6 +73,13 @@ export const SettingsScreen = () => {
     packs: false,
     customDeck: false,
   });
+  const [rulesOpen, setRulesOpen] = useState({
+    basics: true,
+    teams: false,
+    extras: false,
+    quizTypes: true,
+    quizMore: false,
+  });
 
   // Local state for sliders to prevent flooding
   const [localRoundTime, setLocalRoundTime] = useState(
@@ -642,7 +649,7 @@ export const SettingsScreen = () => {
 
           {/* BLOCK 3: Rules (dynamic) */}
           {activeTab === 'rules' && (
-            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
+            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
               <div className="space-y-2">
                 <h3
                   className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
@@ -651,522 +658,673 @@ export const SettingsScreen = () => {
                 </h3>
                 <div className="h-px w-full bg-ui-border" />
               </div>
+              <p className="text-sm leading-relaxed text-ui-fg-muted">{t.lobbyRulesIntro}</p>
 
-              {(() => {
-                const mode = settings.mode;
-                if (mode.gameMode === GameMode.IMPOSTER) {
-                  return (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
-                          {t.imposterDiscussionTime ?? 'Час обговорення'}
-                        </p>
-                        <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                          {Math.round(mode.imposterDiscussionTime / 60)} хв
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {([3, 5, 10] as const).map((min) => {
-                          const active = mode.imposterDiscussionTime === min * 60;
-                          return (
-                            <button
-                              key={min}
-                              type="button"
-                              onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
-                              className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                active
-                                  ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                              }`}
-                            >
-                              {min} {t.min ?? 'хв'}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (mode.gameMode === GameMode.QUIZ) {
-                  const types = mode.quizTypes ?? {
-                    synonyms: true,
-                    antonyms: true,
-                    taboo: true,
-                    translation: false,
-                  };
-                  const timerMode = mode.quizTimerMode ?? 'ROUND';
-
-                  return (
-                    <div className="space-y-6">
-                      <div className="space-y-3">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
-                          Quiz types
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(
-                            [
-                              ['synonyms', 'Синоніми'],
-                              ['antonyms', 'Антоніми'],
-                              ['taboo', 'Табу-підказки'],
-                              ['translation', 'Переклади'],
-                            ] as const
-                          ).map(([k, label]) => {
-                            const active = types[k];
-                            return (
-                              <button
-                                key={k}
-                                type="button"
-                                onClick={() =>
-                                  updateMode({ quizTypes: { ...types, [k]: !active } })
-                                }
-                                className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                  active
-                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
-                          Штраф за помилку
-                        </p>
-                        <button
-                          onClick={() =>
-                            updateMode({ quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled })
-                          }
-                          className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
-                            mode.quizWrongPenaltyEnabled
-                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                              : 'border-ui-border bg-ui-surface opacity-70'
-                          }`}
-                        >
-                          <span className={currentTheme.textMain}>
-                            {mode.quizWrongPenaltyEnabled
-                              ? 'Увімкнено (−1 за помилку)'
-                              : 'Вимкнено'}
-                          </span>
-                          <div
-                            className={`w-12 h-6 rounded-full transition-all relative ${
-                              mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
-                            }`}
+              <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2">
+                {(() => {
+                  const mode = settings.mode;
+                  if (mode.gameMode === GameMode.IMPOSTER) {
+                    return (
+                      <div className="space-y-3 py-4 first:pt-0">
+                        <div className="flex justify-between items-center">
+                          <p
+                            className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
                           >
-                            <div
-                              className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
-                                mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
-                              }`}
-                            />
-                          </div>
-                        </button>
-                      </div>
-
-                      <div className="space-y-4">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
-                          Тип таймера
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(
-                            [
-                              ['ROUND', 'На весь раунд'],
-                              ['PER_TASK', 'На кожне питання'],
-                            ] as const
-                          ).map(([id, label]) => {
-                            const active = timerMode === id;
+                            {t.imposterDiscussionTime ?? 'Час обговорення'}
+                          </p>
+                          <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                            {Math.round(mode.imposterDiscussionTime / 60)} хв
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {([3, 5, 10] as const).map((min) => {
+                            const active = mode.imposterDiscussionTime === min * 60;
                             return (
                               <button
-                                key={id}
+                                key={min}
                                 type="button"
-                                onClick={() => updateMode({ quizTimerMode: id })}
+                                onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
                                 className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                   active
                                     ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                                     : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                                 }`}
                               >
-                                {label}
+                                {min} {t.min ?? 'хв'}
                               </button>
                             );
                           })}
                         </div>
+                      </div>
+                    );
+                  }
 
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <p
-                              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                            >
-                              {timerMode === 'PER_TASK' ? 'Час на питання' : 'Час раунду'}
-                            </p>
-                            <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                              {timerMode === 'PER_TASK'
-                                ? `${mode.quizQuestionTime}s`
-                                : `${mode.quizRoundTime}s`}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={timerMode === 'PER_TASK' ? 5 : 30}
-                            max={timerMode === 'PER_TASK' ? 30 : 180}
-                            step={timerMode === 'PER_TASK' ? 1 : 10}
-                            value={
-                              timerMode === 'PER_TASK' ? localQuizQuestionTime : localQuizRoundTime
+                  if (mode.gameMode === GameMode.QUIZ) {
+                    const types = mode.quizTypes ?? {
+                      synonyms: true,
+                      antonyms: true,
+                      taboo: true,
+                      translation: false,
+                    };
+                    const timerMode = mode.quizTimerMode ?? 'ROUND';
+
+                    return (
+                      <>
+                        <div className="py-4 first:pt-0">
+                          <SectionHeader
+                            title={
+                              'lobbyRulesSectionQuizTypes' in t
+                                ? t.lobbyRulesSectionQuizTypes
+                                : 'Quiz'
                             }
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value);
-                              if (timerMode === 'PER_TASK') setLocalQuizQuestionTime(v);
-                              else setLocalQuizRoundTime(v);
-                              vibrate(HAPTIC.nav);
-                            }}
-                            onMouseUp={() =>
-                              timerMode === 'PER_TASK'
-                                ? updateMode({ quizQuestionTime: localQuizQuestionTime })
-                                : updateMode({
-                                    quizRoundTime: localQuizRoundTime,
-                                    classicRoundTime: localQuizRoundTime,
-                                  })
+                            open={rulesOpen.quizTypes}
+                            onToggle={() =>
+                              setRulesOpen((s) => ({ ...s, quizTypes: !s.quizTypes }))
                             }
-                            onTouchEnd={() =>
-                              timerMode === 'PER_TASK'
-                                ? updateMode({ quizQuestionTime: localQuizQuestionTime })
-                                : updateMode({
-                                    quizRoundTime: localQuizRoundTime,
-                                    classicRoundTime: localQuizRoundTime,
-                                  })
-                            }
-                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                           />
+                          {rulesOpen.quizTypes && (
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              {(
+                                [
+                                  ['synonyms', t.lobbyQuizTypeSynonyms],
+                                  ['antonyms', t.lobbyQuizTypeAntonyms],
+                                  ['taboo', t.lobbyQuizTypeTaboo],
+                                  ['translation', t.lobbyQuizTypeTranslation],
+                                ] as const
+                              ).map(([k, label]) => {
+                                const active = types[k];
+                                return (
+                                  <button
+                                    key={k}
+                                    type="button"
+                                    onClick={() =>
+                                      updateMode({ quizTypes: { ...types, [k]: !active } })
+                                    }
+                                    className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                      active
+                                        ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                        : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                                    }`}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
 
-                        {timerMode === 'PER_TASK' && (
-                          <div className="space-y-3">
+                        <div className="py-4">
+                          <SectionHeader
+                            title={
+                              'lobbyRulesSectionQuizMore' in t
+                                ? t.lobbyRulesSectionQuizMore
+                                : 'Timer'
+                            }
+                            open={rulesOpen.quizMore}
+                            onToggle={() => setRulesOpen((s) => ({ ...s, quizMore: !s.quizMore }))}
+                          />
+                          {rulesOpen.quizMore && (
+                            <div className="space-y-4 pt-1">
+                              <div className="space-y-4">
+                                <p
+                                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                                >
+                                  {t.lobbyQuizWrongPenaltyTitle}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateMode({
+                                      quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled,
+                                    })
+                                  }
+                                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                                    mode.quizWrongPenaltyEnabled
+                                      ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                                      : 'border-ui-border bg-ui-surface opacity-70'
+                                  }`}
+                                >
+                                  <span className={currentTheme.textMain}>
+                                    {mode.quizWrongPenaltyEnabled
+                                      ? t.lobbyQuizWrongPenaltyOn
+                                      : t.lobbyQuizWrongPenaltyOff}
+                                  </span>
+                                  <div
+                                    className={`w-12 h-6 rounded-full transition-all relative ${
+                                      mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
+                                    }`}
+                                  >
+                                    <div
+                                      className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
+                                        mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
+                                      }`}
+                                    />
+                                  </div>
+                                </button>
+                              </div>
+
+                              <div className="space-y-4">
+                                <p
+                                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                                >
+                                  {t.lobbyQuizTimerModeTitle}
+                                </p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {(
+                                    [
+                                      ['ROUND', t.lobbyQuizTimerRound],
+                                      ['PER_TASK', t.lobbyQuizTimerPerQuestion],
+                                    ] as const
+                                  ).map(([id, label]) => {
+                                    const active = timerMode === id;
+                                    return (
+                                      <button
+                                        key={id}
+                                        type="button"
+                                        onClick={() => updateMode({ quizTimerMode: id })}
+                                        className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                          active
+                                            ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                            : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                                        }`}
+                                      >
+                                        {label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+
+                                <div className="space-y-3">
+                                  <div className="flex justify-between">
+                                    <p
+                                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                                    >
+                                      {timerMode === 'PER_TASK'
+                                        ? t.lobbyQuizLabelQuestionTime
+                                        : t.lobbyQuizLabelRoundTime}
+                                    </p>
+                                    <span
+                                      className={`text-xs font-bold ${currentTheme.textAccent}`}
+                                    >
+                                      {timerMode === 'PER_TASK'
+                                        ? `${mode.quizQuestionTime}s`
+                                        : `${mode.quizRoundTime}s`}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min={timerMode === 'PER_TASK' ? 5 : 30}
+                                    max={timerMode === 'PER_TASK' ? 30 : 180}
+                                    step={timerMode === 'PER_TASK' ? 1 : 10}
+                                    value={
+                                      timerMode === 'PER_TASK'
+                                        ? localQuizQuestionTime
+                                        : localQuizRoundTime
+                                    }
+                                    onChange={(e) => {
+                                      const v = parseInt(e.target.value);
+                                      if (timerMode === 'PER_TASK') setLocalQuizQuestionTime(v);
+                                      else setLocalQuizRoundTime(v);
+                                      vibrate(HAPTIC.nav);
+                                    }}
+                                    onMouseUp={() =>
+                                      timerMode === 'PER_TASK'
+                                        ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                        : updateMode({
+                                            quizRoundTime: localQuizRoundTime,
+                                            classicRoundTime: localQuizRoundTime,
+                                          })
+                                    }
+                                    onTouchEnd={() =>
+                                      timerMode === 'PER_TASK'
+                                        ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                        : updateMode({
+                                            quizRoundTime: localQuizRoundTime,
+                                            classicRoundTime: localQuizRoundTime,
+                                          })
+                                    }
+                                    className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                                  />
+                                </div>
+
+                                {timerMode === 'PER_TASK' && (
+                                  <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                      <p
+                                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                                      >
+                                        {t.lobbyQuizLabelTotalRound}
+                                      </p>
+                                      <span
+                                        className={`text-xs font-bold ${currentTheme.textAccent}`}
+                                      >
+                                        {mode.quizRoundTime}s
+                                      </span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min="30"
+                                      max="180"
+                                      step="10"
+                                      value={localQuizRoundTime}
+                                      onChange={(e) => {
+                                        const v = parseInt(e.target.value);
+                                        setLocalQuizRoundTime(v);
+                                        vibrate(HAPTIC.nav);
+                                      }}
+                                      onMouseUp={() =>
+                                        updateMode({
+                                          quizRoundTime: localQuizRoundTime,
+                                          classicRoundTime: localQuizRoundTime,
+                                        })
+                                      }
+                                      onTouchEnd={() =>
+                                        updateMode({
+                                          quizRoundTime: localQuizRoundTime,
+                                          classicRoundTime: localQuizRoundTime,
+                                        })
+                                      }
+                                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <div className="py-4 first:pt-0">
+                      <SectionHeader
+                        title={
+                          'lobbyRulesSectionBasics' in t ? t.lobbyRulesSectionBasics : t.roundTime
+                        }
+                        open={rulesOpen.basics}
+                        onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
+                      />
+                      {rulesOpen.basics && (
+                        <div className="space-y-3 pt-1">
+                          <p
+                            className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                          >
+                            {t.roundTime}
+                          </p>
+                          <div className="flex items-stretch gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.max(30, localRoundTime - 10);
+                                setLocalRoundTime(next);
+                                lastHapticRoundTime.current = next;
+                                vibrate(HAPTIC.nav);
+                                updateMode({ classicRoundTime: next });
+                              }}
+                              disabled={!isHost}
+                              className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                              aria-label={t.roundTime + ' −10'}
+                            >
+                              −
+                            </button>
+                            <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
+                              <span
+                                className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
+                              >
+                                {localRoundTime}
+                              </span>
+                              <span className="mt-1 text-xs font-semibold text-ui-fg-muted">s</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.min(180, localRoundTime + 10);
+                                setLocalRoundTime(next);
+                                lastHapticRoundTime.current = next;
+                                vibrate(HAPTIC.nav);
+                                updateMode({ classicRoundTime: next });
+                              }}
+                              disabled={!isHost}
+                              className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                              aria-label={t.roundTime + ' +10'}
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="space-y-4 pt-4 border-t border-ui-border">
                             <div className="flex justify-between">
                               <p
                                 className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
                               >
-                                Загальний час раунду
+                                {t.scoreToWin}
                               </p>
                               <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                                {mode.quizRoundTime}s
+                                {settings.general.scoreToWin}
                               </span>
                             </div>
                             <input
                               type="range"
-                              min="30"
-                              max="180"
-                              step="10"
-                              value={localQuizRoundTime}
+                              min="10"
+                              max="100"
+                              step="5"
+                              value={localScoreToWin}
                               onChange={(e) => {
                                 const v = parseInt(e.target.value);
-                                setLocalQuizRoundTime(v);
-                                vibrate(HAPTIC.nav);
+                                setLocalScoreToWin(v);
+                                if (v !== lastHapticScoreToWin.current) {
+                                  lastHapticScoreToWin.current = v;
+                                  vibrate(HAPTIC.nav);
+                                }
                               }}
-                              onMouseUp={() =>
-                                updateMode({
-                                  quizRoundTime: localQuizRoundTime,
-                                  classicRoundTime: localQuizRoundTime,
-                                })
-                              }
-                              onTouchEnd={() =>
-                                updateMode({
-                                  quizRoundTime: localQuizRoundTime,
-                                  classicRoundTime: localQuizRoundTime,
-                                })
-                              }
+                              onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
+                              onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
                               className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                             />
+                            <div className="flex items-center justify-between gap-3">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.max(10, localScoreToWin - 5);
+                                  setLocalScoreToWin(next);
+                                  updateGeneral('scoreToWin', next);
+                                }}
+                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                min={10}
+                                max={100}
+                                step={5}
+                                value={localScoreToWin}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value);
+                                  if (!Number.isFinite(v)) return;
+                                  setLocalScoreToWin(v);
+                                }}
+                                onBlur={() => {
+                                  const clamped = Math.max(
+                                    10,
+                                    Math.min(100, Math.round(localScoreToWin / 5) * 5)
+                                  );
+                                  setLocalScoreToWin(clamped);
+                                  updateGeneral('scoreToWin', clamped);
+                                }}
+                                className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.min(100, localScoreToWin + 5);
+                                  setLocalScoreToWin(next);
+                                  updateGeneral('scoreToWin', next);
+                                }}
+                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {(settings.mode.gameMode ?? GameMode.CLASSIC) !== GameMode.IMPOSTER && (
+                <>
+                  {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ && (
+                    <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
+                      <div className="py-4">
+                        <SectionHeader
+                          title={t.scoreToWin}
+                          open={rulesOpen.basics}
+                          onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
+                        />
+                        {rulesOpen.basics && (
+                          <div className="space-y-4 pt-1">
+                            <input
+                              type="range"
+                              min="10"
+                              max="100"
+                              step="5"
+                              value={localScoreToWin}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value);
+                                setLocalScoreToWin(v);
+                                if (v !== lastHapticScoreToWin.current) {
+                                  lastHapticScoreToWin.current = v;
+                                  vibrate(HAPTIC.nav);
+                                }
+                              }}
+                              onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
+                              onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
+                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                            />
+                            <div className="flex items-center justify-between gap-3">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.max(10, localScoreToWin - 5);
+                                  setLocalScoreToWin(next);
+                                  updateGeneral('scoreToWin', next);
+                                }}
+                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                min={10}
+                                max={100}
+                                step={5}
+                                value={localScoreToWin}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value);
+                                  if (!Number.isFinite(v)) return;
+                                  setLocalScoreToWin(v);
+                                }}
+                                onBlur={() => {
+                                  const clamped = Math.max(
+                                    10,
+                                    Math.min(100, Math.round(localScoreToWin / 5) * 5)
+                                  );
+                                  setLocalScoreToWin(clamped);
+                                  updateGeneral('scoreToWin', clamped);
+                                }}
+                                className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.min(100, localScoreToWin + 5);
+                                  setLocalScoreToWin(next);
+                                  updateGeneral('scoreToWin', next);
+                                }}
+                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              >
+                                +
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
                     </div>
-                  );
-                }
+                  )}
 
-                return (
-                  <div className="space-y-3">
-                    <p
-                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                    >
-                      {t.roundTime}
-                    </p>
-                    <div className="flex items-stretch gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.max(30, localRoundTime - 10);
-                          setLocalRoundTime(next);
-                          lastHapticRoundTime.current = next;
-                          vibrate(HAPTIC.nav);
-                          updateMode({ classicRoundTime: next });
-                        }}
-                        disabled={!isHost}
-                        className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                        aria-label={t.roundTime + ' −10'}
-                      >
-                        −
-                      </button>
-                      <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
-                        <span
-                          className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
-                        >
-                          {localRoundTime}
-                        </span>
-                        <span className="mt-1 text-xs font-semibold text-ui-fg-muted">s</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.min(180, localRoundTime + 10);
-                          setLocalRoundTime(next);
-                          lastHapticRoundTime.current = next;
-                          vibrate(HAPTIC.nav);
-                          updateMode({ classicRoundTime: next });
-                        }}
-                        disabled={!isHost}
-                        className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                        aria-label={t.roundTime + ' +10'}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {(settings.mode.gameMode ?? GameMode.CLASSIC) !== GameMode.IMPOSTER && (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <p
-                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                      >
-                        {t.scoreToWin}
-                      </p>
-                      <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                        {settings.general.scoreToWin}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      step="5"
-                      value={localScoreToWin}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value);
-                        setLocalScoreToWin(v);
-                        if (v !== lastHapticScoreToWin.current) {
-                          lastHapticScoreToWin.current = v;
-                          vibrate(HAPTIC.nav);
+                  <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
+                    <div className="py-4">
+                      <SectionHeader
+                        title={
+                          'lobbyRulesSectionTeams' in t ? t.lobbyRulesSectionTeams : t.teamCount
                         }
-                      }}
-                      onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
-                      onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                    />
-                    <div className="flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.max(10, localScoreToWin - 5);
-                          setLocalScoreToWin(next);
-                          updateGeneral('scoreToWin', next);
-                        }}
-                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min={10}
-                        max={100}
-                        step={5}
-                        value={localScoreToWin}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          if (!Number.isFinite(v)) return;
-                          setLocalScoreToWin(v);
-                        }}
-                        onBlur={() => {
-                          const clamped = Math.max(
-                            10,
-                            Math.min(100, Math.round(localScoreToWin / 5) * 5)
-                          );
-                          setLocalScoreToWin(clamped);
-                          updateGeneral('scoreToWin', clamped);
-                        }}
-                        className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                        open={rulesOpen.teams}
+                        onToggle={() => setRulesOpen((s) => ({ ...s, teams: !s.teams }))}
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.min(100, localScoreToWin + 5);
-                          setLocalScoreToWin(next);
-                          updateGeneral('scoreToWin', next);
-                        }}
-                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <p
-                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                      >
-                        {t.teamCount}
-                      </p>
-                      <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
-                        {settings.general.teamCount}
-                      </span>
-                    </div>
-                    <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
-                      <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-ui-fg-muted mb-2">
-                        {t.teamMode ?? 'Team mode'}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateGeneral('teamMode', 'TEAMS')}
-                          className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
-                            (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
-                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                          }`}
-                        >
-                          {t.teamModeTeams ?? 'Teams'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateGeneral('teamMode', 'SOLO')}
-                          className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
-                            (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
-                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                          }`}
-                        >
-                          {t.teamModeSolo ?? 'Solo'}
-                        </button>
-                      </div>
-                      {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
-                        <p className="mt-2 text-[10px] text-ui-fg-muted opacity-80">
-                          {t.teamModeSoloHint ??
-                            'Teams are disabled — each player plays for themselves.'}
-                        </p>
+                      {rulesOpen.teams && (
+                        <div className="space-y-4 pt-1">
+                          <div className="flex justify-between">
+                            <p
+                              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                            >
+                              {t.teamCount}
+                            </p>
+                            <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                              {settings.general.teamCount}
+                            </span>
+                          </div>
+                          <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
+                            <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-ui-fg-muted mb-2">
+                              {t.teamMode ?? 'Team mode'}
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => updateGeneral('teamMode', 'TEAMS')}
+                                className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                                  (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
+                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                                    : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
+                                }`}
+                              >
+                                {t.teamModeTeams ?? 'Teams'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateGeneral('teamMode', 'SOLO')}
+                                className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                                  (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
+                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                                    : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
+                                }`}
+                              >
+                                {t.teamModeSolo ?? 'Solo'}
+                              </button>
+                            </div>
+                            {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
+                              <p className="mt-2 text-[10px] text-ui-fg-muted opacity-80">
+                                {t.teamModeSoloHint ??
+                                  'Teams are disabled — each player plays for themselves.'}
+                              </p>
+                            )}
+                          </div>
+                          <input
+                            type="range"
+                            min="2"
+                            max="10"
+                            step="1"
+                            value={localTeamCount}
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value);
+                              setLocalTeamCount(v);
+                              if (v !== lastHapticTeamCount.current) {
+                                lastHapticTeamCount.current = v;
+                                vibrate(HAPTIC.nav);
+                              }
+                            }}
+                            onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
+                            onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
+                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                          />
+                          <div className="flex items-center justify-between gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.max(2, localTeamCount - 1);
+                                setLocalTeamCount(next);
+                                updateGeneral('teamCount', next);
+                              }}
+                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                              className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min={2}
+                              max={10}
+                              step={1}
+                              value={localTeamCount}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                if (!Number.isFinite(v)) return;
+                                setLocalTeamCount(v);
+                              }}
+                              onBlur={() => {
+                                const clamped = Math.max(
+                                  2,
+                                  Math.min(10, Math.round(localTeamCount))
+                                );
+                                setLocalTeamCount(clamped);
+                                updateGeneral('teamCount', clamped);
+                              }}
+                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                              className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.min(10, localTeamCount + 1);
+                                setLocalTeamCount(next);
+                                updateGeneral('teamCount', next);
+                              }}
+                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                              className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <input
-                      type="range"
-                      min="2"
-                      max="10"
-                      step="1"
-                      value={localTeamCount}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value);
-                        setLocalTeamCount(v);
-                        if (v !== lastHapticTeamCount.current) {
-                          lastHapticTeamCount.current = v;
-                          vibrate(HAPTIC.nav);
-                        }
-                      }}
-                      onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
-                      onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
-                      disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                    />
-                    <div className="flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.max(2, localTeamCount - 1);
-                          setLocalTeamCount(next);
-                          updateGeneral('teamCount', next);
-                        }}
-                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min={2}
-                        max={10}
-                        step={1}
-                        value={localTeamCount}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          if (!Number.isFinite(v)) return;
-                          setLocalTeamCount(v);
-                        }}
-                        onBlur={() => {
-                          const clamped = Math.max(2, Math.min(10, Math.round(localTeamCount)));
-                          setLocalTeamCount(clamped);
-                          updateGeneral('teamCount', clamped);
-                        }}
-                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = Math.min(10, localTeamCount + 1);
-                          setLocalTeamCount(next);
-                          updateGeneral('teamCount', next);
-                        }}
-                        disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                        className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <p
-                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                    >
-                      {t.skipPenalty}
-                    </p>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={settings.general.skipPenalty}
-                      onClick={() => updateGeneral('skipPenalty', !settings.general.skipPenalty)}
-                      className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
-                        settings.general.skipPenalty
-                          ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                          : 'border-ui-border bg-ui-surface'
-                      }`}
-                    >
-                      <span className={currentTheme.textMain}>
-                        {settings.general.skipPenalty ? t.enabled : t.disabled}
-                      </span>
-                      <span
-                        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
-                          settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
-                            settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
-                          }`}
-                        />
-                      </span>
-                    </button>
+                    <div className="py-4">
+                      <SectionHeader
+                        title={
+                          'lobbyRulesSectionExtras' in t ? t.lobbyRulesSectionExtras : t.skipPenalty
+                        }
+                        open={rulesOpen.extras}
+                        onToggle={() => setRulesOpen((s) => ({ ...s, extras: !s.extras }))}
+                      />
+                      {rulesOpen.extras && (
+                        <div className="space-y-4 pt-1">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={settings.general.skipPenalty}
+                            onClick={() =>
+                              updateGeneral('skipPenalty', !settings.general.skipPenalty)
+                            }
+                            className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
+                              settings.general.skipPenalty
+                                ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                                : 'border-ui-border bg-ui-surface'
+                            }`}
+                          >
+                            <span className={currentTheme.textMain}>
+                              {settings.general.skipPenalty ? t.enabled : t.disabled}
+                            </span>
+                            <span
+                              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
+                                settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
+                              }`}
+                            >
+                              <span
+                                className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
+                                  settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
