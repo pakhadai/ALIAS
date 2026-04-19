@@ -24,9 +24,9 @@ services:
       dockerfile: packages/server/Dockerfile
     ports:
       - '3001:3001'
-    # ВАЖЛИВО: створіть packages/server/.env з .env.example — не комітьте реальні ключі!
+    # ВАЖЛИВО: кореневий `.env` (скопіюйте з `.env.example`) — як у README; не комітьте секрети.
     env_file:
-      - packages/server/.env
+      - .env
     environment:
       PORT: 3001
       NODE_ENV: development
