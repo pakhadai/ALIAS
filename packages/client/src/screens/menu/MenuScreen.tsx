@@ -148,9 +148,11 @@ export const MenuScreen = () => {
           'fixed left-0 right-0 top-0 z-20',
           'flex justify-end items-center gap-2 sm:gap-3',
           'px-4 pb-3',
-          'pt-[max(var(--tg-content-safe-area-inset-top,0px),var(--tg-safe-area-inset-top,0px),env(safe-area-inset-top,0px),10px)]',
+          'pt-(--app-header-safe-top)',
           'backdrop-blur-xl',
-          'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--ui-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--ui-bg)_65%,transparent)_60%,transparent_100%)]',
+          'border-b border-ui-border/50',
+          /* Окрема «панель»: інакше на світлій темі смуга зливалась з фоном і хедера «не було видно» */
+          'bg-ui-bg/92 shadow-[0_1px_0_color-mix(in_srgb,var(--ui-border)_40%,transparent)]',
         ].join(' ')}
       >
         <button
@@ -201,8 +203,7 @@ export const MenuScreen = () => {
         <div
           className="w-full shrink-0"
           style={{
-            height:
-              'calc(max(var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px), 10px) + 56px)',
+            height: 'calc(var(--app-header-safe-top) + 3.5rem)',
           }}
           aria-hidden
         />

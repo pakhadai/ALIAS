@@ -97,11 +97,9 @@ export function useTelegramApp(): UseTelegramAppResult {
     } catch (_err) {
       void _err;
     }
-    try {
-      webApp.requestFullscreen?.();
-    } catch (_err) {
-      void _err;
-    }
+    // Do NOT auto-call requestFullscreen(): it makes the WebView edge-to-edge; on many clients
+    // contentSafeAreaInset lags or stays 0 so fixed headers/icons sit under Telegram’s close/menu.
+    // Users can still enter fullscreen via the in-app control where we re-sync insets after toggling.
     try {
       webApp.disableVerticalSwipes?.();
     } catch (_err) {
