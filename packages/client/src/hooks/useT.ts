@@ -1,4 +1,4 @@
-import { useGame } from '../context/GameContext';
+import { useGameState } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
 
 /**
@@ -10,6 +10,6 @@ import { TRANSLATIONS } from '../constants';
  * player sees the UI in their own preferred language regardless of the room.
  */
 export function useT() {
-  const { uiLanguage } = useGame();
+  const { uiLanguage } = useGameState();
   return TRANSLATIONS[uiLanguage];
 }

@@ -16,6 +16,17 @@ export function setupPwaRegister(): void {
   });
 }
 
-export function applyPwaUpdate(): void {
+/**
+ * Activates the waiting worker (`SKIP_WAITING`) then asks the PWA runtime to reload.
+ * `reloadSw(true)` normally performs `location.reload()`; the SW install path only
+ * calls `skipWaiting` after this message so open tabs are not swapped mid-socket session.
+ */
+export async function applyPwaUpdate(): Promise<void> {
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration?.();
+    reg?.waiting?.postMessage({ type: 'SKIP_WAITING' });
+  } catch {
+    /* ignore */
+  }
   void reloadSw?.(true);
 }

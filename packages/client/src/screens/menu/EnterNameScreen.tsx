@@ -41,6 +41,8 @@ export const EnterNameScreen = () => {
   const keyboardBottomInset = useVisualViewportBottomInset();
 
   const stableId = useRef(`player-${generateUUID()}`);
+  /** Prevents repeated auto-join while deps refetch (e.g. profile) without leaving the screen. */
+  const autoJoinAttemptedRef = useRef(false);
 
   useEffect(() => {
     const r = requestAnimationFrame(() => setSheetOpen(true));
@@ -54,15 +56,17 @@ export const EnterNameScreen = () => {
   };
 
   useEffect(() => {
-    const displayName = profile?.displayName;
+    const resolvedName = (profile?.displayName ?? profile?.name ?? '').trim();
     const canAutoJoin =
       authState.status === 'authenticated' &&
-      Boolean(displayName) &&
+      Boolean(resolvedName) &&
       (gameMode === 'OFFLINE' || (gameMode === 'ONLINE' && isHost));
 
-    if (canAutoJoin && profile && displayName) {
+    if (canAutoJoin && profile && resolvedName) {
+      if (autoJoinAttemptedRef.current) return undefined;
+      autoJoinAttemptedRef.current = true;
       let cancelled = false;
-      const nameForServer = displayName;
+      const nameForServer = resolvedName;
       const avatarEmoji =
         profile.avatarId != null
           ? (PRESET_AVATARS[parseInt(profile.avatarId, 10)]?.emoji ?? AVATARS[0])
@@ -85,10 +89,10 @@ export const EnterNameScreen = () => {
         cancelled = true;
       };
     }
-    if (profile?.displayName) setName(profile.displayName);
+    if (resolvedName) setName(resolvedName);
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- avatarId omitted on purpose
-  }, [authState.status, profile?.displayName, gameMode, isHost]);
+  }, [authState.status, profile?.displayName, profile?.name, gameMode, isHost]);
 
   const handleSubmit = async () => {
     const sanitized = name.replace(/<[^>]*>/g, '').slice(0, 20);

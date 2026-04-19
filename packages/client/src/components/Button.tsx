@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { playSoundEffect } from '../utils/audio';
 import { SoundPreset } from '../types';
 import { HAPTIC } from '../utils/haptics';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
+import { PREFS_KEY } from '../context/gameReducer';
+
+const PREFS_PARSE_COOLDOWN_MS = 800;
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
@@ -25,6 +28,34 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const haptic = useHapticFeedback();
+  const prefsCacheRef = useRef<{ prefs: unknown; at: number } | null>(null);
+
+  const readClickSoundPrefs = useCallback((): unknown => {
+    const now = performance.now();
+    const hit = prefsCacheRef.current;
+    if (hit && now - hit.at < PREFS_PARSE_COOLDOWN_MS) return hit.prefs;
+    try {
+      const rawPrefs = localStorage.getItem(PREFS_KEY);
+      const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
+      prefsCacheRef.current = { prefs, at: now };
+      return prefs;
+    } catch {
+      prefsCacheRef.current = { prefs: null, at: now };
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const invalidate = () => {
+      prefsCacheRef.current = null;
+    };
+    window.addEventListener('focus', invalidate);
+    document.addEventListener('visibilitychange', invalidate);
+    return () => {
+      window.removeEventListener('focus', invalidate);
+      document.removeEventListener('visibilitychange', invalidate);
+    };
+  }, []);
 
   const baseStyles =
     'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-semibold transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-wide text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
@@ -58,8 +89,10 @@ export const Button: React.FC<ButtonProps> = ({
     if (!clickSound || props.disabled) return;
 
     try {
-      const rawPrefs = localStorage.getItem('alias_preferences');
-      const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
+      const prefs = readClickSoundPrefs() as {
+        soundEnabled?: boolean;
+        soundPreset?: SoundPreset;
+      } | null;
       const soundEnabled = prefs?.soundEnabled !== false;
       const soundPreset: SoundPreset | undefined = prefs?.soundPreset;
       if (soundEnabled) playSoundEffect('click', soundPreset);

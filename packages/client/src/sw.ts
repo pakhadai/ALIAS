@@ -13,8 +13,23 @@ const NOTIFY_ICON = '/icons/icon-192.svg';
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
+/** Only activate a new worker after the app asks (avoids mid-session SW swap / socket churn). */
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    void self.skipWaiting();
+  }
+});
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(self.skipWaiting());
+  event.waitUntil(
+    (async () => {
+      const clients = await self.clients.matchAll({ includeUncontrolled: true });
+      // First install: no windows yet — safe to take control immediately.
+      if (clients.length === 0) {
+        await self.skipWaiting();
+      }
+    })()
+  );
 });
 
 self.addEventListener('activate', (event) => {

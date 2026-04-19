@@ -61,11 +61,20 @@ export const LobbyScreen = () => {
     removeOfflinePlayer,
     leaveRoom,
     showNotification,
+    setTeams,
   } = useGame();
   const general = settings.general;
   const t = useT();
-  const keyboardBottomInset = useVisualViewportBottomInset();
   const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
+
+  // Offline: persist trimmed team list when host lowers team count (UI shells already hide extras).
+  useEffect(() => {
+    if (gameMode !== 'OFFLINE' || !isHost || isSolo) return;
+    const desired = Math.max(2, Math.min(general.teamCount, 8));
+    if (teams.length <= desired) return;
+    setTeams(teams.slice(0, desired).map((t) => ({ ...t, players: [...t.players] })));
+  }, [gameMode, isHost, isSolo, general.teamCount, teams, setTeams]);
+  const keyboardBottomInset = useVisualViewportBottomInset();
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);

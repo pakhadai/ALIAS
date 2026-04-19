@@ -154,6 +154,20 @@ function mergedView(): PlayerStats {
   };
 }
 
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    serverBaseline = defaultStats();
+    pending.gamesPlayed = 0;
+    pending.wordsGuessed = 0;
+    pending.wordsSkipped = 0;
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+    subscribers.clear();
+  });
+}
+
 export function usePlayerStats() {
   const [, setGen] = useState(0);
   const bump = useCallback(() => setGen((n) => n + 1), []);

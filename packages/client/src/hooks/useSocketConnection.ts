@@ -57,6 +57,8 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [myPlayerId, setMyPlayerId] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  /** Always matches latest `roomCode` state — avoids stale closure in create/join room ops. */
+  const roomCodeRef = useRef('');
   /**
    * Some socket connects are "utility" (e.g. room:exists) and must NOT trigger localStorage-based
    * `room:rejoin`, otherwise deep links can be hijacked by an old persisted room.
@@ -64,6 +66,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   const suppressStoredRejoinRef = useRef(false);
   const optionsRef = useRef(options);
   optionsRef.current = options;
+  useEffect(() => {
+    roomCodeRef.current = roomCode;
+  }, [roomCode]);
   /** Синхронний ref для myPlayerId — потрібен для onStateSync, щоб одразу мати актуальний id після room:created */
   const myPlayerIdRef = useRef('');
   /** Скасовує попередній `connect`-слухач для room:create / room:join (мобільні: disconnect не завжди синхронний). */
@@ -167,6 +172,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       myPlayerIdRef.current = playerId;
       setMyPlayerId(playerId);
       setRoomCode(code);
+      roomCodeRef.current = code;
       optionsRef.current.onRejoined?.(code, playerId);
     });
 
@@ -193,6 +199,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         }
         setIsReconnecting(false);
         setRoomCode('');
+        roomCodeRef.current = '';
         setMyPlayerId('');
         myPlayerIdRef.current = '';
         socket.disconnect();
@@ -211,6 +218,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           /* ignore */
         }
         setRoomCode('');
+        roomCodeRef.current = '';
         setMyPlayerId('');
         myPlayerIdRef.current = '';
       }
@@ -260,10 +268,12 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         setIsReconnecting(false);
         // If we're already in a room (e.g. background rejoin), explicitly leave it first
         // so server-side "already in room" guard never blocks room:create.
-        if (roomCode) {
+        const existingRoom = roomCodeRef.current;
+        if (existingRoom) {
           socket.emit('room:leave');
           socket.disconnect();
           setRoomCode('');
+          roomCodeRef.current = '';
           setMyPlayerId('');
           myPlayerIdRef.current = '';
         }
@@ -296,6 +306,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
           setRoomCode(code);
+          roomCodeRef.current = code;
           localStorage.setItem(ROOM_CODE_KEY, code);
           localStorage.setItem(PLAYER_ID_KEY, playerId);
           resolve({ roomCode: code, playerId });
@@ -333,7 +344,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       });
     },
-    [roomCode, scheduleEmitAfterHandshakeConnect]
+    [scheduleEmitAfterHandshakeConnect]
   );
 
   const joinRoom = useCallback(
@@ -347,10 +358,12 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
 
         setIsReconnecting(false);
         // Same as createRoom: ensure we're not bound to a previous room.
-        if (roomCode) {
+        const existingRoom = roomCodeRef.current;
+        if (existingRoom) {
           socket.emit('room:leave');
           socket.disconnect();
           setRoomCode('');
+          roomCodeRef.current = '';
           setMyPlayerId('');
           myPlayerIdRef.current = '';
         }
@@ -381,6 +394,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
           myPlayerIdRef.current = playerId;
           setMyPlayerId(playerId);
           setRoomCode(joinedCode);
+          roomCodeRef.current = joinedCode;
           localStorage.setItem(ROOM_CODE_KEY, joinedCode);
           localStorage.setItem(PLAYER_ID_KEY, playerId);
           resolve({ roomCode: joinedCode, playerId });
@@ -418,7 +432,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         });
       });
     },
-    [roomCode, scheduleEmitAfterHandshakeConnect]
+    [scheduleEmitAfterHandshakeConnect]
   );
 
   const checkRoomExists = useCallback((code: string): Promise<boolean> => {
@@ -454,6 +468,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     // Explicitly leaving a room should fully tear down the connection to avoid stale listeners/state.
     socketRef.current?.disconnect();
     setRoomCode('');
+    roomCodeRef.current = '';
     setMyPlayerId('');
     myPlayerIdRef.current = '';
     localStorage.removeItem(ROOM_CODE_KEY);

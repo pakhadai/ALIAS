@@ -5,6 +5,7 @@ import { GameState } from './types';
 import { PageTransition } from './components/Shared';
 import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
+import { TelegramAuthLoadingScreen } from './components/TelegramAuthLoadingScreen';
 import { useTelegramApp } from './hooks/useTelegramApp';
 import { useAuthContext } from './context/AuthContext';
 import { ROOM_CODE_LENGTH } from './constants';
@@ -129,15 +130,13 @@ const GameRouter = () => {
   return <>{renderContent()}</>;
 };
 
-const AppContent = () => {
-  const { initData, isTelegram, startParam } = useTelegramApp();
+/**
+ * Telegram Mini App: run login before GameProvider so sockets / rejoin never use a stale anonymous JWT.
+ */
+const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { initData, isTelegram } = useTelegramApp();
   const { authState, isAuthenticated, loginWithTelegram } = useAuthContext();
-  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification, leaveRoom } =
-    useGame();
-  const [telegramLoginPending, setTelegramLoginPending] = React.useState(false);
   const attemptedRef = React.useRef(false);
-  const consumedStartParamRef = React.useRef<string | null>(null);
-  const telegramAuthErrorShownRef = React.useRef(false);
   const [telegramAuthRetryNonce, setTelegramAuthRetryNonce] = React.useState(0);
 
   React.useEffect(() => {
@@ -148,16 +147,13 @@ const AppContent = () => {
     if (authState.status === 'loading') return;
 
     attemptedRef.current = true;
-    setTelegramLoginPending(true);
 
     console.log('[TelegramAuth] attempting telegram login', {
       initDataLength: initData.length,
       authState: authState.status,
     });
 
-    void loginWithTelegram(initData).finally(() => {
-      setTelegramLoginPending(false);
-    });
+    void loginWithTelegram(initData);
   }, [
     authState.status,
     initData,
@@ -167,15 +163,45 @@ const AppContent = () => {
     telegramAuthRetryNonce,
   ]);
 
-  React.useEffect(() => {
-    if (!isTelegram) return;
-    if (authState.status !== 'error') return;
-    if (telegramAuthErrorShownRef.current) return;
-    telegramAuthErrorShownRef.current = true;
+  const telegramMiniAppBlocking =
+    isTelegram && Boolean(initData) && !isAuthenticated && authState.status !== 'error';
 
-    console.error('[TelegramAuth] login failed', { message: authState.message });
-    showNotification(`Telegram auth failed: ${authState.message}`, 'error');
-  }, [authState, isTelegram, showNotification]);
+  if (telegramMiniAppBlocking) {
+    return <TelegramAuthLoadingScreen />;
+  }
+
+  if (isTelegram && !isAuthenticated && authState.status === 'error') {
+    return (
+      <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
+        <div className="w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-5">
+          <div className="text-base font-semibold">Не вдалося авторизуватись у Telegram</div>
+          <div className="mt-2 text-sm text-ui-fg-muted wrap-break-word">{authState.message}</div>
+          <div className="mt-4 flex gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-contrast"
+              onClick={() => {
+                attemptedRef.current = false;
+                setTelegramAuthRetryNonce((n) => n + 1);
+              }}
+            >
+              Повторити спробу
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+const AppContent = () => {
+  const { isTelegram, startParam } = useTelegramApp();
+  const { isAuthenticated } = useAuthContext();
+  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification, leaveRoom } =
+    useGame();
+  const consumedStartParamRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (!isAuthenticated) return;
@@ -226,7 +252,6 @@ const AppContent = () => {
     else back.show();
 
     const onBack = () => {
-      // Minimal "navigate(-1)" for our state-based router.
       switch (gameState) {
         case GameState.PROFILE_SETTINGS:
           setGameState(GameState.PROFILE);
@@ -246,7 +271,6 @@ const AppContent = () => {
         case GameState.ROUND_SUMMARY:
         case GameState.SCOREBOARD:
         case GameState.GAME_OVER:
-          // Leaving any GameFlow screen must inform the server to avoid "ghost players".
           leaveRoom();
           return;
         default:
@@ -260,40 +284,6 @@ const AppContent = () => {
     };
   }, [gameState, isAuthenticated, isTelegram, leaveRoom, setGameState]);
 
-  if (telegramLoginPending) {
-    return (
-      <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border border-ui-border bg-ui-surface px-5 py-4">
-          <span className="w-5 h-5 border-2 border-ui-accent border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-ui-fg-muted">Авторизація…</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (isTelegram && !isAuthenticated && authState.status === 'error') {
-    return (
-      <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-5">
-          <div className="text-base font-semibold">Не вдалося авторизуватись у Telegram</div>
-          <div className="mt-2 text-sm text-ui-fg-muted wrap-break-word">{authState.message}</div>
-          <div className="mt-4 flex gap-3">
-            <button
-              className="inline-flex items-center justify-center rounded-xl bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-contrast"
-              onClick={() => {
-                telegramAuthErrorShownRef.current = false;
-                attemptedRef.current = false;
-                setTelegramAuthRetryNonce((n) => n + 1);
-              }}
-            >
-              Повторити спробу
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
       <ConnectionStatusBanner />
@@ -306,9 +296,11 @@ const AppContent = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <GameProvider>
-        <AppContent />
-      </GameProvider>
+      <TelegramAuthBootstrap>
+        <GameProvider>
+          <AppContent />
+        </GameProvider>
+      </TelegramAuthBootstrap>
     </AuthProvider>
   );
 };

@@ -188,3 +188,15 @@ export interface GameContextType extends AppState {
   addOfflinePlayer: (name?: string, avatar?: string) => void;
   removeOfflinePlayer: (id: string) => void;
 }
+
+/** Split contexts: full app state + socket reconnect flag (high-churn). */
+export type GameStateContextValue = AppState & { isReconnecting: boolean };
+
+/** Theme-derived UI tokens (changes only when the active theme changes). */
+export type GameUIContextValue = Pick<GameContextType, 'currentTheme'>;
+
+/** Stable action surface — callbacks should read latest state via `stateRef`, not closed `state`. */
+export type GameActionsContextValue = Omit<
+  GameContextType,
+  keyof AppState | 'currentTheme' | 'isReconnecting'
+>;

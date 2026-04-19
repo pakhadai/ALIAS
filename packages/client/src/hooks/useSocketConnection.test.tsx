@@ -61,7 +61,7 @@ vi.mock('socket.io-client', () => {
 describe('useSocketConnection', () => {
   beforeEach(() => {
     localStorage.clear();
-    fakeSocket.emit.mockClear();
+    fakeSocket.emit.mockReset();
     fakeSocket.removeAllListeners();
     fakeSocket.connected = false;
   });
@@ -153,5 +153,103 @@ describe('useSocketConnection', () => {
       expect.any(Function)
     );
     expect(fakeSocket.emit).not.toHaveBeenCalledWith('room:rejoin', expect.anything());
+  });
+
+  test('createRoom: emits room:leave before room:create when already in a room (roomCodeRef)', async () => {
+    const { useSocketConnection } = await import('./useSocketConnection');
+    const { result } = renderHook(() =>
+      useSocketConnection({
+        onStateSync: vi.fn(),
+        onPlayerJoined: vi.fn(),
+        onPlayerLeft: vi.fn(),
+        onKicked: vi.fn(),
+        onError: vi.fn(),
+        onNotification: vi.fn(),
+      })
+    );
+
+    await act(async () => {
+      fakeSocket.trigger('room:rejoined', {
+        roomCode: '12345',
+        playerId: '11111111-1111-1111-8111-111111111111',
+      });
+    });
+
+    expect(result.current.roomCode).toBe('12345');
+
+    const emitLog: unknown[][] = [];
+    fakeSocket.emit.mockImplementation((event: unknown, ...args: unknown[]) => {
+      emitLog.push([event, ...args]);
+      if (event === 'room:create') {
+        queueMicrotask(() =>
+          fakeSocket.trigger('room:created', {
+            roomCode: '99901',
+            playerId: '22222222-2222-2222-8222-222222222222',
+          })
+        );
+      }
+      return fakeSocket;
+    });
+
+    await act(async () => {
+      const p = result.current.createRoom('Host', '🙂');
+      await new Promise<void>((r) => setTimeout(r, 0));
+      await p;
+    });
+
+    const leaveIdx = emitLog.findIndex((e) => e[0] === 'room:leave');
+    const createIdx = emitLog.findIndex((e) => e[0] === 'room:create');
+    expect(leaveIdx).toBeGreaterThanOrEqual(0);
+    expect(createIdx).toBeGreaterThan(leaveIdx);
+    expect(result.current.roomCode).toBe('99901');
+  });
+
+  test('joinRoom: emits room:leave before room:join when already in a room (roomCodeRef)', async () => {
+    const { useSocketConnection } = await import('./useSocketConnection');
+    const { result } = renderHook(() =>
+      useSocketConnection({
+        onStateSync: vi.fn(),
+        onPlayerJoined: vi.fn(),
+        onPlayerLeft: vi.fn(),
+        onKicked: vi.fn(),
+        onError: vi.fn(),
+        onNotification: vi.fn(),
+      })
+    );
+
+    await act(async () => {
+      fakeSocket.trigger('room:rejoined', {
+        roomCode: '12345',
+        playerId: '11111111-1111-1111-8111-111111111111',
+      });
+    });
+
+    expect(result.current.roomCode).toBe('12345');
+
+    const emitLog: unknown[][] = [];
+    fakeSocket.emit.mockImplementation((event: unknown, ...args: unknown[]) => {
+      emitLog.push([event, ...args]);
+      if (event === 'room:join') {
+        queueMicrotask(() =>
+          fakeSocket.trigger('room:joined', {
+            roomCode: '88802',
+            playerId: '33333333-3333-3333-8333-333333333333',
+          })
+        );
+      }
+      return fakeSocket;
+    });
+
+    await act(async () => {
+      const p = result.current.joinRoom('88802', 'Guest', '🙂');
+      await new Promise<void>((r) => setTimeout(r, 0));
+      await p;
+    });
+
+    const leaveIdx = emitLog.findIndex((e) => e[0] === 'room:leave');
+    const joinIdx = emitLog.findIndex((e) => e[0] === 'room:join');
+    expect(leaveIdx).toBeGreaterThanOrEqual(0);
+    expect(joinIdx).toBeGreaterThan(leaveIdx);
+    expect(result.current.roomCode).toBe('88802');
   });
 });

@@ -107,8 +107,10 @@ export const GameOverScreen = () => {
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Subtle grid lines
-      ctx.strokeStyle = 'color-mix(in_srgb,var(--ui-fg)_6%,transparent)';
+      // Subtle grid lines (canvas ignores CSS color-mix / var() strings)
+      ctx.save();
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.06;
       ctx.lineWidth = 1;
       for (let x = 0; x < W; x += 40) {
         ctx.beginPath();
@@ -122,6 +124,7 @@ export const GameOverScreen = () => {
         ctx.lineTo(W, y);
         ctx.stroke();
       }
+      ctx.restore();
 
       // Gold accent bar
       ctx.fillStyle = accent;
@@ -134,9 +137,12 @@ export const GameOverScreen = () => {
       ctx.fillText('ALIAS', W / 2, 60);
 
       // Subtitle
-      ctx.fillStyle = 'color-mix(in_srgb,var(--ui-fg)_45%,transparent)';
+      ctx.save();
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.45;
       ctx.font = '13px Arial, sans-serif';
       ctx.fillText(t.finalResults?.toUpperCase() ?? 'FINAL RESULTS', W / 2, 88);
+      ctx.restore();
 
       // Teams
       const medals = ['🥇', '🥈', '🥉'];
@@ -148,13 +154,13 @@ export const GameOverScreen = () => {
         const alpha = i === 0 ? 1 : 0.75 - i * 0.08;
 
         // Row background
-        ctx.fillStyle =
-          i === 0
-            ? 'color-mix(in_srgb,var(--ui-accent)_14%,transparent)'
-            : 'color-mix(in_srgb,var(--ui-fg)_6%,transparent)';
+        ctx.save();
+        ctx.fillStyle = i === 0 ? accent : fg;
+        ctx.globalAlpha = i === 0 ? 0.14 : 0.06;
         ctx.beginPath();
         (ctx as CanvasRenderingContext2DWithRoundRect).roundRect?.(40, y - 30, W - 80, 44, 10);
         ctx.fill();
+        ctx.restore();
 
         // Medal / number
         ctx.font = '22px Arial';
@@ -171,16 +177,27 @@ export const GameOverScreen = () => {
         // Score
         ctx.font = 'bold 20px Arial, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillStyle = i === 0 ? accent : 'color-mix(in_srgb,var(--ui-fg)_70%,transparent)';
+        ctx.save();
+        if (i === 0) {
+          ctx.fillStyle = accent;
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.fillStyle = fg;
+          ctx.globalAlpha = 0.7;
+        }
         ctx.fillText(`${team.score} ${t.pts ?? 'pts'}`, scoreRightX, y);
+        ctx.restore();
         ctx.globalAlpha = 1;
       });
 
       // Footer
-      ctx.fillStyle = 'color-mix(in_srgb,var(--ui-fg)_25%,transparent)';
+      ctx.save();
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.25;
       ctx.font = '11px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('aliasmaster.app', W / 2, H - 18);
+      ctx.restore();
 
       return await new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), 'image/png'));
     } catch (_err) {
