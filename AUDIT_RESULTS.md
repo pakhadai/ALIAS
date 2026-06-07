@@ -29,7 +29,7 @@
 
 | ID | Sev | Status | Опис |
 |----|-----|--------|------|
-| C-1 | 🟡 | ✅ RESOLVED | Bundle **2026-06-07**: lazy routes split — `main` **306.5 KB** (93.94 KB gzip), was 500 KB at threshold. Chunks: `GameFlow` 50 KB, `LobbyScreen` 59 KB, `SettingsScreen` 47 KB, `StoreScreen` 14 KB, `admin` 44 KB, `styles` 234 KB. |
+| C-1 | 🟡 | ✅ RESOLVED | Bundle **2026-06-07**: lazy routes — `main` **305.5 KB** (93.83 KB gzip), was 500 KB. Session 5: `RulesModal` split → `RulesScreen` lazy chunk 1 KB; no Vite static/dynamic conflict. Chunks: `GameFlow` 50 KB, `LobbyScreen` 59 KB, `SettingsScreen` 47 KB, `StoreScreen` 14 KB, `admin` 44 KB, `styles` 234 KB. |
 | C-2 | 🟢 | ✅ VERIFIED | GameEngine timer cleanup OK (2026-06-07). Evidence: `GameEngine.ts` `stopTimer()` clears `timerInterval`; `clearTimeout` on `timeUpFallbackTimeout` / `quizNextWordTimeout`. |
 
 ## Блок D: Code Quality
@@ -56,9 +56,22 @@
 |----|-----|--------|------|
 | F-1 | 🟢 | ✅ VERIFIED | TMA viewport/safe-area/haptics/Stars/HMAC implemented (2026-06-07). Evidence: `useTelegramApp.ts` expand + safe-area; `useHapticFeedback.ts`; `QuickBuyModal.tsx` `openInvoice`; `AuthService.validateTelegramInitData` HMAC-SHA256. |
 
+## Блок G: Testing
+
+| ID | Sev | Status | Опис |
+|----|-----|--------|------|
+| G-1 | 🟠 | ✅ RESOLVED | `authorizeGameAction` — 42 table-driven unit tests (`game/__tests__/authorizeGameAction.test.ts`, 2026-06-07) |
+| G-2 | 🟠 | ✅ RESOLVED | GameEngine coverage **91.66%** lines — IMPOSTER, team builder, QUIZ lifecycle, mode merges (2026-06-07) |
+| G-3 | 🟠 | ✅ RESOLVED | RoomManager coverage **89.27%** lines — rejoin, grace, Redis restore, host migration (2026-06-07) |
+| G-4 | 🟠 | ✅ RESOLVED | REST routes integration — store, purchases/webhook, custom-decks, push, admin (+ AuthService HMAC/expiry, 2026-06-07) |
+| G-5 | 🟡 | ✅ RESOLVED | Socket/pipeline/relay integration — `socketHandlers.int.test.ts` (8 cases: room:exists ack, grace rejoin, NOT_HOST/NOT_EXPLAINER E2E), `gameActionPipeline.test.ts`, `RoomActionRelay.test.ts` relay timeout/unavailable. Server **341** tests (2026-06-07 Phase 4) |
+| G-6 | 🟡 | ✅ RESOLVED | Client unit — GameContext sync, offlineGameActions, gameReducer edge cases, QuickBuyModal TMA Stars (44 tests, 2026-06-07 Phase 5) |
+| G-7 | 🟡 | ✅ RESOLVED | `@alias/shared` pure utils — `utils.test.ts` (shuffleArray, getTeamColor, constants); vitest script added (2026-06-07 Phase 6) |
+| G-8 | 🟠 | ✅ RESOLVED | E2E `@smoke` + `@core` specs added — `smoke-round.spec.ts`, `core-acceptance.spec.ts`, `helpers/game-ui.ts` (2026-06-07 Phase 7). Local run blocked without Postgres (`docker compose up -d postgres`); CI runs `@smoke` / `@core` on chromium + mobile-chrome. |
+
 ---
 
-**Last updated:** 2026-06-07 (session 4 — audit closed, bundle lazy split)
+**Last updated:** 2026-06-07 (test-gap session — Phase 8 coverage + verify)
 
 **Open issues:** 0
 

@@ -24,15 +24,7 @@ import {
   GameUIContextValue,
   GameActionsContextValue,
 } from '../types';
-import {
-  MOCK_WORDS,
-  TEAM_COLORS,
-  THEME_CONFIG,
-  TRANSLATIONS,
-  TEAM_NAMES,
-  ROOM_CODE_LENGTH,
-  MAX_PLAYERS,
-} from '../constants';
+import { MOCK_WORDS, THEME_CONFIG, ROOM_CODE_LENGTH } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';

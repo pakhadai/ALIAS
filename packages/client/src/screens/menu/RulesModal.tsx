@@ -1,0 +1,389 @@
+import React, { useState, useEffect } from 'react';
+import { X, ChevronDown } from 'lucide-react';
+import { Button } from '../../components/Button';
+import {
+  bottomSheetBackdropClass,
+  bottomSheetHandleBarClass,
+  bottomSheetHandleRowClass,
+  bottomSheetPanelClass,
+  ModalPortal,
+} from '../../components/Shared';
+import { zIndex } from '../../constants/zIndex';
+import { GameMode } from '../../types';
+import type { GameSettings, ThemeConfig } from '../../types';
+import { useT } from '../../hooks/useT';
+
+const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
+type TabId = (typeof TABS)[number];
+
+type RulesModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  t: ReturnType<typeof useT>;
+  currentTheme: ThemeConfig;
+  settings: GameSettings;
+};
+
+export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: RulesModalProps) => {
+  const [isClosing, setIsClosing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('rules');
+  const [visible, setVisible] = useState(false);
+  const [allModesOpen, setAllModesOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [settingsDetailOpen, setSettingsDetailOpen] = useState(false);
+  const shouldRender = isOpen || isClosing;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setVisible(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setVisible(false);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+      setActiveTab('rules');
+      setAllModesOpen(false);
+      setQuickOpen(false);
+      setSettingsDetailOpen(false);
+    }, 300);
+  };
+
+  const tabLabels: Record<TabId, string> = {
+    rules: t.helpSectionRules,
+    faq: t.helpSectionFaq,
+    privacy: t.helpSectionPrivacy,
+    impressum: t.helpSectionImpressum,
+    agb: t.helpSectionAgb,
+  };
+
+  const modeCards: { id: GameMode; title: string; hint: string }[] = [
+    { id: GameMode.CLASSIC, title: t.gameModeClassic, hint: t.gameModeHintClassic },
+    { id: GameMode.TRANSLATION, title: t.gameModeTranslation, hint: t.gameModeHintTranslation },
+    { id: GameMode.QUIZ, title: t.gameModeQuiz, hint: t.gameModeHintQuiz },
+    { id: GameMode.HARDCORE, title: t.gameModeHardcore, hint: t.gameModeHintHardcore },
+    { id: GameMode.SYNONYMS, title: t.gameModeSynonyms, hint: t.gameModeHintSynonyms },
+    { id: GameMode.IMPOSTER, title: t.gameModeImposter, hint: t.gameModeHintImposter },
+  ];
+
+  const activeMode = settings?.mode?.gameMode as GameMode | undefined;
+  const sectionTitle = `text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`;
+  const cardBase = 'rounded-3xl border border-ui-border bg-ui-surface px-5 py-4';
+
+  const renderGameRules = () => {
+    const modeGs = settings.mode;
+    const roundLabel =
+      modeGs.gameMode === GameMode.QUIZ
+        ? (modeGs.quizTimerMode ?? 'ROUND') === 'PER_TASK'
+          ? `${modeGs.quizQuestionTime}s`
+          : `${modeGs.quizRoundTime}s`
+        : 'classicRoundTime' in modeGs
+          ? `${modeGs.classicRoundTime}s`
+          : '—';
+    const summaryLine = `${roundLabel} · ${settings?.general?.scoreToWin ?? '—'} ${t.pts} · ${settings?.general?.teamCount ?? '—'} ${t.teams}`;
+
+    const activeCard = modeCards.find((m) => m.id === activeMode) ?? modeCards[0];
+    if (!activeCard) return null;
+
+    return (
+      <div className="space-y-4">
+        <div className={cardBase}>
+          <p className={sectionTitle}>{t.helpRulesModesTitle}</p>
+          <div
+            className={`mt-3 rounded-2xl border px-4 py-3.5 ${activeMode ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)]' : 'border-ui-border bg-ui-bg'}`}
+          >
+            <p className={`text-sm font-bold ${currentTheme.textMain}`}>{activeCard.title}</p>
+            <p className={`text-xs mt-1.5 leading-relaxed ${currentTheme.textSecondary}`}>
+              {activeCard.hint}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAllModesOpen((o) => !o)}
+            className={`mt-3 w-full flex items-center justify-between gap-2 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3 text-left transition-colors hover:bg-ui-surface ${currentTheme.textMain}`}
+          >
+            <span className="text-xs font-bold uppercase tracking-widest opacity-50">
+              {allModesOpen ? t.helpRulesHideModes : t.helpRulesShowAllModes}
+            </span>
+            <ChevronDown
+              size={16}
+              className={`shrink-0 text-ui-fg-muted transition-transform ${allModesOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {allModesOpen && (
+            <div className="mt-3 grid gap-2">
+              {modeCards
+                .filter((m) => m.id !== activeMode)
+                .map((m) => (
+                  <div
+                    key={m.id}
+                    className="rounded-2xl border border-ui-border bg-ui-surface px-4 py-3"
+                  >
+                    <p className={`text-xs font-bold ${currentTheme.textMain}`}>{m.title}</p>
+                    <p className={`text-[11px] mt-1 leading-relaxed ${currentTheme.textSecondary}`}>
+                      {m.hint}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+
+        <div className={cardBase}>
+          <button
+            type="button"
+            onClick={() => setQuickOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2"
+            aria-expanded={quickOpen}
+            aria-label={quickOpen ? t.helpRulesQuickCollapse : t.helpRulesQuickExpand}
+          >
+            <p className={sectionTitle}>{t.helpRulesQuickTitle}</p>
+            <ChevronDown
+              size={16}
+              className={`text-ui-fg-muted transition-transform shrink-0 ${quickOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {!quickOpen && (
+            <p className={`mt-2 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+              {t.infoRule1}
+            </p>
+          )}
+          {quickOpen && (
+            <div className="mt-3 space-y-3">
+              {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
+                (rule: string, i: number) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <span
+                      className={`font-serif text-base opacity-25 shrink-0 w-4 text-right ${currentTheme.textMain}`}
+                    >
+                      {i + 1}
+                    </span>
+                    <p
+                      className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+                    >
+                      {rule}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className={cardBase}>
+          <button
+            type="button"
+            onClick={() => setSettingsDetailOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2"
+            aria-expanded={settingsDetailOpen}
+            aria-label={
+              settingsDetailOpen ? t.helpRulesSettingsCollapse : t.helpRulesSettingsExpand
+            }
+          >
+            <p className={sectionTitle}>{t.helpRulesCurrentSettingsTitle}</p>
+            <ChevronDown
+              size={16}
+              className={`text-ui-fg-muted transition-transform shrink-0 ${settingsDetailOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {!settingsDetailOpen && (
+            <p className={`mt-2 text-sm font-semibold tabular-nums ${currentTheme.textMain}`}>
+              {summaryLine}
+            </p>
+          )}
+          {settingsDetailOpen && (
+            <>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.scoreToWin ?? '—'}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.skipPenalty ? t.enabled : t.disabled}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {settings?.general?.teamCount ?? '—'}
+                  </p>
+                </div>
+              </div>
+              {activeMode === GameMode.IMPOSTER && (
+                <div className="mt-3 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
+                  <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
+                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                    {'imposterDiscussionTime' in settings.mode
+                      ? settings.mode.imposterDiscussionTime
+                      : '—'}
+                    s
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderFaq = () => (
+    <div className="space-y-4">
+      {[
+        { q: t.helpFaqQ1, a: t.helpFaqA1 },
+        { q: t.helpFaqQ2, a: t.helpFaqA2 },
+        { q: t.helpFaqQ3, a: t.helpFaqA3 },
+        { q: t.helpFaqQ4, a: t.helpFaqA4 },
+      ].map((item, idx) => (
+        <div key={idx} className={cardBase}>
+          <p className={`text-sm font-bold ${currentTheme.textMain}`}>{item.q}</p>
+          <p className={`mt-1.5 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+            {item.a}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderPrivacy = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpPrivacyTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpPrivacyIntro}
+        </p>
+        <ul className="mt-3 space-y-2">
+          {[t.helpPrivacyP1, t.helpPrivacyP2, t.helpPrivacyP3, t.helpPrivacyP4].map(
+            (line: string, i: number) => (
+              <li
+                key={i}
+                className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+              >
+                <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
+                {line}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderImpressum = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpImpressumTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpImpressumBody}
+        </p>
+        <div className="mt-3 rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
+          <p className={`${sectionTitle} opacity-60`}>{t.helpImpressumHost}</p>
+          <p className={`mt-1 text-sm font-mono ${currentTheme.textMain}`}>
+            {typeof window !== 'undefined' ? window.location.host : '—'}
+          </p>
+        </div>
+        <p className={`mt-3 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+          {t.helpImpressumRepoHint}
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderAgb = () => (
+    <div className="space-y-4">
+      <div className={cardBase}>
+        <p className={sectionTitle}>{t.helpAgbTitle}</p>
+        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          {t.helpAgbIntro}
+        </p>
+        <ul className="mt-3 space-y-2">
+          {[t.helpAgbP1, t.helpAgbP2, t.helpAgbP3, t.helpAgbP4].map((line: string, i: number) => (
+            <li
+              key={i}
+              className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+            >
+              <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
+              {line}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const tabContent: Record<TabId, () => React.ReactNode> = {
+    rules: renderGameRules,
+    faq: renderFaq,
+    privacy: renderPrivacy,
+    impressum: renderImpressum,
+    agb: renderAgb,
+  };
+
+  return (
+    <ModalPortal>
+      <div
+        className={bottomSheetBackdropClass(visible, zIndex.modal)}
+        onClick={handleClose}
+        role="presentation"
+      >
+        <div
+          className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col min-h-0')}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.rulesTitle}
+        >
+          <div className={bottomSheetHandleRowClass} aria-hidden>
+            <div className={bottomSheetHandleBarClass} />
+          </div>
+          <div className="shrink-0 px-7 pt-0 pb-3 flex items-center justify-between">
+            <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
+            <button
+              onClick={handleClose}
+              className="opacity-40 hover:opacity-100 transition-opacity p-2"
+            >
+              <X size={22} className={currentTheme.iconColor} />
+            </button>
+          </div>
+          <div className="shrink-0 px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? `${currentTheme.button} shadow-lg` : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`}`}
+              >
+                {tabLabels[tab]}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
+          <div className="shrink-0 px-8 pb-8 pt-4">
+            <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
+              {t.close}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </ModalPortal>
+  );
+};

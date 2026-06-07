@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { useDeferredOpen } from '../../../hooks/useDeferredOpen';
 import type { ThemeConfig } from '../../../types';
 import { ModalSheet } from '../../../components/ModalSheet';

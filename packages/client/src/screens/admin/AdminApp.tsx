@@ -90,7 +90,7 @@ function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const [open, setOpen] = useDeferredOpen();
+  const [open] = useDeferredOpen();
 
   return (
     <ModalSheet

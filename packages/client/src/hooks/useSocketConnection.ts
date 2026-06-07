@@ -119,9 +119,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (storedRoom && storedPlayer) {
         // Telegram deep-link guard: if `start_param` points to another room, don't auto-rejoin the old one.
-        const tgStartParam = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.start_param as
-          | string
-          | undefined;
+        const tgStartParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
         if (typeof tgStartParam === 'string' && tgStartParam.startsWith('lobby_')) {
           const deepRoom = tgStartParam.slice('lobby_'.length).trim();
           if (ROOM_CODE_RE.test(deepRoom) && deepRoom !== storedRoom) {

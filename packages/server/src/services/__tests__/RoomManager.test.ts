@@ -1,6 +1,79 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoomManager } from '../RoomManager';
+import { RedisRoomStore } from '../RedisRoomStore';
 import { GameState, MAX_PLAYERS } from '@alias/shared';
+
+vi.mock('ioredis', () => {
+  const store: Map<string, string> = ((
+    globalThis as unknown as { __redisMockStore?: Map<string, string> }
+  ).__redisMockStore ??= new Map<string, string>());
+
+  class MockRedis {
+    status = 'ready';
+    on() {
+      return this;
+    }
+    async ping() {
+      return 'PONG';
+    }
+    async set(key: string, value: string, ..._rest: unknown[]) {
+      store.set(key, value);
+      return 'OK';
+    }
+    async get(key: string) {
+      return store.get(key) ?? null;
+    }
+    async del(...keys: string[]) {
+      keys.forEach((k) => store.delete(k));
+      return keys.length;
+    }
+    async exists(key: string) {
+      return store.has(key) ? 1 : 0;
+    }
+    async scan(
+      cursor: string,
+      _match: 'MATCH',
+      pattern: string,
+      _count: 'COUNT',
+      _n: number
+    ): Promise<[string, string[]]> {
+      const prefix = pattern.endsWith('*') ? pattern.slice(0, -1) : pattern;
+      const keys = Array.from(store.keys()).filter((k) => k.startsWith(prefix));
+      return [cursor === '0' ? '0' : '0', keys];
+    }
+    pipeline() {
+      const ops: Array<() => void> = [];
+      const pipe = {
+        set: (key: string, value: string, ..._rest: unknown[]) => {
+          ops.push(() => store.set(key, value));
+          return pipe;
+        },
+        async exec() {
+          ops.forEach((fn) => fn());
+          return [];
+        },
+      };
+      return pipe;
+    }
+    async quit() {}
+  }
+
+  return { default: MockRedis };
+});
+
+async function flushMicrotasks(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
+async function withRedis(): Promise<{ rm: RoomManager; redisStore: RedisRoomStore }> {
+  (globalThis as unknown as { __redisMockStore?: Map<string, string> }).__redisMockStore?.clear();
+  const redisStore = new RedisRoomStore();
+  await redisStore.connect('redis://mock');
+  const rm = new RoomManager();
+  rm.setRedisStore(redisStore);
+  return { rm, redisStore };
+}
 
 let rm: RoomManager;
 
@@ -334,5 +407,249 @@ describe('deleteRoom', () => {
     const room = await rm.createRoom('s1');
     rm.deleteRoom(room.code);
     expect(rm.getRoom(room.code)).toBeUndefined();
+  });
+
+  it('clears active timers on delete', async () => {
+    const room = await rm.createRoom('s1');
+    room.timerInterval = setInterval(() => {}, 99999);
+    room.timeUpFallbackTimeout = setTimeout(() => {}, 99999);
+    room.quizNextWordTimeout = setTimeout(() => {}, 99999);
+    rm.deleteRoom(room.code);
+    expect(room.timerInterval).toBeNull();
+    expect(room.timeUpFallbackTimeout).toBeNull();
+    expect(room.quizNextWordTimeout).toBeNull();
+  });
+});
+
+// ─── removePlayer edge cases ─────────────────────────────────────────────────
+
+describe('removePlayer edge cases', () => {
+  it('returns null for unknown room', () => {
+    expect(rm.removePlayer('99999', 's1')).toBeNull();
+  });
+
+  it('keeps empty team shells in LOBBY', async () => {
+    const room = await rm.createRoom('s1');
+    const p = rm.addPlayer(room.code, 's1', 'Alice', '🦊')!;
+    room.teams = [
+      {
+        id: 't0',
+        name: 'Rockets',
+        score: 0,
+        color: '',
+        colorHex: '',
+        players: [p],
+        nextPlayerIndex: 0,
+      },
+    ];
+    room.gameState = GameState.LOBBY;
+    rm.removePlayer(room.code, 's1');
+    expect(room.teams).toHaveLength(1);
+    expect(room.teams[0]?.players).toHaveLength(0);
+  });
+
+  it('migrates host to connected player when host socket removed and guest offline', async () => {
+    const room = await rm.createRoom('socket-host');
+    const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+    guest.isConnected = false;
+    room.socketToPlayer.delete('socket-guest');
+    rm.removePlayer(room.code, 'socket-host');
+    expect(room.hostPlayerId).toBe(guest.id);
+    expect(room.hostSocketId).toBe('');
+    expect(room.players.find((p) => p.isHost)?.id).toBe(guest.id);
+    expect(host.id).not.toBe(room.hostPlayerId);
+  });
+});
+
+// ─── markSocketDisconnected ──────────────────────────────────────────────────
+
+describe('markSocketDisconnected', () => {
+  it('migrates host immediately to a connected guest', async () => {
+    const room = await rm.createRoom('socket-host');
+    const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+
+    const result = rm.markSocketDisconnected('socket-host');
+
+    expect(result).toEqual({
+      roomCode: room.code,
+      playerId: host.id,
+      wasHostMigration: true,
+    });
+    expect(room.hostPlayerId).toBe(guest.id);
+    expect(room.hostSocketId).toBe('socket-guest');
+    expect(room.players).toHaveLength(2);
+  });
+
+  it('clears hostSocketId when no connected successor exists', async () => {
+    const room = await rm.createRoom('socket-host');
+    rm.addPlayer(room.code, 'socket-host', 'Host', '🦁');
+
+    const result = rm.markSocketDisconnected('socket-host');
+
+    expect(result?.wasHostMigration).toBe(false);
+    expect(room.hostSocketId).toBe('');
+    expect(room.players).toHaveLength(1);
+  });
+
+  it('returns null for unknown socket', () => {
+    expect(rm.markSocketDisconnected('unknown')).toBeNull();
+  });
+});
+
+// ─── finalizeGraceRemoval ────────────────────────────────────────────────────
+
+describe('finalizeGraceRemoval', () => {
+  it('returns null if player reconnected (socket mapping exists)', async () => {
+    const room = await rm.createRoom('socket-host');
+    rm.addPlayer(room.code, 'socket-host', 'Host', '🦁');
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+    rm.markSocketDisconnected('socket-guest');
+    rm.applyRejoinSocket(room.code, guest.id, 'socket-guest-new');
+
+    expect(rm.finalizeGraceRemoval(room.code, guest.id)).toBeNull();
+    expect(room.players.some((p) => p.id === guest.id)).toBe(true);
+  });
+
+  it('removes guest after grace and keeps host', async () => {
+    const room = await rm.createRoom('socket-host');
+    const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+    rm.markSocketDisconnected('socket-guest');
+
+    const result = rm.finalizeGraceRemoval(room.code, guest.id);
+
+    expect(result).toEqual({ roomCode: room.code, removedPlayerId: guest.id });
+    expect(room.players.some((p) => p.id === guest.id)).toBe(false);
+    expect(room.players.some((p) => p.id === host.id)).toBe(true);
+  });
+
+  it('migrates host on grace finalize when no socket mappings remain', async () => {
+    const room = await rm.createRoom('socket-host');
+    const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+    guest.isConnected = false;
+    // Host disconnect with no connected successor — hostPlayerId stays on host.
+    rm.markSocketDisconnected('socket-host');
+    room.socketToPlayer.clear();
+
+    const result = rm.finalizeGraceRemoval(room.code, host.id);
+
+    expect(result?.wasMigration).toBe(true);
+    expect(room.hostPlayerId).toBe(guest.id);
+    expect(room.players.some((p) => p.id === host.id)).toBe(false);
+  });
+});
+
+// ─── applyRejoinSocket ───────────────────────────────────────────────────────
+
+describe('applyRejoinSocket', () => {
+  it('swaps socket, marks connected, and returns player name', async () => {
+    const room = await rm.createRoom('socket-host');
+    rm.addPlayer(room.code, 'socket-host', 'Host', '🦁');
+    const guest = rm.addPlayer(room.code, 'socket-guest', 'Guest', '🐺')!;
+    rm.markSocketDisconnected('socket-guest');
+
+    const result = rm.applyRejoinSocket(room.code, guest.id, 'socket-guest-new');
+
+    expect(result).toEqual({ playerName: 'Guest' });
+    expect(rm.getPlayerSocketId(room, guest.id)).toBe('socket-guest-new');
+    expect(room.players.find((p) => p.id === guest.id)?.isConnected).toBe(true);
+  });
+
+  it('updates hostSocketId when host rejoins', async () => {
+    const room = await rm.createRoom('socket-host');
+    const host = rm.addPlayer(room.code, 'socket-host', 'Host', '🦁')!;
+    rm.markSocketDisconnected('socket-host');
+
+    rm.applyRejoinSocket(room.code, host.id, 'socket-host-new');
+
+    expect(room.hostSocketId).toBe('socket-host-new');
+  });
+
+  it('returns null for unknown room or player', async () => {
+    const room = await rm.createRoom('s1');
+    const player = rm.addPlayer(room.code, 's1', 'Alice', '🦊')!;
+    expect(rm.applyRejoinSocket('99999', player.id, 's-new')).toBeNull();
+    expect(rm.applyRejoinSocket(room.code, 'unknown-id', 's-new')).toBeNull();
+  });
+});
+
+// ─── detachSocketsForPlayer ──────────────────────────────────────────────────
+
+describe('detachSocketsForPlayer', () => {
+  it('removes all socket mappings for a player', async () => {
+    const room = await rm.createRoom('s1');
+    const player = rm.addPlayer(room.code, 's1', 'Alice', '🦊')!;
+    room.socketToPlayer.set('s-old', player.id);
+
+    rm.detachSocketsForPlayer(room, player.id);
+
+    expect(rm.getPlayerSocketId(room, player.id)).toBeUndefined();
+    expect(room.socketToPlayer.size).toBe(0);
+  });
+});
+
+// ─── getSyncState branches ───────────────────────────────────────────────────
+
+describe('getSyncState branches', () => {
+  it('uses currentTask.prompt as currentWord', async () => {
+    const room = await rm.createRoom('s1');
+    room.currentTask = { id: 't1', prompt: 'PromptWord' };
+    expect(rm.getSyncState(room).currentWord).toBe('PromptWord');
+  });
+
+  it('defaults revealedPlayerIds and teamsLocked', async () => {
+    const room = await rm.createRoom('s1');
+    const state = rm.getSyncState(room);
+    expect(state.revealedPlayerIds).toEqual([]);
+    expect(state.teamsLocked).toBe(false);
+  });
+});
+
+// ─── Redis persistence & restore ───────────────────────────────────────────────
+
+describe('Redis persistence & restore', () => {
+  it('persists room state to Redis on create', async () => {
+    const { rm: redisRm, redisStore } = await withRedis();
+    const room = await redisRm.createRoom('s1');
+    await flushMicrotasks();
+    const saved = await redisStore.getRoomState(room.code);
+    expect(saved?.roomCode).toBe(room.code);
+    expect(saved?.gameState).toBe(GameState.LOBBY);
+  });
+
+  it('restores room from Redis after server restart (new RoomManager)', async () => {
+    const { rm: rm1, redisStore } = await withRedis();
+    const room = await rm1.createRoom('s1');
+    const player = rm1.addPlayer(room.code, 's1', 'Alice', '🦊')!;
+    room.imposterWord = 'secret';
+    rm1.persistRoom(room);
+    await flushMicrotasks();
+    await redisStore.saveImposterWord(room.code, 'secret');
+
+    const rm2 = new RoomManager();
+    rm2.setRedisStore(redisStore);
+    const restored = await rm2.restoreRoomFromRedis(room.code);
+
+    expect(restored).not.toBeNull();
+    expect(restored!.code).toBe(room.code);
+    expect(restored!.isPaused).toBe(true);
+    expect(restored!.players.every((p) => p.isConnected === false)).toBe(true);
+    expect(restored!.imposterWord).toBe('secret');
+    expect(restored!.hostPlayerId).toBe(player.id);
+    expect(restored!.hostSocketId).toBe('');
+  });
+
+  it('returns null from restoreRoomFromRedis when Redis has no snapshot', async () => {
+    const { rm: redisRm } = await withRedis();
+    expect(await redisRm.restoreRoomFromRedis('99999')).toBeNull();
+  });
+
+  it('returns in-memory room without Redis round-trip', async () => {
+    const { rm: redisRm } = await withRedis();
+    const room = await redisRm.createRoom('s1');
+    expect(await redisRm.restoreRoomFromRedis(room.code)).toBe(room);
   });
 });

@@ -34,7 +34,7 @@ export const EnterNameScreen = () => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0] ?? '🙂');
   const [isEntering, setIsEntering] = useState(false);
-  const [sheetOpen, setSheetOpen] = useDeferredOpen();
+  const [sheetOpen] = useDeferredOpen();
   const t = useT();
   const keyboardBottomInset = useVisualViewportBottomInset();
 

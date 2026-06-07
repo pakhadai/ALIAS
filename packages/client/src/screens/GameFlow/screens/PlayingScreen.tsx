@@ -68,6 +68,7 @@ export const PlayingScreen = () => {
 
   const [displayTick, setDisplayTick] = useState(0);
   const displayTimeLeft = useMemo(() => {
+    void displayTick;
     if (gameMode !== 'ONLINE' || !roundEndsAt || gameState !== GameState.PLAYING || isPaused) {
       return timeLeft;
     }

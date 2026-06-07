@@ -30,6 +30,26 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Test coverage Phase 1:** `authorizeGameAction.test.ts` — 42 table-driven cases (host-only, teams locked, IMPOSTER, explainer, GUESS_OPTION, relay host migration). Server tests 208 → 250.
+- **Test coverage Phase 2:** extended `GameEngine.test.ts` (+25) and `RoomManager.test.ts` (+20) — IMPOSTER flow, team builder, QUIZ lifecycle, Redis restore/rejoin/grace. Coverage: GameEngine 70%→**91.66%**, RoomManager 68%→**89.27%**. Server tests 250 → 295.
+- **Test coverage Phase 3:** REST integration tests — `store`, `purchases` (Stripe webhook invalid/valid), `custom-decks`, `push`, `admin` (IP whitelist + auth); `AuthService` Telegram HMAC + JWT expiry. Server tests 295 → 329.
+- **Test coverage Phase 4:** Socket integration + pipeline — `socketHandlers.int.test.ts` (+4: `room:exists` ack, grace `room:rejoin`, `game:action` NOT_HOST/NOT_EXPLAINER via socket), `gameActionPipeline.test.ts` (broadcast, KICK, IMPOSTER secrets), `RoomActionRelay.test.ts` (publish failures, relay timeout). Server tests 329 → **341**.
+- **Test coverage Phase 5:** Client unit — `offlineGameActions.test.ts` (11), `GameContext.test.tsx` (5), extended `gameReducer.test.ts` (+5), `QuickBuyModal.test.tsx` (TMA Stars). Client tests 20 → **44**.
+- **Test coverage Phase 6:** `@alias/shared` — `utils.test.ts` (12: `shuffleArray`, `getTeamColor`, `ROOM_CODE_LENGTH`/`MAX_PLAYERS`/defaults); vitest + exclude test files from `tsc` build.
+- **Test coverage Phase 7:** E2E acceptance — `packages/e2e/tests/helpers/game-ui.ts`, `smoke-round.spec.ts` (`@smoke`: create→join→CORRECT→ROUND_SUMMARY), `core-acceptance.spec.ts` (`@core`: host migration, team lock, IMPOSTER DOM leak guard, offline SCOREBOARD, rematch).
+- **Test coverage Phase 8:** expanded server `vitest.config.ts` coverage `include` (`game/`, `handlers/`, `routes/`); global thresholds aligned to measured totals (67% stmts/lines, 71% branches, 89% functions); `pnpm verify` green.
+
+### Fixed
+
+- **`socketHandlers.int.test.ts` NOT_EXPLAINER:** deterministic `TEAM_JOIN` (host team-0 / guest team-1) — host bypasses explainer check; guest CORRECT now reliably emits `NOT_EXPLAINER`.
+
+### Changed
+
+- **RulesModal split (C-1 polish):** extracted `RulesModal.tsx`; `RulesScreen` lazy-loaded — `main` **305.5 KB** / **93.83 KB gzip** (was 306.5 KB); Vite static/dynamic import conflict resolved.
+- **Lint cleanup:** removed unused imports/deps across client (14 warnings → 0).
+
 ### Changed
 
 - **Bundle lazy routes (C-1 follow-up):** `React.lazy` for GameFlow, lobby, store screens — `main` **306.5 KB** / **93.94 KB gzip** (was 500 KB / 142.67 KB).

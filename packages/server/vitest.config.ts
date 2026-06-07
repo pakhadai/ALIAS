@@ -9,16 +9,23 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      // Focus on core logic & contracts (not bootstrap glue / large route surface).
-      include: ['src/services/**', 'src/validation/**', 'src/modes/**'],
+      // Core logic, contracts, HTTP/socket handlers, and game authorization pipeline.
+      include: [
+        'src/services/**',
+        'src/validation/**',
+        'src/modes/**',
+        'src/game/**',
+        'src/handlers/**',
+        'src/routes/**',
+      ],
       exclude: ['src/**/*.test.ts', 'src/modes/IGameModeHandler.ts'],
       thresholds: {
-        // Risk-based minimums for core server logic.
-        // Keep aligned with measured totals (CI) — raise when adding tests, don't block merges on drift.
-        statements: 70,
-        lines: 70,
-        branches: 65,
-        functions: 80,
+        // Measured 2026-06-07 after Phases 1–7 (341 tests, expanded include).
+        // Totals: stmts/lines 67.42%, branches 71.8%, functions 89.18%.
+        statements: 67,
+        lines: 67,
+        branches: 71,
+        functions: 89,
       },
     },
   },

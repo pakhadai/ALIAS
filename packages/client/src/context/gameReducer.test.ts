@@ -14,14 +14,31 @@ describe('gameReducer', () => {
     const next = gameReducer(initialState, { type: 'SET_STATE', payload: { roomCode: '12345' } });
     expect(next.roomCode).toBe('12345');
     expect(next.gameState).toBe(GameState.MENU);
+    expect(initialState.roomCode).toBe('');
   });
 
-  test('SHOW_NOTIF sets notification', () => {
-    const next = gameReducer(initialState, {
+  test('UPDATE_PLAYERS replaces players array', () => {
+    const players = [
+      {
+        id: 'p1',
+        name: 'A',
+        avatar: '🦊',
+        isHost: true,
+        stats: { explained: 0, guessed: 0 },
+      },
+    ];
+    const next = gameReducer(initialState, { type: 'UPDATE_PLAYERS', payload: players });
+    expect(next.players).toEqual(players);
+    expect(next).not.toBe(initialState);
+  });
+
+  test('SHOW_NOTIF clears notification when payload is null', () => {
+    const withNotif = gameReducer(initialState, {
       type: 'SHOW_NOTIF',
       payload: { message: 'm', type: 'info' },
     });
-    expect(next.notification).toEqual({ message: 'm', type: 'info' });
+    const cleared = gameReducer(withNotif, { type: 'SHOW_NOTIF', payload: null });
+    expect(cleared.notification).toBeNull();
   });
 });
 
@@ -71,5 +88,76 @@ describe('restoreSession', () => {
     expect(restored.roomCode).toBe('12345');
     expect(restored.gameState).toBe(GameState.PRE_ROUND);
     expect(SAVABLE_STATES.has(restored.gameState)).toBe(true);
+  });
+
+  test('maps COUNTDOWN session to PRE_ROUND on restore', () => {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        isHost: true,
+        roomCode: '54321',
+        myPlayerId: 'p2',
+        gameState: GameState.COUNTDOWN,
+        settings: { general: { language: Language.UA }, mode: {} },
+        players: [],
+        teams: [],
+      })
+    );
+
+    const restored = restoreSession(initialState);
+    expect(restored.gameState).toBe(GameState.PRE_ROUND);
+  });
+
+  test('restores ROUND_SUMMARY stats and word from session', () => {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        isHost: true,
+        roomCode: '11111',
+        myPlayerId: 'p1',
+        gameState: GameState.ROUND_SUMMARY,
+        settings: { general: { language: Language.UA }, mode: {} },
+        players: [],
+        teams: [],
+        currentWord: 'kept-word',
+        currentRoundStats: {
+          correct: 3,
+          skipped: 1,
+          words: [],
+          teamId: 't0',
+          explainerName: 'Ann',
+        },
+      })
+    );
+
+    const restored = restoreSession(initialState);
+    expect(restored.gameState).toBe(GameState.ROUND_SUMMARY);
+    expect(restored.currentWord).toBe('kept-word');
+    expect(restored.currentRoundStats.correct).toBe(3);
+  });
+
+  test('ignores corrupted SESSION_KEY JSON', () => {
+    localStorage.setItem(SESSION_KEY, '{not-json');
+    const restored = restoreSession(initialState);
+    expect(restored.roomCode).toBe('');
+    expect(restored.isHost).toBe(false);
+  });
+
+  test('does not restore session when isHost is false in saved payload', () => {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        isHost: false,
+        roomCode: '12345',
+        myPlayerId: 'p1',
+        gameState: GameState.LOBBY,
+        settings: { general: { language: Language.UA }, mode: {} },
+        players: [],
+        teams: [],
+      })
+    );
+
+    const restored = restoreSession(initialState);
+    expect(restored.roomCode).toBe('');
   });
 });

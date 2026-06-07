@@ -68,6 +68,28 @@ The goal is to reduce real production risk (not to “game” coverage metrics).
   - Explainer-only actions are enforced when relevant.
   - Quiz `GUESS_OPTION` is allowed for any player, but only first correct answer scores.
   - IMPOSTER / team actions follow `authorizeGameAction` + `GameEngine` (not only `modes/` handlers).
+
+| Invariant / flow | Guard test file |
+|------------------|-----------------|
+| Host-only / explainer / IMPOSTER / team lock / GUESS_OPTION authorize | `packages/server/src/game/__tests__/authorizeGameAction.test.ts` |
+| IMPOSTER REVEAL→DISCUSSION→RESULTS, team builder, QUIZ scoring | `packages/server/src/services/__tests__/GameEngine.test.ts` |
+| Reconnect grace, rejoin, host migration, Redis restore | `packages/server/src/services/__tests__/RoomManager.test.ts` |
+| Store catalog + buy-stars auth/TMA | `packages/server/src/routes/__tests__/store.routes.test.ts` |
+| Stripe checkout auth + webhook signature | `packages/server/src/routes/__tests__/purchases.routes.test.ts` |
+| Custom decks create/upload/access code | `packages/server/src/routes/__tests__/custom-decks.routes.test.ts` |
+| Push vapid-key / subscribe / unsubscribe | `packages/server/src/routes/__tests__/push.routes.test.ts` |
+| Admin IP whitelist + double auth gate | `packages/server/src/routes/__tests__/admin.routes.test.ts` |
+| JWT expiry + Telegram initData HMAC | `packages/server/src/services/__tests__/AuthService.test.ts` |
+| `room:exists` ack without join; grace `room:rejoin`; socket NOT_HOST / NOT_EXPLAINER | `packages/server/src/handlers/__tests__/socketHandlers.int.test.ts` |
+| `game:action` pipeline broadcast + KICK + IMPOSTER per-player secret | `packages/server/src/game/__tests__/gameActionPipeline.test.ts` |
+| Cross-node relay timeout, publish unavailable, join/leave/rejoin reply dispatch | `packages/server/src/services/__tests__/RoomActionRelay.test.ts` |
+| Offline START_GAME/CORRECT/SKIP/teams/MAX_PLAYERS | `packages/client/src/context/offlineGameActions.test.ts` |
+| GameContext state-sync apply + client nav guard + offline routing | `packages/client/src/context/GameContext.test.tsx` |
+| Session restore edge cases (COUNTDOWN, ROUND_SUMMARY, corrupt JSON) | `packages/client/src/context/gameReducer.test.ts` |
+| TMA Stars `openInvoice` paid/cancelled callbacks | `packages/client/src/components/Store/QuickBuyModal.test.tsx` |
+| `shuffleArray`, `getTeamColor`, shared limits/constants | `packages/shared/src/__tests__/utils.test.ts` |
+| E2E smoke: create → join → CORRECT → ROUND_SUMMARY | `packages/e2e/tests/smoke-round.spec.ts` |
+| E2E core: host migration, team lock, IMPOSTER secret, offline SCOREBOARD, rematch | `packages/e2e/tests/core-acceptance.spec.ts` |
 - **State sync**: server is authoritative; clients apply full sync without merging corrupt state.
 - **Input sanitization**: player names are sanitized (no HTML), trimmed, length-limited.
 

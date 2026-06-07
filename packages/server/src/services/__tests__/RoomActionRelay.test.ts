@@ -160,4 +160,57 @@ describe('RoomActionRelay', () => {
       expect.any(String)
     );
   });
+
+  test('publishGameAction returns false when writer pub is unavailable', async () => {
+    const relay = new RoomActionRelay();
+    (relay as unknown as { pub: null }).pub = null;
+
+    const ok = await relay.publishGameAction('writer-1', {
+      roomCode: '12345',
+      actorPlayerId: 'p1',
+      payload: { action: 'START_GAME' },
+      replyToInstanceId: 'me',
+      requestId: 'req-ga',
+    });
+
+    expect(ok).toBe(false);
+  });
+
+  test('publishRoomRejoin returns false when publish throws', async () => {
+    const relay = new RoomActionRelay();
+    const publish = vi.fn().mockRejectedValue(new Error('redis down'));
+    (relay as unknown as { pub: { status: string; publish: typeof publish } }).pub = {
+      status: 'ready',
+      publish,
+    };
+
+    const ok = await relay.publishRoomRejoin('writer-1', {
+      roomCode: '12345',
+      playerId: 'p2',
+      requestingSocketId: 's-new',
+      replyToInstanceId: 'me',
+      requestId: 'req-rj',
+    });
+
+    expect(ok).toBe(false);
+  });
+
+  test('publishReply is a no-op when pub is not ready', async () => {
+    const relay = new RoomActionRelay();
+    (relay as unknown as { pub: null }).pub = null;
+
+    await expect(
+      relay.publishReply('caller', {
+        v: 1,
+        kind: 'reply',
+        requestId: 'req-noop',
+        error: { code: 'ROOM_NOT_FOUND', message: 'missing' },
+      })
+    ).resolves.toBeUndefined();
+  });
+
+  test('isReady returns false until pub and sub are connected', () => {
+    const relay = new RoomActionRelay();
+    expect(relay.isReady()).toBe(false);
+  });
 });

@@ -443,6 +443,7 @@ export function ImposterScreen() {
   }, [imposterPhase, isPaused, isOffline, timeLeft, setTimeLeft, roundEndsAt]);
 
   const discussionTimeLeft = useMemo(() => {
+    void discussionTick;
     if (imposterPhase !== 'DISCUSSION' || isPaused) return timeLeft;
     if (isOffline) return timeLeft;
     if (!roundEndsAt) return timeLeft;

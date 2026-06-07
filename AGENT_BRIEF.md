@@ -11,9 +11,11 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 
 ## Поточний стан розробки
 
-**Статус:** ACTIVE (session 4 complete — audit closed, bundle unchanged)  
+**Bundle (C-1):** lazy routes — `main` **305.5 KB** / **93.83 KB gzip** (baseline was 500 KB). Chunks: `GameFlow` 50 KB, `LobbyScreen` 59 KB, `SettingsScreen` 47 KB, `StoreScreen` 14 KB, `RulesScreen` 1 KB.
+
+**Статус:** ACTIVE (session 5 — verify + polish: RulesModal split, lint 0)  
 **Останній аудит:** 2026-06-07  
-**Відкритих issues:** 0 (LOW items A-1, B-1, C-2, D-5, F-1 closed session 4)
+**Відкритих issues:** 0 (audit closed session 4)
 
 ## Критичні файли — знай напам'ять
 

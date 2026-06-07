@@ -993,3 +993,429 @@ describe('Timer', () => {
     expect(room.timeLeft).toBe(10);
   });
 });
+
+// ─── IMPOSTER flow ───────────────────────────────────────────────────────────
+
+function makeImposterRoom(overrides: Partial<Room> = {}): Room {
+  const p1 = makePlayer({ id: 'p1', name: 'Ann' });
+  const p2 = makePlayer({ id: 'p2', name: 'Ben' });
+  const p3 = makePlayer({ id: 'p3', name: 'Cal' });
+  return makeRoom({
+    players: [p1, p2, p3],
+    settings: {
+      general: defaultSettings.general,
+      mode: { gameMode: GameMode.IMPOSTER, imposterDiscussionTime: 5 },
+    },
+    imposterPhase: 'REVEAL',
+    revealedPlayerIds: [],
+    ...overrides,
+  });
+}
+
+describe('IMPOSTER flow', () => {
+  it('should add player to revealedPlayerIds on IMPOSTER_READY and stay in REVEAL until all ready', async () => {
+    const room = makeImposterRoom();
+    await engine.handleAction(room, { action: 'IMPOSTER_READY' }, 'p1');
+    expect(room.revealedPlayerIds).toContain('p1');
+    expect(room.imposterPhase).toBe('REVEAL');
+    expect(room.timerInterval).toBeNull();
+  });
+
+  it('should transition to DISCUSSION and start timer when all players are ready', async () => {
+    const room = makeImposterRoom({ revealedPlayerIds: ['p1', 'p2'] });
+    await engine.handleAction(room, { action: 'IMPOSTER_READY' }, 'p3');
+    expect(room.imposterPhase).toBe('DISCUSSION');
+    expect(room.timeLeft).toBe(5);
+    expect(room.timerInterval).not.toBeNull();
+    expect(room.roundEndsAt).toBeDefined();
+  });
+
+  it('should end discussion on IMPOSTER_END_GAME and move to RESULTS', async () => {
+    const room = makeImposterRoom({ imposterPhase: 'DISCUSSION', timeLeft: 30 });
+    room.timerInterval = setInterval(() => {}, 99999);
+    await engine.handleAction(room, { action: 'IMPOSTER_END_GAME' });
+    expect(room.imposterPhase).toBe('RESULTS');
+    expect(room.timeLeft).toBe(0);
+    expect(room.timerInterval).toBeNull();
+    expect(room.roundEndsAt).toBeUndefined();
+  });
+
+  it('should move to RESULTS when discussion timer expires (not ROUND_SUMMARY)', async () => {
+    const room = makeImposterRoom({ revealedPlayerIds: ['p1', 'p2'] });
+    await engine.handleAction(room, { action: 'IMPOSTER_READY' }, 'p3');
+    expect(room.imposterPhase).toBe('DISCUSSION');
+    vi.advanceTimersByTime(5000);
+    expect(room.imposterPhase).toBe('RESULTS');
+    expect(room.timeUp).toBe(false);
+    expect(room.gameState).not.toBe(GameState.ROUND_SUMMARY);
+  });
+
+  it('should no-op IMPOSTER_READY when not in REVEAL phase', async () => {
+    const room = makeImposterRoom({ imposterPhase: 'DISCUSSION', revealedPlayerIds: ['p1'] });
+    await engine.handleAction(room, { action: 'IMPOSTER_READY' }, 'p2');
+    expect(room.revealedPlayerIds).toEqual(['p1']);
+  });
+});
+
+// ─── Team builder actions ────────────────────────────────────────────────────
+
+describe('Team builder actions', () => {
+  it('should set teamsLocked on TEAM_LOCK', async () => {
+    const room = makeRoom();
+    await engine.handleAction(room, { action: 'TEAM_LOCK', data: { locked: true } });
+    expect(room.teamsLocked).toBe(true);
+  });
+
+  it('should assign player to team on TEAM_JOIN', async () => {
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [makePlayer({ id: 'p1' }), p2],
+      teams: [
+        makeTeam({ id: 'team-0', players: [makePlayer({ id: 'p1' })] }),
+        makeTeam({ id: 'team-1', players: [] }),
+      ],
+    });
+    await engine.handleAction(room, { action: 'TEAM_JOIN', data: { teamId: 'team-1' } }, 'p2');
+    expect(room.teams[1]?.players.some((p) => p.id === 'p2')).toBe(true);
+    expect(room.teams[0]?.players.some((p) => p.id === 'p2')).toBe(false);
+  });
+
+  it('should finish round when explainer leaves team mid-round', async () => {
+    const p1 = makePlayer({ id: 'p1', name: 'Alice' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [makeTeam({ id: 'team-0', players: [p1, p2] })],
+      gameState: GameState.PLAYING,
+      currentRoundStats: {
+        correct: 1,
+        skipped: 0,
+        words: [],
+        teamId: 'team-0',
+        explainerName: 'Alice',
+        explainerId: 'p1',
+      },
+    });
+    await engine.handleAction(room, { action: 'TEAM_LEAVE' }, 'p1');
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+  });
+
+  it('should distribute unassigned players on TEAM_SHUFFLE_UNASSIGNED', async () => {
+    const players = [
+      makePlayer({ id: 'p1' }),
+      makePlayer({ id: 'p2', name: 'B' }),
+      makePlayer({ id: 'p3', name: 'C' }),
+    ];
+    const room = makeRoom({
+      players,
+      teams: [
+        makeTeam({ id: 'team-0', players: [players[0]!] }),
+        makeTeam({ id: 'team-1', players: [] }),
+      ],
+    });
+    await engine.handleAction(room, { action: 'TEAM_SHUFFLE_UNASSIGNED' });
+    const assigned = new Set(room.teams.flatMap((t) => t.players.map((p) => p.id)));
+    expect(assigned.size).toBe(3);
+  });
+
+  it('should redistribute all players on TEAM_SHUFFLE_ALL', async () => {
+    const players = [
+      makePlayer({ id: 'p1' }),
+      makePlayer({ id: 'p2', name: 'B' }),
+      makePlayer({ id: 'p3', name: 'C' }),
+      makePlayer({ id: 'p4', name: 'D' }),
+    ];
+    const room = makeRoom({
+      players,
+      teams: [
+        makeTeam({ id: 'team-0', players: [players[0]!, players[1]!] }),
+        makeTeam({ id: 'team-1', players: [players[2]!, players[3]!] }),
+      ],
+    });
+    await engine.handleAction(room, { action: 'TEAM_SHUFFLE_ALL' });
+    expect(room.teams.every((t) => t.nextPlayerIndex === 0)).toBe(true);
+    expect(room.teams.reduce((s, t) => s + t.players.length, 0)).toBe(4);
+  });
+});
+
+// ─── Mode-specific actions ───────────────────────────────────────────────────
+
+describe('Mode-specific actions', () => {
+  it('should end turn on HARDCORE SKIP', async () => {
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.HARDCORE, classicRoundTime: 60 } },
+      gameState: GameState.PLAYING,
+      currentTask: { id: 't1', prompt: 'Word' },
+    });
+    await engine.handleAction(room, { action: 'SKIP' });
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+  });
+
+  it('should parse translation pipe format on START_PLAYING', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Кіт|Cat',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      settings: {
+        ...defaultSettings,
+        mode: { gameMode: GameMode.TRANSLATION, classicRoundTime: 60 },
+      },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    expect(room.currentTask?.prompt).toBe('Кіт');
+    expect(room.currentTask?.answer).toBe('Cat');
+  });
+
+  it('should score correct QUIZ GUESS_OPTION and block double scoring', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'A',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const p1 = makePlayer({ id: 'p1' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const team = makeTeam({ id: 't1', score: 2, players: [p1, p2] });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [team],
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'ROUND',
+          quizRoundTime: 60,
+          quizQuestionTime: 10,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: false,
+        },
+      },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    room.currentTask = { id: 'task-1', prompt: 'Q', answer: 'A', options: ['A', 'B', 'C', 'D'] };
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'A' } },
+      'p1'
+    );
+    expect(room.teams[0]?.score).toBe(3);
+    expect(room.players.find((p) => p.id === 'p1')?.stats.guessed).toBe(1);
+    expect(room.currentRoundStats.correct).toBe(1);
+    expect(room.currentTaskAnswered).toBe('p1');
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'A' } },
+      'p2'
+    );
+    expect(room.teams[0]?.score).toBe(3);
+    expect(room.currentRoundStats.correct).toBe(1);
+  });
+
+  it('should finish round on CORRECT when timeUp is already set', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Next',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      gameState: GameState.PLAYING,
+      timeUp: true,
+      currentTask: { id: 't1', prompt: 'Word' },
+    });
+    await engine.handleAction(room, { action: 'CORRECT' });
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+  });
+});
+
+// ─── UPDATE_SETTINGS mode merges ─────────────────────────────────────────────
+
+describe('UPDATE_SETTINGS mode merges', () => {
+  it('should switch CLASSIC to IMPOSTER with default discussion time', async () => {
+    const room = makeRoom();
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { mode: { gameMode: GameMode.IMPOSTER } },
+    });
+    expect(room.settings.mode.gameMode).toBe(GameMode.IMPOSTER);
+    if (room.settings.mode.gameMode === GameMode.IMPOSTER) {
+      expect(room.settings.mode.imposterDiscussionTime).toBe(180);
+    }
+  });
+
+  it('should switch CLASSIC to QUIZ with full quiz defaults', async () => {
+    const room = makeRoom();
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { mode: { gameMode: GameMode.QUIZ } },
+    });
+    expect(room.settings.mode.gameMode).toBe(GameMode.QUIZ);
+    if (room.settings.mode.gameMode === GameMode.QUIZ) {
+      expect(room.settings.mode.quizTimerMode).toBe('ROUND');
+      expect(room.settings.mode.quizQuestionTime).toBe(10);
+    }
+  });
+
+  it('should switch CLASSIC to HARDCORE preserving classicRoundTime', async () => {
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 90 } },
+    });
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { mode: { gameMode: GameMode.HARDCORE } },
+    });
+    if (room.settings.mode.gameMode === GameMode.HARDCORE) {
+      expect(room.settings.mode.classicRoundTime).toBe(90);
+    }
+  });
+});
+
+// ─── KICK explainer ──────────────────────────────────────────────────────────
+
+describe('KICK_PLAYER explainer', () => {
+  it('should end round when kicking explainer during PLAYING', async () => {
+    const p1 = makePlayer({ id: 'p1', name: 'Alice' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [makeTeam({ id: 'team-0', players: [p1, p2] })],
+      gameState: GameState.PLAYING,
+      currentRoundStats: {
+        correct: 0,
+        skipped: 0,
+        words: [],
+        teamId: 'team-0',
+        explainerName: 'Alice',
+        explainerId: 'p1',
+      },
+    });
+    await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p1' });
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+    expect(room.players.some((p) => p.id === 'p1')).toBe(false);
+    expect(room.teams[0]?.players.some((p) => p.id === 'p2')).toBe(true);
+  });
+});
+
+// ─── START_ROUND team selection ──────────────────────────────────────────────
+
+describe('START_ROUND team selection', () => {
+  it('should skip empty team and pick next playable team', async () => {
+    const p = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      teams: [makeTeam({ id: 'team-0', players: [] }), makeTeam({ id: 'team-1', players: [p] })],
+      currentTeamIndex: 0,
+    });
+    await engine.handleAction(room, { action: 'START_ROUND' });
+    expect(room.currentTeamIndex).toBe(1);
+    expect(room.gameState).toBe(GameState.COUNTDOWN);
+    expect(room.currentRoundStats.explainerId).toBe('p2');
+  });
+
+  it('should fall back to LOBBY when all teams are empty', async () => {
+    const room = makeRoom({
+      teams: [makeTeam({ id: 'team-0', players: [] }), makeTeam({ id: 'team-1', players: [] })],
+      currentTeamIndex: 0,
+    });
+    await engine.handleAction(room, { action: 'START_ROUND' });
+    expect(room.gameState).toBe(GameState.LOBBY);
+  });
+});
+
+// ─── QUIZ lifecycle extras ───────────────────────────────────────────────────
+
+describe('QUIZ lifecycle', () => {
+  const quizSettings: GameSettings = {
+    ...defaultSettings,
+    mode: {
+      gameMode: GameMode.QUIZ,
+      classicRoundTime: 60,
+      quizTimerMode: 'ROUND',
+      quizRoundTime: 3,
+      quizQuestionTime: 10,
+      quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+      quizWrongPenaltyEnabled: false,
+    },
+  };
+
+  it('should jump to COUNTDOWN on START_GAME (no PRE_ROUND)', async () => {
+    const room = makeRoom({ settings: quizSettings });
+    await engine.handleAction(room, { action: 'START_GAME' });
+    expect(room.gameState).toBe(GameState.COUNTDOWN);
+    expect(room.currentRoundStats.explainerId).toBeUndefined();
+  });
+
+  it('should use COUNTDOWN on NEXT_ROUND in QUIZ mode', async () => {
+    const room = makeRoom({
+      settings: quizSettings,
+      gameState: GameState.SCOREBOARD,
+      teams: [makeTeam()],
+    });
+    await engine.handleAction(room, { action: 'NEXT_ROUND' });
+    expect(room.gameState).toBe(GameState.COUNTDOWN);
+  });
+
+  it('should end round when QUIZ ROUND timer expires', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'A',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({ settings: quizSettings });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    vi.advanceTimersByTime(3000);
+    expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+  });
+});
+
+// ─── Broadcast callbacks ─────────────────────────────────────────────────────
+
+describe('Broadcast callbacks', () => {
+  it('should invoke timerBroadcast every 10 timer ticks', async () => {
+    const broadcast = vi.fn();
+    engine.setTimerBroadcast(broadcast);
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'X',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      settings: { ...defaultSettings, mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 15 } },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    broadcast.mockClear();
+    vi.advanceTimersByTime(10000);
+    expect(broadcast).toHaveBeenCalled();
+  });
+
+  it('should notify clients when deck reshuffles mid-round', async () => {
+    const notify = vi.fn();
+    engine.setNotificationBroadcast(notify);
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'New',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: true,
+    });
+    const room = makeRoom({
+      gameState: GameState.PLAYING,
+      currentTask: { id: 't0', prompt: 'Old' },
+      currentRoundStats: {
+        correct: 1,
+        skipped: 0,
+        words: [{ word: 'Old', taskId: 't0', result: 'correct' }],
+        teamId: 'team-0',
+        explainerName: 'Alice',
+      },
+    });
+    await engine.handleAction(room, { action: 'CORRECT' });
+    expect(notify).toHaveBeenCalledWith(room, expect.stringContaining('перемішана'), 'info');
+  });
+});

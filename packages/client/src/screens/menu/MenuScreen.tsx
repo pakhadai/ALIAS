@@ -14,7 +14,7 @@ import {
 } from '../../hooks/useVisualViewportBottomInset';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
-import { RulesModal } from './RulesScreen';
+import { RulesModal } from './RulesModal';
 import { ROOM_CODE_LENGTH } from '../../constants';
 
 export const MenuScreen = () => {

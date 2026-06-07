@@ -7,6 +7,7 @@ import { RoomManager } from '../../services/RoomManager';
 import { GameEngine } from '../../services/GameEngine';
 import { WordService } from '../../services/WordService';
 import { PerRoomQueue } from '../../services/PerRoomQueue';
+import { wireGraceAfterMarkDisconnected } from '../../socket/disconnectFlow';
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -47,6 +48,27 @@ function waitForEvent<T>(
   });
 }
 
+function waitForSyncMatching(
+  socket: AppClientSocket,
+  predicate: (sync: GameSyncState) => boolean,
+  timeoutMs = 15_000
+): Promise<GameSyncState> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(
+      () => reject(new Error('Timeout waiting for matching game:state-sync')),
+      timeoutMs
+    );
+    const handler = (sync: GameSyncState) => {
+      if (predicate(sync)) {
+        clearTimeout(t);
+        socket.off('game:state-sync', handler);
+        resolve(sync);
+      }
+    };
+    socket.on('game:state-sync', handler);
+  });
+}
+
 function createClient(baseUrl: string): AppClientSocket {
   return ioc(baseUrl, {
     transports: ['websocket'],
@@ -56,10 +78,28 @@ function createClient(baseUrl: string): AppClientSocket {
   }) as unknown as AppClientSocket;
 }
 
+function emitRoomExistsAck(
+  socket: AppClientSocket,
+  roomCode: string,
+  timeoutMs = 15_000
+): Promise<{ exists: boolean }> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('Timeout waiting for room:exists ack')), timeoutMs);
+    socket.emit('room:exists', { roomCode }, (res: { exists: boolean }) => {
+      clearTimeout(t);
+      resolve(res);
+    });
+  });
+}
+
+const RECONNECT_GRACE_MS = 5_000;
+
 async function startTestIo(): Promise<{
   httpServer: HttpServer;
   io: AppServer;
   baseUrl: string;
+  roomManager: RoomManager;
+  roomQueue: PerRoomQueue;
 }> {
   const httpServer = createServer();
   const io: AppServer = new IOServer<
@@ -81,23 +121,69 @@ async function startTestIo(): Promise<{
       queue,
       null
     );
+
+    socket.on('disconnect', () => {
+      const { roomCode } = socket.data;
+      if (!roomCode) return;
+      void queue.run(roomCode, async () => {
+        const graceInfo = roomManager.markSocketDisconnected(socket.id);
+        if (!graceInfo) return;
+        wireGraceAfterMarkDisconnected(io, roomManager, queue, graceInfo, RECONNECT_GRACE_MS);
+      });
+    });
   });
 
   await new Promise<void>((resolve) => httpServer.listen(0, resolve));
   const addr = httpServer.address();
   const port = typeof addr === 'object' && addr ? addr.port : 0;
-  return { httpServer, io, baseUrl: `http://127.0.0.1:${port}` };
+  return {
+    httpServer,
+    io,
+    baseUrl: `http://127.0.0.1:${port}`,
+    roomManager,
+    roomQueue: queue,
+  };
+}
+
+async function createHostRoom(baseUrl: string, clients: AppClientSocket[]) {
+  const host = createClient(baseUrl);
+  clients.push(host);
+  await waitForEvent(host, 'connect');
+
+  const hostSyncAfterCreateP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+  host.emit('room:create', { playerName: 'Host', avatar: '🎮' });
+  const created = await waitForEvent<{ roomCode: string; playerId: string }>(host, 'room:created');
+  await hostSyncAfterCreateP;
+  return { host, created };
+}
+
+async function joinGuest(
+  baseUrl: string,
+  clients: AppClientSocket[],
+  roomCode: string,
+  host: AppClientSocket
+) {
+  const guest = createClient(baseUrl);
+  clients.push(guest);
+  await waitForEvent(guest, 'connect');
+
+  const hostSyncAfterJoinP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+  guest.emit('room:join', { roomCode, playerName: 'Guest', avatar: '🎲' });
+  const joined = await waitForEvent<{ roomCode: string; playerId: string }>(guest, 'room:joined');
+  await hostSyncAfterJoinP;
+  return { guest, joined };
 }
 
 describe('Socket handlers (integration)', () => {
   let httpServer: HttpServer;
   let io: AppServer;
   let baseUrl: string;
+  let roomManager: RoomManager;
   const clients: AppClientSocket[] = [];
 
   beforeEach(async () => {
     vi.useRealTimers();
-    ({ httpServer, io, baseUrl } = await startTestIo());
+    ({ httpServer, io, baseUrl, roomManager } = await startTestIo());
   });
 
   afterEach(async () => {
@@ -229,4 +315,87 @@ describe('Socket handlers (integration)', () => {
     const err = await waitForEvent<{ code?: string }>(guest, 'room:error');
     expect(err?.code).toBe('PLAYER_NOT_IN_ROOM');
   }, 25_000);
+
+  it('room:exists ack reports existence without joining the room', async () => {
+    const probe = createClient(baseUrl);
+    clients.push(probe);
+    await waitForEvent(probe, 'connect');
+
+    const { host, created } = await createHostRoom(baseUrl, clients);
+
+    const existsRes = await emitRoomExistsAck(probe, created.roomCode);
+    expect(existsRes.exists).toBe(true);
+
+    const missingRes = await emitRoomExistsAck(probe, '99999');
+    expect(missingRes.exists).toBe(false);
+
+    // probe client never joined — host room still has one player
+    expect(host.connected).toBe(true);
+  }, 20_000);
+
+  it('room:rejoin within grace period restores session before removal', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+    const { guest, joined } = await joinGuest(baseUrl, clients, created.roomCode, host);
+
+    guest.disconnect();
+    await new Promise((r) => setTimeout(r, 50));
+
+    const guest2 = createClient(baseUrl);
+    clients.push(guest2);
+    await waitForEvent(guest2, 'connect');
+
+    const syncP = waitForEvent<GameSyncState>(guest2, 'game:state-sync');
+    guest2.emit('room:rejoin', { roomCode: created.roomCode, playerId: joined.playerId });
+    const rejoined = await waitForEvent<{ roomCode: string; playerId: string }>(
+      guest2,
+      'room:rejoined'
+    );
+    expect(rejoined.playerId).toBe(joined.playerId);
+
+    const sync = await syncP;
+    expect(sync.players?.some((p) => p.id === joined.playerId && p.isConnected !== false)).toBe(
+      true
+    );
+  }, 25_000);
+
+  it('game:action rejects START_GAME from non-host with NOT_HOST', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+    const { guest } = await joinGuest(baseUrl, clients, created.roomCode, host);
+
+    guest.emit('game:action', { action: 'START_GAME' });
+    const err = await waitForEvent<{ code?: string }>(guest, 'room:error');
+    expect(err?.code).toBe('NOT_HOST');
+  }, 20_000);
+
+  it('game:action rejects CORRECT from non-explainer with NOT_EXPLAINER', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+    const { guest } = await joinGuest(baseUrl, clients, created.roomCode, host);
+
+    const syncHostTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+    await syncHostTeamP;
+
+    const syncGuestTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    guest.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-1' } });
+    await syncGuestTeamP;
+
+    const syncAfterStartP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'START_GAME' });
+    await syncAfterStartP;
+
+    const live = roomManager.getRoom(created.roomCode)!;
+    const team = live.teams[live.currentTeamIndex];
+    const explainerId =
+      team?.players[Math.min(team.nextPlayerIndex, Math.max(team.players.length - 1, 0))]?.id;
+    expect(explainerId).toBe(created.playerId);
+
+    const roundSyncP = waitForSyncMatching(host, (s) => s.gameState === 'COUNTDOWN');
+    host.emit('game:action', { action: 'START_ROUND' });
+    const roundSync = await roundSyncP;
+    expect(roundSync.currentRoundStats?.explainerId).toBe(created.playerId);
+
+    guest.emit('game:action', { action: 'CORRECT' });
+    const err = await waitForEvent<{ code?: string }>(guest, 'room:error');
+    expect(err?.code).toBe('NOT_EXPLAINER');
+  }, 30_000);
 });

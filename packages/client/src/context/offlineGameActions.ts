@@ -3,10 +3,10 @@ import type { GameActionPayload } from '@alias/shared';
 import type { Action } from './gameReducer';
 import { initialState } from './gameReducer';
 import type { AppState, Player, Team } from '../types';
-import { GameState, GameMode, Category } from '../types';
+import { GameState, GameMode } from '../types';
 import type { GameSoundId } from '../types';
 import { getTeamColor, shuffleArray } from '@alias/shared';
-import { TEAM_NAMES, TRANSLATIONS, MOCK_WORDS, MAX_PLAYERS } from '../constants';
+import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
 import { AVATARS } from '../utils/avatars';
 import { getUiStrings } from '../hooks/useT';
 

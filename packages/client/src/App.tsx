@@ -18,8 +18,6 @@ import {
   ProfileSettingsScreen,
   LobbySettingsScreen,
 } from './screens/MenuFlow';
-import { RulesScreen } from './screens/menu/RulesScreen';
-
 const GameFlow = React.lazy(() =>
   import('./screens/GameFlow').then((mod) => ({ default: mod.GameFlow }))
 );
@@ -43,6 +41,9 @@ const MyDecksScreen = React.lazy(() =>
 );
 const PlayerStatsScreen = React.lazy(() =>
   import('./screens/menu/PlayerStatsScreen').then((mod) => ({ default: mod.PlayerStatsScreen }))
+);
+const RulesScreen = React.lazy(() =>
+  import('./screens/menu/RulesScreen').then((mod) => ({ default: mod.RulesScreen }))
 );
 
 const LazyRouteFallback = () => (
@@ -119,7 +120,9 @@ const GameRouter = () => {
       case GameState.RULES:
         return (
           <PageTransition key="rules">
-            <RulesScreen />
+            <LazyRoute>
+              <RulesScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.ENTER_NAME:
