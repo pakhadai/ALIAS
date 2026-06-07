@@ -107,6 +107,18 @@ describe('applyOfflineGameAction', () => {
     expect(deps.nextWordLogic).not.toHaveBeenCalled();
   });
 
+  it('should transition to ROUND_SUMMARY on TIME_UP', () => {
+    const { deps, getState } = createOfflineDeps({
+      gameState: GameState.PLAYING,
+      timeUp: true,
+      timeLeft: 0,
+    });
+    applyOfflineGameAction(deps, { action: 'TIME_UP' });
+    expect(getState().gameState).toBe(GameState.ROUND_SUMMARY);
+    expect(getState().timeLeft).toBe(0);
+    expect(deps.playSound).toHaveBeenCalledWith('end');
+  });
+
   it('should increment skipped count on SKIP', () => {
     const { deps, getState } = createOfflineDeps({ gameState: GameState.PLAYING });
     applyOfflineGameAction(deps, { action: 'SKIP' });

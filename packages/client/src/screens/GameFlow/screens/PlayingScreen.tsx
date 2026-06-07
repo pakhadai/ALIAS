@@ -244,7 +244,10 @@ export const PlayingScreen = () => {
       {/* Progress Bar Header */}
       <header className="w-full px-6 pb-2 flex flex-col gap-5 z-20">
         {timeUp && canUseClassicButtons && !isQuizMode && (
-          <p className="text-center text-ui-accent text-xs font-bold uppercase tracking-wide animate-pulse">
+          <p
+            data-testid="playing-time-up"
+            className="text-center text-ui-accent text-xs font-bold uppercase tracking-wide animate-pulse"
+          >
             {t.finishWord}
           </p>
         )}

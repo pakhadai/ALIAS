@@ -67,6 +67,17 @@ function Probe() {
       <button type="button" onClick={() => game.handleCorrect()}>
         correct
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          game.setGameState(GameState.PLAYING);
+        }}
+      >
+        set-playing
+      </button>
+      <button type="button" onClick={() => game.setTimeLeft(0)}>
+        expire-timer
+      </button>
     </div>
   );
 }
@@ -217,5 +228,36 @@ describe('GameProvider', () => {
     });
 
     expect(sendGameAction).not.toHaveBeenCalled();
+  });
+
+  it('should auto-finish offline overtime via TIME_UP after 5s idle', async () => {
+    vi.useFakeTimers();
+
+    try {
+      render(
+        <GameProvider>
+          <Probe />
+        </GameProvider>
+      );
+
+      await act(async () => {
+        screen.getByText('start-offline').click();
+      });
+      await act(async () => {
+        screen.getByText('set-playing').click();
+      });
+      await act(async () => {
+        screen.getByText('expire-timer').click();
+      });
+      expect(screen.getByTestId('game-state').textContent).toBe(GameState.PLAYING);
+
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      expect(screen.getByTestId('game-state').textContent).toBe(GameState.ROUND_SUMMARY);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

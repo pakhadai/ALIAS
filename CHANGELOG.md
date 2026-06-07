@@ -43,6 +43,8 @@
 
 ### Fixed
 
+- **Offline timeUp auto-finish:** `GameContext` schedules 5s `TIME_UP` fallback when offline classic overtime is idle (parity with server `scheduleTimeUpFallback`); `@core Offline game` E2E no longer hangs waiting for `ROUND_SUMMARY`. `data-testid="round-summary"` / `playing-time-up` for stable E2E locators.
+- **E2E `@core Rematch`:** round 2 uses guest explainer; `lowerScoreToWin(10)` via − stepper + server-sync testid; `tapCorrect` waits 200ms between clicks (PlayingScreen debounce).
 - **Offline TEAM_JOIN with empty `teams[]`:** `materializeOfflineTeamsIfNeeded()` in `offlineGameActions.ts` — TEAM_JOIN/LEAVE/shuffle/rename work before team shells exist; `@core Offline game` Start button no longer stuck disabled.
 - **E2E lobby helpers:** `expectLobbyReadyToStart`, stable `settings-close` / multilingual locators (`joinTeamRe`, `lockTeamsRe`, anchored `startGameRe`); IMPOSTER reveal via `data-testid="imposter-reveal-cta"`.
 - **`socketHandlers.int.test.ts` NOT_EXPLAINER:** deterministic `TEAM_JOIN` (host team-0 / guest team-1) — host bypasses explainer check; guest CORRECT now reliably emits `NOT_EXPLAINER`.

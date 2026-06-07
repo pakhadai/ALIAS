@@ -361,7 +361,13 @@ export const GameOverScreen = () => {
 
         {isHost ? (
           <>
-            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={rematch}>
+            <Button
+              themeClass={currentTheme.button}
+              fullWidth
+              size="xl"
+              onClick={rematch}
+              data-testid="game-over-rematch"
+            >
               {t.rematch}
             </Button>
             <Button

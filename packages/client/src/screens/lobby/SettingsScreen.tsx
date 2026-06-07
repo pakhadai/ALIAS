@@ -1003,7 +1003,10 @@ export const SettingsScreen = () => {
                               >
                                 {t.scoreToWin}
                               </p>
-                              <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                              <span
+                                data-testid="settings-score-to-win"
+                                className={`text-xs font-bold ${currentTheme.textAccent}`}
+                              >
                                 {settings.general.scoreToWin}
                               </span>
                             </div>

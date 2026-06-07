@@ -61,6 +61,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { play: playSound } = useAudio(state.settings);
 
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const offlineTimeUpFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showNotification = useCallback(
     (message: string, type: 'info' | 'error' | 'success' = 'info') => {
@@ -465,6 +466,54 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     [handleGameAction, sendGameAction]
   );
+
+  const clearOfflineTimeUpFallback = useCallback(() => {
+    if (offlineTimeUpFallbackRef.current !== null) {
+      clearTimeout(offlineTimeUpFallbackRef.current);
+      offlineTimeUpFallbackRef.current = null;
+    }
+  }, []);
+
+  /** Mirror server `scheduleTimeUpFallback`: auto-finish idle overtime after 5s. */
+  useEffect(() => {
+    if (state.gameMode !== 'OFFLINE') {
+      clearOfflineTimeUpFallback();
+      return;
+    }
+    if (state.gameState !== GameState.PLAYING || !state.timeUp) {
+      clearOfflineTimeUpFallback();
+      return;
+    }
+    if (state.settings.mode.gameMode === GameMode.QUIZ) {
+      clearOfflineTimeUpFallback();
+      return;
+    }
+
+    clearOfflineTimeUpFallback();
+    offlineTimeUpFallbackRef.current = setTimeout(() => {
+      offlineTimeUpFallbackRef.current = null;
+      const cur = stateRef.current;
+      if (
+        cur.gameMode === 'OFFLINE' &&
+        cur.gameState === GameState.PLAYING &&
+        cur.timeUp &&
+        cur.settings.mode.gameMode !== GameMode.QUIZ
+      ) {
+        handleGameAction({ action: 'TIME_UP' });
+      }
+    }, 5000);
+
+    return () => {
+      clearOfflineTimeUpFallback();
+    };
+  }, [
+    state.gameMode,
+    state.gameState,
+    state.timeUp,
+    state.settings.mode.gameMode,
+    clearOfflineTimeUpFallback,
+    handleGameAction,
+  ]);
 
   // Sync socket connection state back to app state
   useEffect(() => {

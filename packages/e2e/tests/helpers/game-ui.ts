@@ -136,11 +136,15 @@ export async function tapCorrect(page: Page, times = 1): Promise<void> {
   const btn = page.getByRole('button', { name: correctRe });
   for (let i = 0; i < times; i++) {
     await btn.click();
+    // PlayingScreen ACTION_DEBOUNCE_MS = 140; leave headroom for socket round-trip.
+    if (i < times - 1) {
+      await page.waitForTimeout(200);
+    }
   }
 }
 
-export async function waitForRoundSummary(page: Page, timeoutMs = 90_000): Promise<void> {
-  await expect(page.getByText(roundSummaryRe)).toBeVisible({ timeout: timeoutMs });
+export async function waitForRoundSummary(page: Page, timeoutMs = 45_000): Promise<void> {
+  await expect(page.getByTestId('round-summary')).toBeVisible({ timeout: timeoutMs });
 }
 
 export async function confirmRoundSummary(host: Page): Promise<void> {
@@ -254,7 +258,14 @@ export async function lowerScoreToWin(host: Page, target = 10): Promise<void> {
     await basics.click();
   }
   await expect(scoreInput).toBeVisible({ timeout: 10_000 });
-  await scoreInput.fill(String(target));
-  await scoreInput.blur();
+  const minusBtn = scoreInput.locator('xpath=..').getByRole('button', { name: '−' });
+  // Server default scoreToWin is 30; stepper uses ±5 (SettingsScreen).
+  while (Number(await scoreInput.inputValue()) > target) {
+    await minusBtn.click();
+  }
+  await expect(scoreInput).toHaveValue(String(target));
+  await expect(host.getByTestId('settings-score-to-win')).toHaveText(String(target), {
+    timeout: 10_000,
+  });
   await closeLobbySettings(host);
 }
