@@ -36,17 +36,23 @@ export default async function globalSetup(): Promise<void> {
   const repoRoot = getRepoRoot();
   const databaseUrl = resolveDatabaseUrl();
 
-  let dockerOk = true;
-  try {
-    execSync('docker compose up -d redis postgres', {
-      cwd: repoRoot,
-      stdio: 'inherit',
-    });
-  } catch {
-    dockerOk = false;
-    console.warn(
-      '[e2e] docker compose up failed — using existing Postgres/Redis on localhost (if any)'
-    );
+  // CI uses GitHub Actions service containers (see .github/workflows/ci.yml).
+  // Skip docker compose there to avoid flaky Docker Hub pulls and port conflicts.
+  let dockerOk = false;
+  if (!process.env.CI) {
+    try {
+      execSync('docker compose up -d redis postgres', {
+        cwd: repoRoot,
+        stdio: 'inherit',
+      });
+      dockerOk = true;
+    } catch {
+      console.warn(
+        '[e2e] docker compose up failed — using existing Postgres/Redis on localhost (if any)'
+      );
+    }
+  } else {
+    console.log('[e2e] CI: using Postgres/Redis from service containers (skip docker compose)');
   }
 
   // Redis is optional for tests (server can run without persistence / relay).
@@ -57,7 +63,8 @@ export default async function globalSetup(): Promise<void> {
   // Postgres is optional when Docker is unavailable (server falls back for word list).
   // BUT the web app auth flow requires Prisma (DB) to be reachable, so we fail fast if Postgres is missing.
   // If Docker is available, we wait longer because compose may still be starting up.
-  const pgTimeout = dockerOk ? 90_000 : 10_000;
+  const ciServices = Boolean(process.env.CI);
+  const pgTimeout = dockerOk ? 90_000 : ciServices ? 30_000 : 10_000;
   const pgReady = await waitForPort(5432, pgTimeout)
     .then(() => true)
     .catch(() => false);
@@ -71,7 +78,7 @@ export default async function globalSetup(): Promise<void> {
   const serverDir = path.join(repoRoot, 'packages', 'server');
   // TCP connect does not guarantee Postgres is ready to accept queries.
   // Retry prisma db push to avoid flaky CI starts right after docker compose up.
-  const attempts = dockerOk ? 45 : 10;
+  const attempts = dockerOk ? 45 : ciServices ? 20 : 10;
   for (let i = 1; i <= attempts; i++) {
     try {
       execSync('pnpm exec prisma db push --skip-generate', {
