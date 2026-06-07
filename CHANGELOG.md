@@ -43,11 +43,14 @@
 
 ### Fixed
 
+- **Offline TEAM_JOIN with empty `teams[]`:** `materializeOfflineTeamsIfNeeded()` in `offlineGameActions.ts` — TEAM_JOIN/LEAVE/shuffle/rename work before team shells exist; `@core Offline game` Start button no longer stuck disabled.
+- **E2E lobby helpers:** `expectLobbyReadyToStart`, stable `settings-close` / multilingual locators (`joinTeamRe`, `lockTeamsRe`, anchored `startGameRe`); IMPOSTER reveal via `data-testid="imposter-reveal-cta"`.
 - **`socketHandlers.int.test.ts` NOT_EXPLAINER:** deterministic `TEAM_JOIN` (host team-0 / guest team-1) — host bypasses explainer check; guest CORRECT now reliably emits `NOT_EXPLAINER`.
 
 ### Changed
 
-- **RulesModal split (C-1 polish):** extracted `RulesModal.tsx`; `RulesScreen` lazy-loaded — `main` **305.5 KB** / **93.83 KB gzip** (was 306.5 KB); Vite static/dynamic import conflict resolved.
+- **E2E i18n locators:** TeamCard `teamJoin`/`teamLeave`, settings rules tab UA/DE/EN, lock teams aria-labels; locator regression tests for join/start/assign/rules tab.
+- **E2E timeouts:** `@core Offline`/`Rematch` round summary 90s (30s floor); host migration Start enabled wait 60s; `multiplayer.spec.ts` uses shared helpers + opposing-team `playingNowRe` OR timer.
 - **Lint cleanup:** removed unused imports/deps across client (14 warnings → 0).
 
 ### Changed

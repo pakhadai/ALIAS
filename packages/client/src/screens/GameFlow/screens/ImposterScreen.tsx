@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ghost, Pause, Play } from 'lucide-react';
 import { useGame } from '../../../context/GameContext';
 import { Button } from '../../../components/Button';
+import { useT } from '../../../hooks/useT';
 import { vibrate } from '../../../utils/haptics';
 import type { Player } from '../../../types';
 
@@ -99,6 +100,7 @@ function ImposterRevealPhase({
   sendAction,
   imposterPhase,
 }: RevealPhaseProps) {
+  const t = useT();
   const [isFlipped, setIsFlipped] = useState(false);
   const [handoffConfirmed, setHandoffConfirmed] = useState(false);
 
@@ -168,6 +170,7 @@ function ImposterRevealPhase({
           <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center gap-6">
             <button
               type="button"
+              data-testid="imposter-reveal-cta"
               disabled={!canReveal}
               onClick={() => setIsFlipped(true)}
               className={[
@@ -192,7 +195,7 @@ function ImposterRevealPhase({
             >
               {!isFlipped ? (
                 <div className="space-y-3">
-                  <div className="text-2xl font-semibold sm:text-3xl">Натисни, щоб перевернути</div>
+                  <div className="text-2xl font-semibold sm:text-3xl">{t.imposterTapToFlip}</div>
                   <div className={imposterDrama ? 'text-sm text-ui-fg/70' : 'text-sm opacity-70'}>
                     Не показуй іншим
                   </div>

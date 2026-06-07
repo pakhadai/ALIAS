@@ -258,6 +258,9 @@ export const SettingsScreen = () => {
       <div className="max-w-2xl w-full">
         <header className="flex justify-between items-center py-6 mb-8">
           <button
+            type="button"
+            data-testid="settings-close"
+            aria-label={t.backToLobby}
             onClick={() => setGameState(GameState.LOBBY)}
             className="p-2 opacity-30 hover:opacity-100 transition-opacity"
           >
@@ -288,7 +291,7 @@ export const SettingsScreen = () => {
                 [
                   ['mode', t.gameMode ?? 'Режим'] as const,
                   ['content', t.content ?? 'Словник'] as const,
-                  ['rules', t.rules ?? 'Правила'] as const,
+                  ['rules', t.rulesTitle] as const,
                 ] as const
               ).map(([id, label]) => {
                 const active = activeTab === id;

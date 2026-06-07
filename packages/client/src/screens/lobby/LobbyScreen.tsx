@@ -603,8 +603,8 @@ export const LobbyScreen = () => {
                         sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
                       }
                       className="p-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
-                      aria-label={teamsLocked ? 'Unlock teams' : 'Lock teams'}
-                      title={teamsLocked ? 'Unlock' : 'Lock'}
+                      aria-label={teamsLocked ? t.unlockTeams : t.lockTeams}
+                      title={teamsLocked ? t.unlockTeams : t.lockTeams}
                     >
                       {teamsLocked ? (
                         <Lock size={16} className={`${currentTheme.iconColor} opacity-70`} />

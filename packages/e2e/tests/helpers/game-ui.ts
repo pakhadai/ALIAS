@@ -8,7 +8,8 @@ export const createGameRe = /Створити гру|Create Game|Spiel erstellen
 export const joinGameRe = /Приєднатися|Join Game|Beitreten/i;
 export const nextRe = /Далі|Next|Weiter/i;
 export const enterRoomRe = /Увійти|Enter|Eintreten/i;
-export const startGameRe = /Почати гру|Start|Starten/i;
+/** Lobby START — anchored so it does not match countdown "Starting…". */
+export const startGameRe = /^(Почати гру|Start|Starten)$/i;
 export const imReadyRe = /Я ГОТОВИЙ|I'M READY|ICH BIN BEREIT/i;
 export const playingNowRe = /Зараз грає|Playing|Spielt gerade/i;
 export const correctRe = /Вгадано|Correct|Richtig/i;
@@ -18,13 +19,21 @@ export const scoreboardRe = /Очки|Points|Punkte/i;
 export const rematchRe = /Реванш|Rematch|Revanche/i;
 export const addPlayerRe = /Додати гравця|Add Player|Spieler hinzufügen/i;
 
+/** TeamCard join — distinct from menu joinGame (Join Game / Beitreten). */
+export const joinTeamRe = /^(В команду|Join team|Zum Team)$/i;
+export const teamLeaveRe = /^(Вийти|Leave|Verlassen)$/i;
+/** UnassignedPool offline assign trigger (`aria-label="Assign {name}"`). */
+export const assignPlayerButtonRe = /^Assign .+$/i;
+/** Lobby team lock toggle (`t.lockTeams` / `t.unlockTeams`). */
+export const lockTeamsRe =
+  /^(Lock teams|Unlock teams|Заблокувати команди|Розблокувати команди|Teams sperren|Teams entsperren)$/i;
+/** Imposter reveal card CTA (`t.imposterTapToFlip` + data-testid). */
+export const imposterRevealRe = /^(Натисни, щоб перевернути|Tippen zum Umdrehen|Tap to flip)$/i;
+
 /** In-room settings gear (`t.settings` aria-label). */
 export const lobbySettingsButtonRe = /^(Settings|Налаштування|Einstellungen)$/i;
-/**
- * SettingsScreen rules tab — code uses `t.rules ?? 'Правила'` (no `rules` i18n key yet).
- * @see packages/client/src/screens/lobby/SettingsScreen.tsx
- */
-export const lobbySettingsRulesTabRe = /^Правила$/;
+/** SettingsScreen rules tab (`t.rulesTitle`). */
+export const lobbySettingsRulesTabRe = /^(Правила|Rules|Regeln)$/;
 /** Collapsible "Time & goal" block on the rules tab (`t.lobbyRulesSectionBasics`). */
 export const lobbyRulesBasicsRe = /^(Час і перемога|Zeit & Ziel|Time & goal)$/i;
 /** Round-time stepper minus (`aria-label={t.roundTime + ' −10'}`), Unicode minus U+2212. */
@@ -69,10 +78,14 @@ export async function guestJoinByCode(
   await expect(guest.getByTestId('lobby-room-code')).toHaveText(roomCode, { timeout: 30_000 });
 }
 
-/** Host → team 0, guest → team 1 (TeamCard labels are UA-only). */
+/** Host → team 0, guest → team 1. */
 export async function assignDistinctTeams(host: Page, guest: Page): Promise<void> {
-  await host.getByRole('button', { name: 'Приєднатися' }).first().click();
-  await guest.getByRole('button', { name: 'Приєднатися' }).nth(1).click();
+  await host.getByRole('button', { name: joinTeamRe }).first().click();
+  await guest.getByRole('button', { name: joinTeamRe }).nth(1).click();
+}
+
+export async function expectLobbyReadyToStart(page: Page): Promise<void> {
+  await expect(page.getByRole('button', { name: startGameRe })).toBeEnabled({ timeout: 15_000 });
 }
 
 export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerSession> {
@@ -87,6 +100,7 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
   const roomCode = await readRoomCode(host);
   await guestJoinByCode(guest, roomCode);
   await assignDistinctTeams(host, guest);
+  await expectLobbyReadyToStart(host);
 
   return { hostContext, guestContext, host, guest, roomCode };
 }
@@ -97,6 +111,7 @@ export async function closeTwoPlayerSession(session: TwoPlayerSession): Promise<
 }
 
 export async function startFromLobby(host: Page): Promise<void> {
+  await expectLobbyReadyToStart(host);
   await host.getByRole('button', { name: startGameRe }).click();
   const vs = host.getByText('VS', { exact: true });
   if (await vs.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -133,21 +148,27 @@ export async function confirmRoundSummary(host: Page): Promise<void> {
 }
 
 export async function openLobbySettings(page: Page): Promise<void> {
-  await page.getByRole('button', { name: lobbySettingsButtonRe }).click();
+  const settingsBtn = page.getByRole('button', { name: lobbySettingsButtonRe });
+  await settingsBtn.scrollIntoViewIfNeeded();
+  await settingsBtn.click();
   await expect(page.getByText(lobbySettingsButtonRe).first()).toBeVisible({ timeout: 15_000 });
 }
 
 /** Round time / score-to-win live under Settings → Rules (default tab is Mode). */
 export async function openLobbySettingsRulesTab(page: Page): Promise<void> {
   await openLobbySettings(page);
-  await page.getByRole('button', { name: lobbySettingsRulesTabRe, exact: true }).click();
+  const rulesTab = page.getByRole('button', { name: lobbySettingsRulesTabRe, exact: true });
+  await rulesTab.scrollIntoViewIfNeeded();
+  await rulesTab.click();
   await expect(page.getByRole('button', { name: lobbyRulesBasicsRe })).toBeVisible({
     timeout: 10_000,
   });
 }
 
 export async function closeLobbySettings(page: Page): Promise<void> {
-  await page.locator('header button').first().click();
+  const closeBtn = page.getByTestId('settings-close');
+  await closeBtn.scrollIntoViewIfNeeded();
+  await closeBtn.click();
 }
 
 export async function setLobbyGameModeImposter(host: Page): Promise<void> {
@@ -157,7 +178,9 @@ export async function setLobbyGameModeImposter(host: Page): Promise<void> {
 }
 
 export async function lockTeams(host: Page): Promise<void> {
-  await host.getByRole('button', { name: 'Lock teams', exact: true }).click();
+  const lockBtn = host.getByRole('button', { name: lockTeamsRe });
+  await lockBtn.scrollIntoViewIfNeeded();
+  await lockBtn.click();
 }
 
 export const nextRoundRe = /Раунд|Round|Runde/i;
@@ -178,14 +201,34 @@ export async function addOfflinePlayer(page: Page, name: string): Promise<void> 
   await expect(modal).toBeHidden({ timeout: 10_000 });
 }
 
+function offlineAssignPlayerDialog(page: Page, playerName: string) {
+  return page.getByRole('dialog').filter({
+    has: page.getByText(playerName, { exact: true }),
+  });
+}
+
+export async function assignOfflinePlayerToTeam(
+  page: Page,
+  playerName: string,
+  teamIndex: number
+): Promise<void> {
+  const assignBtn = page.getByRole('button', { name: new RegExp(`^Assign ${playerName}$`, 'i') });
+  await assignBtn.scrollIntoViewIfNeeded();
+  await assignBtn.click();
+  const dialog = offlineAssignPlayerDialog(page, playerName);
+  await expect(dialog).toBeVisible({ timeout: 10_000 });
+  await dialog.locator('.space-y-2 > button').nth(teamIndex).click();
+  await expect(dialog).toBeHidden({ timeout: 10_000 });
+}
+
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
   await page.goto('/');
   await page.getByTestId('menu-offline').click();
   await submitName(page, hostName);
   await addOfflinePlayer(page, 'Offline Guest');
-  await page.getByRole('button', { name: 'Приєднатися' }).first().click();
-  await page.getByRole('button', { name: `Assign Offline Guest` }).click();
-  await page.locator('.space-y-2 button').nth(1).click();
+  await page.getByRole('button', { name: joinTeamRe }).first().click();
+  await assignOfflinePlayerToTeam(page, 'Offline Guest', 1);
+  await expectLobbyReadyToStart(page);
 }
 
 export async function setMinimumRoundTime(host: Page): Promise<void> {

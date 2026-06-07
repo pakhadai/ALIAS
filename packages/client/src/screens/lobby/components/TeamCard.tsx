@@ -149,7 +149,7 @@ export function TeamCard(props: {
             disabled={joinDisabled}
             className="flex-1 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-[9px] uppercase tracking-widest font-bold text-ui-fg-muted transition-all active:scale-[0.98] disabled:opacity-40"
           >
-            Вийти
+            {t.teamLeave}
           </button>
         ) : (
           <button
@@ -158,7 +158,7 @@ export function TeamCard(props: {
             disabled={joinDisabled}
             className={`flex-1 py-3 rounded-2xl text-[9px] uppercase tracking-widest font-bold transition-all active:scale-[0.98] disabled:opacity-40 ${joinVariant}`}
           >
-            Приєднатися
+            {t.teamJoin}
           </button>
         )}
 

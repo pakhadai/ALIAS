@@ -3,24 +3,23 @@ import {
   closeTwoPlayerSession,
   confirmRoundSummary,
   createTwoPlayerLobby,
-  createGameRe,
-  guestJoinByCode,
   HOST_NAME,
+  imReadyRe,
+  joinTeamRe,
   lockTeams,
   lowerScoreToWin,
   nextRoundRe,
-  readRoomCode,
   rematchRe,
   scoreboardRe,
   setLobbyGameModeImposter,
   setMinimumRoundTime,
   startFromLobby,
   startOfflineLobby,
-  submitName,
   tapCorrect,
   waitForRoundSummary,
   startGameRe,
   playingNowRe,
+  expectLobbyReadyToStart,
 } from './helpers/game-ui';
 
 test.describe.configure({ mode: 'serial' });
@@ -32,8 +31,9 @@ test.describe('@core Host migration', () => {
     try {
       await session.hostContext.close();
 
+      await expect(session.guest.getByTestId('lobby-room-code')).toBeVisible({ timeout: 30_000 });
       await expect(session.guest.getByRole('button', { name: startGameRe })).toBeEnabled({
-        timeout: 45_000,
+        timeout: 60_000,
       });
       await session.guest.getByRole('button', { name: startGameRe }).click();
       // Guest is new host but not the round explainer (disconnected host still on team 0).
@@ -51,7 +51,7 @@ test.describe('@core Team lock', () => {
 
     try {
       await lockTeams(session.host);
-      const guestSwitchBtn = session.guest.getByRole('button', { name: 'Приєднатися' }).first();
+      const guestSwitchBtn = session.guest.getByRole('button', { name: joinTeamRe }).first();
       await expect(guestSwitchBtn).toBeDisabled();
     } finally {
       await closeTwoPlayerSession(session);
@@ -67,10 +67,10 @@ test.describe('@core IMPOSTER', () => {
       await setLobbyGameModeImposter(session.host);
       await startFromLobby(session.host);
 
-      await expect(session.host.getByText('Натисни, щоб перевернути')).toBeVisible({
+      await expect(session.host.getByTestId('imposter-reveal-cta')).toBeVisible({
         timeout: 60_000,
       });
-      await expect(session.guest.getByText('Натисни, щоб перевернути')).toBeVisible({
+      await expect(session.guest.getByTestId('imposter-reveal-cta')).toBeVisible({
         timeout: 60_000,
       });
 
@@ -87,16 +87,18 @@ test.describe('@core Offline game', () => {
     test.setTimeout(180_000);
     await startOfflineLobby(page);
     await setMinimumRoundTime(page);
+    await expectLobbyReadyToStart(page);
     await page.getByRole('button', { name: startGameRe }).click();
 
-    await expect(page.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i })).toBeVisible({
+    await expect(page.getByRole('button', { name: imReadyRe })).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i }).click();
+    await page.getByRole('button', { name: imReadyRe }).click();
     await expect(page.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
 
     await tapCorrect(page, 1);
-    await waitForRoundSummary(page, 120_000);
+    // 30s round floor + timeUp fallback buffer
+    await waitForRoundSummary(page, 90_000);
     await confirmRoundSummary(page);
 
     await expect(page.getByText(scoreboardRe).first()).toBeVisible({ timeout: 30_000 });
@@ -105,53 +107,43 @@ test.describe('@core Offline game', () => {
 
 test.describe('@core Rematch', () => {
   test('rematch preserves teams and resets scores', async ({ browser }) => {
-    test.setTimeout(300_000);
-    const hostContext = await browser.newContext();
-    const guestContext = await browser.newContext();
-    const host = await hostContext.newPage();
-    const guest = await guestContext.newPage();
+    test.setTimeout(240_000);
+    const session = await createTwoPlayerLobby(browser);
 
     try {
-      await host.goto('/');
-      await host.getByRole('button', { name: createGameRe }).click();
-      await submitName(host, HOST_NAME);
-      const roomCode = await readRoomCode(host);
-      await guestJoinByCode(guest, roomCode);
-      await host.getByRole('button', { name: 'Приєднатися' }).first().click();
-      await guest.getByRole('button', { name: 'Приєднатися' }).nth(1).click();
-
-      await setMinimumRoundTime(host);
-      await lowerScoreToWin(host, 10);
+      await setMinimumRoundTime(session.host);
+      await lowerScoreToWin(session.host, 10);
 
       const playWinningRound = async () => {
-        await expect(host.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i })).toBeVisible({
+        await expect(session.host.getByRole('button', { name: imReadyRe })).toBeVisible({
           timeout: 30_000,
         });
-        await host.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i }).click();
-        await expect(host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
-        await tapCorrect(host, 10);
-        await waitForRoundSummary(host, 120_000);
-        await confirmRoundSummary(host);
+        await session.host.getByRole('button', { name: imReadyRe }).click();
+        await expect(session.host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+        await tapCorrect(session.host, 10);
+        await waitForRoundSummary(session.host, 90_000);
+        await confirmRoundSummary(session.host);
       };
 
-      await startFromLobby(host);
+      await startFromLobby(session.host);
       await playWinningRound();
-      await expect(host.getByText(scoreboardRe).first()).toBeVisible({ timeout: 30_000 });
+      await expect(session.host.getByText(scoreboardRe).first()).toBeVisible({ timeout: 30_000 });
 
-      await host.getByRole('button', { name: nextRoundRe }).click();
+      await session.host.getByRole('button', { name: nextRoundRe }).click();
       await playWinningRound();
 
-      await expect(host.getByRole('button', { name: rematchRe })).toBeVisible({ timeout: 30_000 });
-      await host.getByRole('button', { name: rematchRe }).click();
+      await expect(session.host.getByRole('button', { name: rematchRe })).toBeVisible({
+        timeout: 30_000,
+      });
+      await session.host.getByRole('button', { name: rematchRe }).click();
 
-      await expect(host.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i })).toBeVisible({
+      await expect(session.host.getByRole('button', { name: imReadyRe })).toBeVisible({
         timeout: 30_000,
       });
       // Rematch resets to PRE_ROUND with teams intact (host still in session).
-      await expect(host.getByText(new RegExp(HOST_NAME, 'i'))).toBeVisible();
+      await expect(session.host.getByText(new RegExp(HOST_NAME, 'i'))).toBeVisible();
     } finally {
-      await hostContext.close();
-      await guestContext.close();
+      await closeTwoPlayerSession(session);
     }
   });
 });

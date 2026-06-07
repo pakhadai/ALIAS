@@ -19,6 +19,30 @@ export type OfflineGameActionDeps = {
   offlineQuizLockTaskIdRef: MutableRefObject<string | null>;
 };
 
+/** Mirror LobbyScreen teamShells — persist shells before TEAM_* mutates state.teams. */
+function materializeOfflineTeamsIfNeeded(state: AppState): Team[] {
+  if ((state.settings.general.teamMode ?? 'TEAMS') === 'SOLO') {
+    return state.teams.map((t) => ({ ...t, players: [...t.players] }));
+  }
+  const desiredCount = Math.max(2, Math.min(state.settings.general.teamCount ?? 2, 8));
+  if (state.teams.length === desiredCount) {
+    return state.teams.map((t) => ({ ...t, players: [...t.players] }));
+  }
+  const names = TEAM_NAMES[state.settings.general.language] ?? TEAM_NAMES.EN;
+  return Array.from({ length: desiredCount }, (_, i) => {
+    const existing = state.teams[i];
+    return {
+      id: `team-${i}`,
+      name: names[i % names.length] ?? `Team ${i + 1}`,
+      score: existing?.score ?? 0,
+      color: getTeamColor(i).class,
+      colorHex: getTeamColor(i).hex,
+      players: existing?.players ? [...existing.players] : [],
+      nextPlayerIndex: existing?.nextPlayerIndex ?? 0,
+    };
+  });
+}
+
 export function applyOfflineGameAction(
   deps: OfflineGameActionDeps,
   payload: GameActionPayload
@@ -43,10 +67,11 @@ export function applyOfflineGameAction(
     }
     case 'TEAM_RENAME': {
       const { teamId, name } = payload.data;
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
       dispatch({
         type: 'SET_STATE',
         payload: {
-          teams: stateRef.current.teams.map((t) => (t.id === teamId ? { ...t, name } : t)),
+          teams: baseTeams.map((t) => (t.id === teamId ? { ...t, name } : t)),
         },
       });
       break;
@@ -57,10 +82,11 @@ export function applyOfflineGameAction(
           ? payload.data.playerId
           : stateRef.current.myPlayerId;
       if (!actorId) break;
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
       dispatch({
         type: 'SET_STATE',
         payload: {
-          teams: stateRef.current.teams.map((t) => ({
+          teams: baseTeams.map((t) => ({
             ...t,
             players: t.players.filter((p) => p.id !== actorId),
             nextPlayerIndex:
@@ -81,10 +107,11 @@ export function applyOfflineGameAction(
       const me = stateRef.current.players.find((p) => p.id === actorId);
       if (!me) break;
       const { teamId } = payload.data;
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
       dispatch({
         type: 'SET_STATE',
         payload: {
-          teams: stateRef.current.teams.map((t) => ({
+          teams: baseTeams.map((t) => ({
             ...t,
             players:
               t.id === teamId
@@ -96,11 +123,12 @@ export function applyOfflineGameAction(
       break;
     }
     case 'TEAM_SHUFFLE_UNASSIGNED': {
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
       const assigned = new Set<string>();
-      stateRef.current.teams.forEach((t) => t.players.forEach((p) => assigned.add(p.id)));
+      baseTeams.forEach((t) => t.players.forEach((p) => assigned.add(p.id)));
       const unassigned = stateRef.current.players.filter((p) => !assigned.has(p.id));
       const shuffled = shuffleArray(unassigned);
-      const nextTeams = stateRef.current.teams.map((t) => ({ ...t, players: [...t.players] }));
+      const nextTeams = baseTeams.map((t) => ({ ...t, players: [...t.players] }));
       shuffled.forEach((p) => {
         const smallestIdx = nextTeams
           .map((t, i) => ({ i, n: t.players.length }))
@@ -113,9 +141,10 @@ export function applyOfflineGameAction(
       break;
     }
     case 'TEAM_SHUFFLE_ALL': {
-      const teamCount = Math.max(1, stateRef.current.teams.length);
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
+      const teamCount = Math.max(1, baseTeams.length);
       const shuffled = shuffleArray([...stateRef.current.players]);
-      const nextTeams: Team[] = stateRef.current.teams.map((t) => ({
+      const nextTeams: Team[] = baseTeams.map((t) => ({
         ...t,
         players: [],
         nextPlayerIndex: 0,

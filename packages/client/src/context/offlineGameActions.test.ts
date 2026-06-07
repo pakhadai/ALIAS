@@ -114,6 +114,24 @@ describe('applyOfflineGameAction', () => {
     expect(deps.playSound).toHaveBeenCalledWith('skip');
   });
 
+  it('should join team when teams array is still empty (lobby shells only)', () => {
+    const { deps, getState } = createOfflineDeps({
+      teams: [],
+      settings: {
+        ...initialState.settings,
+        general: { ...initialState.settings.general, teamCount: 2 },
+      },
+    });
+    applyOfflineGameAction(deps, { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+    expect(getState().teams).toHaveLength(2);
+    expect(getState().teams[0]?.players.map((p) => p.id)).toContain('host');
+    applyOfflineGameAction(deps, {
+      action: 'TEAM_JOIN',
+      data: { teamId: 'team-1', playerId: 'guest' },
+    });
+    expect(getState().teams[1]?.players.map((p) => p.id)).toContain('guest');
+  });
+
   it('should distribute all players across teams on GENERATE_TEAMS', () => {
     const players = Array.from({ length: 4 }, (_, i) => makePlayer(`p${i}`, `P${i}`));
     const { deps, getState } = createOfflineDeps({
