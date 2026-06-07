@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import { LogIn } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -26,16 +27,10 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
   const { currentTheme, uiLanguage } = useGame();
   const t = useT();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useDeferredOpen();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** Container that Google's renderButton() will paint its button into. */
   const googleButtonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
 
   const handleClose = useCallback(() => {
     setVisible(false);

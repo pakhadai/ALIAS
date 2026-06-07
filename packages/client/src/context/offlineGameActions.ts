@@ -5,17 +5,10 @@ import { initialState } from './gameReducer';
 import type { AppState, Player, Team } from '../types';
 import { GameState, GameMode, Category } from '../types';
 import type { GameSoundId } from '../types';
-import { TEAM_COLORS, TEAM_NAMES, TRANSLATIONS, MOCK_WORDS, MAX_PLAYERS } from '../constants';
+import { getTeamColor, shuffleArray } from '@alias/shared';
+import { TEAM_NAMES, TRANSLATIONS, MOCK_WORDS, MAX_PLAYERS } from '../constants';
 import { AVATARS } from '../utils/avatars';
-
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
+import { getUiStrings } from '../hooks/useT';
 
 export type OfflineGameActionDeps = {
   stateRef: MutableRefObject<AppState>;
@@ -113,7 +106,8 @@ export function applyOfflineGameAction(
           .map((t, i) => ({ i, n: t.players.length }))
           .sort((a, b) => a.n - b.n)[0]?.i;
         if (smallestIdx == null) return;
-        nextTeams[smallestIdx].players.push(p);
+        const slot = nextTeams[smallestIdx];
+        if (slot) slot.players.push(p);
       });
       dispatch({ type: 'SET_STATE', payload: { teams: nextTeams } });
       break;
@@ -128,7 +122,8 @@ export function applyOfflineGameAction(
       }));
       shuffled.forEach((p, i) => {
         const idx = i % teamCount;
-        nextTeams[idx].players.push(p);
+        const slot = nextTeams[idx];
+        if (slot) slot.players.push(p);
       });
       dispatch({ type: 'SET_STATE', payload: { teams: nextTeams } });
       break;
@@ -241,6 +236,10 @@ export function applyOfflineGameAction(
       }
       const playerIdx = Math.min(team.nextPlayerIndex, team.players.length - 1);
       const explainer = team.players[playerIdx];
+      if (!explainer) {
+        dispatch({ type: 'SET_STATE', payload: { gameState: GameState.LOBBY } });
+        break;
+      }
       dispatch({
         type: 'SET_STATE',
         payload: {
@@ -290,8 +289,8 @@ export function applyOfflineGameAction(
         id: `team-${i}`,
         name: p.name,
         score: 0,
-        color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-        colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        color: getTeamColor(i).class,
+        colorHex: getTeamColor(i).hex,
         players: [p],
         nextPlayerIndex: 0,
       }));
@@ -309,15 +308,18 @@ export function applyOfflineGameAction(
       );
       const newTeams: Team[] = Array.from({ length: teamCount }, (_, i) => ({
         id: `team-${i}`,
-        name: teamNames[i % teamNames.length],
+        name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
         score: 0,
-        color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-        colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        color: getTeamColor(i).class,
+        colorHex: getTeamColor(i).hex,
         players: [],
         nextPlayerIndex: 0,
       }));
       const shuffledPlayers = shuffleArray([...stateRef.current.players]);
-      shuffledPlayers.forEach((p, i) => newTeams[i % newTeams.length].players.push(p));
+      shuffledPlayers.forEach((p, i) => {
+        const slot = newTeams[i % newTeams.length];
+        if (slot) slot.players.push(p);
+      });
       dispatch({ type: 'SET_STATE', payload: { teams: newTeams, gameState: GameState.TEAMS } });
       break;
     }
@@ -674,11 +676,11 @@ export function applyOfflineGameAction(
         break;
       }
       const playerNum = players.length + 1;
+      const uiStrings = getUiStrings(stateRef.current.uiLanguage);
       const newPlayer: Player = {
         id: `local-${playerNum}-${Date.now()}`,
-        name:
-          payload.data?.name || `${TRANSLATIONS[stateRef.current.uiLanguage].playerN} ${playerNum}`,
-        avatar: payload.data?.avatar || AVATARS[playerNum % AVATARS.length],
+        name: payload.data?.name || `${uiStrings.playerN} ${playerNum}`,
+        avatar: payload.data?.avatar || AVATARS[playerNum % AVATARS.length] || AVATARS[0] || '🙂',
         isHost: false,
         stats: { explained: 0, guessed: 0 },
       };

@@ -1,0 +1,45 @@
+---
+description: Server standards — May 2026
+alwaysApply: true
+globs: packages/server/**/*.ts
+---
+
+# SERVER STANDARDS (Node.js + Express + Socket.IO)
+
+## Express
+- Route handlers повертають Response або викликають next()
+- Async route handlers обгорнуті в try/catch або asyncHandler wrapper
+- Middleware: окремий файл, типізований через RequestHandler
+- Rate limiting на ВСІХ публічних маршрутах
+
+## Socket.IO
+- Всі events типізовані через ServerToClientEvents / ClientToServerEvents з @alias/shared
+- Кожен event handler: Zod validation → authorization check → business logic
+- emit тільки після підтвердження операції (не fire-and-forget для важливих подій)
+- room broadcasting: `io.to(roomCode).emit(...)` — не `socket.broadcast`
+
+## Prisma (6.x)
+- `select` або `include` завжди — ніколи `findMany()` без обмеження полів
+- Транзакції для операцій що змінюють 2+ таблиці: `prisma.$transaction([...])`
+- Pagination для списків: `take` + `cursor` або `skip` (не `findMany` без ліміту)
+- `prisma.$disconnect()` in graceful shutdown handler
+- Немає `prisma.user.findUnique({where: {id}})!` — перевіряй null
+
+## Redis (ioredis 5)
+- TTL на всіх `set` операціях що не є постійними
+- `pipeline()` для множинних операцій (не окремі await)
+- Error handling: Redis помилки не повинні падати сервер — graceful degradation
+- Ключі: `alias:{entity}:{id}` — завжди префікс
+
+## Безпека
+- Sanitize user input перед збереженням (XSS strip)
+- Перевіряй авторизацію в authorizeGameAction ПЕРЕД будь-якою логікою
+- Stripe webhook: завжди `stripe.webhooks.constructEvent` з signature
+- Admin routes: подвійна перевірка (ipWhitelist + auth)
+- JWT: перевіряй expiry, не лише signature
+
+## Логування
+- `console.log` — ЗАБОРОНЕНО в production code
+- Використовуй structured logging (Sentry breadcrumbs або winston якщо додаємо)
+- Error objects: `Sentry.captureException(err)` для unexpected errors
+- Socket events: debug рівень, не info

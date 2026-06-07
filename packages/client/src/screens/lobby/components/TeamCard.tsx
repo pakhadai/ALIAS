@@ -2,9 +2,9 @@ import React from 'react';
 import { Check, PencilLine } from 'lucide-react';
 import type { GameActionPayload, Player, Team, ThemeConfig } from '../../../types';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
-import { TRANSLATIONS } from '../../../constants';
+import type { TranslationStrings } from '../../../hooks/useT';
 
-type T = (typeof TRANSLATIONS)['EN'];
+type T = TranslationStrings;
 
 export function TeamCard(props: {
   team: Team;

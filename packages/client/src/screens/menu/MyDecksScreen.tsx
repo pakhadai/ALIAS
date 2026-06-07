@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useResourceLoad } from '../../hooks/useResourceLoad';
 import { X, ArrowLeft, Plus, Trash2, BookOpen, Copy, Loader2 } from 'lucide-react';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -17,8 +18,11 @@ export const MyDecksScreen = () => {
   const { isTelegram } = useTelegramApp();
 
   const [view, setView] = useState<CreateDeckView>('list');
-  const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: decks,
+    loading,
+    reload: reloadDecks,
+  } = useResourceLoad(() => fetchMyDecks(), { initialData: [] as CustomDeckSummary[] });
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -31,18 +35,11 @@ export const MyDecksScreen = () => {
   const inputCls =
     'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent';
 
-  useEffect(() => {
-    fetchMyDecks()
-      .then(setDecks)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
       await deleteCustomDeck(id);
-      setDecks((prev) => prev.filter((d) => d.id !== id));
+      reloadDecks();
     } catch (_err) {
       void _err;
     }
@@ -72,11 +69,11 @@ export const MyDecksScreen = () => {
     setCreating(true);
     setCreateError('');
     try {
-      const deck = await createCustomDeck({ name, words });
-      setDecks((prev) => [deck, ...prev]);
+      await createCustomDeck({ name, words });
       setDeckName('');
       setWordsText('');
       setView('list');
+      reloadDecks();
     } catch (err: unknown) {
       const msg =
         err && typeof err === 'object' && 'message' in err

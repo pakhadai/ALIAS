@@ -2,7 +2,7 @@
 
 Цей файл — **стислий, але глибший архітектурний аудит** монорепозиторію: фактичні `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig*`, `docker-compose.yml`, `packages/server/prisma/schema.prisma` та пайплайни **GitHub Actions**. Детальні протоколи Socket.IO, ігрові правила, env і деплой — у канонічному [`README.md`](./README.md).
 
-**Оновлено:** 2026-04-13 (Telegram Mini App + seamless auth + Stars + webhook).
+**Оновлено:** 2026-06-06 (docs sync: GameSyncState, lobby builder, INDEX, steward files).
 
 ---
 
@@ -11,10 +11,11 @@
 | Елемент | Факт у репо |
 |--------|-------------|
 | Ім’я пакета (корінь) | `alias-master-monorepo` (`package.json`) |
+| Версія workspace-пакетів | **0.6.4** (`@alias/client`, `@alias/server`, `@alias/shared`, `@alias/e2e`) |
 | Менеджер пакетів | **pnpm 9.0.0** — зафіксовано в `packageManager` кореневого `package.json` |
 | Воркспейси | `pnpm-workspace.yaml` — один рядок: `packages/*` → `@alias/shared`, `@alias/client`, `@alias/server`, `@alias/e2e` |
 | Оркестрація збірки | **Turbo** `^2.9.3` — `turbo.json`: задачі `build` (з `dependsOn: ["^build"]`, артефакти `dist/**`) та `typecheck` |
-| Node (вимоги) | Корінь: `engines.node` **>=18**; **CI** (`.github/workflows/ci.yml`) використовує **Node 20** |
+| Node (вимоги) | Корінь: `engines.node` **>=20**; **CI** (`.github/workflows/ci.yml`) і **Dockerfile** — **Node 20** |
 | ESLint | `eslint.config.mjs` у корені + devDeps ESLint 9 / typescript-eslint |
 
 **Кореневі скрипти** (узгоджені з README): `dev` (паралельно client+server), `build` (Turbo), `typecheck`, `verify`, `lint` / `format:*`, `test:server`, `test:e2e`, `build:shared`, `build:pnpm` тощо.
@@ -175,9 +176,12 @@
 
 ## 10. Зв’язок з іншою документацією
 
-- [`README.md`](./README.md) — повний опис протоколів, станів гри, REST, Redis, безпеки, запуску, Docker, VPS.
-- [`docs/PRISMA_WORD_DATA.md`](./docs/PRISMA_WORD_DATA.md), [`docs/LOBBY_TEAM_BUILDER.md`](./docs/LOBBY_TEAM_BUILDER.md), [`docs/TESTING_ACCEPTANCE.md`](./docs/TESTING_ACCEPTANCE.md), [`docs/ROOM_MANAGEMENT_FIXES.md`](./docs/ROOM_MANAGEMENT_FIXES.md).
-- [`CHANGELOG.md`](./CHANGELOG.md) — історія змін.
+- [`README.md`](./README.md) — протоколи, стани гри, REST, Redis, запуск, Docker, VPS (без таблиць версій — вони тут).
+- [`docs/INDEX.md`](./docs/INDEX.md) — карта всіх docs; [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) — workflow.
+- [`AGENTS.md`](./AGENTS.md) — інструкції ШІ; steward: `.cursor/agents/alias-steward.md`, rules `.cursor/rules/00–06`.
+- [`AGENT_BRIEF.md`](./AGENT_BRIEF.md), [`AUDIT_RESULTS.md`](./AUDIT_RESULTS.md) — оперативний контекст і відкриті issues.
+- [`docs/daily/`](./docs/daily/) — щоденний журнал; [`CHANGELOG.md`](./CHANGELOG.md) — релізи.
+- Тематично: [`docs/PRISMA_WORD_DATA.md`](./docs/PRISMA_WORD_DATA.md), [`docs/LOBBY_TEAM_BUILDER.md`](./docs/LOBBY_TEAM_BUILDER.md), [`docs/TESTING_ACCEPTANCE.md`](./docs/TESTING_ACCEPTANCE.md), [`docs/ROOM_MANAGEMENT_FIXES.md`](./docs/ROOM_MANAGEMENT_FIXES.md), [`docs/TELEGRAM_SKILL.md`](./docs/TELEGRAM_SKILL.md), [`docs/VIRAL_INVITES_PHASE7.md`](./docs/VIRAL_INVITES_PHASE7.md).
 
 ---
 

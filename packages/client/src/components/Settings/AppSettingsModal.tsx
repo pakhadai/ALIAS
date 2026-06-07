@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'lucide-react';
 import { AppTheme, Language, SoundPreset } from '../../types';
 import { THEME_CONFIG, UI_THEME_IDS } from '../../constants';
@@ -34,14 +35,9 @@ export function AppSettingsModal({ onClose }: Props) {
     }
   });
   const t = useT();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useDeferredOpen();
 
   const themes = useMemo(() => UI_THEME_IDS, []);
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
 
   const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
   const handleClose = () => {

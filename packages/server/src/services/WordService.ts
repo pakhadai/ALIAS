@@ -1,9 +1,8 @@
-import { Category, MOCK_WORDS } from '@alias/shared';
+import { Category, MOCK_WORDS, shuffleArray } from '@alias/shared';
 // Absolute minimum fallback — shown only if the DB is down AND MOCK_WORDS is empty
 const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'Вода', 'Сонце', 'Книга', 'Місяць'];
 import type { GameSettings } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
-import { randomInt } from 'crypto';
 import { GameMode } from '@alias/shared';
 
 export class WordService {
@@ -11,15 +10,6 @@ export class WordService {
 
   setPrisma(prisma: PrismaClient) {
     this.prisma = prisma;
-  }
-
-  private shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = randomInt(i + 1);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
   }
 
   /**
@@ -36,7 +26,7 @@ export class WordService {
         select: { words: true, status: true },
       });
       if (deck && deck.status === 'approved' && Array.isArray(deck.words)) {
-        return this.shuffleArray(deck.words as string[]);
+        return shuffleArray(deck.words as string[]);
       }
     }
 
@@ -133,7 +123,7 @@ export class WordService {
     const finalPool: string[] =
       pool.length > 0 ? pool : generalFallback.length > 0 ? generalFallback : EMERGENCY_WORDS;
 
-    return this.shuffleArray(finalPool);
+    return shuffleArray(finalPool);
   }
 
   private async fetchTargetTranslations(
@@ -198,12 +188,12 @@ export class WordService {
 
       // Keep deck size reasonable: max 2 synonym/antonym tasks per word.
       if (quizTypes.synonyms) {
-        for (const s of this.shuffleArray(syns).slice(0, 2)) {
+        for (const s of shuffleArray(syns).slice(0, 2)) {
           synonymEntries.push(buildEncoded({ kind: 'SYNONYM', prompt: word, answer: s }));
         }
       }
       if (quizTypes.antonyms) {
-        for (const a of this.shuffleArray(ants).slice(0, 2)) {
+        for (const a of shuffleArray(ants).slice(0, 2)) {
           antonymEntries.push(buildEncoded({ kind: 'ANTONYM', prompt: word, answer: a }));
         }
       }
@@ -221,7 +211,7 @@ export class WordService {
       }
     }
 
-    return this.shuffleArray([
+    return shuffleArray([
       ...synonymEntries,
       ...antonymEntries,
       ...tabooEntries,
@@ -250,14 +240,15 @@ export class WordService {
         currentDeck = remaining;
       } else {
         // Every word in the pool has been shown — start a new cycle
-        currentDeck = fullDeck.length > 0 ? fullDeck : this.shuffleArray([...EMERGENCY_WORDS]);
+        currentDeck = fullDeck.length > 0 ? fullDeck : shuffleArray([...EMERGENCY_WORDS]);
         trackedUsed = []; // reset tracking for the new cycle
       }
     }
 
     const word = currentDeck.pop() ?? '';
+    const emergencyWord = EMERGENCY_WORDS[0] ?? 'Alias';
     return {
-      word: word || EMERGENCY_WORDS[0],
+      word: word || emergencyWord,
       deck: currentDeck,
       usedWords: word ? [...trackedUsed, word] : trackedUsed,
       deckReshuffled,

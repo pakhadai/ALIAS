@@ -33,7 +33,7 @@ export const ProfileSettingsScreen = () => {
 
   useEffect(() => {
     if (profile) {
-      setName(profile.displayName || (profile.email ? profile.email.split('@')[0] : ''));
+      setName(profile.displayName || (profile.email ? (profile.email.split('@')[0] ?? '') : ''));
       const idx = profile.avatarId != null ? parseInt(profile.avatarId) : -1;
       setSelectedAvatar(idx >= 0 ? idx : -1);
     }

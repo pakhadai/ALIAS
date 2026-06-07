@@ -63,6 +63,7 @@ export const StoreScreen = () => {
       const t = setTimeout(() => setBanner(null), 4000);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [loadStore, purchaseResult]);
 
   const handleAddFree = async (itemType: 'wordPack' | 'theme', itemId: string) => {

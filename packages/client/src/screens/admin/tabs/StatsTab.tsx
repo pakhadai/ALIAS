@@ -57,7 +57,7 @@ export function StatsTab({ showToast }: Props) {
     };
   }, [showToast]);
 
-  // Live stats poll every 15s
+  // Live stats poll — legitimate interval subscription with cleanup.
   useEffect(() => {
     let cancelled = false;
     const fetch = () => {
@@ -218,7 +218,7 @@ export function StatsTab({ showToast }: Props) {
           </h2>
           <div className="space-y-2">
             {analytics.topPacks.map((p, i) => {
-              const max = analytics.topPacks[0].purchases;
+              const max = analytics.topPacks[0]?.purchases ?? 1;
               return (
                 <div key={p.packId} className="flex items-center gap-3">
                   <span className="text-[#888] font-bold text-xs w-5">#{i + 1}</span>

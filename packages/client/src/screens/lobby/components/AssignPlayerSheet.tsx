@@ -2,9 +2,9 @@ import React, { useEffect, useId, useState } from 'react';
 import type { Player, Team, GameActionPayload } from '../../../types';
 import { ModalSheet } from '../../../components/ModalSheet';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
-import { TRANSLATIONS } from '../../../constants';
+import type { TranslationStrings } from '../../../hooks/useT';
 
-type T = (typeof TRANSLATIONS)['EN'];
+type T = TranslationStrings;
 
 export function AssignPlayerSheet(props: {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export function AssignPlayerSheet(props: {
       return () => cancelAnimationFrame(r);
     }
     setSheetOpen(false);
+    return undefined;
   }, [isOpen, target]);
 
   const requestClose = () => {

@@ -32,9 +32,11 @@ export const CountdownScreen = () => {
       playSound('tick');
       const timer = setTimeout(() => setCount(count - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (isQuiz || isActualExplainer) {
+    }
+    if (isQuiz || isActualExplainer) {
       startGameplay();
     }
+    return undefined;
   }, [count, startGameplay, playSound, isActualExplainer, isQuiz]);
 
   return (

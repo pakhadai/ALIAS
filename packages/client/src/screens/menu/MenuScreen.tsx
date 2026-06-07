@@ -52,6 +52,7 @@ export const MenuScreen = () => {
       return () => cancelAnimationFrame(r);
     }
     setFullscreenHintVisible(false);
+    return undefined;
   }, [showFullscreenHint]);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export const MenuScreen = () => {
       return () => cancelAnimationFrame(r);
     }
     setQuickJoinVisible(false);
+    return undefined;
   }, [showQuickJoin]);
 
   const closeFullscreenHint = () => {

@@ -41,7 +41,8 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
       where: { id: purchaseId, status: 'pending' },
       data: { status: 'abandoned' },
     });
-    if (count > 0) console.log(`[Purchase] Abandoned: ${purchaseId}`);
+    if (count > 0 && config.nodeEnv !== 'production')
+      console.warn(`[Purchase] Abandoned: ${purchaseId}`);
   }
 
   async function tryReuseCheckout(
@@ -440,7 +441,8 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
             where: { id: purchaseId, status: 'pending' },
             data: { status: 'completed' },
           });
-          if (count > 0) console.log(`[Purchase] Checkout completed: ${purchaseId}`);
+          if (count > 0 && config.nodeEnv !== 'production')
+            console.warn(`[Purchase] Checkout completed: ${purchaseId}`);
         }
       }
 
@@ -452,7 +454,8 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
             where: { id: purchaseId, status: 'pending' },
             data: { status: 'completed' },
           });
-          if (count > 0) console.log(`[Purchase] PaymentIntent succeeded: ${purchaseId}`);
+          if (count > 0 && config.nodeEnv !== 'production')
+            console.warn(`[Purchase] PaymentIntent succeeded: ${purchaseId}`);
         }
       }
 

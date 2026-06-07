@@ -40,7 +40,16 @@ export const PreRoundScreen = () => {
 
   const playerIdx = Math.min(activeTeam.nextPlayerIndex, activeTeam.players.length - 1);
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
-  const isActualExplainer = explainer?.id === myPlayerId;
+  if (!explainer) {
+    return (
+      <div
+        className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center text-center`}
+      >
+        <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
+      </div>
+    );
+  }
+  const isActualExplainer = explainer.id === myPlayerId;
 
   return (
     <div

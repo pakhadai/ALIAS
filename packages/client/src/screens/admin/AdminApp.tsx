@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import {
   BarChart2,
   BookOpen,
@@ -89,11 +90,7 @@ function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setOpen(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  const [open, setOpen] = useDeferredOpen();
 
   return (
     <ModalSheet
@@ -225,12 +222,7 @@ export function AdminApp() {
     setConfirmState(null);
   };
 
-  // Check auth on mount.
-  // Strategy: 1) identify the user via /api/auth/me, 2) verify admin access by
-  // probing /api/admin/live. The server enforces ADMIN_ALLOWED_EMAILS (.env) and
-  // the isAdmin DB flag — if the probe returns 200 the user is allowed in.
-  // We deliberately do NOT check u.isAdmin on the client: the source of truth is
-  // the server (email whitelist takes priority over the DB flag).
+  // Admin auth probe on mount — deferred: requires token from main app localStorage (bootstrap).
   useEffect(() => {
     const token = localStorage.getItem('alias_auth_token');
     if (!token) {

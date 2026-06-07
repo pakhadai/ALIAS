@@ -67,6 +67,7 @@ export const ProfileScreen = () => {
       return () => cancelAnimationFrame(r);
     }
     setLogoutConfirmVisible(false);
+    return undefined;
   }, [showLogoutConfirm]);
 
   const locale = useMemo(() => {

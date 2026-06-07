@@ -55,7 +55,7 @@ export const Button: React.FC<ButtonProps> = ({
       window.removeEventListener('focus', invalidate);
       document.removeEventListener('visibilitychange', invalidate);
     };
-  }, []);
+  }, []); // Legitimate: window/document subscription for prefs cache invalidation.
 
   const baseStyles =
     'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-semibold transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-wide text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';

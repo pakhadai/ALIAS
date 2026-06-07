@@ -1,4 +1,4 @@
-import { GameMode, GameState, TEAM_COLORS } from '@alias/shared';
+import { GameMode, GameState, getTeamColor, shuffleArray } from '@alias/shared';
 import type { GameActionPayload, ModeSettings, ModeSettingsUpdate, Team } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
@@ -115,8 +115,8 @@ export class GameEngine {
         id: prev?.id ?? `team-${i}`,
         name: prev?.name ?? names[i % names.length] ?? `Team ${i + 1}`,
         score: prev?.score ?? 0,
-        color: prev?.color ?? TEAM_COLORS[i % TEAM_COLORS.length].class,
-        colorHex: prev?.colorHex ?? TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        color: prev?.color ?? getTeamColor(i).class,
+        colorHex: prev?.colorHex ?? getTeamColor(i).hex,
         players: prev?.players ?? [],
         nextPlayerIndex: prev?.nextPlayerIndex ?? 0,
       };
@@ -233,24 +233,26 @@ export class GameEngine {
         const assigned = new Set<string>();
         room.teams.forEach((t) => t.players.forEach((p) => assigned.add(p.id)));
         const unassigned = room.players.filter((p) => !assigned.has(p.id));
-        const shuffled = this.shuffleArray(unassigned);
+        const shuffled = shuffleArray(unassigned);
         shuffled.forEach((p) => {
           const smallestIdx = room.teams
             .map((t, i) => ({ i, n: t.players.length }))
             .sort((a, b) => a.n - b.n)[0]?.i;
           if (smallestIdx == null) return;
           const target = room.teams[smallestIdx];
+          if (!target) return;
           room.teams[smallestIdx] = { ...target, players: [...target.players, p] };
         });
         break;
       }
       case 'TEAM_SHUFFLE_ALL': {
         this.ensureTeamShells(room);
-        const shuffled = this.shuffleArray([...room.players]);
+        const shuffled = shuffleArray([...room.players]);
         room.teams = room.teams.map((t) => ({ ...t, players: [], nextPlayerIndex: 0 }));
         shuffled.forEach((p, i) => {
           const idx = i % room.teams.length;
           const target = room.teams[idx];
+          if (!target) return;
           room.teams[idx] = { ...target, players: [...target.players, p] };
         });
         break;
@@ -368,8 +370,16 @@ export class GameEngine {
         }
         room.currentTeamIndex = nextIdx;
         const team = room.teams[room.currentTeamIndex];
+        if (!team || team.players.length === 0) {
+          room.gameState = GameState.LOBBY;
+          break;
+        }
         const playerIdx = Math.min(team.nextPlayerIndex, team.players.length - 1);
         const explainer = team.players[playerIdx];
+        if (!explainer) {
+          room.gameState = GameState.LOBBY;
+          break;
+        }
         room.gameState = GameState.COUNTDOWN;
         room.currentRoundStats = {
           correct: 0,
@@ -413,8 +423,8 @@ export class GameEngine {
           id: `team-${i}`,
           name: p.name,
           score: 0,
-          color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-          colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+          color: getTeamColor(i).class,
+          colorHex: getTeamColor(i).hex,
           players: [p],
           nextPlayerIndex: 0,
         }));
@@ -436,15 +446,18 @@ export class GameEngine {
         ];
         const newTeams: Team[] = Array.from({ length: teamCount }, (_, i) => ({
           id: `team-${i}`,
-          name: teamNames[i % teamNames.length],
+          name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
           score: 0,
-          color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-          colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+          color: getTeamColor(i).class,
+          colorHex: getTeamColor(i).hex,
           players: [],
           nextPlayerIndex: 0,
         }));
-        const shuffled = this.shuffleArray([...room.players]);
-        shuffled.forEach((p, i) => newTeams[i % newTeams.length].players.push(p));
+        const shuffled = shuffleArray([...room.players]);
+        shuffled.forEach((p, i) => {
+          const slot = newTeams[i % newTeams.length];
+          if (slot) slot.players.push(p);
+        });
         room.teams = newTeams;
         room.gameState = GameState.TEAMS;
         break;
@@ -456,8 +469,8 @@ export class GameEngine {
             id: `team-${i}`,
             name: p.name,
             score: 0,
-            color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-            colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+            color: getTeamColor(i).class,
+            colorHex: getTeamColor(i).hex,
             players: [p],
             nextPlayerIndex: 0,
           }));
@@ -946,14 +959,5 @@ export class GameEngine {
       clearInterval(room.timerInterval);
       room.timerInterval = null;
     }
-  }
-
-  private shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
   }
 }

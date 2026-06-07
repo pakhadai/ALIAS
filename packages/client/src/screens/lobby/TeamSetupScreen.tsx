@@ -53,6 +53,7 @@ export const TeamSetupScreen = () => {
 
     const fromTeam = teams[fromIdx];
     const toTeam = teams[toIdx];
+    if (!fromTeam || !toTeam) return;
     const p = fromTeam.players.find((pp) => pp.id === selectedPlayer.playerId);
     if (!p) return;
 

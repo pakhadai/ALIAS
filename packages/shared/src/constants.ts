@@ -14,7 +14,18 @@ export const TEAM_COLORS = [
   { class: 'bg-blue-500', hex: '#3b82f6' },
   { class: 'bg-orange-500', hex: '#f97316' },
   { class: 'bg-red-500', hex: '#ef4444' },
-];
+] as const;
+
+export type TeamColorEntry = (typeof TEAM_COLORS)[number];
+
+/** Safe TEAM_COLORS lookup for noUncheckedIndexedAccess. */
+export function getTeamColor(index: number): TeamColorEntry {
+  const color = TEAM_COLORS[index % TEAM_COLORS.length];
+  if (!color) {
+    throw new Error('TEAM_COLORS must not be empty');
+  }
+  return color;
+}
 
 export const MOCK_WORDS: Record<Language, Partial<Record<Category, string[]>>> = {
   [Language.UA]: {

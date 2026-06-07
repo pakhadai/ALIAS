@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import type { GameSyncState } from '@alias/shared';
+import { config } from '../config';
 
 const ROOM_TTL = 7200; // 2 hours
 const ROOM_PREFIX = 'alias:room:';
@@ -42,7 +43,9 @@ export class RedisRoomStore {
       });
 
       await this.redis.ping();
-      console.log('[Redis] Connected');
+      if (config.nodeEnv !== 'production') {
+        console.warn('[Redis] Connected');
+      }
     } catch (_err) {
       void _err;
       console.warn('[Redis] Not available, running without persistence');

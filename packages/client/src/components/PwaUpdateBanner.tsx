@@ -10,7 +10,7 @@ export const PwaUpdateBanner: React.FC = () => {
     const onNeed = () => setVisible(true);
     window.addEventListener('pwa:need-refresh', onNeed);
     return () => window.removeEventListener('pwa:need-refresh', onNeed);
-  }, []);
+  }, []); // Legitimate: PWA custom event subscription.
 
   if (!visible) return null;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
@@ -7,7 +7,6 @@ const LADDER_TRACK_PX = 280;
 export const ScoreboardScreen = () => {
   const { teams, settings, currentTheme, handleNextRound, isHost } = useGame();
   const t = useT();
-  const [mounted, setMounted] = useState(false);
 
   const bgColor = currentTheme.bg;
   const textColor = 'text-ui-fg';
@@ -15,11 +14,6 @@ export const ScoreboardScreen = () => {
 
   const sortedTeams = useMemo(() => [...teams].sort((a, b) => b.score - a.score), [teams]);
   const goal = settings.general.scoreToWin;
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setMounted(true), 30);
-    return () => window.clearTimeout(t);
-  }, []);
 
   return (
     <div
@@ -120,12 +114,12 @@ export const ScoreboardScreen = () => {
                     </span>
                     <div className="h-1 mt-1.5 rounded-full overflow-hidden w-24 bg-ui-surface">
                       <div
-                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                        className="scoreboard-progress-fill h-full rounded-full"
                         style={{
                           backgroundColor:
                             team.colorHex ||
                             'color-mix(in_srgb,var(--ui-fg-muted)_40%,transparent)',
-                          width: mounted ? `${progress}%` : '0%',
+                          ['--scoreboard-progress' as string]: `${progress}%`,
                         }}
                       ></div>
                     </div>

@@ -1,0 +1,46 @@
+---
+description: Development workflow and session continuity
+alwaysApply: true
+---
+
+# WORKFLOW & SESSION CONTINUITY
+
+## Перед кожною значною зміною
+1. Прочитай `.cursor/CURRENT_FOCUS.md` — поточний контекст
+2. Прочитай `AUDIT_RESULTS.md` — відкриті HIGH/CRITICAL items
+3. Перевір чи є open TODO для цієї фічі/файлу
+
+## Після кожної значної зміни
+1. Онови `.cursor/CURRENT_FOCUS.md` — що зроблено, що наступне
+2. Онови `AUDIT_RESULTS.md` — відмітити вирішені issues
+3. Додай запис у `CHANGELOG.md` (Unreleased секція)
+4. Запусти `pnpm typecheck` — має бути 0 помилок
+5. Запусти релевантні тести
+
+## CHANGELOG формат (Keep a Changelog)
+```
+## [Unreleased]
+### Added
+- Опис що додано (англійська, конкретно)
+### Fixed  
+- Опис що виправлено (посилання на issue якщо є)
+### Changed
+- Опис що змінено і чому
+### Security
+- Критичні виправлення безпеки
+```
+
+## Коли питати мене (мінімальний список)
+- Зміна публічного API (нові Socket events, REST endpoints)
+- Зміна схеми БД (нова міграція)
+- Зміна бізнес-логіки гри (правила, підрахунок очок)
+- Breaking change у @alias/shared
+- Вибір між двома архітектурними підходами
+
+## Коли НЕ питати — роби сам
+- Рефакторинг без зміни поведінки
+- Виправлення TypeScript помилок
+- Додавання/оновлення тестів
+- Документація та коментарі
+- Виправлення ESLint warnings
+- Оновлення типів після зміни shared

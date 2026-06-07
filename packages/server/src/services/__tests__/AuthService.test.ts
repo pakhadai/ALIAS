@@ -1,22 +1,20 @@
 import { describe, expect, test, vi } from 'vitest';
+import { AuthService } from '../AuthService';
 
 describe('AuthService', () => {
-  test('createToken + verifyToken roundtrip', async () => {
-    const { AuthService } = await import('../AuthService');
+  test('createToken + verifyToken roundtrip', () => {
     const svc = new AuthService();
     const token = svc.createToken({ sub: 'u1', type: 'google', email: 'a@b.c', isAdmin: true });
     const payload = svc.verifyToken(token);
     expect(payload).toMatchObject({ sub: 'u1', type: 'google', email: 'a@b.c', isAdmin: true });
   });
 
-  test('verifyToken returns null for invalid token', async () => {
-    const { AuthService } = await import('../AuthService');
+  test('verifyToken returns null for invalid token', () => {
     const svc = new AuthService();
     expect(svc.verifyToken('not-a-jwt')).toBeNull();
   });
 
-  test('createAnonymousToken issues a token with type anonymous', async () => {
-    const { AuthService } = await import('../AuthService');
+  test('createAnonymousToken issues a token with type anonymous', () => {
     const svc = new AuthService();
     const token = svc.createAnonymousToken('u2');
     const payload = svc.verifyToken(token);
@@ -28,8 +26,8 @@ describe('AuthService', () => {
     const prev = process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_ID;
 
-    const { AuthService } = await import('../AuthService');
-    const svc = new AuthService();
+    const { AuthService: AuthServiceFresh } = await import('../AuthService');
+    const svc = new AuthServiceFresh();
     const res = await svc.verifyGoogleToken('tok');
     expect(res).toBeNull();
 
@@ -54,8 +52,8 @@ describe('AuthService', () => {
       };
     });
 
-    const { AuthService } = await import('../AuthService');
-    const svc = new AuthService();
+    const { AuthService: AuthServiceFresh } = await import('../AuthService');
+    const svc = new AuthServiceFresh();
     const res = await svc.verifyGoogleToken('tok');
     expect(res).toEqual({ googleId: 'gid', email: 'x@y.z', name: 'X' });
   });

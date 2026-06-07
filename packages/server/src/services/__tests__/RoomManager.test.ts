@@ -190,7 +190,7 @@ describe('removePlayer', () => {
     ];
     rm.removePlayer(room.code, 's2');
     // nextPlayerIndex was 1, only 1 player left → should be 0
-    expect(room.teams[0].nextPlayerIndex).toBe(0);
+    expect(room.teams[0]?.nextPlayerIndex).toBe(0);
   });
 });
 
@@ -215,7 +215,7 @@ describe('handleDisconnect', () => {
     expect(result!.roomCode).toBe(room.code);
     expect(room.hostSocketId).toBe('socket-guest');
     expect(room.players).toHaveLength(1);
-    expect(room.players[0].isHost).toBe(true);
+    expect(room.players[0]?.isHost).toBe(true);
   });
 
   it('returns roomCode and removedPlayerId when non-host disconnects', async () => {
@@ -273,8 +273,8 @@ describe('handleDisconnect', () => {
 
     rm.handleDisconnect('socket-host');
 
-    const teamPlayers = room.teams[0].players;
-    const newHost = teamPlayers.find((p) => p.isHost);
+    const teamPlayers = room.teams[0]?.players;
+    const newHost = teamPlayers?.find((p) => p.isHost);
     expect(newHost).toBeDefined();
     expect(newHost!.id).toBe(guest.id);
   });

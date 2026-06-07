@@ -143,7 +143,7 @@ export function createCustomDeckRoutes(prisma: PrismaClient): IRouter {
           skip_empty_lines: true,
           trim: true,
         }) as string[][];
-        words = records.map((row) => row[0]).filter(Boolean);
+        words = records.map((row) => row[0]).filter((w): w is string => Boolean(w));
       } else {
         // Plain text file
         words = parseWordList(req.file.buffer.toString('utf-8'));

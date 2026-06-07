@@ -1,43 +1,53 @@
-# Lobby Team Builder (2026-04-09)
+# Lobby Team Builder
 
-> Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — про **UX лобі та команди** (team builder, Solo).
+> Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — **UX лобі та команд** (team builder, Solo).  
+> **Оновлено:** 2026-06-06 (dual UI: `LobbyScreen` + `TeamSetupScreen`).
 
-## Goal
+## UI: два екрани, одна логіка
 
-Move team formation into `LobbyScreen` so players don’t need a separate “team setup” screen, and add a host-friendly OFFLINE assignment flow.
+| Режим / стан | Екран | Коли |
+|--------------|-------|------|
+| **ONLINE** (типовий шлях) | `LobbyScreen` — inline team builder | `GameState.LOBBY`: unassigned pool, team cards, lock/shuffle, start validation |
+| **OFFLINE** або `GameState.TEAMS` | `TeamSetupScreen` | Офлайн: host tap-to-assign. Онлайн: лише якщо сервер синхронізував `gameState: TEAMS` (напр. після `GENERATE_TEAMS`) |
 
-Key UX goals:
-- **Unassigned pool**: players join first, then pick a team.
-- **Self-select teams** (ONLINE): tap **Join/Leave** on a team card.
-- **Host controls**: shuffle, lock/unlock team switching, rename teams.
-- **OFFLINE host assignment**: tap any player chip → bottom sheet → assign/unassign.
-- **Start validation**: host can start only when all players are assigned and every team has at least one player.
+**Не плутати:** онлайн-гра **не вимагає** окремого екрану команд — гравці збирають команди прямо в лобі. `TeamSetupScreen` — головним чином **офлайн** (один пристрій, host перетягує гравців між командами).
+
+---
+
+## UX goals
+
+- **Unassigned pool**: гравці спочатку в пулі, потім обирають команду (ONLINE self-join).
+- **Self-select teams** (ONLINE): **Join/Leave** на картці команди (якщо не `teamsLocked`).
+- **Host controls**: shuffle, lock/unlock, rename teams.
+- **OFFLINE host assignment**: tap player chip → bottom sheet → assign/unassign (`TeamSetupScreen` або sheet у лобі).
+- **Start validation**: host стартує лише коли всі розподілені і кожна команда має ≥1 гравця.
 
 ### Team mode: **Solo** (`general.teamMode === 'SOLO'`)
 
-- **Lobby UI**: the unassigned pool + team cards + shuffle/lock row are **hidden** in Solo (`LobbyScreen`). Host needs at least **2 players** to start (same minimum as teams mode).
-- **Settings**: toggle **Teams / Solo** in `SettingsScreen`; `teamCount` slider is disabled in Solo (ignored for start layout).
-- **Server `START_GAME`**: builds `teams` as **one team per player** (player name as team name, single player in `players[]`). Gameplay still uses the existing team-based pipeline (semantically FFA).
-- **Model**: optional `teamMode?: 'TEAMS' | 'SOLO'` on `GeneralSettings` in `packages/shared/src/models.ts` (defaults to `TEAMS` when omitted).
+- **Lobby UI**: team builder **прихований** у Solo (`LobbyScreen`).
+- **Settings**: перемикач Teams / Solo; слайдер `teamCount` вимкнено в Solo.
+- **Server `START_GAME`**: одна «команда» на гравця (semantically FFA).
+- **Model**: `teamMode?: 'TEAMS' | 'SOLO'` у `GeneralSettings` (`packages/shared/src/models.ts`), default `TEAMS`.
 
 ---
 
 ## High-level flow
 
-### ONLINE
-- Server maintains `teams` array with **team shells** (empty teams are preserved in lobby states).
-- Players can `TEAM_JOIN` / `TEAM_LEAVE` themselves unless `teamsLocked === true` (host can still edit).
-- Host can:
-  - rename teams (`TEAM_RENAME`)
-  - lock/unlock switching (`TEAM_LOCK`)
-  - shuffle unassigned (`TEAM_SHUFFLE_UNASSIGNED`)
-  - shuffle all (`TEAM_SHUFFLE_ALL`, with confirmation UI on client)
+### ONLINE (`GameState.LOBBY`)
 
-### OFFLINE (single device)
-- Everything runs locally in `GameContext` offline branch.
-- Host can assign **any player** using `playerId` in actions:
-  - `TEAM_JOIN` with `{ teamId, playerId }`
-  - `TEAM_LEAVE` with `{ playerId }` (unassign)
+- Inline builder у `packages/client/src/screens/lobby/LobbyScreen.tsx` + `screens/lobby/components/*`.
+- Server тримає `teams` з team shells (порожні команди збережені в лобі).
+- `TEAM_JOIN` / `TEAM_LEAVE` для self-join, якщо `teamsLocked !== true`.
+- Host: `TEAM_RENAME`, `TEAM_LOCK`, `TEAM_SHUFFLE_UNASSIGNED`, `TEAM_SHUFFLE_ALL`.
+
+### OFFLINE / `GameState.TEAMS`
+
+- Логіка в `GameContext` → `offlineGameActions.ts`.
+- `TeamSetupScreen`: host-only edit (`canEdit = isHost && gameMode === 'OFFLINE'`).
+- Host assign через `playerId` у actions:
+  - `TEAM_JOIN` `{ teamId, playerId }`
+  - `TEAM_LEAVE` `{ playerId }`
+- `GENERATE_TEAMS` (shuffle) → локально або на сервері → `GameState.TEAMS`.
 
 ---
 
@@ -47,106 +57,42 @@ Key UX goals:
 ```ts
 { action: 'TEAM_JOIN', data: { teamId: string; playerId?: string } }
 ```
-- If `playerId` is omitted → the **actor** joins the team (normal ONLINE self-join).
-- If `playerId` is present → **host-only** assignment (used for OFFLINE and can be used for host tools later).
+- Без `playerId` → actor joins (ONLINE self-join).
+- З `playerId` → **host-only** (OFFLINE assign).
 
 ### `TEAM_LEAVE`
 ```ts
 { action: 'TEAM_LEAVE', data?: { playerId?: string } }
 ```
-- No `data` → actor leaves all teams.
-- With `playerId` → **host-only** unassign.
 
-### `TEAM_RENAME`
-```ts
-{ action: 'TEAM_RENAME', data: { teamId: string; name: string } }
-```
+### `TEAM_RENAME`, `TEAM_LOCK`, shuffle actions
 
-### `TEAM_LOCK`
-```ts
-{ action: 'TEAM_LOCK', data: { locked: boolean } }
-```
-
-### Shuffle actions
-```ts
-{ action: 'TEAM_SHUFFLE_UNASSIGNED' }
-{ action: 'TEAM_SHUFFLE_ALL' }
-```
+Див. `packages/shared/src/actions.ts` та `authorizeGameAction.ts`.
 
 ---
 
 ## Server-side validation & auth
 
-### Validation
-`packages/server/src/validation/schemas.ts`
-- Validates `TEAM_JOIN.data.teamId`
-- Optionally validates `TEAM_JOIN.data.playerId` as UUID
-- Accepts `TEAM_LEAVE` with no data or `{ playerId?: uuid }`
-
-### Authorization
-`packages/server/src/game/authorizeGameAction.ts`
-- Host-only: `TEAM_SHUFFLE_*`, `TEAM_LOCK`, `TEAM_RENAME` (and other host actions)
-- If `teamsLocked` and not host → deny `TEAM_JOIN` / `TEAM_LEAVE`
-- If `TEAM_JOIN` includes `playerId` → host-only
-- If `TEAM_LEAVE` includes `playerId` → host-only
-
-### Engine handling
-`packages/server/src/services/GameEngine.ts`
-- Ensures team shells exist for the configured `teamCount` (**TEAMS** mode)
-- On **`START_GAME`** with **`teamMode === 'SOLO'`**, replaces `teams` with **one shell per player** (see above) instead of `ensureTeamShells` layout
-- `TEAM_JOIN`:
-  - if `playerId` provided → assigns that player
-  - else → assigns sender
-- `TEAM_LEAVE`:
-  - if `playerId` provided → unassigns that player
-  - else → unassigns sender
+- **Validation:** `packages/server/src/validation/schemas.ts`
+- **Authorization:** `packages/server/src/game/authorizeGameAction.ts` — host-only shuffle/lock/rename; `teamsLocked` блокує self-switch.
+- **Engine:** `packages/server/src/services/GameEngine.ts` — `ensureTeamShells`, Solo layout на `START_GAME`, обробка team actions.
 
 ---
 
-## Client-side implementation notes
+## Client components
 
-### Lobby UI (team builder)
-`packages/client/src/screens/lobby/LobbyScreen.tsx`
-- Shows:
-  - online lobby intro (room code + share/qr + parameters card)
-  - players list
-  - team builder section:
-    - unassigned pool
-    - team cards with join/leave and overfill hint
-  - shuffle all confirmation modal
-  - start game validation (disabled with reason)
-
-### OFFLINE assign bottom sheet
-- Tap a player chip (OFFLINE host) → `AssignPlayerSheet`
-- Actions:
-  - “Assign to team” → `TEAM_JOIN` with `playerId`
-  - “Make unassigned” → `TEAM_LEAVE` with `playerId`
-
----
-
-## Refactor: `LobbyScreen` split into components
-
-To keep maintenance reasonable, `LobbyScreen` was split into focused components:
-- `packages/client/src/screens/lobby/components/OnlineLobbyIntro.tsx`
-- `packages/client/src/screens/lobby/components/PlayersSection.tsx`
-- `packages/client/src/screens/lobby/components/UnassignedPool.tsx`
-- `packages/client/src/screens/lobby/components/TeamCard.tsx`
-- `packages/client/src/screens/lobby/components/AssignPlayerSheet.tsx`
-
-The goal of this refactor was **behavioral equivalence** with better readability and safer iteration.
+| Компонент | Роль |
+|-----------|------|
+| `LobbyScreen.tsx` | ONLINE inline builder + start |
+| `TeamSetupScreen.tsx` | OFFLINE / `TEAMS` state — assign + shuffle + start |
+| `components/OnlineLobbyIntro.tsx` | QR, share, deep link (`lobby_*`) |
+| `components/UnassignedPool.tsx`, `TeamCard.tsx`, `AssignPlayerSheet.tsx` | Subcomponents |
 
 ---
 
 ## Quick test checklist
-- ONLINE:
-  - Join/leave teams works for non-host when unlocked
-  - Lock teams blocks non-host switching
-  - Shuffle unassigned affects only unassigned
-  - Shuffle all reassigns everyone (confirmation shown)
-  - Start game disabled until valid
-  - **Solo mode**: no team builder in lobby; start with 2+ players; after start, one team per player on sync
-- OFFLINE:
-  - Tap a chip opens assign bottom sheet
-  - Assign/unassign works for any player
-  - Rename team works inline
 
+- **ONLINE:** join/leave, lock, shuffle, start validation, Solo без team UI.
+- **OFFLINE:** chip → assign sheet, rename, `GENERATE_TEAMS` → `TEAMS`, start when valid.
+
+Детальні критерії — [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md).

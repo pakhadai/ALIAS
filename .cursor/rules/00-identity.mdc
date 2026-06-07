@@ -1,0 +1,26 @@
+---
+description: Project identity and steward rules
+alwaysApply: true
+---
+
+# ALIAS MASTER — PROJECT IDENTITY
+
+## Monorepo structure
+- `@alias/shared` — contracts only, no runtime deps, CommonJS output
+- `@alias/server` — Express + Socket.IO + Prisma + Redis, CommonJS
+- `@alias/client` — React 19 PWA, ESM, Vite 7
+- `@alias/e2e` — Playwright only
+
+## Non-negotiables
+- Server is authoritative. Client NEVER computes game state.
+- Full state sync on every action via `game:state-sync`
+- `GameSyncState` changes require update in BOTH client AND server
+- `packages/shared` is single source of truth for all types
+- After any shared change: `pnpm build:shared` before testing
+
+## Architecture decisions (do not revisit without good reason)
+- State machine routing (GameState enum), NOT URL routing
+- Socket.IO Redis adapter for multi-node, NOT sticky sessions
+- Prisma for all DB operations, NO raw SQL except migrations
+- Zod for ALL socket payload validation
+- JWT auth, NO sessions/cookies

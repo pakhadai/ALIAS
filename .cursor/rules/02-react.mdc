@@ -1,0 +1,37 @@
+---
+description: React 19 standards — May 2026
+alwaysApply: true
+globs: packages/client/**/*.{ts,tsx}
+---
+
+# REACT 19 STANDARDS
+
+## Patterns (React 19, May 2026)
+- Functional components ТІЛЬКИ — жодних класових
+- Hooks для стану і ефектів
+- `use()` hook для promise unwrapping де доречно
+- Server Actions якщо додаємо SSR (майбутнє)
+- `useTransition` для non-urgent state updates
+- `useDeferredValue` для expensive renders
+
+## Заборонені anti-patterns
+- `useEffect(() => {...}, [])` як componentDidMount — замість цього використовуй event handlers або top-level initialization
+- Derived state в useState — обчислюй під час render
+- Index як key в lists де елементи переміщуються
+- Inline object/array literals у JSX props (нова ref кожен render)
+- Callback hell in event handlers — виноси в named functions
+
+## Компонентна архітектура
+- Один компонент = одна відповідальність
+- Props interface над компонентом, named export
+- Складні компоненти: розбивай на subcomponents у тій же директорії
+- Custom hooks для reusable logic (useSocketConnection, useHapticFeedback)
+- Context лише для справді глобального стану (GameContext, AuthContext)
+
+## Стилі (Tailwind 4)
+- Tailwind utility classes пріоритетно
+- CSS custom properties (`--ui-*` токени) для theme-aware кольорів
+- Семантичні токени: `--ui-bg`, `--ui-surface`, `--ui-fg`, `--ui-accent` і т.д.
+- НЕ хардкодити `text-white` або `bg-white` — використовуй `--ui-fg` / `--ui-surface`
+- Conditional classes через `clsx` або `cn` utility
+- Анімації через Tailwind animate-* або CSS transitions, не JS

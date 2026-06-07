@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { GameState, Language, Category, GameMode } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { fetchLobbySettings, saveLobbySettings } from '../../services/api';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
+import { useResourceLoad } from '../../hooks/useResourceLoad';
+import type { GameSettings } from '../../types';
 
 export const LobbySettingsScreen = () => {
   const { setGameState, currentTheme, settings: gameSettings } = useGame();
@@ -13,16 +15,14 @@ export const LobbySettingsScreen = () => {
   const [local, setLocal] = useState({ ...gameSettings });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { data: remoteSettings, loading } = useResourceLoad(() => fetchLobbySettings(), {
+    initialData: null as Partial<GameSettings> | null,
+  });
 
   useEffect(() => {
-    fetchLobbySettings()
-      .then((s) => {
-        if (s) setLocal((prev) => ({ ...prev, ...(s as Partial<typeof gameSettings>) }));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    if (!remoteSettings) return;
+    setLocal((prev) => ({ ...prev, ...(remoteSettings as Partial<typeof gameSettings>) }));
+  }, [remoteSettings]);
 
   const setGeneral = <K extends keyof typeof gameSettings.general>(
     key: K,

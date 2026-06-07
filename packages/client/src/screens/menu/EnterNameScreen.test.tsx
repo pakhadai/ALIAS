@@ -63,7 +63,9 @@ describe('EnterNameScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Next' }));
 
     expect(handleJoin).toHaveBeenCalledTimes(1);
-    const [, nameArg, avatarArg] = handleJoin.mock.calls[0];
+    const joinCall = handleJoin.mock.calls[0];
+    expect(joinCall).toBeDefined();
+    const [, nameArg, avatarArg] = joinCall as [string, string, string, string?];
     expect(nameArg).toBe('Alice' + 'X'.repeat(15)); // 5 + 15 = 20
     expect(typeof avatarArg).toBe('string');
     expect(setGameState).toHaveBeenCalledWith(GameState.LOBBY);

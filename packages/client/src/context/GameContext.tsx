@@ -38,9 +38,11 @@ import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
 import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
+import { shuffleArray } from '@alias/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
 import { bestTextOnColor } from '../utils/color';
 import { buildOfflineTask } from '../utils/gameTask';
+import { getUiStrings } from '../hooks/useT';
 import { AVATARS } from '../utils/avatars';
 export { AVATARS };
 import {
@@ -86,9 +88,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       if (notifTimerRef.current !== null) clearTimeout(notifTimerRef.current);
     };
-  }, []);
+  }, []); // Legitimate: unmount cleanup for notification timer ref.
 
-  // Handle URL parameters on mount (room join, custom deck deep link, Stripe redirects)
+  // PWA/deep-link bootstrap — deferred: reads window.location once at app load (see AUDIT D-4).
   useEffect(() => {
     if (stateRef.current.gameState !== GameState.MENU) return;
     const params = new URLSearchParams(window.location.search);
@@ -132,16 +134,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 },
               },
             });
+            const uiStrings = getUiStrings(stateRef.current.uiLanguage);
             showNotification(
-              TRANSLATIONS[stateRef.current.uiLanguage].customDeckDeepLinkSuccess.replace(
-                '{name}',
-                deck.name
-              ),
+              uiStrings.customDeckDeepLinkSuccess.replace('{name}', deck.name),
               'success'
             );
           } catch {
             showNotification(
-              TRANSLATIONS[stateRef.current.uiLanguage].customDeckDeepLinkError,
+              getUiStrings(stateRef.current.uiLanguage).customDeckDeepLinkError,
               'error'
             );
           }
@@ -227,16 +227,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('beforeunload', handler);
   }, [state.isHost, state.gameState]);
 
-  // Fisher-Yates shuffle algorithm
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
+  // Fisher-Yates shuffle — shared util (noUncheckedIndexedAccess-safe)
   const offlineTaskIdRef = useRef(0);
   const offlineQuizLockTaskIdRef = useRef<string | null>(null);
 
@@ -789,14 +780,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const safeAvatar = truncateUtf16Safe(String(avatar ?? '').trim(), 12);
         if (!sanitizedName) {
           showNotification(
-            TRANSLATIONS[stateRef.current.uiLanguage].enterNameRequired ?? 'Name is required',
+            getUiStrings(stateRef.current.uiLanguage).enterNameRequired ?? 'Name is required',
             'error'
           );
           return false;
         }
         if (!safeAvatar) {
           showNotification(
-            TRANSLATIONS[stateRef.current.uiLanguage].chooseAvatar ?? 'Choose an avatar',
+            getUiStrings(stateRef.current.uiLanguage).chooseAvatar ?? 'Choose an avatar',
             'error'
           );
           return false;
@@ -822,7 +813,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('alias_player', JSON.stringify(playerData));
         } catch {
           showNotification(
-            TRANSLATIONS[stateRef.current.uiLanguage].enterNameRequired ?? 'Storage error',
+            getUiStrings(stateRef.current.uiLanguage).enterNameRequired ?? 'Storage error',
             'error'
           );
           return false;
@@ -849,7 +840,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const msg = e instanceof Error ? e.message : String(e);
             if (msg === 'ROOM_OPERATION_TIMEOUT' || msg === 'NO_SOCKET') {
               showNotification(
-                TRANSLATIONS[uiLang].connectionFailed ?? 'Connection failed',
+                getUiStrings(uiLang).connectionFailed ?? 'Connection failed',
                 'error'
               );
             }

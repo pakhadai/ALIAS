@@ -163,10 +163,10 @@ describe('START_GAME', () => {
     });
     await engine.handleAction(room, { action: 'START_GAME' });
     expect(room.teams).toHaveLength(2);
-    expect(room.teams[0].name).toBe('Alice');
-    expect(room.teams[1].name).toBe('Bob');
-    expect(room.teams[0].players).toEqual([p1]);
-    expect(room.teams[1].players).toEqual([p2]);
+    expect(room.teams[0]?.name).toBe('Alice');
+    expect(room.teams[1]?.name).toBe('Bob');
+    expect(room.teams[0]?.players).toEqual([p1]);
+    expect(room.teams[1]?.players).toEqual([p2]);
     expect(room.gameState).toBe(GameState.PRE_ROUND);
     expect(room.teamsLocked).toBe(true);
   });
@@ -215,8 +215,8 @@ describe('TEAM_RENAME + SOLO ensureTeamShells', () => {
       'socket-1'
     );
     expect(room.teams).toHaveLength(2);
-    expect(room.teams[0].name).toBe('RenamedA');
-    expect(room.teams[1].name).toBe('Ninjas');
+    expect(room.teams[0]?.name).toBe('RenamedA');
+    expect(room.teams[1]?.name).toBe('Ninjas');
   });
 });
 
@@ -529,7 +529,7 @@ describe('QUIZ timers', () => {
       { action: 'GUESS_OPTION', data: { selectedOption: 'B' } },
       'p1'
     );
-    expect(room.teams[0].score).toBe(0);
+    expect(room.teams[0]?.score).toBe(0);
   });
 
   it('when every player guesses wrong, sets __all_wrong__ and advances after micro-pause', async () => {
@@ -633,7 +633,7 @@ describe('CONFIRM_ROUND', () => {
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
     // 5 correct - 1 skip = 4 points
-    expect(room.teams[0].score).toBe(4);
+    expect(room.teams[0]?.score).toBe(4);
     expect(room.roundsPlayed).toBe(1);
     expect(room.gameState).toBe(GameState.SCOREBOARD);
   });
@@ -657,7 +657,7 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    expect(room.teams[0].score).toBe(0);
+    expect(room.teams[0]?.score).toBe(0);
   });
 
   it('does not subtract skips when skipPenalty is off', async () => {
@@ -679,7 +679,7 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    expect(room.teams[0].score).toBe(3);
+    expect(room.teams[0]?.score).toBe(3);
   });
 
   it('triggers GAME_OVER when last team exceeds scoreToWin', async () => {
@@ -700,7 +700,7 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    expect(room.teams[0].score).toBe(32);
+    expect(room.teams[0]?.score).toBe(32);
     expect(room.gameState).toBe(GameState.GAME_OVER);
   });
 
@@ -750,8 +750,11 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    const updatedExplainer = room.teams[0].players.find((p) => p.id === 'explainer')!;
-    const updatedGuesser = room.teams[0].players.find((p) => p.id === 'guesser')!;
+    const team0 = room.teams[0];
+    if (!team0) throw new Error('expected team at index 0');
+    const updatedExplainer = team0.players.find((p) => p.id === 'explainer');
+    const updatedGuesser = team0.players.find((p) => p.id === 'guesser');
+    if (!updatedExplainer || !updatedGuesser) throw new Error('expected explainer and guesser');
     expect(updatedExplainer.stats.guessed).toBe(0);
     expect(updatedGuesser.stats.guessed).toBe(3);
   });
@@ -769,7 +772,7 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    expect(room.teams[0].nextPlayerIndex).toBe(1);
+    expect(room.teams[0]?.nextPlayerIndex).toBe(1);
   });
 
   it('wraps nextPlayerIndex back to 0', async () => {
@@ -785,7 +788,7 @@ describe('CONFIRM_ROUND', () => {
       },
     });
     await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
-    expect(room.teams[0].nextPlayerIndex).toBe(0);
+    expect(room.teams[0]?.nextPlayerIndex).toBe(0);
   });
 });
 
@@ -859,9 +862,9 @@ describe('REMATCH', () => {
 
     expect(room.gameState).toBe(GameState.PRE_ROUND);
     expect(room.teams).toHaveLength(2);
-    expect(room.teams[0].score).toBe(0);
-    expect(room.teams[1].score).toBe(0);
-    expect(room.teams[0].nextPlayerIndex).toBe(0);
+    expect(room.teams[0]?.score).toBe(0);
+    expect(room.teams[1]?.score).toBe(0);
+    expect(room.teams[0]?.nextPlayerIndex).toBe(0);
     expect(room.currentTeamIndex).toBe(0);
     expect(room.wordDeck).toHaveLength(0);
   });
@@ -885,7 +888,7 @@ describe('KICK_PLAYER', () => {
     const team = makeTeam({ players: [p1, p2] });
     const room = makeRoom({ players: [p1, p2], teams: [team] });
     await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p1' });
-    expect(room.teams[0].players.find((p) => p.id === 'p1')).toBeUndefined();
+    expect(room.teams[0]?.players.find((p) => p.id === 'p1')).toBeUndefined();
   });
 
   it('clamps nextPlayerIndex when kicked player was last', async () => {
@@ -893,7 +896,7 @@ describe('KICK_PLAYER', () => {
     const team = makeTeam({ players, nextPlayerIndex: 2 });
     const room = makeRoom({ players, teams: [team] });
     await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p2' });
-    expect(room.teams[0].nextPlayerIndex).toBe(1);
+    expect(room.teams[0]?.nextPlayerIndex).toBe(1);
   });
 });
 
@@ -926,8 +929,8 @@ describe('START_DUEL', () => {
     const room = makeRoom({ players });
     await engine.handleAction(room, { action: 'START_DUEL' });
     expect(room.teams).toHaveLength(2);
-    expect(room.teams[0].players[0].id).toBe('p0');
-    expect(room.teams[1].players[0].id).toBe('p1');
+    expect(room.teams[0]?.players[0]?.id).toBe('p0');
+    expect(room.teams[1]?.players[0]?.id).toBe('p1');
     expect(room.gameState).toBe(GameState.VS_SCREEN);
   });
 });

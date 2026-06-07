@@ -1,6 +1,7 @@
 import { Router, type IRouter } from 'express';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { authService } from '../services/AuthService';
+import { config } from '../config';
 import { maxDate, parseNonNegInt } from '../utils/playerStats';
 import { gameSettingsPartialSchema } from '../validation/schemas';
 
@@ -180,11 +181,13 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
     }
 
     try {
-      console.log('[Auth][Telegram] auth attempt', {
-        initDataLength: initData.length,
-        hasHeader: Boolean(fromHeader),
-        hasBody: Boolean(fromBody),
-      });
+      if (config.nodeEnv !== 'production') {
+        console.warn('[Auth][Telegram] auth attempt', {
+          initDataLength: initData.length,
+          hasHeader: Boolean(fromHeader),
+          hasBody: Boolean(fromBody),
+        });
+      }
       const verified = authService.validateTelegramInitData(initData, botToken);
       const telegramUserId = verified.user?.id;
       if (!telegramUserId) {

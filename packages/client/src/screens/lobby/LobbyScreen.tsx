@@ -13,7 +13,8 @@ import {
   scrollElementIntoViewCentered,
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
-import { MAX_PLAYERS, TEAM_COLORS, TEAM_NAMES } from '../../constants';
+import { getTeamColor } from '@alias/shared';
+import { MAX_PLAYERS, TEAM_NAMES } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
 import { AssignPlayerSheet } from './components/AssignPlayerSheet';
@@ -129,6 +130,7 @@ export const LobbyScreen = () => {
       return () => cancelAnimationFrame(r);
     }
     setQrSheetOpen(false);
+    return undefined;
   }, [showQrModal, qrCodeData]);
 
   useEffect(() => {
@@ -137,6 +139,7 @@ export const LobbyScreen = () => {
       return () => cancelAnimationFrame(r);
     }
     setAddPlayerSheetOpen(false);
+    return undefined;
   }, [showAddPlayer]);
 
   // Defensive: if we reach the cap while the modal is open, close it.
@@ -264,8 +267,8 @@ export const LobbyScreen = () => {
       id: `team-${i}`,
       name: names[i % names.length] ?? `Team ${i + 1}`,
       score: 0,
-      color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-      colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+      color: getTeamColor(i).class,
+      colorHex: getTeamColor(i).hex,
       players: teams[i]?.players ?? [],
       nextPlayerIndex: 0,
     }));

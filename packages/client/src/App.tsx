@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { AuthProvider } from './context/AuthContext';
 import { GameState } from './types';
@@ -8,22 +8,52 @@ import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { TelegramAuthLoadingScreen } from './components/TelegramAuthLoadingScreen';
 import { useTelegramApp } from './hooks/useTelegramApp';
 import { useAuthContext } from './context/AuthContext';
-import { ROOM_CODE_LENGTH } from './constants';
+import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
+import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import {
   MenuScreen,
   EnterNameScreen,
   JoinInputScreen,
-  RulesScreen,
   ProfileScreen,
   ProfileSettingsScreen,
   LobbySettingsScreen,
-  MyWordPacksScreen,
-  StoreScreen,
-  MyDecksScreen,
-  PlayerStatsScreen,
 } from './screens/MenuFlow';
-import { LobbyScreen, TeamSetupScreen, SettingsScreen } from './screens/LobbyFlow';
-import { GameFlow } from './screens/GameFlow';
+import { RulesScreen } from './screens/menu/RulesScreen';
+
+const GameFlow = React.lazy(() =>
+  import('./screens/GameFlow').then((mod) => ({ default: mod.GameFlow }))
+);
+const LobbyScreen = React.lazy(() =>
+  import('./screens/lobby/LobbyScreen').then((mod) => ({ default: mod.LobbyScreen }))
+);
+const TeamSetupScreen = React.lazy(() =>
+  import('./screens/lobby/TeamSetupScreen').then((mod) => ({ default: mod.TeamSetupScreen }))
+);
+const SettingsScreen = React.lazy(() =>
+  import('./screens/lobby/SettingsScreen').then((mod) => ({ default: mod.SettingsScreen }))
+);
+const MyWordPacksScreen = React.lazy(() =>
+  import('./screens/menu/MyWordPacksScreen').then((mod) => ({ default: mod.MyWordPacksScreen }))
+);
+const StoreScreen = React.lazy(() =>
+  import('./screens/menu/StoreScreen').then((mod) => ({ default: mod.StoreScreen }))
+);
+const MyDecksScreen = React.lazy(() =>
+  import('./screens/menu/MyDecksScreen').then((mod) => ({ default: mod.MyDecksScreen }))
+);
+const PlayerStatsScreen = React.lazy(() =>
+  import('./screens/menu/PlayerStatsScreen').then((mod) => ({ default: mod.PlayerStatsScreen }))
+);
+
+const LazyRouteFallback = () => (
+  <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
+    <p className="text-sm text-ui-fg-muted">Завантаження…</p>
+  </div>
+);
+
+const LazyRoute = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<LazyRouteFallback />}>{children}</Suspense>
+);
 
 const GameRouter = () => {
   const { gameState } = useGame();
@@ -57,25 +87,33 @@ const GameRouter = () => {
       case GameState.MY_WORD_PACKS:
         return (
           <PageTransition key="my_word_packs">
-            <MyWordPacksScreen />
+            <LazyRoute>
+              <MyWordPacksScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.PLAYER_STATS:
         return (
           <PageTransition key="player_stats">
-            <PlayerStatsScreen />
+            <LazyRoute>
+              <PlayerStatsScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.STORE:
         return (
           <PageTransition key="store">
-            <StoreScreen />
+            <LazyRoute>
+              <StoreScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.MY_DECKS:
         return (
           <PageTransition key="my_decks">
-            <MyDecksScreen />
+            <LazyRoute>
+              <MyDecksScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.RULES:
@@ -99,19 +137,25 @@ const GameRouter = () => {
       case GameState.LOBBY:
         return (
           <PageTransition key="lobby">
-            <LobbyScreen />
+            <LazyRoute>
+              <LobbyScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.SETTINGS:
         return (
           <PageTransition key="settings">
-            <SettingsScreen />
+            <LazyRoute>
+              <SettingsScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.TEAMS:
         return (
           <PageTransition key="teams">
-            <TeamSetupScreen />
+            <LazyRoute>
+              <TeamSetupScreen />
+            </LazyRoute>
           </PageTransition>
         );
       case GameState.VS_SCREEN:
@@ -121,7 +165,11 @@ const GameRouter = () => {
       case GameState.ROUND_SUMMARY:
       case GameState.SCOREBOARD:
       case GameState.GAME_OVER:
-        return <GameFlow key={gameState} />;
+        return (
+          <LazyRoute key={gameState}>
+            <GameFlow />
+          </LazyRoute>
+        );
       default:
         return <MenuScreen />;
     }
@@ -148,10 +196,12 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 
     attemptedRef.current = true;
 
-    console.log('[TelegramAuth] attempting telegram login', {
-      initDataLength: initData.length,
-      authState: authState.status,
-    });
+    if (import.meta.env.DEV) {
+      console.warn('[TelegramAuth] attempting telegram login', {
+        initDataLength: initData.length,
+        authState: authState.status,
+      });
+    }
 
     void loginWithTelegram(initData);
   }, [
@@ -201,88 +251,24 @@ const AppContent = () => {
   const { isAuthenticated } = useAuthContext();
   const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification, leaveRoom } =
     useGame();
-  const consumedStartParamRef = React.useRef<string | null>(null);
 
-  React.useEffect(() => {
-    if (!isAuthenticated) return;
-    if (!startParam) return;
-    if (consumedStartParamRef.current === startParam) return;
-    if (gameState !== GameState.MENU) return;
-    if (!startParam.startsWith('lobby_')) return;
-
-    const roomCode = startParam.slice('lobby_'.length).trim();
-    consumedStartParamRef.current = startParam;
-
-    if (roomCode.length !== ROOM_CODE_LENGTH || !/^\d+$/.test(roomCode)) {
-      showNotification('Некоректний код кімнати в запрошенні', 'error');
-      return;
-    }
-
-    void (async () => {
-      try {
-        const exists = await checkRoomExists(roomCode);
-        if (!exists) {
-          showNotification(`Кімната ${roomCode} не знайдена`, 'error');
-          return;
-        }
-        setRoomCode(roomCode);
-        setGameState(GameState.ENTER_NAME);
-      } catch {
-        showNotification('Не вдалося приєднатись за запрошенням', 'error');
-      }
-    })();
-  }, [
-    checkRoomExists,
-    gameState,
+  useTelegramLobbyDeepLink({
     isAuthenticated,
+    startParam,
+    gameState,
     setGameState,
     setRoomCode,
+    checkRoomExists,
     showNotification,
-    startParam,
-  ]);
+  });
 
-  React.useEffect(() => {
-    if (!isTelegram) return;
-    const tg = window.Telegram?.WebApp;
-    const back = tg?.BackButton;
-    if (!back?.show || !back.hide || !back.onClick) return;
-
-    const isMain = gameState === GameState.MENU;
-    if (isMain) back.hide();
-    else back.show();
-
-    const onBack = () => {
-      switch (gameState) {
-        case GameState.PROFILE_SETTINGS:
-          setGameState(GameState.PROFILE);
-          return;
-        case GameState.LOBBY_SETTINGS:
-          setGameState(GameState.LOBBY);
-          return;
-        case GameState.PLAYER_STATS:
-          setGameState(isAuthenticated ? GameState.PROFILE : GameState.MENU);
-          return;
-        case GameState.SETTINGS:
-        case GameState.TEAMS:
-        case GameState.VS_SCREEN:
-        case GameState.PRE_ROUND:
-        case GameState.COUNTDOWN:
-        case GameState.PLAYING:
-        case GameState.ROUND_SUMMARY:
-        case GameState.SCOREBOARD:
-        case GameState.GAME_OVER:
-          leaveRoom();
-          return;
-        default:
-          setGameState(GameState.MENU);
-      }
-    };
-
-    back.onClick(onBack);
-    return () => {
-      back.offClick?.(onBack);
-    };
-  }, [gameState, isAuthenticated, isTelegram, leaveRoom, setGameState]);
+  useTelegramBackButton({
+    isTelegram,
+    isAuthenticated,
+    gameState,
+    setGameState,
+    leaveRoom,
+  });
 
   return (
     <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">

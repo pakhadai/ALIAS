@@ -316,7 +316,7 @@ export function createAdminRoutes(
 
       await prisma.$transaction(async (tx) => {
         for (const row of records as Record<string, string>[]) {
-          const difficulty = parseInt(row.difficulty) || 1;
+          const difficulty = parseInt(row['difficulty'] ?? '1', 10) || 1;
 
           const concept = await tx.wordConcept.create({
             data: { packId, difficulty },

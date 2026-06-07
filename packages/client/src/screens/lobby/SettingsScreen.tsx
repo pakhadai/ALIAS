@@ -30,6 +30,7 @@ import { initialState } from '../../context/gameReducer';
 import { useAuthContext } from '../../context/AuthContext';
 import { fetchStore } from '../../services/api';
 import type { WordPackItem } from '../../services/api';
+import { useResourceLoad } from '../../hooks/useResourceLoad';
 import { useT } from '../../hooks/useT';
 import { HAPTIC, vibrate } from '../../utils/haptics';
 
@@ -65,7 +66,13 @@ export const SettingsScreen = () => {
   const { isAuthenticated } = useAuthContext();
   const t = useT();
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
-  const [ownedPacks, setOwnedPacks] = useState<WordPackItem[]>([]);
+  const { data: ownedPacks } = useResourceLoad(
+    async () => {
+      const data = await fetchStore();
+      return data.wordPacks.filter((p) => p.owned);
+    },
+    { initialData: [] as WordPackItem[] }
+  );
   const [activeTab, setActiveTab] = useState<'mode' | 'content' | 'rules'>('mode');
   const [contentOpen, setContentOpen] = useState({
     categories: true,
@@ -114,12 +121,6 @@ export const SettingsScreen = () => {
   useEffect(() => {
     setLocalTeamCount(settings.general.teamCount);
   }, [settings.general.teamCount]);
-
-  useEffect(() => {
-    fetchStore()
-      .then((data) => setOwnedPacks(data.wordPacks.filter((p) => p.owned)))
-      .catch(() => {});
-  }, []);
 
   const updateGeneral = <K extends keyof GameSettings['general']>(
     key: K,
@@ -940,9 +941,7 @@ export const SettingsScreen = () => {
                   return (
                     <div className="py-4 first:pt-0">
                       <SectionHeader
-                        title={
-                          'lobbyRulesSectionBasics' in t ? t.lobbyRulesSectionBasics : t.roundTime
-                        }
+                        title={t.lobbyRulesSectionBasics}
                         open={rulesOpen.basics}
                         onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
                       />
@@ -1160,9 +1159,7 @@ export const SettingsScreen = () => {
                   <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
                     <div className="py-4">
                       <SectionHeader
-                        title={
-                          'lobbyRulesSectionTeams' in t ? t.lobbyRulesSectionTeams : t.teamCount
-                        }
+                        title={t.lobbyRulesSectionTeams}
                         open={rulesOpen.teams}
                         onToggle={() => setRulesOpen((s) => ({ ...s, teams: !s.teams }))}
                       />
@@ -1286,9 +1283,7 @@ export const SettingsScreen = () => {
 
                     <div className="py-4">
                       <SectionHeader
-                        title={
-                          'lobbyRulesSectionExtras' in t ? t.lobbyRulesSectionExtras : t.skipPenalty
-                        }
+                        title={t.lobbyRulesSectionExtras}
                         open={rulesOpen.extras}
                         onToggle={() => setRulesOpen((s) => ({ ...s, extras: !s.extras }))}
                       />

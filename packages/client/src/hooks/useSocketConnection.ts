@@ -101,6 +101,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     []
   );
 
+  // Socket lifecycle — deferred: single io() instance + listeners; teardown on unmount (AUDIT D-4).
   useEffect(() => {
     const token = getAuthToken();
     const socket: AppSocket = io(SERVER_URL, {

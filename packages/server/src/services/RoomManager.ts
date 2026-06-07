@@ -7,7 +7,7 @@ import {
   AppTheme,
   GameMode,
   MAX_PLAYERS,
-  TEAM_COLORS,
+  getTeamColor,
 } from '@alias/shared';
 import type {
   Player,
@@ -234,8 +234,8 @@ export class RoomManager {
         id: `team-${i}`,
         name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
         score: 0,
-        color: TEAM_COLORS[i % TEAM_COLORS.length].class,
-        colorHex: TEAM_COLORS[i % TEAM_COLORS.length].hex,
+        color: getTeamColor(i).class,
+        colorHex: getTeamColor(i).hex,
         players: [],
         nextPlayerIndex: 0,
       })),
@@ -331,7 +331,9 @@ export class RoomManager {
     };
 
     this.rooms.set(code, room);
-    console.log(`[RoomManager] Restored room ${code} from Redis`);
+    if (config.nodeEnv !== 'production') {
+      console.warn(`[RoomManager] Restored room ${code} from Redis`);
+    }
     return room;
   }
 
@@ -587,6 +589,10 @@ export class RoomManager {
       }
       // Шукаємо першого, хто онлайн. Якщо всі офлайн — беремо будь-кого (кімната все одно скоро помре).
       const newHostP = room.players.find((p) => p.isConnected) || room.players[0];
+      if (!newHostP) {
+        this.persistRoom(room);
+        return { roomCode, removedPlayerId: playerId };
+      }
       room.hostPlayerId = newHostP.id;
       room.hostSocketId = this.getPlayerSocketId(room, newHostP.id) ?? '';
       this.applyHostFlags(room, newHostP.id);

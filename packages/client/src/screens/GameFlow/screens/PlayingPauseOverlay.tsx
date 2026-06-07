@@ -1,4 +1,5 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState } from 'react';
+import { useDeferredOpen } from '../../../hooks/useDeferredOpen';
 import type { ThemeConfig } from '../../../types';
 import { ModalSheet } from '../../../components/ModalSheet';
 
@@ -13,12 +14,7 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
   t,
   onResume,
 }: PlayingPauseOverlayProps) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  const [visible, setVisible] = useDeferredOpen();
 
   const handleResume = () => {
     setVisible(false);

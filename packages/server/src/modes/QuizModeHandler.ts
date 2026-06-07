@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   GameMode,
+  shuffleArray,
   type GameActionPayload,
   type GameSettings,
   type GameTask,
@@ -66,11 +67,7 @@ export class QuizModeHandler implements IGameModeHandler {
     const prompt = decoded?.prompt ?? raw;
 
     const distractors: string[] = [];
-    const available = [...deck];
-    for (let i = available.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [available[i], available[j]] = [available[j], available[i]];
-    }
+    const available = shuffleArray(deck);
     for (const w of available) {
       const d = tryDecode(w);
       const ans = d?.answer ?? w;
@@ -80,11 +77,7 @@ export class QuizModeHandler implements IGameModeHandler {
       if (distractors.length >= 3) break;
     }
 
-    const options = [correct, ...distractors];
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
-    }
+    const options = shuffleArray([correct, ...distractors]);
 
     const task: GameTask = {
       id: uuidv4(),

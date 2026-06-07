@@ -1,0 +1,42 @@
+---
+description: Telegram Mini App specific rules
+alwaysApply: true
+globs: packages/client/**/*.{ts,tsx}
+---
+
+# TELEGRAM MINI APP STANDARDS
+
+## Viewport
+- Завжди `tg.expand()` при монтуванні TMA
+- Height: `100dvh` або `env(--tg-viewport-height)`, не `100vh`
+- Safe areas: `padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)`
+- Bottom navigation: `padding-bottom: calc(env(safe-area-inset-bottom) + 56px)`
+
+## Scroll
+- Overflow на body: hidden (Telegram керує scroll)
+- Scrollable контейнери: `-webkit-overflow-scrolling: touch`
+- Не використовуй `window.scrollTo` — використовуй `element.scrollIntoView`
+
+## Haptics (Telegram HapticFeedback)
+- Correct answer: `impactOccurred('medium')`
+- Wrong/skip: `impactOccurred('light')`  
+- Game over / win: `notificationOccurred('success')`
+- Error: `notificationOccurred('error')`
+- Button press (важливі дії): `impactOccurred('light')`
+
+## Telegram Stars
+- Invoice через `/api/store/buy-stars` → `invoiceUrl`
+- Відкривати через `tg.openInvoice(invoiceUrl, callback)`
+- Не через window.location або anchor href
+- Завжди обробляти callback (paid / cancelled / failed)
+
+## Auth
+- `initData` з `window.Telegram.WebApp.initData`
+- Валідація HMAC на сервері обов'язкова
+- Передавати в header `X-Init-Data` або body `initData`
+
+## Стилі
+- Не використовуй hover states як primary interaction (немає hover на mobile)
+- Active states: `:active` pseudo-class для touch feedback
+- Font size мінімум 16px (уникати auto-zoom iOS)
+- Tap target мінімум 44×44px

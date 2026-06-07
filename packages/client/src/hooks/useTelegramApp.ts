@@ -88,6 +88,7 @@ export function useTelegramApp(): UseTelegramAppResult {
     webApp?.colorScheme ?? null
   );
 
+  // TMA bootstrap — deferred: SDK init + viewport/safe-area event subscriptions (AUDIT D-4 / F-1).
   useEffect(() => {
     if (!webApp || !isTelegram) return;
 

@@ -38,6 +38,7 @@ export const GuesserFeedback = memo(function GuesserFeedback({
       return () => clearTimeout(id);
     }
     prevCorrectRef.current = correct;
+    return undefined;
   }, [correct]);
 
   const accentColor = teamColorHex || 'var(--ui-accent)';

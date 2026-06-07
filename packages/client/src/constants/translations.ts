@@ -2,7 +2,7 @@ import { Language } from '@alias/shared';
 
 export type TranslationValue = string;
 
-export const TRANSLATIONS: Record<Language, Record<string, TranslationValue>> = {
+export const TRANSLATIONS = {
   [Language.UA]: {
     slogan: 'Говори швидко, грай яскраво.',
     createGame: 'Створити гру',
@@ -997,4 +997,4 @@ export const TRANSLATIONS: Record<Language, Record<string, TranslationValue>> = 
     loginGoogleSuppressed:
       'Browser blocked the Google popup. Please try again or check your browser settings.',
   },
-};
+} as const satisfies Record<Language, Record<string, TranslationValue>>;

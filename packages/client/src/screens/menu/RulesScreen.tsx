@@ -94,6 +94,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     const summaryLine = `${roundLabel} · ${settings?.general?.scoreToWin ?? '—'} ${t.pts} · ${settings?.general?.teamCount ?? '—'} ${t.teams}`;
 
     const activeCard = modeCards.find((m) => m.id === activeMode) ?? modeCards[0];
+    if (!activeCard) return null;
 
     return (
       <div className="space-y-4">

@@ -4,7 +4,7 @@
 
 > Speak fast, play bright. / Говори швидко, грай яскраво.
 
-**Документація:** цей **README** — єдиний обов’язковий огляд архітектури, протоколів і структури репозиторію (узгоджений із кодом). Стислий архітектурний знімок монорепо (пакети, потік даних, Prisma) — [`PROJECT_STATE.md`](./PROJECT_STATE.md). Додаткові матеріали за вузькими темами: [`docs/PRISMA_WORD_DATA.md`](./docs/PRISMA_WORD_DATA.md), [`docs/LOBBY_TEAM_BUILDER.md`](./docs/LOBBY_TEAM_BUILDER.md), [`docs/TESTING_ACCEPTANCE.md`](./docs/TESTING_ACCEPTANCE.md), [`docs/ROOM_MANAGEMENT_FIXES.md`](./docs/ROOM_MANAGEMENT_FIXES.md) (журнал виправлень кімнат / мобільного sync). Лог змін — [`CHANGELOG.md`](./CHANGELOG.md). Файл `CODE_REFERENCE.md` **видалено**; його зміст перенесено сюди (розділ [Довідник модулів](#довідник-модулів-код)).
+**Документація:** цей **README** — канонічний огляд архітектури, протоколів і структури. **Карта файлів** — [`docs/INDEX.md`](./docs/INDEX.md). **Знімок монорепо** — [`PROJECT_STATE.md`](./PROJECT_STATE.md). **Робота з репо та ШІ** — [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md), [`AGENTS.md`](./AGENTS.md), [`AGENT_BRIEF.md`](./AGENT_BRIEF.md). **Відкриті issues** — [`AUDIT_RESULTS.md`](./AUDIT_RESULTS.md). Щоденник — [`docs/daily/`](./docs/daily/). Релізи — [`CHANGELOG.md`](./CHANGELOG.md).
 
 ---
 
@@ -131,7 +131,8 @@ ALIAS/                          ← Корінь монорепо
 ├── docker-compose.prod.yml     ← Production: власний nginx + SSL (80/443; якщо NPM не займає порти)
 ├── nginx/                      ← nginx.conf, npm-edge.conf
 ├── scripts/                    ← Утилітні скрипти
-├── docs/                       ← Тематичні доповнення (Prisma-дані, лобі, acceptance)
+├── docs/                       ← INDEX, CONTRIBUTING, тематичні доповнення, daily/
+├── AGENTS.md                   ← Інструкції ШІ для цього репо (поверх ECC)
 │
 ├── packages/
 │   ├── shared/                 ← @alias/shared — контракти та типи
@@ -451,8 +452,11 @@ isGameOver = isLastTeam && hasWinner
 | `imposter:secret` | `{ isImposter, word: string \| null }` | Лише **IMPOSTER**: персонально сокету; слово ніколи не входить у `game:state-sync` |
 | `game:notification` | `{ message, type: 'info' \| 'error' \| 'success' }` | Нотифікації |
 | `player:kicked` | `{ playerId }` | Кік у кімнаті (усім у room); клієнт скидає сесію лише якщо `playerId` збігається з локальним |
+| `purchase:success` | `{ purchaseId }` | Після успішної покупки — **точково** автентифікованому користувачу (Stripe / Stars) |
 
 ### GameSyncState (повна синхронізація)
+
+> **Канонічне джерело типів:** `packages/shared/src/events.ts` — при розбіжності править код, потім цей README.
 
 ```typescript
 interface GameSyncState {
@@ -469,6 +473,11 @@ interface GameSyncState {
   timeLeft: number;
   isPaused: boolean;
   timeUp?: boolean;
+  roundEndsAt?: number;         // wall-clock ms кінця відліку (server authority)
+  quizRoundTimeLeft?: number;   // QUIZ PER_TASK: секунди раунду
+  quizTaskLockUntil?: number;   // QUIZ: wall-clock ms lock per-task
+  roundsPlayed: number;         // зіграно раундів (persist для Redis)
+  usedWords: string[];          // слова поточного циклу колоди
   wordDeck: string[];
   imposterPhase?: 'REVEAL' | 'DISCUSSION' | 'RESULTS';
   imposterPlayerId?: string;
@@ -1268,9 +1277,4 @@ Seed **не** повинен “вшивати” адмінів (це ризи�
 
 ### Правила для ШІ-розробника
 
-1. **Не змінюй GameSyncState** без оновлення і клієнта, і сервера — вони тісно пов'язані.
-2. **Не додавай нових GameAction** без оновлення **`validateGameAction` / Zod** у `schemas.ts`, гілки в **`GameEngine.handleAction()`**, за потреби **`authorizeGameAction.ts`**, **`gameActionPipeline.ts`**, і для «словесних» режимів — **`modes/*`** (IMPOSTER та TEAM_* мають власні гілки, не завжди в modes).
-3. **Не додавай нових GameState** без оновлення **`GameRouter`** у `App.tsx` і відповідного екрана.
-4. **Завжди перевіряй** дозволи: host / explainer / «будь-хто в кімнаті» — див. **`authorizeGameAction.ts`** (наприклад **`GUESS_OPTION`**, **`IMPOSTER_READY`**, **`TEAM_JOIN`**).
-5. **Shared пакет** — single source of truth для типів. Зміни тут вимагають `pnpm build:shared`.
-6. **Дивись CHANGELOG.md** перед внесенням змін — там логуються всі попередні зміни.
+Операційні правила, steward, денний журнал і делегування ECC — у **[`AGENTS.md`](./AGENTS.md)** та **[`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md)**. Технічні інваріанти гри (контракти, Zod, `authorizeGameAction`) — у skill **`.cursor/skills/alias-master/SKILL.md`**.

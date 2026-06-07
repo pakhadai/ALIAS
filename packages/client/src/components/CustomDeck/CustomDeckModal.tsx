@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import {
   X,
   Plus,
@@ -357,12 +358,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setSheetOpen(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  const [sheetOpen, setSheetOpen] = useDeferredOpen();
 
   const requestClose = () => {
     setSheetOpen(false);

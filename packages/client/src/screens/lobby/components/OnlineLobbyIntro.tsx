@@ -1,9 +1,9 @@
 import React from 'react';
 import { BookOpen, Copy, Gamepad2, Mail, QrCode, Share2, Timer, Trophy } from 'lucide-react';
 import type { GameSettings, ThemeConfig } from '../../../types';
-import { TRANSLATIONS } from '../../../constants';
+import type { TranslationStrings } from '../../../hooks/useT';
 
-type T = (typeof TRANSLATIONS)['EN'];
+type T = TranslationStrings;
 
 export function OnlineLobbyIntro(props: {
   theme: ThemeConfig;

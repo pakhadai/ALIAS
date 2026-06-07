@@ -68,7 +68,7 @@ describe('LobbySettingsScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Зберегти як стандартні' }));
 
     expect(saveLobbySettings).toHaveBeenCalledTimes(1);
-    const arg = saveLobbySettings.mock.calls[0][0] as Partial<GameSettings> | undefined;
+    const arg = saveLobbySettings.mock.calls[0]?.[0] as Partial<GameSettings> | undefined;
     expect(arg?.general?.theme).toBeUndefined();
     expect(arg?.general?.soundEnabled).toBeUndefined();
     expect(arg?.general?.soundPreset).toBeUndefined();

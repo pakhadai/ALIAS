@@ -369,7 +369,9 @@ redisStore
 
     try {
       await roomActionRelay.connect(config.redis.url, handleRelayMessage);
-      console.log('[Redis] Room action relay subscribed');
+      if (config.nodeEnv !== 'production') {
+        console.warn('[Redis] Room action relay subscribed');
+      }
     } catch (err) {
       console.warn('[Redis] Room action relay failed:', (err as Error).message);
     }
@@ -384,7 +386,9 @@ redisStore
       pubClient.on('error', (err) => console.warn('[Redis] Adapter pub error:', err.message));
       subClient.on('error', (err) => console.warn('[Redis] Adapter sub error:', err.message));
       io.adapter(createAdapter(pubClient, subClient));
-      console.log('[Redis] Socket.io adapter configured');
+      if (config.nodeEnv !== 'production') {
+        console.warn('[Redis] Socket.io adapter configured');
+      }
     } catch (err) {
       console.warn(
         '[Redis] Adapter setup failed, running single-instance:',
@@ -400,7 +404,9 @@ redisStore
 prisma
   .$connect()
   .then(() => {
-    console.log('[DB] PostgreSQL connected');
+    if (config.nodeEnv !== 'production') {
+      console.warn('[DB] PostgreSQL connected');
+    }
     wordService.setPrisma(prisma);
     gameEngine.setPrisma(prisma);
   })
@@ -413,7 +419,9 @@ io.use(socketAuthMiddleware);
 
 // Socket.io connection
 io.on('connection', (socket) => {
-  console.log(`[Socket] Connected: ${socket.id}`);
+  if (config.nodeEnv !== 'production') {
+    console.warn(`[Socket] Connected: ${socket.id}`);
+  }
   applyRateLimit(socket);
 
   // Personal room for user-scoped server pushes (store purchases, etc.)
@@ -426,7 +434,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`[Socket] Disconnected: ${socket.id}`);
+    if (config.nodeEnv !== 'production') {
+      console.warn(`[Socket] Disconnected: ${socket.id}`);
+    }
     const { roomCode, playerId } = socket.data;
     const disconnectedSocketId = socket.id;
 
@@ -474,10 +484,11 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(config.port, () => {
-  console.log(`[Server] Alias server running on port ${config.port}`);
-  console.log(`[Server] Instance: ${config.serverInstanceId}`);
-  console.log(`[Server] Environment: ${config.nodeEnv}`);
-  console.log(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);
+  console.warn(`[Server] Alias server running on port ${config.port} (${config.nodeEnv})`);
+  if (config.nodeEnv !== 'production') {
+    console.warn(`[Server] Instance: ${config.serverInstanceId}`);
+    console.warn(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);
+  }
 
   if (config.nodeEnv === 'production') {
     const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL?.trim();
@@ -492,7 +503,9 @@ httpServer.listen(config.port, () => {
 
     void setTelegramWebhook({ webhookUrl, secretToken: webhookSecret })
       .then(() => {
-        console.log('[Telegram] Webhook configured');
+        if (config.nodeEnv !== 'production') {
+          console.warn('[Telegram] Webhook configured');
+        }
       })
       .catch((err: unknown) => {
         console.warn(

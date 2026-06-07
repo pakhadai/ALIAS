@@ -1,0 +1,31 @@
+---
+description: Alias Master monorepo — language, doc canon, shared contracts, steward workflow
+alwaysApply: true
+---
+
+# Alias Master (project)
+
+## Documentation canon
+
+- Product architecture & protocols: `README.md` (do not duplicate `PROJECT_STATE` version tables here).
+- Workspace facts (versions, scripts, CI): `PROJECT_STATE.md`.
+- Navigation: `docs/INDEX.md`. Workflow: `docs/CONTRIBUTING.md`. AI ops: `AGENTS.md`.
+- End of session: `docs/daily/YYYY-MM-DD.md` (Europe/Kyiv).
+
+## Code
+
+- Contract changes start in `packages/shared`, then server + client.
+- Minimal diff; no drive-by refactors.
+- Game state: prefer immutability on client; server is authoritative.
+- Secrets only in `.env.prod` / `.env.prod.example` — never commit real keys.
+
+## Language
+
+- Ukrainian for project markdown; file names, env vars, Socket.IO events as in code.
+
+## AI
+
+- ECC generic agents: `.cursor/AGENTS.md`.
+- Project steward: `@alias-steward` / `.cursor/agents/alias-steward.md`.
+- Checklists: `.cursor/skills/alias-master/SKILL.md`.
+- Commits/push only on explicit user request; conventional commits `feat|fix|docs|…`.

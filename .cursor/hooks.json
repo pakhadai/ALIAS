@@ -12,6 +12,11 @@
         "command": "node .cursor/hooks/session-end.js",
         "event": "sessionEnd",
         "description": "Persist session state and evaluate patterns"
+      },
+      {
+        "command": "node .cursor/hooks/daily-log-reminder.js",
+        "event": "sessionEnd",
+        "description": "Remind to write docs/daily/YYYY-MM-DD.md when packages/ or docs/ changed"
       }
     ],
     "beforeShellExecution": [

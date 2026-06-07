@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import { Loader2, X } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Logo, ModalPortal } from '../../components/Shared';
@@ -31,20 +32,15 @@ export const EnterNameScreen = () => {
   const { setGameState, currentTheme, handleJoin, isHost, gameMode, leaveRoom } = useGame();
   const { authState, profile } = useAuthContext();
   const [name, setName] = useState('');
-  const [avatar, setAvatar] = useState(AVATARS[0]);
+  const [avatar, setAvatar] = useState(AVATARS[0] ?? '🙂');
   const [isEntering, setIsEntering] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useDeferredOpen();
   const t = useT();
   const keyboardBottomInset = useVisualViewportBottomInset();
 
   const stableId = useRef(`player-${generateUUID()}`);
   /** Prevents repeated auto-join while deps refetch (e.g. profile) without leaving the screen. */
   const autoJoinAttemptedRef = useRef(false);
-
-  useEffect(() => {
-    const r = requestAnimationFrame(() => setSheetOpen(true));
-    return () => cancelAnimationFrame(r);
-  }, []);
 
   const handleCancel = () => {
     if (isEntering) return;
@@ -64,10 +60,11 @@ export const EnterNameScreen = () => {
       autoJoinAttemptedRef.current = true;
       let cancelled = false;
       const nameForServer = resolvedName;
+      const defaultAvatar = AVATARS[0] ?? '🙂';
       const avatarEmoji =
         profile.avatarId != null
-          ? (PRESET_AVATARS[parseInt(profile.avatarId, 10)]?.emoji ?? AVATARS[0])
-          : AVATARS[0];
+          ? (PRESET_AVATARS[parseInt(profile.avatarId, 10)]?.emoji ?? defaultAvatar)
+          : defaultAvatar;
       setIsEntering(true);
       void (async () => {
         try {

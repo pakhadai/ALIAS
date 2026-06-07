@@ -1,0 +1,38 @@
+---
+description: Testing standards
+alwaysApply: true
+---
+
+# TESTING STANDARDS
+
+## Піраміда тестів
+- Unit (Vitest): services/, modes/, validation/ — 80%+ coverage для core
+- Integration (Vitest): handlers/ з mock Socket.IO та Redis
+- E2E (Playwright): критичні user flows — @smoke та @core теги
+
+## Vitest (server + client)
+- Describe блоки: `describe('ServiceName', () => {...})`
+- Test names: `it('should [action] when [condition]')`
+- AAA паттерн: Arrange → Act → Assert
+- Mock external deps: Redis, Prisma через vi.mock()
+- Не тестуй implementation details — тестуй behavior
+
+## Playwright
+- Page Object Model для shared interactions
+- `@smoke` — критичний path: create room → join → play round
+- `@core` — розширений: всі game modes, reconnect, host migration
+- Завжди перевіряй mobile viewport (375px)
+- Завжди перевіряй Telegram Mini App viewport
+
+## Coverage пороги (server core modules)
+- GameEngine: >90%
+- RoomManager: >85%
+- WordService: >85%
+- schemas (Zod): >95%
+- modes/*: >80%
+
+## Що ОБОВ'ЯЗКОВО тестувати при змінах
+- Будь-яка зміна GameEngine → unit test для нового behavior
+- Будь-яка нова GameAction → тест авторизації (хто може/не може)
+- Нові API routes → integration test для auth + validation
+- Зміна WordService → тест fallback chain

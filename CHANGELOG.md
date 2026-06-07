@@ -32,8 +32,37 @@
 
 ### Changed
 
+- **Bundle lazy routes (C-1 follow-up):** `React.lazy` for GameFlow, lobby, store screens — `main` **306.5 KB** / **93.94 KB gzip** (was 500 KB / 142.67 KB).
+- **React mount effects (D-4):** `useDeferredOpen` / `useResourceLoad`; refactored sheet enter animations and screen data loads; Scoreboard progress via CSS keyframes; extracted `useTelegramLobbyDeepLink` / `useTelegramBackButton`.
+- **Bundle baseline (C-1):** prod build snapshot 2026-06-07 — initial `main` 500 KB at threshold; split applied same day.
+
+### Fixed
+
+- **AuthService test flake (D-3):** static import in `AuthService.test.ts` — 208/208 server tests on Windows.
+- **TypeScript strict (D-1):** `noUncheckedIndexedAccess` + `noImplicitReturns`; guards/helpers across monorepo.
+
+### Changed
+
+- **Node engines (D-2):** root `engines.node` `>=20` (already reflected in PROJECT_STATE).
+- **Logging (A-2):** production paths use dev-gated `console.warn` instead of `console.log`.
+- **`@alias/shared`:** `getTeamColor()`, `shuffleArray()`; client `useT` / `getUiStrings()` under strict indexed access.
+
+### Added
+
+- **Steward bootstrap (2026-06-06):** governance rules `.cursor/rules/00-identity` … `06-tma`, `AGENT_BRIEF.md`, `AUDIT_RESULTS.md`, `.cursor/CURRENT_FOCUS.md`, `.cursor/VISUAL_QA_CHECKLIST.md`.
+- **Док-система та steward:** [`docs/INDEX.md`](./docs/INDEX.md), [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md), [`docs/daily/`](./docs/daily/) (щоденник), кореневий [`AGENTS.md`](./AGENTS.md), агент `.cursor/agents/alias-steward.md`, rule `.cursor/rules/alias-project.mdc`, skill `.cursor/skills/alias-master/SKILL.md`, hook `daily-log-reminder.js` на `sessionEnd`.
+
+### Changed
+
+- **Docs sync (2026-06-06):** README `GameSyncState` + `purchase:success`; `LOBBY_TEAM_BUILDER.md`; `INDEX.md`, `AGENTS.md`, `CONTRIBUTING.md`, `PROJECT_STATE.md`.
 - **Деплой (NPM):** зовнішня docker-мережа за замовчуванням **`npm_network`** (`NPM_DOCKER_NETWORK` у `.env.prod`); у `docker-compose.npm.yml` додано змінні admin / `TRUST_PROXY_HOPS` для паритету з `docker-compose.prod.yml`. Оновлено `.env.prod.example`, README та шаблон `docs/VPS-INFRASTRUCTURE.md.example`.
 - **Env:** єдиний канонічний файл — кореневий **`.env.prod`** (шаблон `.env.prod.example`); сервер завантажує лише його; `docker-compose.yml` і Vite підховують той самий файл. Файл **`.env.example`** прибрано; GitHub Deploy більше не падає назад на `.env`.
+- **`README.md`:** посилання на INDEX, CONTRIBUTING, AGENTS, daily; правила ШІ винесено в `AGENTS.md`.
+- **`PROJECT_STATE.md`:** дата 2026-06-06, docs sync, `engines.node >=20`.
+
+### Removed
+
+- **Docs cleanup (2026-06-06):** `docs/Comands.md`; `.cursor/STACK_AUDIT.md`, `DOCS_AUDIT.md`, `ARCH_AUDIT.md` (консолідовано в `AUDIT_RESULTS.md`); `packages/client/src/context/_extracted_inner.txt`.
 
 ## [2026-04-19] — Release 0.6.2: лобі та правила (UX)
 

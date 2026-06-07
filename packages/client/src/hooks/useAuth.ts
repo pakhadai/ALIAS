@@ -70,6 +70,7 @@ export function useAuth() {
     }
   }, []);
 
+  // Auth bootstrap — runs once via stable `initialize`; subscription via onAuthChanged below.
   useEffect(() => {
     initialize();
   }, [initialize]);

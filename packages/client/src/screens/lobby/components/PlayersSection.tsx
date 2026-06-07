@@ -2,9 +2,10 @@ import React from 'react';
 import { Crown, Minus, MoreHorizontal, Plus, X } from 'lucide-react';
 import type { Player, ThemeConfig } from '../../../types';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
-import { MAX_PLAYERS, TRANSLATIONS } from '../../../constants';
+import { MAX_PLAYERS } from '../../../constants';
+import type { TranslationStrings } from '../../../hooks/useT';
 
-type T = (typeof TRANSLATIONS)['EN'];
+type T = TranslationStrings;
 
 export function PlayersSection(props: {
   theme: ThemeConfig;

@@ -197,3 +197,18 @@ html[data-telegram-app='true'] #root {
 .telegram-boot-dot {
   animation: telegram-boot-dot 1.1s ease-in-out infinite;
 }
+
+/* Scoreboard team progress bars — grow from 0 without mount-only JS timer */
+@keyframes scoreboard-progress-grow {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--scoreboard-progress, 0%);
+  }
+}
+
+.scoreboard-progress-fill {
+  width: 0;
+  animation: scoreboard-progress-grow 1s ease-out forwards;
+}
