@@ -75,8 +75,8 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
 }
 
 export async function closeTwoPlayerSession(session: TwoPlayerSession): Promise<void> {
-  await session.hostContext.close();
-  await session.guestContext.close();
+  await session.hostContext.close().catch(() => undefined);
+  await session.guestContext.close().catch(() => undefined);
 }
 
 export async function startFromLobby(host: Page): Promise<void> {
@@ -87,12 +87,17 @@ export async function startFromLobby(host: Page): Promise<void> {
   }
 }
 
-export async function startRoundToPlaying(host: Page, guest: Page): Promise<void> {
+export async function startRoundToPlaying(host: Page, guest?: Page): Promise<void> {
   await startFromLobby(host);
   await expect(host.getByRole('button', { name: imReadyRe })).toBeVisible({ timeout: 30_000 });
   await host.getByRole('button', { name: imReadyRe }).click();
   await expect(host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
-  await expect(guest.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+  if (guest) {
+    // Opposing-team players stay on PreRound (no countdown) while another team explains.
+    await expect(guest.getByText(playingNowRe).or(guest.getByText(/\d{1,2}:\d{2}/))).toBeVisible({
+      timeout: 30_000,
+    });
+  }
 }
 
 export async function tapCorrect(page: Page, times = 1): Promise<void> {
@@ -134,7 +139,8 @@ export const nextRoundRe = /Раунд|Round|Runde/i;
 export async function addOfflinePlayer(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: addPlayerRe }).click();
   await page.locator('input').last().fill(name);
-  await page.getByRole('button', { name: addConfirmRe }).click();
+  // Modal confirm is t.add ("Додати"), not t.addPlayer ("Додати гравця") — exact avoids strict-mode clash.
+  await page.getByRole('button', { name: addConfirmRe, exact: true }).click();
 }
 
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
@@ -150,6 +156,7 @@ export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): 
 export async function setMinimumRoundTime(host: Page): Promise<void> {
   await openLobbySettings(host);
   const minus = host.getByRole('button', { name: /−10/ }).first();
+  // Default 60s → UI floor 30s (SettingsScreen Math.max(30, …)).
   for (let i = 0; i < 3; i++) {
     await minus.click();
   }

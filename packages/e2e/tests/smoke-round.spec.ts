@@ -17,8 +17,9 @@ test.describe('@smoke Online round — create → join → CORRECT → ROUND_SUM
       await setMinimumRoundTime(session.host);
       await startRoundToPlaying(session.host, session.guest);
       await tapCorrect(session.host, 1);
-      await waitForRoundSummary(session.host);
-      await waitForRoundSummary(session.guest);
+      // 10s round + 5s timeUp fallback (+ buffer)
+      await waitForRoundSummary(session.host, 45_000);
+      await waitForRoundSummary(session.guest, 45_000);
     } finally {
       await closeTwoPlayerSession(session);
     }
