@@ -44,4 +44,9 @@ export const HAPTIC = {
   timeUp: [100, 50, 100, 50, 200] as number[],
   quizCorrect: [40, 30, 40] as number[],
   quizWrong: [80] as number[],
+  /** Lobby polish — PWA fallback when Telegram HapticFeedback is unavailable */
+  lobbyTap: 10,
+  lobbyTeamJoin: [25, 40, 25] as number[],
+  lobbyPlayerJoin: [30, 50, 30] as number[],
+  lobbyStart: [30, 50, 30] as number[],
 } as const;

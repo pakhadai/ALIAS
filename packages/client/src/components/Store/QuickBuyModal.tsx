@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { X, Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 import { buyWithStars, createPaymentIntent } from '../../services/api';
+import { Button } from '../Button';
 import { ModalSheet } from '../ModalSheet';
+import { ModalSheetTitle } from '../Shared';
+import { typographyClass } from '../../constants/typography';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
@@ -50,7 +53,7 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Item summary */}
       <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-ui-surface border border-ui-border">
-        <span className="text-sm font-semibold text-ui-fg">{itemName}</span>
+        <span className={`${typographyClass.body} font-semibold text-ui-fg`}>{itemName}</span>
         <span className="text-ui-accent font-bold text-base">${(amount / 100).toFixed(2)}</span>
       </div>
 
@@ -69,25 +72,22 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
         />
       </div>
 
-      {error && <p className="text-ui-danger text-[12px] text-center">{error}</p>}
+      {error && <p className={`text-ui-danger ${typographyClass.body} text-center`}>{error}</p>}
 
-      <button
-        type="submit"
-        disabled={paying || !stripe}
-        className="w-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed active:scale-[0.98] text-ui-accent-contrast font-bold text-[14px] py-4 rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-      >
+      <Button type="submit" variant="primary" fullWidth size="xl" disabled={paying || !stripe}>
         {paying ? (
-          <>
-            <Loader2 size={16} className="animate-spin" /> Обробка...
-          </>
+          <span className="inline-flex items-center justify-center gap-2">
+            <Loader2 size={16} className="animate-spin" aria-hidden />
+            Обробка...
+          </span>
         ) : (
           <>Оплатити ${(amount / 100).toFixed(2)}</>
         )}
-      </button>
+      </Button>
 
       <div className="flex items-center justify-center gap-2 opacity-40">
         <ShieldCheck size={13} />
-        <span className="text-[10px] uppercase tracking-widest font-medium text-ui-fg-muted">
+        <span className={`${typographyClass.label} tracking-widest font-medium text-ui-fg-muted`}>
           Захищено Stripe
         </span>
       </div>
@@ -118,12 +118,9 @@ export function QuickBuyModal({
   const [itemName, setItemName] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [starsLoading, setStarsLoading] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(true);
 
-  const requestClose = () => {
-    setIsClosing(true);
-    setTimeout(() => onClose(), 300);
-  };
+  const requestClose = () => setOpen(false);
 
   useEffect(() => {
     createPaymentIntent(itemType, itemId)
@@ -178,31 +175,21 @@ export function QuickBuyModal({
     },
   };
 
-  const sheetOpen = !isClosing;
-
   return (
     <ModalSheet
-      open={sheetOpen}
+      open={open}
       onClose={requestClose}
-      showHandle
-      paddedContent={false}
-      panelClassName="px-6 pt-5 pb-safe-bottom-8"
+      onExited={onClose}
+      size="default"
+      showClose
+      closeAriaLabel="Закрити"
+      ariaLabelledBy="quick-buy-title"
+      header={<ModalSheetTitle id="quick-buy-title">Швидка оплата</ModalSheetTitle>}
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="font-serif text-xl tracking-wide text-ui-fg">Швидка оплата</h2>
-        <button
-          type="button"
-          onClick={requestClose}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
-        >
-          <X size={16} className="text-ui-fg-muted" />
-        </button>
-      </div>
-
       {loadError ? (
-        <p className="text-ui-danger text-[13px] text-center py-8">{loadError}</p>
+        <p className={`text-ui-danger ${typographyClass.body} text-center py-8`}>{loadError}</p>
       ) : !stripePromise ? (
-        <p className="text-[12px] text-center py-8 opacity-40 text-ui-fg-muted">
+        <p className={`${typographyClass.body} text-center py-8 opacity-40 text-ui-fg-muted`}>
           Платіжна система не налаштована
         </p>
       ) : !clientSecret ? (
@@ -216,7 +203,7 @@ export function QuickBuyModal({
               type="button"
               onClick={handleBuyStars}
               disabled={starsLoading}
-              className="w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold text-[13px] flex items-center justify-center gap-2 disabled:opacity-50"
+              className={`w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold ${typographyClass.body} flex items-center justify-center gap-2 disabled:opacity-50`}
             >
               {starsLoading ? (
                 <>

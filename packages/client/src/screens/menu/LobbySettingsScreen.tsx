@@ -6,6 +6,13 @@ import { fetchLobbySettings, saveLobbySettings } from '../../services/api';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
 import { useResourceLoad } from '../../hooks/useResourceLoad';
 import type { GameSettings } from '../../types';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 
 export const LobbySettingsScreen = () => {
   const { setGameState, currentTheme, settings: gameSettings } = useGame();
@@ -68,9 +75,9 @@ export const LobbySettingsScreen = () => {
     Category.CUSTOM,
   ];
 
-  const sectionLabel = `text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`;
+  const sectionLabel = `${labelSectionClass} ${currentTheme.textMain}`;
   const chip = (active: boolean) =>
-    `flex-1 py-3 rounded-xl border font-sans font-bold text-[11px] transition-all ${
+    `flex-1 py-3 rounded-xl border font-sans ${typographyClass.label} normal-case transition-all ${
       active
         ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
         : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -89,13 +96,11 @@ export const LobbySettingsScreen = () => {
                 <ArrowLeft size={22} />
               </button>
             )}
-            <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
-              Налаштування лоббі
-            </h2>
+            <ScreenTitle themeClass={currentTheme.textMain}>Налаштування лоббі</ScreenTitle>
           </div>
           <button
             onClick={handleReset}
-            className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg"
+            className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg`}
           >
             Скинути
           </button>
@@ -158,7 +163,7 @@ export const LobbySettingsScreen = () => {
                     }}
                   />
                   <div
-                    className={`flex justify-between text-[9px] opacity-30 ${currentTheme.textMain}`}
+                    className={`flex justify-between ${typographyClass.label} opacity-30 ${currentTheme.textMain}`}
                   >
                     <span>3 хв</span>
                     <span>10 хв</span>
@@ -189,7 +194,7 @@ export const LobbySettingsScreen = () => {
                     }}
                   />
                   <div
-                    className={`flex justify-between text-[9px] opacity-30 ${currentTheme.textMain}`}
+                    className={`flex justify-between ${typographyClass.label} opacity-30 ${currentTheme.textMain}`}
                   >
                     <span>30с</span>
                     <span>180с</span>
@@ -218,7 +223,9 @@ export const LobbySettingsScreen = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className={sectionLabel}>Штраф за пропуск</p>
-                <p className="text-[11px] mt-0.5 text-ui-fg-muted opacity-70">
+                <p
+                  className={`${typographyClass.label} mt-0.5 text-ui-fg-muted opacity-70 normal-case`}
+                >
                   −1 очко за пропущене слово
                 </p>
               </div>
@@ -245,7 +252,7 @@ export const LobbySettingsScreen = () => {
                         const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
                         if (next.length > 0) setGeneral('categories', next);
                       }}
-                      className={`py-3 rounded-xl border font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${
+                      className={`py-3 rounded-xl border font-sans ${typographyClass.label} tracking-widest transition-all ${
                         active
                           ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
                           : 'border-ui-border bg-ui-surface text-ui-fg-muted'
@@ -276,7 +283,7 @@ export const LobbySettingsScreen = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
           >
             {saving ? (
               <Loader2 size={16} className="animate-spin" />

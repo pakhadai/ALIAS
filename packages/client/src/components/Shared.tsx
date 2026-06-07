@@ -4,6 +4,13 @@ import { X, Star } from 'lucide-react';
 import { Button } from './Button';
 import { ThemeConfig } from '../types';
 import { zIndex } from '../constants/zIndex';
+import {
+  typographyClass,
+  brandCaptionClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../constants/typography';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -57,53 +64,138 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 /**
- * Bottom sheet backdrop: dims + blurs the background while the sheet is open.
- *
- * Animation: opacity CSS transition (duration-300).
- * NOTE: `animate-fade-in` and `animate-pop-in` are intentionally NOT used here —
- * those keyframe animations override the transform/opacity CSS transitions on the
- * same property, breaking the slide animation. Pure CSS transitions are used instead.
+ * Bottom sheet primitives — visual state via `data-open` on backdrop/panel (see styles.css).
+ * NOTE: do not use `animate-pop-in` / `animate-fade-in` on these nodes; they override CSS transitions.
  */
-/** Drag handle row — keep vertical rhythm consistent across bottom sheets */
-export const bottomSheetHandleRowClass = 'flex justify-center pt-2 pb-3 shrink-0';
-export const bottomSheetHandleBarClass = 'h-1 w-10 rounded-full bg-ui-border shrink-0';
+/** Drag handle row — `data-sheet-drag-handle` enables swipe-to-dismiss; always on ModalSheet */
+export const bottomSheetHandleRowClass = 'bottom-sheet-handle-row';
+export const bottomSheetHandleBarClass = 'bottom-sheet-handle';
+
+export function BottomSheetHandleRow({ className = '' }: { className?: string }) {
+  return (
+    <div
+      className={[bottomSheetHandleRowClass, className].filter(Boolean).join(' ')}
+      data-sheet-drag-handle=""
+      aria-hidden
+    >
+      <div className={bottomSheetHandleBarClass} />
+    </div>
+  );
+}
+
+export const bottomSheetTopBarClass = 'bottom-sheet-top-bar';
+export const bottomSheetHeaderRowClass = 'bottom-sheet-header-row';
+export const bottomSheetHeaderTitleClass = 'bottom-sheet-header-row__title';
+export const bottomSheetCloseButtonClass =
+  'bottom-sheet-top-bar__close min-h-10 min-w-10 -mr-1 flex shrink-0 items-center justify-center rounded-full transition-colors text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface active:bg-ui-surface-hover disabled:opacity-20 disabled:pointer-events-none';
+
+type BottomSheetTopBarProps = {
+  title?: React.ReactNode;
+  headerClassName?: string;
+  showClose?: boolean;
+  onClose?: () => void;
+  closeAriaLabel?: string;
+  closeIconSize?: number;
+  closeDisabled?: boolean;
+  closeButtonClassName?: string;
+};
+
+/** Handle (top center) + optional title row (left) with close (right) */
+export function BottomSheetTopBar({
+  title,
+  headerClassName = '',
+  showClose = false,
+  onClose,
+  closeAriaLabel = 'Close',
+  closeIconSize = 20,
+  closeDisabled = false,
+  closeButtonClassName = bottomSheetCloseButtonClass,
+}: BottomSheetTopBarProps) {
+  const showHeaderRow = title != null || showClose;
+
+  return (
+    <div className={bottomSheetTopBarClass}>
+      <BottomSheetHandleRow />
+      {showHeaderRow ? (
+        <div className={[bottomSheetHeaderRowClass, headerClassName].filter(Boolean).join(' ')}>
+          <div className={bottomSheetHeaderTitleClass}>{title}</div>
+          {showClose && onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={closeDisabled}
+              className={closeButtonClassName}
+              aria-label={closeAriaLabel}
+            >
+              <X size={closeIconSize} strokeWidth={2} />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export type ZIndexLayerClass = (typeof zIndex)[keyof typeof zIndex];
 
 export const bottomSheetBackdropClass = (
-  visible: boolean,
   zClass: ZIndexLayerClass = zIndex.modal,
   position: 'fixed' | 'absolute' = 'fixed',
   extraClassName = ''
 ) =>
-  // Scrollable overlay: when the keyboard shrinks the visual viewport, user can scroll to keep the sheet in view.
-  // `pb-safe-bottom` insets the sheet above the home indicator / gesture bar.
-  `${position} inset-0 ${zClass} flex min-h-0 flex-col items-stretch justify-end overflow-y-auto overscroll-y-contain pb-safe-bottom [-webkit-overflow-scrolling:touch] transition-[opacity,background-color] duration-300 ${extraClassName} ${
-    visible
-      ? 'bg-[color-mix(in_srgb,var(--ui-bg)_78%,transparent)] backdrop-blur-xl opacity-100'
-      : 'bg-transparent opacity-0 pointer-events-none'
-  }`;
-
-/**
- * Bottom sheet panel: slides up from bottom when open, slides down when closed.
- *
- * Animation: translateY CSS transition (duration-300 ease-out).
- * NOTE: `animate-pop-in` is intentionally NOT used — it runs a scale(0.8→1) keyframe
- * that overrides the translateY transition, causing the panel to pop instead of slide.
- */
-export function bottomSheetPanelClass(open: boolean, extraClassName = ''): string {
-  return [
-    // Use a scrollable panel to avoid sheets being cut off below the viewport
-    // (common on mobile with browser chrome / safe areas).
-    // Prefer dvh when supported (keyboard / dynamic toolbars); svh fallback for older engines.
-    'relative w-full max-w-md mx-auto min-h-0 shrink-0 rounded-t-4xl max-h-[85svh] supports-[height:100dvh]:max-h-[85dvh] overflow-y-auto overscroll-y-contain touch-pan-y',
-    'bg-ui-card border border-ui-border',
-    'transition-transform duration-300 ease-out will-change-transform',
-    open ? 'translate-y-0' : 'translate-y-full',
+  [
+    'bottom-sheet-backdrop',
+    position === 'absolute' ? 'bottom-sheet-backdrop--absolute' : '',
+    zClass,
     extraClassName,
   ]
     .filter(Boolean)
     .join(' ');
+
+/** Height + padding preset for edge-to-edge sheets. See `docs/TMA_LAYOUT.md`. */
+export type ModalSheetSize = 'compact' | 'default' | 'tall';
+
+export function bottomSheetPanelClass(
+  extraClassName = '',
+  size: ModalSheetSize = 'default'
+): string {
+  return [
+    'bottom-sheet-panel',
+    'bottom-sheet-panel--sheet',
+    `bottom-sheet-panel--size-${size}`,
+    extraClassName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/** Canonical ModalSheet title — serif display heading token (TYPO-001) */
+export const modalSheetTitleClass = typographyClass.heading;
+
+type ModalSheetTitleProps = {
+  id?: string;
+  children: React.ReactNode;
+  /** Theme text class, e.g. `currentTheme.textMain` */
+  themeClass?: string;
+  className?: string;
+  as?: 'h1' | 'h2' | 'h3' | 'p';
+};
+
+export function ModalSheetTitle({
+  id,
+  children,
+  themeClass = 'text-ui-fg',
+  className = '',
+  as: Tag = 'h2',
+}: ModalSheetTitleProps) {
+  return (
+    <Tag
+      id={id}
+      className={[modalSheetTitleClass, themeClass, className].filter(Boolean).join(' ')}
+    >
+      {children}
+    </Tag>
+  );
 }
 
 /** Renders into `document.body` so `position: fixed` overlays use the viewport, not a transformed ancestor (e.g. `PageTransition`). */
@@ -113,7 +205,7 @@ export function ModalPortal({ children }: { children: React.ReactNode }) {
 }
 
 export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="animate-page-in w-full h-full flex flex-col">{children}</div>
+  <div className="animate-page-in w-full h-full min-h-0 flex flex-col">{children}</div>
 );
 
 export const Confetti: React.FC = () => {
@@ -194,14 +286,14 @@ export const ToastNotification: React.FC<{
   return (
     <ModalPortal>
       <div
-        className={`fixed top-0 left-0 right-0 ${zIndex.toast} flex justify-center px-4 pt-safe-top-sm pointer-events-none`}
+        className={`fixed left-0 right-0 top-[var(--tma-toast-top)] ${zIndex.toast} flex justify-center px-4 pointer-events-none`}
       >
         <div className="pointer-events-auto w-full max-w-md animate-slide-up">
           <div
             className={`${shell[type]} relative rounded-2xl border px-4 py-3.5 pr-11 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
           >
             <p
-              className={`min-w-0 text-left text-sm font-sans font-medium leading-relaxed ${messageClass}`}
+              className={`min-w-0 text-left ${typographyClass.body} font-medium leading-relaxed ${messageClass}`}
             >
               {message}
             </p>
@@ -302,7 +394,7 @@ export const Logo: React.FC<LogoProps> = ({ theme }) => {
       </h1>
       <div className="h-px w-16 bg-ui-border mb-6"></div>
       <p
-        className={`opacity-40 text-[10px] font-sans tracking-[0.6em] uppercase animate-fade-in delay-200 ${theme.textSecondary}`}
+        className={`opacity-40 ${brandCaptionClass} animate-fade-in delay-200 ${theme.textSecondary}`}
       >
         Premium Collection
       </p>

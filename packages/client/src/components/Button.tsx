@@ -3,6 +3,7 @@ import { playSoundEffect } from '../utils/audio';
 import { SoundPreset } from '../types';
 import { HAPTIC } from '../utils/haptics';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
+import { typographyClass } from '../constants/typography';
 import { PREFS_KEY } from '../context/gameReducer';
 
 const PREFS_PARSE_COOLDOWN_MS = 800;
@@ -58,7 +59,8 @@ export const Button: React.FC<ButtonProps> = ({
   }, []); // Legitimate: window/document subscription for prefs cache invalidation.
 
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] font-semibold transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none uppercase tracking-wide text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
+    'inline-flex items-center justify-center rounded-[var(--theme-radius)] transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
+  const labelStyles = typographyClass.label;
 
   // Strict theme integration
   const getVariantStyle = () => {
@@ -113,12 +115,13 @@ export const Button: React.FC<ButtonProps> = ({
     sm: 'px-4 py-2',
     md: 'px-6 py-3',
     lg: 'px-8 py-4',
-    xl: 'px-10 py-5 text-sm tracking-wide',
+    xl: 'px-10 py-5',
   };
 
   return (
     <button
       className={`
+        ${labelStyles}
         ${baseStyles} 
         ${getVariantStyle()} 
         ${sizes[size]} 

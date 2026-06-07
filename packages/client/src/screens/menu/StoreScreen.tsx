@@ -5,6 +5,8 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { fetchStore, claimFreeItem, type WordPackItem, type ThemeItem } from '../../services/api';
 import { QuickBuyModal } from '../../components/Store/QuickBuyModal';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { typographyClass } from '../../constants/typography';
 
 const LANG_LABEL: Record<string, string> = { UA: '🇺🇦 UA', DE: '🇩🇪 DE', EN: '🇬🇧 EN' };
 const LANG_FULL: Record<string, string> = {
@@ -119,11 +121,11 @@ export const StoreScreen = () => {
             <span className="text-xl">{banner === 'success' ? '🎉' : '↩️'}</span>
             <div className="flex-1">
               <p
-                className={`text-[12px] font-bold ${banner === 'success' ? 'text-ui-success' : 'text-ui-danger'}`}
+                className={`${typographyClass.system} font-bold ${banner === 'success' ? 'text-ui-success' : 'text-ui-danger'}`}
               >
                 {banner === 'success' ? 'Оплату прийнято!' : 'Оплату скасовано'}
               </p>
-              <p className="text-[10px] text-ui-fg-muted opacity-80">
+              <p className={`${typographyClass.label} text-ui-fg-muted opacity-80`}>
                 {banner === 'success' ? 'Ваша покупка активована' : 'Спробуй ще раз'}
               </p>
             </div>
@@ -137,7 +139,7 @@ export const StoreScreen = () => {
           <div className="w-12 h-1 bg-ui-border rounded-full" />
         </div>
         <div className="px-6 md:px-8 pb-4 pt-2 flex justify-between items-center shrink-0">
-          <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>Магазин</h2>
+          <ScreenTitle themeClass={currentTheme.textMain}>Магазин</ScreenTitle>
           <button
             onClick={() => setGameState(GameState.PROFILE)}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
@@ -152,7 +154,7 @@ export const StoreScreen = () => {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`pb-3 border-b-2 font-sans font-bold text-[11px] tracking-wider uppercase transition-all duration-200 ease-out active:scale-[0.99] ${tab === t ? 'border-ui-accent text-ui-accent' : 'border-transparent text-ui-fg-muted'}`}
+                className={`pb-3 border-b-2 ${typographyClass.label} font-sans tracking-wider transition-all duration-200 ease-out active:scale-[0.99] ${tab === t ? 'border-ui-accent text-ui-accent' : 'border-transparent text-ui-fg-muted'}`}
               >
                 {TAB_LABELS[t]}
               </button>
@@ -169,7 +171,7 @@ export const StoreScreen = () => {
               <button
                 key={lang}
                 onClick={() => setLangFilter(lang)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide transition-all ${langFilter === lang ? chipActive : chipBase}`}
+                className={`shrink-0 px-4 py-1.5 rounded-full ${typographyClass.label} tracking-wide transition-all ${langFilter === lang ? chipActive : chipBase}`}
               >
                 {LANG_FULL[lang]}
               </button>
@@ -195,23 +197,27 @@ export const StoreScreen = () => {
                   <div className="flex justify-between items-start z-10">
                     <div className="max-w-[60%]">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] text-ui-accent">
+                        <span
+                          className={`${typographyClass.label} border rounded px-1.5 py-0.5 border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] text-ui-accent`}
+                        >
                           ФУНКЦІЯ
                         </span>
                       </div>
                       <h3
-                        className={`font-serif text-[18px] leading-tight mb-1 ${currentTheme.textMain}`}
+                        className={`font-serif text-lg leading-tight mb-1 ${currentTheme.textMain}`}
                       >
                         {pack.name}
                       </h3>
-                      <p className={`text-[11px] font-sans ${currentTheme.textSecondary}`}>
+                      <p
+                        className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary}`}
+                      >
                         {pack.description}
                       </p>
                     </div>
                     {pack.owned ? (
                       <div className="flex items-center gap-1 px-3 py-1 rounded-full shrink-0 bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_25%,transparent)]">
                         <Check size={11} className="text-ui-success" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-ui-success">
+                        <span className={`${typographyClass.label} tracking-wide text-ui-success`}>
                           Куплено
                         </span>
                       </div>
@@ -219,7 +225,7 @@ export const StoreScreen = () => {
                       <button
                         onClick={() => handleBuy('wordPack', pack.id)}
                         disabled={acting === pack.id}
-                        className="shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                        className={`shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-5 py-2 rounded-full font-bold ${typographyClass.system} shadow-lg min-w-[90px] disabled:opacity-50`}
                       >
                         {acting === pack.id ? (
                           <Loader2 size={12} className="animate-spin inline" />
@@ -244,19 +250,25 @@ export const StoreScreen = () => {
                     <div className="flex justify-between items-start z-10">
                       <div className="max-w-[60%]">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted">
+                          <span
+                            className={`${typographyClass.label} border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted`}
+                          >
                             {LANG_LABEL[pack.language] ?? pack.language}
                           </span>
-                          <span className="text-[9px] font-bold border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted">
+                          <span
+                            className={`${typographyClass.label} border rounded px-1.5 py-0.5 border-ui-border text-ui-fg-muted`}
+                          >
                             {pack.difficulty.toUpperCase()}
                           </span>
                         </div>
                         <h3
-                          className={`font-serif text-[18px] leading-tight mb-1 ${currentTheme.textMain}`}
+                          className={`font-serif text-lg leading-tight mb-1 ${currentTheme.textMain}`}
                         >
                           {pack.name}
                         </h3>
-                        <p className={`text-[11px] font-sans ${currentTheme.textSecondary}`}>
+                        <p
+                          className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary}`}
+                        >
                           {pack.wordCount} слів{pack.description ? ` • ${pack.description}` : ''}
                         </p>
                       </div>
@@ -269,7 +281,7 @@ export const StoreScreen = () => {
                             className={pack.isFree ? 'text-ui-accent' : 'text-ui-success'}
                           />
                           <span
-                            className={`text-[10px] font-bold uppercase tracking-wide ${pack.isFree ? 'text-ui-accent' : 'text-ui-success'}`}
+                            className={`${typographyClass.label} tracking-wide ${pack.isFree ? 'text-ui-accent' : 'text-ui-success'}`}
                           >
                             {pack.isFree ? 'Додано' : 'Куплено'}
                           </span>
@@ -278,7 +290,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleAddFree('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className="shrink-0 px-5 py-2 rounded-full font-bold text-[12px] transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-fg border border-ui-border"
+                          className={`shrink-0 px-5 py-2 rounded-full font-bold ${typographyClass.system} transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-fg border border-ui-border`}
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -290,7 +302,7 @@ export const StoreScreen = () => {
                         <button
                           onClick={() => handleBuy('wordPack', pack.id)}
                           disabled={acting === pack.id}
-                          className="shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 transition-all text-ui-accent-contrast px-5 py-2 rounded-full font-bold text-[12px] shadow-lg min-w-[90px] disabled:opacity-50"
+                          className={`shrink-0 bg-ui-accent hover:brightness-110 active:scale-95 transition-all text-ui-accent-contrast px-5 py-2 rounded-full font-bold ${typographyClass.system} shadow-lg min-w-[90px] disabled:opacity-50`}
                         >
                           {acting === pack.id ? (
                             <Loader2 size={12} className="animate-spin inline" />
@@ -309,7 +321,7 @@ export const StoreScreen = () => {
               className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-2`}
             >
               <p
-                className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-40`}
+                className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-40`}
               >
                 Теми незабаром
               </p>
@@ -349,23 +361,27 @@ export const StoreScreen = () => {
                       <div className="flex-1 p-4 flex flex-col justify-center gap-0.5 min-w-0">
                         <div className="flex items-center gap-2">
                           <p
-                            className={`font-serif text-[16px] leading-tight ${currentTheme.textMain}`}
+                            className={`font-serif text-base leading-tight ${currentTheme.textMain}`}
                           >
                             {theme.name}
                           </p>
                           {theme.isFree && !isBuiltIn && (
-                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] text-ui-accent border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
+                            <span
+                              className={`${typographyClass.label} tracking-[0.15em] px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] text-ui-accent border border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]`}
+                            >
                               FREE
                             </span>
                           )}
                           {isBuiltIn && (
-                            <span className="text-[8px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-ui-surface text-ui-fg-muted border border-ui-border">
+                            <span
+                              className={`${typographyClass.label} tracking-[0.15em] px-1.5 py-0.5 rounded bg-ui-surface text-ui-fg-muted border border-ui-border`}
+                            >
                               БАЗОВА
                             </span>
                           )}
                         </div>
                         <p
-                          className={`text-[11px] font-sans ${currentTheme.textSecondary} opacity-70`}
+                          className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary} opacity-70`}
                         >
                           {fontName}
                         </p>
@@ -380,7 +396,7 @@ export const StoreScreen = () => {
                               className={isBuiltIn ? 'text-ui-fg-muted' : 'text-ui-success'}
                             />
                             <span
-                              className={`text-[9px] font-bold uppercase tracking-wide ${isBuiltIn ? 'text-ui-fg-muted' : 'text-ui-success'}`}
+                              className={`${typographyClass.label} uppercase tracking-wide ${isBuiltIn ? 'text-ui-fg-muted' : 'text-ui-success'}`}
                             >
                               {isBuiltIn ? 'Стандарт' : 'Отримано'}
                             </span>
@@ -389,7 +405,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleAddFree('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className="px-4 py-2 rounded-full font-bold text-[11px] transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-accent border border-ui-border"
+                            className={`px-4 py-2 rounded-full ${typographyClass.label} normal-case transition-all active:scale-95 disabled:opacity-50 bg-ui-surface hover:bg-ui-surface-hover text-ui-accent border border-ui-border`}
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -401,7 +417,7 @@ export const StoreScreen = () => {
                           <button
                             onClick={() => handleBuy('theme', theme.id)}
                             disabled={acting === theme.id}
-                            className="bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-4 py-2 rounded-full font-bold text-[11px] shadow-lg disabled:opacity-50"
+                            className={`bg-ui-accent hover:brightness-110 active:scale-95 text-ui-accent-contrast px-4 py-2 rounded-full ${typographyClass.label} normal-case shadow-lg disabled:opacity-50`}
                           >
                             {acting === theme.id ? (
                               <Loader2 size={11} className="animate-spin inline" />
@@ -422,7 +438,7 @@ export const StoreScreen = () => {
         <div className="px-6 md:px-8 pt-4 pb-safe-bottom-sm border-t border-ui-border bg-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] backdrop-blur shrink-0">
           <div className="flex items-center justify-center gap-1.5">
             <ShieldCheck size={12} className="text-ui-fg-muted opacity-70" />
-            <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted opacity-70">
+            <p className={`${typographyClass.label} tracking-widest text-ui-fg-muted opacity-70`}>
               Оплата через Stripe · Безпечно
             </p>
           </div>

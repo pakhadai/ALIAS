@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import { useDeferredOpen } from '../../../hooks/useDeferredOpen';
+import React, { memo, useState } from 'react';
 import type { ThemeConfig } from '../../../types';
 import { ModalSheet } from '../../../components/ModalSheet';
 
@@ -14,26 +13,22 @@ export const PlayingPauseOverlay = memo(function PlayingPauseOverlay({
   t,
   onResume,
 }: PlayingPauseOverlayProps) {
-  const [visible, setVisible] = useDeferredOpen();
+  const [open, setOpen] = useState(true);
 
-  const handleResume = () => {
-    setVisible(false);
-    setTimeout(onResume, 300);
-  };
+  const handleResume = () => setOpen(false);
 
   return (
     <ModalSheet
-      open={visible}
+      open={open}
       onClose={handleResume}
+      onExited={onResume}
       zLayer="modalLow"
+      size="compact"
       backdropClassName="cursor-pointer"
       onBackdropClick={handleResume}
       onPanelClick={handleResume}
-      showHandle
-      paddedContent={false}
-      panelClassName="px-8 py-16 text-center w-full shadow-2xl active:scale-[0.98] transition-transform duration-200"
     >
-      <span className="material-symbols-outlined text-ui-accent text-[80px] mb-6 block">
+      <span className="material-symbols-outlined text-ui-accent text-[80px] mb-6 mt-8 block">
         play_circle
       </span>
 

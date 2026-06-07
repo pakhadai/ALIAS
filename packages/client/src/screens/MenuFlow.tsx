@@ -2,6 +2,7 @@
 export { RulesScreen } from './menu/RulesScreen';
 export { MenuScreen } from './menu/MenuScreen';
 export { EnterNameScreen } from './menu/EnterNameScreen';
+export { EnterNameSheet } from './menu/EnterNameSheet';
 export { JoinInputScreen } from './menu/JoinInputScreen';
 export { ProfileScreen } from './menu/ProfileScreen';
 export { ProfileSettingsScreen } from './menu/ProfileSettingsScreen';

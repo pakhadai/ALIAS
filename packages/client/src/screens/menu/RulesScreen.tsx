@@ -3,6 +3,7 @@ import { Button } from '../../components/Button';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 
 export const RulesScreen = () => {
   const { setGameState, currentTheme } = useGame();
@@ -15,9 +16,9 @@ export const RulesScreen = () => {
         className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`}
         style={{ maxHeight: '85vh' }}
       >
-        <h2 className={`text-3xl font-serif mb-6 text-center ${currentTheme.textMain}`}>
+        <ScreenTitle themeClass={currentTheme.textMain} className="mb-6 text-center">
           {t.infoRules}
-        </h2>
+        </ScreenTitle>
         <div className="space-y-5 mb-8">
           {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
             (rule: string, i: number) => (

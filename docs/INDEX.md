@@ -20,7 +20,7 @@
 | Шлях | Призначення |
 |------|-------------|
 | [`.cursor/CURRENT_FOCUS.md`](../.cursor/CURRENT_FOCUS.md) | Поточний фокус сесії |
-| [`.cursor/rules/00-identity.mdc`](../.cursor/rules/00-identity.mdc) … `06-tma.mdc` | Стандарти коду 2026 |
+| [`.cursor/rules/00-identity.mdc`](../.cursor/rules/00-identity.mdc) … `08-typography.mdc` | Стандарти коду 2026 + TYPO-001 typography |
 | [`.cursor/VISUAL_QA_CHECKLIST.md`](../.cursor/VISUAL_QA_CHECKLIST.md) | QA після UI/game змін |
 | `.cursor/agents/alias-steward.md`, `.cursor/skills/alias-master/` | Project steward |
 | [`.cursor/AGENTS.md`](../.cursor/AGENTS.md) | ECC (загальні агенти) — **не дублювати** в `docs/` |
@@ -33,6 +33,7 @@
 | [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md) | Лобі, команди, Solo, `LobbyScreen` vs `TeamSetupScreen` |
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
 | [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
+| [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
 | [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, `FixedBottomBar`, safe-area audit |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
@@ -60,6 +61,7 @@
 | TMA / Stars | `TELEGRAM_SKILL.md` |
 | TMA safe area / layout primitives | `TMA_LAYOUT.md` |
 | UI-токени / теми в компонентах | `UI_TOKENS.md` |
+| Уніфікація шрифтів / розмірів | `TYPOGRAPHY_UNIFICATION.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |
 | Тести | `TESTING_ACCEPTANCE.md` + `pnpm verify` |
 | Кінець сесії | `docs/daily/YYYY-MM-DD.md` + `CHANGELOG` `[Unreleased]` |

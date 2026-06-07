@@ -1,0 +1,118 @@
+---
+description: ModalSheet — єдиний шлях для bottom sheets і модалок клієнта
+alwaysApply: false
+globs: packages/client/src/**/*Modal*.tsx, packages/client/src/**/*Sheet*.tsx, packages/client/src/components/ModalSheet.tsx
+---
+
+# MODALS & BOTTOM SHEETS
+
+> Layout: [`docs/TMA_LAYOUT.md`](../../docs/TMA_LAYOUT.md) (секція ModalSheet).  
+> Tokens: [`docs/UI_TOKENS.md`](../../docs/UI_TOKENS.md) (`pb-modal-bottom`, overlay tokens).  
+> TMA viewport: [`.cursor/rules/06-tma.mdc`](./06-tma.mdc).
+
+## Migration state (2026-06-07)
+
+| Фаза | Статус |
+|------|--------|
+| **0 — Audit** | ✅ Матриця 16 consumers у `TMA_LAYOUT.md`; doc drift виправлено |
+| **1a — Visual** | ✅ Backdrop + panel glass, sheet content-height — `styles.css` |
+| **1b — API** | ✅ `size` prop, built-in padding; `panelVariant` deprecated |
+| **2 — Consumers** | ✅ 16 call sites на `size`; ad-hoc padding прибрано |
+| **3 — Simple consumers** | ✅ QuickJoin, LobbyInvite, fullscreen hint, QR → `compact`; CTA cleanup |
+| **3 — CTA** | ✅ `LogoutConfirm` + admin → `Button` primary/danger + ghost |
+| **4 — Tall escape hatches** | ✅ `LoginModal` default, tall→Body/Footer, pause/EnterName/Imposter |
+| **4 — API cleanup** | ✅ `panelVariant` / `--card` removed |
+| **5 — Verification** | ✅ grep guards, client 114/114, typecheck, docs sync |
+| **TMA smoke** | pending (manual @375px — Phase 5B checklist) |
+
+**API:** `size="compact" | "default" | "tall"` — обов’язковий на всіх consumers. `panelClassName` лише з `// escape: причина`. **Заборонено** ad-hoc `max-h-[*dvh]` на панелі.
+
+## Governance — перед будь-якою зміною UI
+
+Перед зміною модалки / bottom sheet / overlay:
+
+1. Прочитай `docs/TMA_LAYOUT.md` (секція ModalSheet) і `docs/UI_TOKENS.md` (modal tokens).
+2. **ВСІ** нові та змінені модалки — **ТІЛЬКИ** через `ModalSheet` з `size="compact" | "default" | "tall"`.
+3. **ЗАБОРОНЕНО** на consumer-ах:
+   - `panelClassName` без `// escape: причина`
+   - власний `backdrop-blur` / `fixed` overlay (окрім `ModalPortal` + `ModalSheet`)
+   - `pb-safe-bottom` / `pb-env-bottom` на краї panel/backdrop
+4. Кнопки дій — `Button` **primary** + **ghost** cancel (як `ConfirmationModal`).
+5. Input sheets — `keyboardAvoidingBottomPadding` на backdrop, `pb-modal-bottom` всередині.
+6. Nested modals — `zLayer="modalNested"`; confirm поверх — `zLayer="modalConfirm"`.
+7. Після зміни **однієї** модалки — grep, що патерн не роз’їхався у **всіх** інших `ModalSheet` consumers.
+8. Додай/онови тест якщо змінився публічний API `ModalSheet` або критичний flow.
+9. `pnpm typecheck` — обов’язково.
+
+**Виняток від канону:** спочатку онови `docs/TMA_LAYOUT.md` і обґрунтуй чому, потім код.
+
+## Єдиний шлях — `ModalSheet`
+
+Усі overlay / bottom sheet / dialog — **лише** `packages/client/src/components/ModalSheet.tsx`.
+
+- Обгортки (`*Modal`, `*Sheet`) — контент усередині `<ModalSheet>`, без власного backdrop/panel.
+- Портал: `portal` (default `true`) → `ModalPortal` з `Shared.tsx`.
+- Заголовок: `header` + `ModalSheetTitle`; drag handle — завжди (`BottomSheetTopBar`).
+- Анімація / dismiss: `useBottomSheetPresence`, `useSheetDragToClose` — не дублюй.
+
+```tsx
+// ❌ Заборонено
+createPortal(<div className="fixed inset-0 backdrop-blur …">…</div>, document.body);
+
+// ✅ Канон
+<ModalSheet size="default" open={open} onClose={onClose} header={<ModalSheetTitle>…</ModalSheetTitle>}>
+  {children}
+</ModalSheet>
+```
+
+## Size presets (`size` prop)
+
+Обирай **один** preset — не хардкодь `max-h-*` / `h-[80dvh]` на панелі.
+
+| `size` | Коли |
+|--------|------|
+| **compact** | Confirm, 1–2 CTA, короткий текст |
+| **default** | Списки, форми, invite/settings |
+| **tall** | Довгий scroll (rules, deck editor, login) |
+
+`maxWidth`: `sm` | `md` | `lg` — лише ширина, не висота.
+
+## Кнопки (як ConfirmationModal)
+
+```tsx
+<div className="flex flex-col gap-4">
+  <Button variant="primary" fullWidth size="xl" onClick={onConfirm}>…</Button>
+  <Button variant="ghost" fullWidth size="lg" onClick={onCancel}>…</Button>
+</div>
+```
+
+Danger confirm: `variant="danger"` замість `primary`.
+
+## Safe area & keyboard
+
+- Панель **edge-to-edge** — **без** `pb-safe-bottom*` / `pb-env-bottom` на backdrop або нижньому краї панелі.
+- Відступ контенту: **`pb-modal-bottom`** (wrapper або footer).
+- Інпути: `useVisualViewportBottomInset()` → `keyboardAvoidingBottomPadding(inset)` на `backdropStyle`.
+- **Не** викликай `scrollIntoView` на інпутах у sheet.
+
+```tsx
+const keyboardInset = useVisualViewportBottomInset();
+
+<ModalSheet
+  size="default"
+  open={open}
+  onClose={onClose}
+  backdropStyle={keyboardAvoidingBottomPadding(keyboardInset)}
+  header={<ModalSheetTitle id="…">Title</ModalSheetTitle>}
+>
+  …
+</ModalSheet>
+```
+
+## Post-change grep
+
+```bash
+rg "ModalSheet|panelClassName|pb-safe-bottom|pb-env-bottom|max-h-\[.*dvh\]|fixed inset-0" packages/client/src --glob "*Modal*.tsx" --glob "*Sheet*.tsx"
+```
+
+Переконайся, що всі consumers узгоджені з каноном вище.

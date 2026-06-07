@@ -53,14 +53,14 @@ const GameActionsContext = createContext<GameActionsContextValue | undefined>(un
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState, restoreSession);
   const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  stateRef.current = state;
 
   const { play: playSound } = useAudio(state.settings);
 
   const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const offlineTimeUpFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Set by `startOfflineGame` until first offline join completes — avoids stale `gameMode` races. */
+  const offlineJoinPendingRef = useRef(false);
 
   const showNotification = useCallback(
     (message: string, type: 'info' | 'error' | 'success' = 'info') => {
@@ -296,6 +296,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Socket.io connection for server-based online mode
   const socketApi = useSocketConnection({
     onStateSync: useCallback((syncState: GameSyncState) => {
+      if (stateRef.current.gameMode === 'OFFLINE') return;
+
       // Client-only navigation states that overlay the lobby — don't let
       // a server LOBBY broadcast kick the user out of a settings screen.
       // ENTER_NAME is also protected: auto-rejoin can fire mid-creation and
@@ -791,7 +793,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
       },
-      handleJoin: async (id: string, name: string, avatar: string, avatarId?: string | null) => {
+      handleJoin: async (
+        id: string,
+        name: string,
+        avatar: string,
+        avatarId?: string | null,
+        joinMode?: 'ONLINE' | 'OFFLINE'
+      ) => {
         const sanitizedName = name
           .replace(/<[^>]*>/g, '')
           .trim()
@@ -841,7 +849,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const avatarIdForServer =
           avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
 
-        if (stateRef.current.gameMode === 'ONLINE') {
+        const effectiveMode =
+          joinMode ?? (offlineJoinPendingRef.current ? 'OFFLINE' : stateRef.current.gameMode);
+
+        if (effectiveMode === 'ONLINE') {
           const uiLang = stateRef.current.uiLanguage;
           try {
             if (stateRef.current.isHost) {
@@ -866,7 +877,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return false;
           }
         } else {
-          dispatch({ type: 'SET_STATE', payload: { myPlayerId: id } });
+          offlineJoinPendingRef.current = false;
+          dispatch({
+            type: 'SET_STATE',
+            payload: { myPlayerId: id, gameState: GameState.LOBBY },
+          });
           dispatch({
             type: 'UPDATE_PLAYERS',
             payload: [
@@ -891,23 +906,30 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       checkRoomExists: (code: string) => socketApi.checkRoomExists(code),
       setSettings: (s: GameSettings | ((prev: GameSettings) => GameSettings)) => {
         const newSettings = typeof s === 'function' ? s(stateRef.current.settings) : s;
+        const mergedSettings: GameSettings = {
+          ...stateRef.current.settings,
+          ...newSettings,
+          general: {
+            ...stateRef.current.settings.general,
+            ...(newSettings.general ?? {}),
+          },
+          mode: newSettings.mode
+            ? ({ ...stateRef.current.settings.mode, ...newSettings.mode } as GameSettings['mode'])
+            : stateRef.current.settings.mode,
+        };
+
         // If we're online and host, propagate settings to server so other clients sync
         if (stateRef.current.gameMode === 'ONLINE') {
           if (stateRef.current.isHost) {
+            dispatch({ type: 'SET_STATE', payload: { settings: mergedSettings } });
             sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
           } else {
             // Non-hosts should not attempt to change global settings — apply locally for preview only
-            dispatch({
-              type: 'SET_STATE',
-              payload: { settings: { ...stateRef.current.settings, ...newSettings } },
-            });
+            dispatch({ type: 'SET_STATE', payload: { settings: mergedSettings } });
           }
         } else {
           // Offline/local mode — apply locally
-          dispatch({
-            type: 'SET_STATE',
-            payload: { settings: { ...stateRef.current.settings, ...newSettings } },
-          });
+          dispatch({ type: 'SET_STATE', payload: { settings: mergedSettings } });
         }
       },
       setPreferences: (patch: Partial<GameSettings['general']>) => {
@@ -938,6 +960,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (_err) {
           void _err;
         }
+        // Tear down any online socket room so stale sync cannot hijack offline flow.
+        socketApi.leaveRoom();
+        offlineJoinPendingRef.current = true;
         dispatch({
           type: 'SET_STATE',
           payload: {
@@ -1012,6 +1037,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           void _err;
         }
         socketApi.leaveRoom();
+        offlineJoinPendingRef.current = false;
         dispatch({
           type: 'SET_STATE',
           payload: {

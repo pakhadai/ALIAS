@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { X, ChevronDown } from 'lucide-react';
-import { Button } from '../../components/Button';
-import {
-  bottomSheetBackdropClass,
-  bottomSheetHandleBarClass,
-  bottomSheetHandleRowClass,
-  bottomSheetPanelClass,
-  ModalPortal,
-} from '../../components/Shared';
-import { zIndex } from '../../constants/zIndex';
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { ModalSheet, ModalSheetBody } from '../../components/ModalSheet';
+import { ModalSheetTitle } from '../../components/Shared';
 import { GameMode } from '../../types';
 import type { GameSettings, ThemeConfig } from '../../types';
 import { useT } from '../../hooks/useT';
+import {
+  typographyClass,
+  labelSectionTitleClass,
+  labelSectionClass,
+  formLabelClass,
+} from '../../constants/typography';
 
 const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];
@@ -25,38 +24,17 @@ type RulesModalProps = {
 };
 
 export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: RulesModalProps) => {
-  const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('rules');
-  const [visible, setVisible] = useState(false);
   const [allModesOpen, setAllModesOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const [settingsDetailOpen, setSettingsDetailOpen] = useState(false);
-  const shouldRender = isOpen || isClosing;
-
-  useEffect(() => {
-    if (!isOpen) {
-      setVisible(false);
-      return;
-    }
-    const id = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setVisible(true));
-    });
-    return () => cancelAnimationFrame(id);
-  }, [isOpen]);
-
-  if (!shouldRender) return null;
 
   const handleClose = () => {
-    setIsClosing(true);
-    setVisible(false);
-    setTimeout(() => {
-      onClose();
-      setIsClosing(false);
-      setActiveTab('rules');
-      setAllModesOpen(false);
-      setQuickOpen(false);
-      setSettingsDetailOpen(false);
-    }, 300);
+    onClose();
+    setActiveTab('rules');
+    setAllModesOpen(false);
+    setQuickOpen(false);
+    setSettingsDetailOpen(false);
   };
 
   const tabLabels: Record<TabId, string> = {
@@ -77,7 +55,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   ];
 
   const activeMode = settings?.mode?.gameMode as GameMode | undefined;
-  const sectionTitle = `text-[9px] uppercase tracking-[0.28em] font-bold opacity-40 ${currentTheme.textMain}`;
+  const sectionTitle = `${labelSectionTitleClass} ${currentTheme.textMain}`;
   const cardBase = 'rounded-3xl border border-ui-border bg-ui-surface px-5 py-4';
 
   const renderGameRules = () => {
@@ -102,8 +80,12 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
           <div
             className={`mt-3 rounded-2xl border px-4 py-3.5 ${activeMode ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)]' : 'border-ui-border bg-ui-bg'}`}
           >
-            <p className={`text-sm font-bold ${currentTheme.textMain}`}>{activeCard.title}</p>
-            <p className={`text-xs mt-1.5 leading-relaxed ${currentTheme.textSecondary}`}>
+            <p className={`${typographyClass.body} font-bold ${currentTheme.textMain}`}>
+              {activeCard.title}
+            </p>
+            <p
+              className={`${typographyClass.body} mt-1.5 leading-relaxed ${currentTheme.textSecondary}`}
+            >
               {activeCard.hint}
             </p>
           </div>
@@ -130,7 +112,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
                     className="rounded-2xl border border-ui-border bg-ui-surface px-4 py-3"
                   >
                     <p className={`text-xs font-bold ${currentTheme.textMain}`}>{m.title}</p>
-                    <p className={`text-[11px] mt-1 leading-relaxed ${currentTheme.textSecondary}`}>
+                    <p
+                      className={`${typographyClass.body} mt-1 leading-relaxed ${currentTheme.textSecondary}`}
+                    >
                       {m.hint}
                     </p>
                   </div>
@@ -154,7 +138,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             />
           </button>
           {!quickOpen && (
-            <p className={`mt-2 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+            <p
+              className={`mt-2 ${typographyClass.body} leading-relaxed ${currentTheme.textSecondary}`}
+            >
               {t.infoRule1}
             </p>
           )}
@@ -169,7 +155,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
                       {i + 1}
                     </span>
                     <p
-                      className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+                      className={`${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
                     >
                       {rule}
                     </p>
@@ -197,7 +183,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             />
           </button>
           {!settingsDetailOpen && (
-            <p className={`mt-2 text-sm font-semibold tabular-nums ${currentTheme.textMain}`}>
+            <p
+              className={`mt-2 ${typographyClass.body} font-semibold tabular-nums ${currentTheme.textMain}`}
+            >
               {summaryLine}
             </p>
           )}
@@ -206,25 +194,25 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
                   <p className={`${sectionTitle} opacity-60`}>{t.roundTime}</p>
-                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                  <p className={`mt-1 ${typographyClass.body} font-bold ${currentTheme.textMain}`}>
                     {'classicRoundTime' in settings.mode ? settings.mode.classicRoundTime : '—'}s
                   </p>
                 </div>
                 <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
                   <p className={`${sectionTitle} opacity-60`}>{t.scoreToWin}</p>
-                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                  <p className={`mt-1 ${typographyClass.body} font-bold ${currentTheme.textMain}`}>
                     {settings?.general?.scoreToWin ?? '—'}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
                   <p className={`${sectionTitle} opacity-60`}>{t.skipPenalty}</p>
-                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                  <p className={`mt-1 ${typographyClass.body} font-bold ${currentTheme.textMain}`}>
                     {settings?.general?.skipPenalty ? t.enabled : t.disabled}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
                   <p className={`${sectionTitle} opacity-60`}>{t.teams}</p>
-                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                  <p className={`mt-1 ${typographyClass.body} font-bold ${currentTheme.textMain}`}>
                     {settings?.general?.teamCount ?? '—'}
                   </p>
                 </div>
@@ -232,7 +220,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
               {activeMode === GameMode.IMPOSTER && (
                 <div className="mt-3 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3">
                   <p className={`${sectionTitle} opacity-60`}>{t.imposterDiscussionTime}</p>
-                  <p className={`mt-1 text-sm font-bold ${currentTheme.textMain}`}>
+                  <p className={`mt-1 ${typographyClass.body} font-bold ${currentTheme.textMain}`}>
                     {'imposterDiscussionTime' in settings.mode
                       ? settings.mode.imposterDiscussionTime
                       : '—'}
@@ -256,8 +244,10 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
         { q: t.helpFaqQ4, a: t.helpFaqA4 },
       ].map((item, idx) => (
         <div key={idx} className={cardBase}>
-          <p className={`text-sm font-bold ${currentTheme.textMain}`}>{item.q}</p>
-          <p className={`mt-1.5 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+          <p className={`${typographyClass.body} font-bold ${currentTheme.textMain}`}>{item.q}</p>
+          <p
+            className={`mt-1.5 ${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
+          >
             {item.a}
           </p>
         </div>
@@ -269,7 +259,9 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     <div className="space-y-4">
       <div className={cardBase}>
         <p className={sectionTitle}>{t.helpPrivacyTitle}</p>
-        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+        <p
+          className={`mt-2 ${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
+        >
           {t.helpPrivacyIntro}
         </p>
         <ul className="mt-3 space-y-2">
@@ -277,7 +269,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             (line: string, i: number) => (
               <li
                 key={i}
-                className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+                className={`${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
               >
                 <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
                 {line}
@@ -293,16 +285,18 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     <div className="space-y-4">
       <div className={cardBase}>
         <p className={sectionTitle}>{t.helpImpressumTitle}</p>
-        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+        <p
+          className={`mt-2 ${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
+        >
           {t.helpImpressumBody}
         </p>
         <div className="mt-3 rounded-3xl border border-ui-border bg-ui-bg px-4 py-3">
           <p className={`${sectionTitle} opacity-60`}>{t.helpImpressumHost}</p>
-          <p className={`mt-1 text-sm font-mono ${currentTheme.textMain}`}>
+          <p className={`mt-1 ${typographyClass.body} font-mono ${currentTheme.textMain}`}>
             {typeof window !== 'undefined' ? window.location.host : '—'}
           </p>
         </div>
-        <p className={`mt-3 text-xs leading-relaxed ${currentTheme.textSecondary}`}>
+        <p className={`mt-3 ${typographyClass.body} leading-relaxed ${currentTheme.textSecondary}`}>
           {t.helpImpressumRepoHint}
         </p>
       </div>
@@ -313,14 +307,16 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     <div className="space-y-4">
       <div className={cardBase}>
         <p className={sectionTitle}>{t.helpAgbTitle}</p>
-        <p className={`mt-2 text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}>
+        <p
+          className={`mt-2 ${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
+        >
           {t.helpAgbIntro}
         </p>
         <ul className="mt-3 space-y-2">
           {[t.helpAgbP1, t.helpAgbP2, t.helpAgbP3, t.helpAgbP4].map((line: string, i: number) => (
             <li
               key={i}
-              className={`text-sm leading-relaxed font-light ${currentTheme.textSecondary}`}
+              className={`${typographyClass.body} leading-relaxed font-light ${currentTheme.textSecondary}`}
             >
               <span className={`mr-2 ${currentTheme.textMain} opacity-30`}>•</span>
               {line}
@@ -340,50 +336,40 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
   };
 
   return (
-    <ModalPortal>
-      <div
-        className={bottomSheetBackdropClass(visible, zIndex.modal)}
-        onClick={handleClose}
-        role="presentation"
-      >
-        <div
-          className={bottomSheetPanelClass(visible, 'flex max-h-[90dvh] flex-col min-h-0')}
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t.rulesTitle}
-        >
-          <div className={bottomSheetHandleRowClass} aria-hidden>
-            <div className={bottomSheetHandleBarClass} />
-          </div>
-          <div className="shrink-0 px-7 pt-0 pb-3 flex items-center justify-between">
-            <h2 className={`text-2xl font-serif ${currentTheme.textMain}`}>{t.rulesTitle}</h2>
+    <ModalSheet
+      open={isOpen}
+      onClose={handleClose}
+      size="tall"
+      showClose
+      closeAriaLabel={t.close}
+      closeIconSize={22}
+      paddedContent={false}
+      ariaLabelledBy="rules-modal-title"
+      header={
+        <ModalSheetTitle id="rules-modal-title" themeClass={currentTheme.textMain}>
+          {t.rulesTitle}
+        </ModalSheetTitle>
+      }
+    >
+      <div className="shrink-0 overflow-x-auto scrollbar-hide px-5">
+        <div role="tablist" aria-label={t.rulesTitle} className="flex w-max gap-2 pb-3">
+          {TABS.map((tab) => (
             <button
-              onClick={handleClose}
-              className="opacity-40 hover:opacity-100 transition-opacity p-2"
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+              className={`shrink-0 px-4 py-2 rounded-full ${typographyClass.label} tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? currentTheme.button : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`}`}
             >
-              <X size={22} className={currentTheme.iconColor} />
+              {tabLabels[tab]}
             </button>
-          </div>
-          <div className="shrink-0 px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? `${currentTheme.button} shadow-lg` : `opacity-40 hover:opacity-70 ${currentTheme.textMain}`}`}
-              >
-                {tabLabels[tab]}
-              </button>
-            ))}
-          </div>
-          <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
-          <div className="shrink-0 px-8 pb-safe-bottom-8 pt-4">
-            <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
-              {t.close}
-            </Button>
-          </div>
+          ))}
         </div>
       </div>
-    </ModalPortal>
+      <ModalSheetBody className="px-5 py-6 pb-modal-bottom">
+        {tabContent[activeTab]()}
+      </ModalSheetBody>
+    </ModalSheet>
   );
 };

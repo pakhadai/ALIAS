@@ -29,6 +29,13 @@ function insetPx(value: unknown): number | null {
   return null;
 }
 
+function readCssVarPx(root: HTMLElement, name: string): number | null {
+  const raw = getComputedStyle(root).getPropertyValue(name).trim();
+  if (!raw) return null;
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
 /** Ensures `--tg-*-safe-area-inset-*` exist (SDK usually sets them; some clients need a sync after fullscreen). */
 function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
   const root = document.documentElement;
@@ -41,7 +48,11 @@ function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
       const px = insetPx(inset[side]);
       // Never write 0px: inline styles on <html> override the SDK’s own --tg-* vars and can zero out a correct inset.
       if (px == null || px <= 0) continue;
-      root.style.setProperty(`--tg-${prefix}-${side}`, `${px}px`);
+      const cssVar = `--tg-${prefix}-${side}`;
+      const existing = readCssVarPx(root, cssVar);
+      // iOS can report a smaller JS value before contentSafeAreaChanged; keep the larger SDK/computed inset.
+      if (existing != null && existing > px) continue;
+      root.style.setProperty(cssVar, `${px}px`);
     }
   };
   applySide('safe-area-inset', webApp.safeAreaInset);
@@ -128,7 +139,9 @@ export function useTelegramApp(): UseTelegramAppResult {
     };
     syncLayout();
     const insetSyncRaf = requestAnimationFrame(() => syncLayout());
-    const lateSync = window.setTimeout(syncLayout, 80);
+    const lateSync80 = window.setTimeout(syncLayout, 80);
+    const lateSync150 = window.setTimeout(syncLayout, 150);
+    const lateSync300 = window.setTimeout(syncLayout, 300);
 
     const handleThemeChanged = () => {
       setThemeParams(webApp.themeParams ?? null);
@@ -151,7 +164,9 @@ export function useTelegramApp(): UseTelegramAppResult {
     applyTelegramThemeCssVars(webApp.themeParams ?? null);
 
     return () => {
-      window.clearTimeout(lateSync);
+      window.clearTimeout(lateSync80);
+      window.clearTimeout(lateSync150);
+      window.clearTimeout(lateSync300);
       cancelAnimationFrame(insetSyncRaf);
       webApp.offEvent?.('themeChanged', handleThemeChanged);
       webApp.offEvent?.('safeAreaChanged', handleInsetsChanged);

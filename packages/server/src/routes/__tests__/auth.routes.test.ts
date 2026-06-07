@@ -112,4 +112,32 @@ describe('Auth routes', () => {
       })
     );
   });
+
+  test('PATCH /api/auth/profile persists skipNamePrompt for OAuth users', async () => {
+    const prisma = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue({ authProvider: 'google' }),
+        update: vi.fn().mockResolvedValue({
+          displayName: 'Alice',
+          avatarId: '1',
+          skipNamePrompt: true,
+        }),
+      },
+    };
+    const app = makeApp(prisma);
+    const token = authService.createToken({
+      sub: 'u1',
+      type: 'google',
+      email: 'a@b.c',
+      isAdmin: false,
+    });
+
+    const res = await request(app)
+      .patch('/api/auth/profile')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ skipNamePrompt: true });
+
+    expect(res.status).toBe(200);
+    expect(res.body.skipNamePrompt).toBe(true);
+  });
 });

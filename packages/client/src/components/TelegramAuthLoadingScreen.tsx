@@ -1,5 +1,6 @@
 import React from 'react';
 import { Logo } from './Shared';
+import { typographyClass } from '../constants/typography';
 import { THEME_CONFIG, DEFAULT_APP_THEME } from '../constants';
 
 /**
@@ -42,7 +43,9 @@ export const TelegramAuthLoadingScreen: React.FC = () => {
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <p className="text-sm font-medium tracking-wide text-ui-fg-muted">Авторизація…</p>
+          <p className={`${typographyClass.system} font-medium tracking-wide text-ui-fg-muted`}>
+            Авторизація…
+          </p>
           <div className="flex gap-1.5" role="presentation">
             {[0, 1, 2].map((i) => (
               <span

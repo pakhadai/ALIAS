@@ -317,7 +317,7 @@ describe('validateGameAction', () => {
         validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 2 } } })
       ).not.toBeNull();
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 8 } } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 10 } } })
       ).not.toBeNull();
     });
 
@@ -329,7 +329,7 @@ describe('validateGameAction', () => {
 
     it('rejects teamCount above maximum', () => {
       expect(
-        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 9 } } })
+        validateGameAction({ action: 'UPDATE_SETTINGS', data: { general: { teamCount: 11 } } })
       ).toBeNull();
     });
 

@@ -11,6 +11,13 @@ import {
   scrollElementIntoViewCentered,
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 
 export const JoinInputScreen = () => {
   const { setGameState, currentTheme, setRoomCode, checkRoomExists, showNotification } = useGame();
@@ -51,11 +58,9 @@ export const JoinInputScreen = () => {
         className={`w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}
       >
         <div className="text-center space-y-4">
-          <h2 className={`text-3xl font-serif tracking-wide ${currentTheme.textMain}`}>
-            {t.joinTitle}
-          </h2>
+          <ScreenTitle themeClass={currentTheme.textMain}>{t.joinTitle}</ScreenTitle>
           <p
-            className={`text-[9px] opacity-30 tracking-[0.4em] font-bold uppercase ${currentTheme.textMain}`}
+            className={`${typographyClass.label} opacity-30 tracking-[0.4em] ${currentTheme.textMain}`}
           >
             {t.enterCode}
           </p>
@@ -95,7 +100,7 @@ export const JoinInputScreen = () => {
           <button
             onClick={() => setGameState(GameState.MENU)}
             data-testid="join-cancel"
-            className={`w-full text-center text-[9px] uppercase tracking-[0.4em] font-bold opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+            className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
           >
             {t.cancel}
           </button>

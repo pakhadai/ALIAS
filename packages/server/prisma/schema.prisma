@@ -23,6 +23,7 @@ model User {
   avatarUrl         String? // external avatar URL (e.g. Telegram photo_url)
   displayName       String? // custom in-game name
   avatarId          String? // preset avatar index "0"–"19"
+  skipNamePrompt    Boolean            @default(false) // OAuth users: skip EnterName screen
   defaultSettings   Json? // saved GameSettings for lobby
   statsGamesPlayed  Int                @default(0)
   statsWordsGuessed Int                @default(0)

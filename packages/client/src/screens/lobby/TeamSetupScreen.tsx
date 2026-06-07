@@ -6,6 +6,12 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import type { Player, Team } from '../../types';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 
 function isPlayerSocketConnected(p: { isConnected?: boolean }): boolean {
   return p.isConnected !== false;
@@ -81,7 +87,7 @@ export const TeamSetupScreen = () => {
           <X size={22} className={currentTheme.iconColor} />
         </button>
         <h2
-          className={`text-[10px] font-sans uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
+          className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
         >
           {t.teams}
         </h2>
@@ -138,15 +144,17 @@ export const TeamSetupScreen = () => {
                           setTeamNameDraft(team.name);
                         }}
                         className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover transition-colors"
-                        aria-label="Rename team"
-                        title="Rename"
+                        aria-label={t.renameTeam}
+                        title={t.renameTeam}
                       >
                         <PencilLine size={18} className={currentTheme.iconColor} />
                       </button>
                     )}
                   </div>
                 )}
-                <span className={`ml-auto text-[10px] ${currentTheme.textSecondary}`}>
+                <span
+                  className={`ml-auto ${typographyClass.label} normal-case ${currentTheme.textSecondary}`}
+                >
                   ({team.players.length})
                 </span>
               </div>
@@ -185,12 +193,12 @@ export const TeamSetupScreen = () => {
                         <span>{p.avatar}</span>
                       )}
                       <span
-                        className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}
+                        className={`${typographyClass.label} tracking-widest ${currentTheme.textSecondary}`}
                       >
                         {p.name}
                       </span>
                       {gameMode === 'ONLINE' && !online && (
-                        <span className="text-[10px] font-bold uppercase text-ui-warning">
+                        <span className={`${typographyClass.label} text-ui-warning`}>
                           {t.playerDisconnected}
                         </span>
                       )}
@@ -198,7 +206,9 @@ export const TeamSetupScreen = () => {
                   );
                 })}
                 {team.players.length === 0 && (
-                  <span className={`text-[10px] italic ${currentTheme.textSecondary}`}>
+                  <span
+                    className={`${typographyClass.label} italic normal-case ${currentTheme.textSecondary}`}
+                  >
                     {t.noPlayersInTeam}
                   </span>
                 )}
@@ -211,7 +221,7 @@ export const TeamSetupScreen = () => {
                   className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
                 >
                   <MoveRight size={16} className={currentTheme.iconColor} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
+                  <span className={`${typographyClass.label} tracking-[0.28em] text-ui-fg-muted`}>
                     Перемістити сюди
                   </span>
                 </button>
@@ -224,7 +234,7 @@ export const TeamSetupScreen = () => {
       <footer className="py-8 space-y-4">
         {canEdit && (
           <p
-            className={`text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary}`}
+            className={`text-center ${typographyClass.label} tracking-[0.35em] ${currentTheme.textSecondary}`}
           >
             Торкніться гравця, потім “Перемістити сюди”
           </p>
@@ -233,7 +243,7 @@ export const TeamSetupScreen = () => {
           <button
             type="button"
             onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-            className={`w-full text-center text-[10px] uppercase tracking-[0.35em] font-bold ${currentTheme.textSecondary} hover:text-ui-fg transition-colors mb-4`}
+            className={`w-full text-center ${typographyClass.label} tracking-[0.35em] ${currentTheme.textSecondary} hover:text-ui-fg transition-colors mb-4`}
           >
             {t.shuffle}
           </button>
@@ -250,7 +260,7 @@ export const TeamSetupScreen = () => {
           </Button>
         ) : (
           <p
-            className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
+            className={`text-center ${typographyClass.label} tracking-widest animate-pulse ${currentTheme.textSecondary}`}
           >
             {t.waitTeams}
           </p>

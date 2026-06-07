@@ -98,6 +98,13 @@ export default defineConfig({
       // Allow Google OAuth popup to postMessage back to parent window
       'Cross-Origin-Opener-Policy': 'unsafe-none',
     },
+    // Same-origin API + Socket.IO in dev (mirrors nginx gateway in prod). Without this,
+    // getApiBaseUrl() → window.location.origin sends sockets to Vite HMR, not the game server.
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:3001', changeOrigin: true },
+      '/socket.io': { target: 'http://127.0.0.1:3001', ws: true },
+      '/health': { target: 'http://127.0.0.1:3001', changeOrigin: true },
+    },
     // Ensure HMR websocket binds to localhost on the expected port
     host: 'localhost',
     hmr: {

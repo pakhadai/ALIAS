@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { GameState, Language } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
+import { useAppLogin } from '../../context/AppLoginContext';
 import { useT } from '../../hooks/useT';
-import { LoginModal } from '../../components/Auth/LoginModal';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 
 export const PlayerStatsScreen = () => {
   const { setGameState, currentTheme, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
+  const { requestLogin } = useAppLogin();
   const { isTelegram } = useTelegramApp();
-  const [showLogin, setShowLogin] = useState(false);
   const { get: getStats } = usePlayerStats();
   const stats = getStats();
   const t = useT();
@@ -49,9 +56,7 @@ export const PlayerStatsScreen = () => {
               <ArrowLeft size={22} />
             </button>
           )}
-          <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
-            {t.statsScreenTitle}
-          </h2>
+          <ScreenTitle themeClass={currentTheme.textMain}>{t.statsScreenTitle}</ScreenTitle>
         </header>
 
         <div className="flex-1 px-6 md:px-8 py-4 space-y-3">
@@ -62,7 +67,9 @@ export const PlayerStatsScreen = () => {
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{row.icon}</span>
-                <span className="text-[13px] font-medium text-ui-fg">{row.label}</span>
+                <span className={`${typographyClass.body} font-medium text-ui-fg`}>
+                  {row.label}
+                </span>
               </div>
               <span className={`text-xl font-bold font-serif ${currentTheme.textMain}`}>
                 {row.value}
@@ -71,20 +78,20 @@ export const PlayerStatsScreen = () => {
           ))}
 
           {stats.lastPlayed && (
-            <p className="text-center text-[11px] pt-4 text-ui-fg-muted opacity-70">
+            <p className={`text-center ${typographyClass.label} pt-4 text-ui-fg-muted opacity-70`}>
               {t.statsLastPlayedPrefix} {new Date(stats.lastPlayed).toLocaleDateString(dateLocale)}
             </p>
           )}
 
           {!isAuthenticated && (
             <div className="mt-6 rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]">
-              <p className="text-[13px] leading-relaxed font-sans text-ui-fg">
+              <p className={`${typographyClass.body} leading-relaxed text-ui-fg`}>
                 {t.statsGuestBannerBody}
               </p>
               <button
                 type="button"
-                onClick={() => setShowLogin(true)}
-                className={`mt-4 w-full py-3 rounded-xl font-sans text-[11px] font-bold uppercase tracking-[0.2em] ${currentTheme.button}`}
+                onClick={requestLogin}
+                className={`mt-4 w-full py-3 rounded-xl font-sans ${typographyClass.label} tracking-[0.2em] ${currentTheme.button}`}
               >
                 {t.statsGuestBannerCta}
               </button>
@@ -92,10 +99,6 @@ export const PlayerStatsScreen = () => {
           )}
         </div>
       </div>
-
-      {showLogin && (
-        <LoginModal onClose={() => setShowLogin(false)} onSuccess={() => setShowLogin(false)} />
-      )}
     </div>
   );
 };

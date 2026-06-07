@@ -18,19 +18,22 @@ type SocketHandlers = {
 
 let socketHandlers: SocketHandlers | null = null;
 const sendGameAction = vi.fn();
+const createRoom = vi.fn();
 
 vi.mock('../hooks/useSocketConnection', () => ({
   useSocketConnection: (handlers: SocketHandlers) => {
     socketHandlers = handlers;
     return {
       connect: vi.fn(),
-      createRoom: vi.fn(),
+      createRoom,
       joinRoom: vi.fn(),
       leaveRoom: vi.fn(),
       sendGameAction,
       checkRoomExists: vi.fn(),
       roomCode: '12345',
       myPlayerId: 'p-host',
+      isConnected: false,
+      isReconnecting: false,
     };
   },
 }));
@@ -77,6 +80,14 @@ function Probe() {
       </button>
       <button type="button" onClick={() => game.setTimeLeft(0)}>
         expire-timer
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          void game.handleJoin('offline-id', 'Host', '🐶', null, 'OFFLINE');
+        }}
+      >
+        offline-join
       </button>
     </div>
   );
@@ -135,6 +146,7 @@ describe('GameProvider', () => {
   beforeEach(() => {
     socketHandlers = null;
     sendGameAction.mockReset();
+    createRoom.mockReset();
     localStorage.clear();
   });
 
@@ -266,6 +278,27 @@ describe('GameProvider', () => {
     });
 
     expect(sendGameAction).not.toHaveBeenCalled();
+  });
+
+  it('should join offline lobby via handleJoin without createRoom', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      screen.getByText('start-offline').click();
+    });
+
+    await act(async () => {
+      screen.getByText('offline-join').click();
+      await Promise.resolve();
+    });
+
+    expect(createRoom).not.toHaveBeenCalled();
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.LOBBY);
+    expect(screen.getByTestId('player-count').textContent).toBe('1');
   });
 
   it('should auto-finish offline overtime via TIME_UP after 5s idle', async () => {

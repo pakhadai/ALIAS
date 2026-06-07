@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDeferredOpen } from '../../hooks/useDeferredOpen';
-import { LogIn } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
@@ -9,12 +7,14 @@ import {
   renderGoogleSignInButton,
   type GoogleIdCredentialResponse,
 } from '../../utils/googleIdentity';
-import { ModalSheet } from '../ModalSheet';
+import { ModalSheet, ModalSheetFooter } from '../ModalSheet';
+import { ModalSheetTitle } from '../Shared';
+import { typographyClass } from '../../constants/typography';
 
 interface LoginModalProps {
-  onClose: () => void;
-  /** Called after successful login */
-  onSuccess?: () => void;
+  open: boolean;
+  /** Guest chose to continue without signing in */
+  onDismiss: () => void;
 }
 
 function googleLocale(lang: Language): string {
@@ -23,19 +23,13 @@ function googleLocale(lang: Language): string {
   return 'uk';
 }
 
-export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
+export function LoginModal({ open, onDismiss }: LoginModalProps) {
   const { loginWithGoogle } = useAuthContext();
   const { currentTheme, uiLanguage } = useGame();
   const t = useT();
-  const [visible, setVisible] = useDeferredOpen();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
-
-  const handleClose = useCallback(() => {
-    setVisible(false);
-    setTimeout(onClose, 300);
-  }, [onClose, setVisible]);
 
   const locale = useMemo(() => googleLocale(uiLanguage), [uiLanguage]);
 
@@ -46,18 +40,16 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
       setError(null);
       try {
         await loginWithGoogle(credentialResponse.credential);
-        onSuccess?.();
-        handleClose();
       } catch (e) {
         setError((e as Error).message);
         setLoading(false);
       }
     },
-    [loginWithGoogle, onSuccess, handleClose]
+    [loginWithGoogle]
   );
 
   useEffect(() => {
-    if (!googleButtonRef.current) return;
+    if (!open || !googleButtonRef.current) return;
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
     if (!clientId) return;
 
@@ -71,56 +63,60 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     if (!result.ok) {
       setError(t.loginGoogleFailed);
     }
-  }, [locale, currentTheme.isDark, handleGoogleSuccess, t.loginGoogleFailed]);
+  }, [open, locale, currentTheme.isDark, handleGoogleSuccess, t.loginGoogleFailed]);
 
   return (
     <ModalSheet
-      open={visible}
-      onClose={handleClose}
+      open={open}
+      onClose={onDismiss}
+      onBackdropClick={() => undefined}
       zLayer="modal"
-      showHandle
+      size="default"
       showClose
-      closeIconSize={20}
-      closeButtonClassName="absolute top-5 right-5 z-10 p-1 rounded-lg transition-colors text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface"
       closeAriaLabel={t.close}
+      closeIconSize={18}
       paddedContent={false}
-      panelClassName="px-6 pb-safe-bottom pt-0"
+      ariaLabelledBy="login-modal-title"
+      header={
+        <ModalSheetTitle id="login-modal-title" themeClass={currentTheme.textMain}>
+          {t.loginTitle}
+        </ModalSheetTitle>
+      }
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-xl bg-ui-surface border border-ui-border">
-          <LogIn size={22} className="text-ui-accent" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-ui-fg">{t.loginTitle}</h2>
-          <p className="text-sm text-ui-fg-muted">{t.loginSubtitleShopping}</p>
-          <p className="text-xs mt-1.5 leading-snug text-ui-fg-muted">{t.loginSubtitleStats}</p>
-        </div>
+      <div className="flex flex-col items-center px-5 pt-2 pb-4 text-center">
+        <p
+          className={`mb-3 tracking-[0.22em] ${typographyClass.heading} ${currentTheme.textMain}`}
+          aria-hidden
+        >
+          ALIAS
+        </p>
+        <p className={`mt-1.5 max-w-[16rem] ${typographyClass.body} text-ui-fg-muted`}>
+          {t.loginSubtitleShopping}
+        </p>
       </div>
 
-      <p className="text-xs mb-5 text-center text-ui-fg-muted">{t.loginAnonymousNote}</p>
-
-      <div className="mb-3">
+      <ModalSheetFooter className="border-t border-ui-border px-5 pt-4">
         {loading ? (
-          <div className="flex items-center justify-center gap-2 h-11 rounded-xl bg-ui-surface border border-ui-border text-ui-fg-muted">
-            <span className="w-4 h-4 border-2 border-ui-accent border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">{t.loginGoogleLoading}</span>
+          <div className="flex h-11 items-center justify-center gap-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-ui-accent border-t-transparent" />
+            <span className={typographyClass.body}>{t.loginGoogleLoading}</span>
           </div>
         ) : (
-          <div ref={googleButtonRef} className="w-full min-h-[44px]" />
+          <div ref={googleButtonRef} className="min-h-[44px] w-full" />
         )}
-      </div>
 
-      {error && <p className="mt-3 text-xs text-ui-danger text-center leading-relaxed">{error}</p>}
+        {error && (
+          <p className={`mt-3 text-center ${typographyClass.body} text-ui-danger`}>{error}</p>
+        )}
 
-      <div className="mt-5 pt-4 border-t border-ui-border">
         <button
           type="button"
-          onClick={handleClose}
-          className="w-full text-sm transition-colors text-ui-fg-muted hover:text-ui-fg"
+          onClick={onDismiss}
+          className="mt-4 w-full py-2 text-xs text-ui-fg-muted transition-colors hover:text-ui-fg"
         >
           {t.loginContinueWithout}
         </button>
-      </div>
+      </ModalSheetFooter>
     </ModalSheet>
   );
 }

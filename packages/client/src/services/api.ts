@@ -2,8 +2,21 @@ function normalizeBaseUrl(url: string): string {
   return url.replace(/\/+$/, '');
 }
 
-/** Same-origin when `VITE_SERVER_URL` unset — matches admin SPA, sockets, and production reverse proxy. */
+const VITE_DEV_PROXY_PORTS = new Set(['5173', '5174']);
+
+/**
+ * API + Socket.IO base URL.
+ * In local Vite dev (`localhost:5173`), always same-origin so `vite.config.ts` proxy
+ * forwards `/api` and `/socket.io` — avoids CORS when root `.env` points at prod.
+ * Production / preview: `VITE_SERVER_URL` or same-origin (nginx gateway).
+ */
 export function getApiBaseUrl(): string {
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    const { hostname, port, origin } = window.location;
+    if (hostname === 'localhost' && VITE_DEV_PROXY_PORTS.has(port)) {
+      return origin;
+    }
+  }
   const fromEnv = import.meta.env.VITE_SERVER_URL;
   if (fromEnv) return normalizeBaseUrl(String(fromEnv));
   if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
@@ -103,6 +116,7 @@ export interface UserProfile {
   avatarUrl: string | null;
   displayName: string | null;
   avatarId: string | null;
+  skipNamePrompt: boolean;
   isAdmin: boolean;
   createdAt: string;
   purchases: {
@@ -120,7 +134,8 @@ export interface UserProfile {
 export async function updateProfile(payload: {
   displayName?: string;
   avatarId?: string;
-}): Promise<{ displayName: string | null; avatarId: string | null }> {
+  skipNamePrompt?: boolean;
+}): Promise<{ displayName: string | null; avatarId: string | null; skipNamePrompt: boolean }> {
   return apiFetch('/api/auth/profile', {
     method: 'PATCH',
     body: JSON.stringify(payload),

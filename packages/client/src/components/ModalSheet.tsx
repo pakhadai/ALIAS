@@ -1,46 +1,56 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   ModalPortal,
+  BottomSheetTopBar,
   bottomSheetBackdropClass,
-  bottomSheetHandleBarClass,
-  bottomSheetHandleRowClass,
+  bottomSheetCloseButtonClass,
   bottomSheetPanelClass,
+  type ModalSheetSize,
 } from './Shared';
 import { zIndex } from '../constants/zIndex';
+import { BOTTOM_SHEET_ANIM_MS, useBottomSheetPresence } from '../hooks/useBottomSheetPresence';
+import { useSheetDragToClose } from '../hooks/useSheetDragToClose';
+import { modalSheetContentPadding, resolveModalSheetMaxWidth } from './ModalSheet.presets';
 
 export type ModalSheetZLayer = keyof typeof zIndex;
 
+export type { ModalSheetSize };
+
 export type ModalSheetProps = {
-  /** Sheet translate animation (same as existing bottom sheets) */
   open: boolean;
-  /** Backdrop tap and optional X button */
   onClose: () => void;
-  /** Defaults to `modal` */
+  onExited?: () => void;
   zLayer?: ModalSheetZLayer;
-  /** Panel max width; `md` matches `bottomSheetPanelClass` default */
+  /** Panel width; omit to use size default (`compact`→`sm`, `default`/`tall`→`md`). */
   maxWidth?: 'sm' | 'md' | 'lg';
-  showHandle?: boolean;
+  /** Height + content padding preset. Default edge-to-edge sheet. */
+  size?: ModalSheetSize;
   showClose?: boolean;
   closeAriaLabel?: string;
-  /** Lucide X size when `showClose` */
   closeIconSize?: number;
-  /** Extra classes on close button (e.g. `top-5 right-5`) */
+  closeDisabled?: boolean;
   closeButtonClassName?: string;
-  /** Appended to `bottomSheetPanelClass` (padding, layout, etc.) */
+  /**
+   * Escape hatch for layout edge cases only — prefer `size` preset.
+   * Example: `// escape: tall split scroll + fixed footer in AppSettingsModal`
+   */
   panelClassName?: string;
   backdropClassName?: string;
   backdropStyle?: React.CSSProperties;
   backdropPosition?: 'fixed' | 'absolute';
-  /** When true, wrap children in `px-5 pt-1 pb-safe-bottom-8` */
+  /**
+   * @deprecated Prefer built-in padding from `size`. Set `false` only when the consumer
+   * owns scroll regions and `pb-modal-bottom` (e.g. tall split body/footer).
+   */
   paddedContent?: boolean;
   contentClassName?: string;
-  /** When false, render overlay in-place (use inside an existing `ModalPortal`) */
   portal?: boolean;
-  /** Override backdrop click (defaults to `onClose`) */
   onBackdropClick?: () => void;
-  /** After stopping propagation on the panel (e.g. pause overlay resumes on panel tap) */
   onPanelClick?: () => void;
+  dragToClose?: boolean;
+  /** Title row under the drag handle — left-aligned, opposite optional ✕ */
+  header?: React.ReactNode;
+  headerClassName?: string;
   children: React.ReactNode;
   role?: 'dialog' | 'alertdialog' | 'presentation';
   ariaModal?: boolean;
@@ -55,20 +65,61 @@ const maxWidthClass: Record<NonNullable<ModalSheetProps['maxWidth']>, string> = 
   lg: 'max-w-lg',
 };
 
-/**
- * Unified bottom sheet shell: portal, backdrop blur, slide-up panel, optional drag handle + X.
- * Does not import from `Shared` re-exports that depend on this file (avoid cycles).
- */
+export { BOTTOM_SHEET_ANIM_MS };
+
+/** Scrollable body for `size="tall"` when `paddedContent={false}`. */
+export function ModalSheetBody({
+  className = '',
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      data-sheet-scroll=""
+      className={[
+        'min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Fixed footer block with canonical bottom inset (use with `paddedContent={false}` tall sheets). */
+export function ModalSheetFooter({
+  className = '',
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={['shrink-0 pb-modal-bottom', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  );
+}
+
+/** Ignore backdrop dismiss briefly after open — prevents opener click / ghost tap from closing the sheet. */
+const BACKDROP_DISMISS_GUARD_MS = 450;
+
 export function ModalSheet({
   open,
   onClose,
+  onExited,
   zLayer = 'modal',
-  maxWidth = 'md',
-  showHandle = true,
+  maxWidth,
+  size = 'default',
   showClose = false,
   closeAriaLabel = 'Close',
   closeIconSize = 18,
-  closeButtonClassName = 'absolute top-4 right-5 z-10 p-1 rounded-lg transition-colors text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface',
+  closeDisabled = false,
+  closeButtonClassName = bottomSheetCloseButtonClass,
   panelClassName = '',
   backdropClassName = '',
   backdropStyle,
@@ -78,6 +129,9 @@ export function ModalSheet({
   portal = true,
   onBackdropClick,
   onPanelClick,
+  dragToClose = true,
+  header,
+  headerClassName,
   children,
   role = 'dialog',
   ariaModal = true,
@@ -86,50 +140,90 @@ export function ModalSheet({
   ariaDescribedBy,
 }: ModalSheetProps) {
   const zClass = zIndex[zLayer];
-  const mw = maxWidthClass[maxWidth];
-  const panelExtras = [panelClassName, mw].filter(Boolean).join(' ');
+  const resolvedMaxWidth = resolveModalSheetMaxWidth(size, maxWidth);
+  const panelExtras = [panelClassName, maxWidthClass[resolvedMaxWidth]].filter(Boolean).join(' ');
+  const mergedBackdropClass = backdropClassName;
   const backdropClick = onBackdropClick ?? onClose;
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const keyboardAvoiding = Boolean(backdropStyle?.paddingBottom);
+  const openedAtRef = useRef(0);
+  const isTallSheet = size === 'tall';
+
+  const { mounted, visible } = useBottomSheetPresence(open, { onExited });
+
+  useEffect(() => {
+    if (visible) openedAtRef.current = performance.now();
+  }, [visible]);
+
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return;
+      if (performance.now() - openedAtRef.current < BACKDROP_DISMISS_GUARD_MS) return;
+      backdropClick();
+    },
+    [backdropClick]
+  );
+  const drag = useSheetDragToClose({
+    enabled: dragToClose && visible,
+    onDismiss: onClose,
+    panelRef,
+  });
 
   const ariaModalProp = role === 'presentation' || ariaModal === false ? undefined : true;
 
+  useEffect(() => {
+    const el = backdropRef.current;
+    if (!el) return;
+    el.scrollTop = 0;
+  }, [backdropStyle?.paddingBottom]);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const contentPadding = modalSheetContentPadding(size);
+
   const inner = (
     <div
-      className={bottomSheetBackdropClass(open, zClass, backdropPosition, backdropClassName)}
-      style={backdropStyle}
-      onClick={backdropClick}
+      ref={backdropRef}
+      data-bottom-sheet-backdrop=""
+      data-open={visible ? 'true' : 'false'}
+      className={bottomSheetBackdropClass(zClass, backdropPosition, mergedBackdropClass)}
+      style={keyboardAvoiding ? { ...backdropStyle, overflow: 'hidden' } : backdropStyle}
+      onClick={visible ? handleBackdropClick : undefined}
       role="presentation"
     >
       <div
-        className={bottomSheetPanelClass(open, panelExtras)}
+        ref={panelRef}
+        data-open={visible ? 'true' : 'false'}
+        data-dragging={drag.isDragging ? 'true' : 'false'}
+        data-sheet-scroll={isTallSheet ? '' : undefined}
+        className={bottomSheetPanelClass(panelExtras, size)}
+        style={drag.panelStyle}
         onClick={(e) => {
           e.stopPropagation();
           onPanelClick?.();
         }}
+        {...drag.dragHandlers}
         role={role}
         aria-modal={ariaModalProp}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
       >
-        {showHandle && (
-          <div className={bottomSheetHandleRowClass} aria-hidden>
-            <div className={bottomSheetHandleBarClass} />
-          </div>
-        )}
-        {showClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className={closeButtonClassName}
-            aria-label={closeAriaLabel}
-          >
-            <X size={closeIconSize} />
-          </button>
-        )}
+        <BottomSheetTopBar
+          title={header}
+          headerClassName={headerClassName}
+          showClose={showClose}
+          onClose={onClose}
+          closeAriaLabel={closeAriaLabel}
+          closeIconSize={closeIconSize}
+          closeDisabled={closeDisabled}
+          closeButtonClassName={closeButtonClassName}
+        />
         {paddedContent ? (
-          <div
-            className={['px-5 pt-1 pb-safe-bottom-8', contentClassName].filter(Boolean).join(' ')}
-          >
+          <div className={[contentPadding, contentClassName].filter(Boolean).join(' ')}>
             {children}
           </div>
         ) : (

@@ -11,7 +11,9 @@ export interface ScreenShellProps {
   contentClassName?: string;
 }
 
-const SHELL_MIN_HEIGHT = 'min-h-[var(--tg-viewport-height,100dvh)]';
+/** Fixed viewport height so the scroll column can shrink (`min-h-0`) and scroll. */
+const SHELL_OUTER =
+  'flex flex-col h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full min-h-0';
 const SCROLL_COLUMN =
   'flex-1 min-h-0 overflow-y-auto overscroll-y-contain pt-safe-top pb-safe-bottom [-webkit-overflow-scrolling:touch]';
 
@@ -26,7 +28,7 @@ export function ScreenShell({
   footer,
   contentClassName = '',
 }: ScreenShellProps) {
-  const shellClass = joinClasses(SHELL_MIN_HEIGHT, 'flex flex-col', className);
+  const shellClass = joinClasses(SHELL_OUTER, className);
 
   if (scroll) {
     return (
@@ -39,7 +41,9 @@ export function ScreenShell({
 
   return (
     <div className={joinClasses(shellClass, 'pt-safe-top pb-safe-bottom')}>
-      <div className={joinClasses('flex min-h-0 flex-1 flex-col', contentClassName)}>
+      <div
+        className={joinClasses('flex min-h-0 flex-1 flex-col overflow-hidden', contentClassName)}
+      >
         {children}
       </div>
       {footer}

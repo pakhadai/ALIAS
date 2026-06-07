@@ -10,6 +10,8 @@ import {
   deleteCustomDeck,
   type CustomDeckSummary,
 } from '../../services/api';
+import { typographyClass } from '../../constants/typography';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 
 type CreateDeckView = 'list' | 'create';
 
@@ -105,7 +107,7 @@ export const MyDecksScreen = () => {
               <ArrowLeft size={22} />
             </button>
           )}
-          <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>New Deck</h2>
+          <ScreenTitle themeClass={currentTheme.textMain}>New Deck</ScreenTitle>
         </header>
         <div
           className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
@@ -113,7 +115,7 @@ export const MyDecksScreen = () => {
         >
           <div className="space-y-2">
             <label
-              className={`text-[9px] font-bold tracking-[0.25em] uppercase ${currentTheme.textSecondary}`}
+              className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
             >
               Deck Name
             </label>
@@ -126,11 +128,11 @@ export const MyDecksScreen = () => {
           </div>
           <div className="space-y-2">
             <label
-              className={`text-[9px] font-bold tracking-[0.25em] uppercase ${currentTheme.textSecondary}`}
+              className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
             >
               Words
               <span
-                className={`ml-2 font-normal normal-case tracking-normal text-[11px] ${currentTheme.textSecondary} opacity-50`}
+                className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} ${currentTheme.textSecondary} opacity-50`}
               >
                 (one per line or comma-separated)
               </span>
@@ -142,17 +144,21 @@ export const MyDecksScreen = () => {
               rows={10}
               className={`w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all resize-none ${inputCls}`}
             />
-            <p className={`text-[11px] ${currentTheme.textSecondary} opacity-40`}>
+            <p
+              className={`${typographyClass.label} normal-case ${currentTheme.textSecondary} opacity-40`}
+            >
               {wordsText.split(/[\n,]+/).filter((w) => w.trim()).length} words
             </p>
           </div>
-          {createError && <p className="text-ui-danger text-[12px] font-sans">{createError}</p>}
+          {createError && (
+            <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
+          )}
         </div>
         <div className="px-6 pt-4 pb-safe-bottom">
           <button
             onClick={handleCreate}
             disabled={creating}
-            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
           >
             {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Deck'}
           </button>
@@ -167,7 +173,7 @@ export const MyDecksScreen = () => {
         <div className="w-12 h-1 bg-ui-border rounded-full" />
       </div>
       <div className="px-6 pb-5 pt-2 flex justify-between items-center">
-        <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>My Decks</h2>
+        <ScreenTitle themeClass={currentTheme.textMain}>My Decks</ScreenTitle>
         <button
           onClick={() => setGameState(GameState.PROFILE)}
           className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
@@ -187,7 +193,7 @@ export const MyDecksScreen = () => {
           <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
             <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
             <p
-              className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+              className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
             >
               No custom decks yet
             </p>
@@ -198,11 +204,13 @@ export const MyDecksScreen = () => {
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
                   <h3
-                    className={`font-serif text-[18px] leading-tight ${currentTheme.textMain} truncate`}
+                    className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
                   >
                     {deck.name}
                   </h3>
-                  <p className={`text-[11px] font-sans mt-1 ${currentTheme.textSecondary}`}>
+                  <p
+                    className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                  >
                     {deck.wordCount} words
                   </p>
                 </div>
@@ -220,14 +228,14 @@ export const MyDecksScreen = () => {
               </div>
               <div className="flex items-center justify-between pt-1">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+                  className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
                 >
                   {deck.status}
                 </span>
                 {deck.accessCode && (
                   <button
                     onClick={() => handleCopyCode(deck.accessCode!)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border"
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
                   >
                     <Copy size={11} />
                     {copied === deck.accessCode ? 'Copied!' : deck.accessCode}
@@ -241,7 +249,7 @@ export const MyDecksScreen = () => {
       <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-safe-bottom pointer-events-none">
         <button
           onClick={() => setView('create')}
-          className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+          className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
         >
           <Plus size={16} />
           Create New Deck

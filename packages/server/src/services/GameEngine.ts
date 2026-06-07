@@ -96,7 +96,7 @@ export class GameEngine {
     const teamCount =
       teamMode === 'SOLO'
         ? Math.max(1, Math.min(room.players.length, 16))
-        : Math.max(2, Math.min(room.settings.general.teamCount, 8));
+        : Math.max(2, Math.min(room.settings.general.teamCount, 10));
     const existing = room.teams ?? [];
     if (existing.length === teamCount) return;
     const names = [
@@ -669,6 +669,12 @@ export class GameEngine {
             ? { mode: mergeModeSettings(room.settings.mode, payload.data.mode) }
             : {}),
         };
+        if (
+          payload.data.general?.teamCount !== undefined ||
+          payload.data.general?.teamMode !== undefined
+        ) {
+          this.ensureTeamShells(room);
+        }
         break;
       }
 

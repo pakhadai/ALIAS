@@ -1,0 +1,53 @@
+---
+description: Semantic typography tokens (TYPO-001) — no arbitrary px sizes in app UI
+alwaysApply: true
+globs: packages/client/**/*.{ts,tsx,css}
+---
+
+# TYPOGRAPHY (TYPO-001)
+
+Canon: [`docs/UI_TOKENS.md`](../docs/UI_TOKENS.md#typography-tokens), [`docs/TYPOGRAPHY_UNIFICATION.md`](../docs/TYPOGRAPHY_UNIFICATION.md).
+
+## Semantic roles
+
+| Role | Use for | Class / helper |
+|------|---------|----------------|
+| **heading** | Screen titles, modal titles | `typographyClass.heading`, `ScreenTitle` |
+| **body** | Paragraphs, toast, modal copy | `typographyClass.body` |
+| **body-input** | `<input>`, `<textarea>` (TMA ≥16px) | `typographyClass.bodyInput` |
+| **label** | Uppercase micro-labels, Button text | `typographyClass.label`, `formLabelClass`, `labelSectionClass` |
+| **caption** | Brand tagline, version, muted micro copy | `typographyClass.caption`, `brandCaptionClass`, `captionMutedClass` |
+| **system** | Banners, status, compact meta | `typographyClass.system`, `systemBannerClass`, `systemStatusClass` |
+| **game-title** | Logo only | `text-7xl` — **frozen**, no token |
+
+Import map: `packages/client/src/constants/typography.ts`.
+
+## Заборонено в app UI
+
+- Нові `text-[Npx]` у `packages/client/src` (окрім whitelist нижче).
+- Нові `text-sm` / `text-xs` для **semantic** copy — використовуй `text-ui-body` / `text-ui-system` / `text-ui-label`.
+- Hardcode `Merriweather` або інші шрифти поза `themes.ts` / `index.html`.
+
+## Дозволені винятки (не мігрувати без окремого epic)
+
+| Виняток | Приклад | Причина |
+|---------|---------|---------|
+| **Logo** | `text-7xl` in `Shared.tsx` | Frozen game title |
+| **Game display** | `packages/client/src/screens/GameFlow/**` | Display scale, clamp, milestones |
+| **Icon glyph size** | Material Symbols `text-[18px]`, pause icon `text-[80px]` | Icon font metrics, not text roles |
+| **Admin monospace** | `font-mono text-xs` in `admin/tabs/*` | Compact admin panel (optional Phase 8) |
+| **CSS clamp()** | word card responsive sizes | Fluid game typography |
+
+## Перевірка перед PR
+
+```bash
+# App UI (exclude GameFlow) — має бути 0
+rg "text-\[[0-9]+px\]" packages/client/src --glob "*.tsx" --glob "!**/GameFlow/**"
+
+pnpm typecheck
+pnpm --filter @alias/client test
+```
+
+## `font-serif` у TSX
+
+= **heading role**, не «завжди Playfair». Runtime family з theme через `.font-serif` in `styles.css` (`--font-heading`).

@@ -10,9 +10,10 @@ import { useTelegramApp } from './hooks/useTelegramApp';
 import { useAuthContext } from './context/AuthContext';
 import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
 import { useTelegramBackButton } from './hooks/useTelegramBackButton';
+import { AppLoginProvider } from './context/AppLoginContext';
+import { typographyClass } from './constants/typography';
 import {
   MenuScreen,
-  EnterNameScreen,
   JoinInputScreen,
   ProfileScreen,
   ProfileSettingsScreen,
@@ -48,7 +49,7 @@ const RulesScreen = React.lazy(() =>
 
 const LazyRouteFallback = () => (
   <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
-    <p className="text-sm text-ui-fg-muted">Завантаження…</p>
+    <p className={`${typographyClass.body} text-ui-fg-muted`}>Завантаження…</p>
   </div>
 );
 
@@ -62,8 +63,9 @@ const GameRouter = () => {
   const renderContent = () => {
     switch (gameState) {
       case GameState.MENU:
+      case GameState.ENTER_NAME:
         return (
-          <PageTransition key="menu">
+          <PageTransition key="menu_canvas">
             <MenuScreen />
           </PageTransition>
         );
@@ -123,12 +125,6 @@ const GameRouter = () => {
             <LazyRoute>
               <RulesScreen />
             </LazyRoute>
-          </PageTransition>
-        );
-      case GameState.ENTER_NAME:
-        return (
-          <PageTransition key="enter_name">
-            <EnterNameScreen />
           </PageTransition>
         );
       case GameState.JOIN_INPUT:
@@ -227,8 +223,12 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
     return (
       <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
         <div className="w-full max-w-md rounded-2xl border border-ui-border bg-ui-surface p-5">
-          <div className="text-base font-semibold">Не вдалося авторизуватись у Telegram</div>
-          <div className="mt-2 text-sm text-ui-fg-muted wrap-break-word">{authState.message}</div>
+          <div className={`${typographyClass.system} font-semibold`}>
+            Не вдалося авторизуватись у Telegram
+          </div>
+          <div className={`mt-2 ${typographyClass.body} text-ui-fg-muted wrap-break-word`}>
+            {authState.message}
+          </div>
           <div className="mt-4 flex gap-3">
             <button
               type="button"
@@ -274,11 +274,13 @@ const AppContent = () => {
   });
 
   return (
-    <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
-      <ConnectionStatusBanner />
-      <PwaUpdateBanner />
-      <GameRouter />
-    </div>
+    <AppLoginProvider>
+      <div className="min-h-0 h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
+        <ConnectionStatusBanner />
+        <PwaUpdateBanner />
+        <GameRouter />
+      </div>
+    </AppLoginProvider>
   );
 };
 

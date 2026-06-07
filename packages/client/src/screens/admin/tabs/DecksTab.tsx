@@ -3,6 +3,12 @@ import { Check, X, Trash2, RefreshCw } from 'lucide-react';
 import { api, type CustomDeckRow } from '../adminApi';
 import type { ShowToast, ConfirmFn } from '../AdminApp';
 import { ADMIN_CARD_CLASS, ADMIN_SPINNER_CLASS, adminStatusBtn } from '../components/adminStyles';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;
@@ -25,7 +31,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border ${styles[status] ?? 'bg-ui-surface-hover text-ui-fg-muted border-ui-border'}`}
+      className={`${typographyClass.label} tracking-wider px-2.5 py-0.5 rounded-full border ${styles[status] ?? 'bg-ui-surface-hover text-ui-fg-muted border-ui-border'}`}
     >
       {labels[status] ?? status}
     </span>
@@ -151,7 +157,7 @@ export function DecksTab({ showToast, confirm }: Props) {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
+          className={`flex items-center gap-2 ${typographyClass.label} tracking-widest text-ui-fg-muted hover:text-ui-fg transition-colors`}
         >
           <RefreshCw size={13} />
           Оновити
@@ -160,7 +166,7 @@ export function DecksTab({ showToast, confirm }: Props) {
 
       {pending.length > 0 && (
         <section>
-          <h3 className="text-[10px] uppercase tracking-widest text-ui-warning font-bold mb-3">
+          <h3 className={`${typographyClass.label} tracking-widest text-ui-warning font-bold mb-3`}>
             На розгляді ({pending.length})
           </h3>
           <div className="space-y-2">
@@ -180,7 +186,9 @@ export function DecksTab({ showToast, confirm }: Props) {
 
       {rest.length > 0 && (
         <section>
-          <h3 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold mb-3">
+          <h3
+            className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold mb-3`}
+          >
             Решта ({rest.length})
           </h3>
           <div className="space-y-2">
@@ -229,15 +237,19 @@ function DeckRow({
           <span className="text-ui-fg font-semibold text-sm">{deck.name}</span>
           <StatusBadge status={deck.status} />
           {deck.accessCode && (
-            <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
+            <span
+              className={`${typographyClass.label} font-mono normal-case text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border`}
+            >
               {deck.accessCode}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-4 text-[11px] text-ui-fg-muted">
+        <div className={`flex items-center gap-4 ${typographyClass.label} text-ui-fg-muted`}>
           <span>{deck.wordCount} слів</span>
           <span>{new Date(deck.createdAt).toLocaleDateString('uk')}</span>
-          <span className="text-ui-fg-subtle font-mono text-[10px] truncate max-w-[120px]">
+          <span
+            className={`text-ui-fg-subtle font-mono ${typographyClass.label} normal-case truncate max-w-[120px]`}
+          >
             {deck.userId.slice(0, 8)}…
           </span>
         </div>
@@ -248,7 +260,7 @@ function DeckRow({
           <button
             onClick={() => onApprove(deck)}
             disabled={isApproving}
-            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
+            className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
           >
             {isApproving ? (
               <span className="w-3 h-3 border border-ui-success border-t-transparent rounded-full animate-spin" />
@@ -262,7 +274,7 @@ function DeckRow({
           <button
             onClick={() => onReject(deck)}
             disabled={isRejecting}
-            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('warning')}`}
+            className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('warning')}`}
           >
             {isRejecting ? (
               <span className="w-3 h-3 border border-ui-warning border-t-transparent rounded-full animate-spin" />
@@ -275,7 +287,7 @@ function DeckRow({
         <button
           onClick={() => onDelete(deck)}
           disabled={isDeleting}
-          className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('danger')}`}
+          className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('danger')}`}
         >
           {isDeleting ? (
             <span className="w-3 h-3 border border-ui-danger border-t-transparent rounded-full animate-spin" />

@@ -916,6 +916,29 @@ describe('UPDATE_SETTINGS', () => {
     expect(room.settings.general.language).toBe(Language.EN);
     expect(room.settings.general.scoreToWin).toBe(defaultSettings.general.scoreToWin);
   });
+
+  it('should apply teamMode SOLO and rebuild team shells for solo lobby', async () => {
+    const players = [
+      makePlayer({ id: 'p1', name: 'Alice' }),
+      makePlayer({ id: 'p2', name: 'Bob' }),
+      makePlayer({ id: 'p3', name: 'Cara' }),
+    ];
+    const room = makeRoom({
+      players,
+      teams: [
+        makeTeam({ id: 'team-0', players: [players[0]!, players[1]!] }),
+        makeTeam({ id: 'team-1', players: [players[2]!] }),
+      ],
+    });
+
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { general: { teamMode: 'SOLO' } },
+    });
+
+    expect(room.settings.general.teamMode).toBe('SOLO');
+    expect(room.teams).toHaveLength(3);
+  });
 });
 
 // ─── START_DUEL ──────────────────────────────────────────────────────────────

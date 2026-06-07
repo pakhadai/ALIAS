@@ -15,6 +15,12 @@ import {
   FlaskConical,
   Clapperboard,
 } from 'lucide-react';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 import { Button } from '../../components/Button';
 import { FixedBottomBar, ScreenShell } from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
@@ -51,9 +57,7 @@ function SectionHeader({
       className="w-full flex items-center justify-between py-3"
       aria-expanded={open}
     >
-      <p className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-ui-fg">
-        {title}
-      </p>
+      <p className={`${typographyClass.label} tracking-widest opacity-50 text-ui-fg`}>{title}</p>
       <ChevronDown
         size={16}
         className={`text-ui-fg-muted transition-transform ${open ? 'rotate-180' : ''}`}
@@ -281,7 +285,7 @@ export const SettingsScreen = () => {
             <X size={20} className={currentTheme.iconColor} />
           </button>
           <h2
-            className={`text-[10px] font-sans uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
+            className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
           >
             {t.settings}
           </h2>
@@ -289,7 +293,7 @@ export const SettingsScreen = () => {
             <button
               type="button"
               onClick={resetAllRoomSettings}
-              className="text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg"
+              className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg`}
             >
               {t.reset ?? 'Скинути'}
             </button>
@@ -314,7 +318,7 @@ export const SettingsScreen = () => {
                     key={id}
                     type="button"
                     onClick={() => setActiveTab(id)}
-                    className={`py-2.5 rounded-xl border text-center text-[10px] font-bold uppercase tracking-widest transition-all duration-200 ease-out active:scale-95 ${
+                    className={`py-2.5 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
                       active
                         ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                         : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -382,7 +386,7 @@ export const SettingsScreen = () => {
                       key={mode}
                       type="button"
                       onClick={() => updateMode({ gameMode: mode })}
-                      className={`py-3 px-2 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
+                      className={`py-3 px-2 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
                         active
                           ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                           : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -397,7 +401,7 @@ export const SettingsScreen = () => {
                           <span>{label}</span>
                         </div>
                         <div
-                          className={`text-[9px] font-normal leading-snug ${active ? 'opacity-90' : 'opacity-50'}`}
+                          className={`${typographyClass.label} font-normal normal-case leading-snug ${active ? 'opacity-90' : 'opacity-50'}`}
                         >
                           {hint}
                         </div>
@@ -422,12 +426,12 @@ export const SettingsScreen = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <p
-                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                >
+                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                   {t.gameMode ?? 'Режим'}
                 </p>
-                <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-ui-fg-muted">
+                <span
+                  className={`inline-flex items-center gap-2 ${typographyClass.label} tracking-widest text-ui-fg-muted`}
+                >
                   {modeIcon}
                   {settings.mode.gameMode ?? GameMode.CLASSIC}
                 </span>
@@ -436,7 +440,7 @@ export const SettingsScreen = () => {
               {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
                 <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_28%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-accent)_10%,var(--ui-surface))] p-4">
                   <p
-                    className={`text-[9px] uppercase tracking-widest font-bold opacity-60 ${currentTheme.textMain}`}
+                    className={`${typographyClass.label} tracking-widest opacity-60 ${currentTheme.textMain}`}
                   >
                     {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                   </p>
@@ -459,7 +463,9 @@ export const SettingsScreen = () => {
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] leading-relaxed text-ui-fg-muted">
+                  <p
+                    className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}
+                  >
                     {t.translationLobbyFlowHint
                       .replace('{0}', LOBBY_LANG_FLAG[settings.general.language])
                       .replace('{1}', settings.general.language)
@@ -492,7 +498,7 @@ export const SettingsScreen = () => {
                               : [...settings.general.categories, cat];
                             if (newCats.length > 0) updateGeneral('categories', newCats);
                           }}
-                          className={`p-3 rounded-xl border text-[10px] uppercase tracking-widest font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
+                          className={`p-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
                             settings.general.categories.includes(cat)
                               ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
                               : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -535,24 +541,20 @@ export const SettingsScreen = () => {
                   {contentOpen.packs && (
                     <>
                       <div className="flex items-center justify-between">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
+                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                           {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                         </p>
                         {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
                           <button
                             onClick={() => isHost && updateGeneral('selectedPackIds', [])}
-                            className={`text-[9px] uppercase tracking-widest font-bold transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
+                            className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
                           >
                             Скинути
                           </button>
                         )}
                       </div>
                       <div className="space-y-2">
-                        <p
-                          className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                        >
+                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                           {t.packLanguage ?? 'Pack language'}
                         </p>
                         <div className="flex gap-2">
@@ -561,7 +563,7 @@ export const SettingsScreen = () => {
                               key={l}
                               type="button"
                               onClick={() => updateGeneral('targetLanguage', l)}
-                              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                 packLanguage === l
                                   ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent`
                                   : 'bg-ui-surface border-ui-border text-ui-fg-muted'
@@ -574,7 +576,9 @@ export const SettingsScreen = () => {
                             </button>
                           ))}
                         </div>
-                        <p className="text-[10px] text-ui-fg-muted opacity-70 leading-relaxed">
+                        <p
+                          className={`${typographyClass.label} text-ui-fg-muted opacity-70 leading-relaxed`}
+                        >
                           {t.packLanguageHint ??
                             'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
                         </p>
@@ -589,7 +593,7 @@ export const SettingsScreen = () => {
                               key={pack.id}
                               onClick={() => togglePack(pack.id)}
                               disabled={!isHost}
-                              className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
+                              className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
                                 isSelected
                                   ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
                                   : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -607,11 +611,11 @@ export const SettingsScreen = () => {
                         })}
                       </div>
                       {filteredOwnedPacks.length === 0 ? (
-                        <p className="text-[10px] text-ui-fg-muted opacity-70">
+                        <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
                           {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
                         </p>
                       ) : (settings.general.selectedPackIds?.length ?? 0) === 0 ? (
-                        <p className="text-[10px] text-ui-fg-muted opacity-70">
+                        <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
                           Не вибрано — використовуються стандартні слова
                         </p>
                       ) : null}
@@ -635,7 +639,9 @@ export const SettingsScreen = () => {
                           <p className="text-xs font-semibold text-ui-fg leading-tight truncate">
                             {settings.general.customDeckName || settings.general.customDeckCode}
                           </p>
-                          <p className="text-[10px] text-ui-fg-muted font-mono mt-0.5">
+                          <p
+                            className={`${typographyClass.label} text-ui-fg-muted font-mono mt-0.5`}
+                          >
                             {settings.general.customDeckCode}
                           </p>
                         </div>
@@ -685,9 +691,7 @@ export const SettingsScreen = () => {
                     return (
                       <div className="space-y-3 py-4 first:pt-0">
                         <div className="flex justify-between items-center">
-                          <p
-                            className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                          >
+                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                             {t.imposterDiscussionTime ?? 'Час обговорення'}
                           </p>
                           <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
@@ -702,7 +706,7 @@ export const SettingsScreen = () => {
                                 key={min}
                                 type="button"
                                 onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
-                                className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                   active
                                     ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                                     : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -758,7 +762,7 @@ export const SettingsScreen = () => {
                                     onClick={() =>
                                       updateMode({ quizTypes: { ...types, [k]: !active } })
                                     }
-                                    className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                    className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                       active
                                         ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                                         : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -785,9 +789,7 @@ export const SettingsScreen = () => {
                           {rulesOpen.quizMore && (
                             <div className="space-y-4 pt-1">
                               <div className="space-y-4">
-                                <p
-                                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                                >
+                                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                                   {t.lobbyQuizWrongPenaltyTitle}
                                 </p>
                                 <button
@@ -823,9 +825,7 @@ export const SettingsScreen = () => {
                               </div>
 
                               <div className="space-y-4">
-                                <p
-                                  className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                                >
+                                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                                   {t.lobbyQuizTimerModeTitle}
                                 </p>
                                 <div className="grid grid-cols-2 gap-2">
@@ -841,7 +841,7 @@ export const SettingsScreen = () => {
                                         key={id}
                                         type="button"
                                         onClick={() => updateMode({ quizTimerMode: id })}
-                                        className={`py-3 rounded-xl border text-center text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                        className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
                                           active
                                             ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                                             : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
@@ -855,9 +855,7 @@ export const SettingsScreen = () => {
 
                                 <div className="space-y-3">
                                   <div className="flex justify-between">
-                                    <p
-                                      className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                                    >
+                                    <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                                       {timerMode === 'PER_TASK'
                                         ? t.lobbyQuizLabelQuestionTime
                                         : t.lobbyQuizLabelRoundTime}
@@ -910,7 +908,7 @@ export const SettingsScreen = () => {
                                   <div className="space-y-3">
                                     <div className="flex justify-between">
                                       <p
-                                        className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
+                                        className={`${labelSectionClass} ${currentTheme.textMain}`}
                                       >
                                         {t.lobbyQuizLabelTotalRound}
                                       </p>
@@ -964,9 +962,7 @@ export const SettingsScreen = () => {
                       />
                       {rulesOpen.basics && (
                         <div className="space-y-3 pt-1">
-                          <p
-                            className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                          >
+                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                             {t.roundTime}
                           </p>
                           <div className="flex items-stretch gap-2">
@@ -1012,9 +1008,7 @@ export const SettingsScreen = () => {
 
                           <div className="space-y-4 pt-4 border-t border-ui-border">
                             <div className="flex justify-between">
-                              <p
-                                className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                              >
+                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                                 {t.scoreToWin}
                               </p>
                               <span
@@ -1186,9 +1180,7 @@ export const SettingsScreen = () => {
                       {rulesOpen.teams && (
                         <div className="space-y-4 pt-1">
                           <div className="flex justify-between">
-                            <p
-                              className={`text-[9px] uppercase tracking-widest opacity-40 font-bold ${currentTheme.textMain}`}
-                            >
+                            <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                               {t.teamCount}
                             </p>
                             <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
@@ -1196,14 +1188,14 @@ export const SettingsScreen = () => {
                             </span>
                           </div>
                           <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
-                            <p className="text-[9px] uppercase tracking-widest opacity-40 font-bold text-ui-fg-muted mb-2">
+                            <p className={`${labelSectionClass} text-ui-fg-muted mb-2`}>
                               {t.teamMode ?? 'Team mode'}
                             </p>
                             <div className="grid grid-cols-2 gap-2">
                               <button
                                 type="button"
                                 onClick={() => updateGeneral('teamMode', 'TEAMS')}
-                                className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                                className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
                                   (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
                                     ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
                                     : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
@@ -1214,7 +1206,7 @@ export const SettingsScreen = () => {
                               <button
                                 type="button"
                                 onClick={() => updateGeneral('teamMode', 'SOLO')}
-                                className={`py-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${
+                                className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
                                   (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
                                     ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
                                     : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
@@ -1224,7 +1216,9 @@ export const SettingsScreen = () => {
                               </button>
                             </div>
                             {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
-                              <p className="mt-2 text-[10px] text-ui-fg-muted opacity-80">
+                              <p
+                                className={`mt-2 ${typographyClass.label} text-ui-fg-muted opacity-80`}
+                              >
                                 {t.teamModeSoloHint ??
                                   'Teams are disabled — each player plays for themselves.'}
                               </p>

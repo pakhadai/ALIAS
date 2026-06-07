@@ -6,33 +6,28 @@ export default {
     extend: {
       padding: {
         /**
-         * Telegram Mini Apps: prefer official `--tg-content-safe-area-inset-*` (Telegram UI)
-         * and `--tg-safe-area-inset-*` (device), then `env(safe-area-inset-*)` for PWA/browser.
+         * TMA / PWA safe area — `--tma-inset-*` in styles.css (content + device sum).
          * See https://core.telegram.org/bots/webapps#contentsafeareainset
          */
-        'safe-bottom':
-          'max(1.5rem, var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))',
-        'safe-top':
-          'max(1.5rem, var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px))',
+        'safe-bottom': 'max(1.5rem, var(--tma-inset-bottom))',
+        'safe-top': 'max(1.5rem, var(--tma-inset-top))',
         /** Fixed footers that previously used ~pb-8 */
-        'safe-bottom-8':
-          'max(2rem, var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))',
-        'safe-top-sm':
-          'max(0.75rem, var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px))',
-        'safe-top-md':
-          'max(1.25rem, var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px))',
-        'safe-bottom-sm':
-          'max(1rem, var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))',
-        'safe-bottom-md':
-          'max(1.25rem, var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))',
-        /** Raw insets (no minimum) — game screens etc. */
-        'env-top':
-          'max(var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px))',
-        'env-bottom':
-          'max(var(--tg-content-safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))',
+        'safe-bottom-8': 'max(2rem, var(--tma-inset-bottom))',
+        'safe-top-sm': 'max(0.75rem, var(--tma-inset-top))',
+        'safe-top-md': 'max(1.25rem, var(--tma-inset-top))',
+        'safe-bottom-sm': 'max(1rem, var(--tma-inset-bottom))',
+        'safe-bottom-md': 'max(1.25rem, var(--tma-inset-bottom))',
+        /** ModalSheet content / footer — minimal bottom breathing room + device inset */
+        'modal-bottom': 'max(1rem, var(--tma-inset-bottom))',
+        /** Raw insets (no minimum) — game screens, fixed TMA headers */
+        'env-top': 'var(--tma-inset-top)',
+        'env-bottom': 'var(--tma-inset-bottom)',
+        'env-left': 'var(--tma-inset-left)',
+        'env-right': 'var(--tma-inset-right)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        /** In TSX use `font-serif` for heading role; runtime family from theme via `.font-serif` in styles.css */
         serif: ["'Playfair Display'", 'serif'],
       },
       animation: {
@@ -52,6 +47,7 @@ export default {
         'vs-from-right': 'vsFromRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'vs-scale-in': 'vsScaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'reveal-in': 'revealIn 0.35s ease-out forwards',
+        'chip-copy-flash': 'chipCopyFlash 0.35s ease-out forwards',
       },
       keyframes: {
         float: {
@@ -120,6 +116,11 @@ export default {
             transform: 'scale(1)',
             filter: 'blur(0px)',
           },
+        },
+        chipCopyFlash: {
+          '0%': { transform: 'scale(1)' },
+          '40%': { transform: 'scale(1.04)' },
+          '100%': { transform: 'scale(1)' },
         },
       },
       boxShadow: {

@@ -22,8 +22,13 @@ export const addPlayerRe = /Додати гравця|Add Player|Spieler hinzuf�
 /** TeamCard join — distinct from menu joinGame (Join Game / Beitreten). */
 export const joinTeamRe = /^(В команду|Join team|Zum Team)$/i;
 export const teamLeaveRe = /^(Вийти|Leave|Verlassen)$/i;
-/** UnassignedPool offline assign trigger (`aria-label="Assign {name}"`). */
-export const assignPlayerButtonRe = /^Assign .+$/i;
+/** UnassignedPool offline assign trigger (`aria-label` per locale). */
+export function assignPlayerButton(page: Page, playerName: string) {
+  const escaped = playerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return page.getByRole('button', {
+    name: new RegExp(`^(Призначити ${escaped}|Assign ${escaped}|${escaped} zuweisen)$`, 'i'),
+  });
+}
 /** Lobby team lock toggle (`t.lockTeams` / `t.unlockTeams`). */
 export const lockTeamsRe =
   /^(Lock teams|Unlock teams|Заблокувати команди|Розблокувати команди|Teams sperren|Teams entsperren)$/i;
@@ -39,8 +44,6 @@ export const lobbyRulesBasicsRe = /^(Час і перемога|Zeit & Ziel|Time
 /** Round-time stepper minus (`aria-label={t.roundTime + ' −10'}`), Unicode minus U+2212. */
 export const roundTimeMinusButtonRe = /^(Час|Zeit|Time) −10$/;
 
-/** Modal sheet title (t.addPlayerTitle). */
-const addPlayerModalTitleRe = /^(Новий гравець|New Player|Neuer Spieler)$/i;
 /** Modal confirm (t.add). Anchors required — Playwright ignores `exact` when name is RegExp. */
 const addConfirmRe = /^(Додати|Add|Hinzufügen)$/i;
 
@@ -52,9 +55,27 @@ export type TwoPlayerSession = {
   roomCode: string;
 };
 
+const dismissLoginRe =
+  /Продовжити без входу|Continue without signing in|Ohne Anmeldung fortfahren/i;
+
+/** Anonymous web app shows a login sheet on the menu — dismiss before game flows. */
+export async function dismissLoginModalIfOpen(page: Page): Promise<void> {
+  const btn = page.getByRole('button', { name: dismissLoginRe });
+  if (await btn.isVisible().catch(() => false)) {
+    await btn.click();
+  }
+}
+
 export async function submitName(page: Page, name: string): Promise<void> {
-  await page.getByTestId('enter-name').fill(name);
+  await expect(page.locator('[data-bottom-sheet-backdrop][data-open="true"]')).toBeVisible({
+    timeout: 10_000,
+  });
+  const nameInput = page.getByTestId('enter-name');
+  await nameInput.click();
+  await nameInput.fill(name);
+  await expect(page.getByTestId('enter-name-submit')).toBeEnabled({ timeout: 5_000 });
   await page.getByTestId('enter-name-submit').click();
+  await expect(page.getByTestId('enter-name-screen')).toHaveCount(0, { timeout: 30_000 });
 }
 
 export async function readRoomCode(page: Page): Promise<string> {
@@ -152,10 +173,22 @@ export async function confirmRoundSummary(host: Page): Promise<void> {
 }
 
 export async function openLobbySettings(page: Page): Promise<void> {
-  const settingsBtn = page.getByRole('button', { name: lobbySettingsButtonRe });
-  await settingsBtn.scrollIntoViewIfNeeded();
-  await settingsBtn.click();
-  await expect(page.getByText(lobbySettingsButtonRe).first()).toBeVisible({ timeout: 15_000 });
+  const chips = page.getByTestId('lobby-settings-chips');
+  if (await chips.isVisible().catch(() => false)) {
+    await chips.scrollIntoViewIfNeeded();
+    await chips.click();
+  } else {
+    const headerSettings = page.getByTestId('lobby-header-settings');
+    if (await headerSettings.isVisible().catch(() => false)) {
+      await headerSettings.scrollIntoViewIfNeeded();
+      await headerSettings.click();
+    } else {
+      const settingsBtn = page.getByRole('button', { name: lobbySettingsButtonRe });
+      await settingsBtn.scrollIntoViewIfNeeded();
+      await settingsBtn.click();
+    }
+  }
+  await expect(page.getByTestId('settings-close')).toBeVisible({ timeout: 15_000 });
 }
 
 /** Round time / score-to-win live under Settings → Rules (default tab is Mode). */
@@ -190,16 +223,17 @@ export async function lockTeams(host: Page): Promise<void> {
 export const nextRoundRe = /Раунд|Round|Runde/i;
 
 function offlineAddPlayerModal(page: Page) {
-  return page.getByRole('dialog').filter({
-    has: page.getByRole('heading', { name: addPlayerModalTitleRe }),
-  });
+  return page.getByTestId('add-player-modal');
 }
 
 export async function addOfflinePlayer(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: addPlayerRe }).click();
+  const addBtn = page.getByTestId('lobby-add-player-trigger');
+  await addBtn.scrollIntoViewIfNeeded();
+  await expect(addBtn).toBeEnabled({ timeout: 5_000 });
+  await addBtn.click();
 
   const modal = offlineAddPlayerModal(page);
-  await expect(modal).toBeVisible({ timeout: 10_000 });
+  await expect(modal).toBeVisible({ timeout: 15_000 });
   await modal.locator('input').fill(name);
   await modal.getByRole('button', { name: addConfirmRe }).click();
   await expect(modal).toBeHidden({ timeout: 10_000 });
@@ -216,7 +250,7 @@ export async function assignOfflinePlayerToTeam(
   playerName: string,
   teamIndex: number
 ): Promise<void> {
-  const assignBtn = page.getByRole('button', { name: new RegExp(`^Assign ${playerName}$`, 'i') });
+  const assignBtn = assignPlayerButton(page, playerName);
   await assignBtn.scrollIntoViewIfNeeded();
   await assignBtn.click();
   const dialog = offlineAssignPlayerDialog(page, playerName);
@@ -227,6 +261,7 @@ export async function assignOfflinePlayerToTeam(
 
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
   await page.goto('/');
+  await dismissLoginModalIfOpen(page);
   await page.getByTestId('menu-offline').click();
   await submitName(page, hostName);
   await addOfflinePlayer(page, 'Offline Guest');

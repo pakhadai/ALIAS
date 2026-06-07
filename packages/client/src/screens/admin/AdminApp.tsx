@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import {
   BarChart2,
   BookOpen,
@@ -10,9 +9,18 @@ import {
   AlertCircle,
   X,
 } from 'lucide-react';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 import { api, AdminAuthError, type AdminUser } from './adminApi';
+import { Button } from '../../components/Button';
 import { ModalSheet } from '../../components/ModalSheet';
+import { ModalSheetTitle } from '../../components/Shared';
 import { zIndex } from '../../constants/zIndex';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { StatsTab } from './tabs/StatsTab';
 import { DecksTab } from './tabs/DecksTab';
 import { PacksTab } from './tabs/PacksTab';
@@ -91,47 +99,44 @@ function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const [open] = useDeferredOpen();
-
   return (
     <ModalSheet
-      open={open}
+      open
       onClose={onCancel}
       zLayer="modalConfirm"
+      size="compact"
       maxWidth="sm"
-      showHandle
-      paddedContent={false}
-      panelClassName="px-5 pt-0 pb-safe-bottom-8"
       role="alertdialog"
+      ariaLabelledBy="admin-confirm-title"
+      ariaDescribedBy="admin-confirm-desc"
+      header={
+        <ModalSheetTitle id="admin-confirm-title" as="h3">
+          {opts.title}
+        </ModalSheetTitle>
+      }
     >
-      <div className="flex items-start gap-3 mb-5 pt-1">
+      <div className="mb-8 flex w-full items-start gap-3 text-left">
         {opts.danger && (
           <AlertCircle size={20} className="text-ui-danger shrink-0 mt-0.5" aria-hidden />
         )}
-        <div className="min-w-0">
-          <h3 className="text-ui-fg font-bold text-base font-sans leading-snug">{opts.title}</h3>
-          <p className="text-ui-fg-muted text-sm mt-1.5 leading-relaxed">{opts.message}</p>
-        </div>
+        <p id="admin-confirm-desc" className="text-ui-fg-muted text-sm leading-relaxed min-w-0">
+          {opts.message}
+        </p>
       </div>
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold text-ui-fg-muted bg-ui-surface border border-ui-border hover:bg-ui-surface-hover transition-colors"
-        >
-          Скасувати
-        </button>
-        <button
-          type="button"
+      <div className="flex flex-col gap-4">
+        <Button
+          variant={opts.danger ? 'danger' : 'primary'}
+          fullWidth
+          size="xl"
           onClick={onConfirm}
-          className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${
-            opts.danger
-              ? 'bg-ui-danger text-ui-accent-contrast hover:opacity-90'
-              : 'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover'
-          }`}
         >
           {opts.confirmLabel ?? 'Підтвердити'}
-        </button>
+        </Button>
+        <Button variant="ghost" fullWidth size="lg" onClick={onCancel}>
+          <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+            Скасувати
+          </span>
+        </Button>
       </div>
     </ModalSheet>
   );
@@ -147,7 +152,9 @@ function NotAuthorizedScreen({ message }: { message: string }) {
           <AlertCircle size={28} className="text-ui-danger" />
         </div>
         <div>
-          <h1 className="text-2xl font-serif mb-2">Доступ закрито</h1>
+          <ScreenTitle as="h1" className="mb-2">
+            Доступ закрито
+          </ScreenTitle>
           <p className="text-ui-fg-muted text-sm leading-relaxed">{message}</p>
         </div>
         <a
@@ -287,24 +294,30 @@ export function AdminApp() {
       <header className="border-b border-ui-border-subtle px-6 py-3.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <h1 className="font-serif text-lg tracking-wide text-ui-fg">ALIAS</h1>
-          <span className="text-[10px] uppercase tracking-widest text-ui-fg-subtle font-bold border border-ui-border px-2 py-0.5 rounded">
+          <span
+            className={`${typographyClass.label} tracking-widest text-ui-fg-subtle border border-ui-border px-2 py-0.5 rounded`}
+          >
             Admin
           </span>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={handleBackToApp}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-subtle hover:text-ui-fg transition-colors"
+            className={`flex items-center gap-1.5 ${typographyClass.label} tracking-widest text-ui-fg-subtle hover:text-ui-fg transition-colors`}
             title="Повернутися в додаток"
           >
             <ExternalLink size={13} />В додаток
           </button>
           {user?.email && (
-            <span className="text-[11px] text-ui-fg-subtle hidden sm:block">{user.email}</span>
+            <span
+              className={`${typographyClass.label} text-ui-fg-subtle hidden sm:block normal-case`}
+            >
+              {user.email}
+            </span>
           )}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-subtle hover:text-ui-fg transition-colors"
+            className={`flex items-center gap-1.5 ${typographyClass.label} tracking-widest text-ui-fg-subtle hover:text-ui-fg transition-colors`}
           >
             <LogOut size={13} />
             Вийти
@@ -318,7 +331,7 @@ export function AdminApp() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 py-3 px-4 text-[11px] uppercase tracking-widest font-bold border-b-2 transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 py-3 px-4 ${typographyClass.label} tracking-widest border-b-2 transition-colors whitespace-nowrap ${
               tab === t.id
                 ? 'border-ui-accent text-ui-accent'
                 : 'border-transparent text-ui-fg-subtle hover:text-ui-fg-muted'

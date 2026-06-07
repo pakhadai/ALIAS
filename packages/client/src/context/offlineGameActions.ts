@@ -24,7 +24,7 @@ function materializeOfflineTeamsIfNeeded(state: AppState): Team[] {
   if ((state.settings.general.teamMode ?? 'TEAMS') === 'SOLO') {
     return state.teams.map((t) => ({ ...t, players: [...t.players] }));
   }
-  const desiredCount = Math.max(2, Math.min(state.settings.general.teamCount ?? 2, 8));
+  const desiredCount = Math.max(2, Math.min(state.settings.general.teamCount ?? 2, 10));
   if (state.teams.length === desiredCount) {
     return state.teams.map((t) => ({ ...t, players: [...t.players] }));
   }

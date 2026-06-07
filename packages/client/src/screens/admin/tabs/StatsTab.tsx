@@ -3,6 +3,12 @@ import { api, type AdminAnalytics, type AdminDailyStats, type AdminLiveStats } f
 import type { ShowToast } from '../AdminApp';
 import { AdminInput } from '../components/AdminInput';
 import { ADMIN_CARD_CLASS, ADMIN_SPINNER_CLASS } from '../components/adminStyles';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;
@@ -11,7 +17,7 @@ interface Props {
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className={`${ADMIN_CARD_CLASS} p-5 flex flex-col gap-1.5`}>
-      <span className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
+      <span className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold`}>
         {label}
       </span>
       <span className="text-3xl font-serif font-bold text-ui-fg">{value}</span>
@@ -132,7 +138,7 @@ export function StatsTab({ showToast }: Props) {
 
       {/* Live Redis */}
       <section>
-        <h2 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold mb-3">
+        <h2 className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold mb-3`}>
           Live · Redis · оновлення кожні 15 с
         </h2>
         <div className="grid grid-cols-2 gap-4">
@@ -157,7 +163,7 @@ export function StatsTab({ showToast }: Props) {
 
       {/* Metrics bars */}
       <section className={`${ADMIN_CARD_CLASS} p-6 space-y-4`}>
-        <h2 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
+        <h2 className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold`}>
           Показники
         </h2>
         {[
@@ -188,7 +194,9 @@ export function StatsTab({ showToast }: Props) {
       {/* Daily chart */}
       {daily.length > 0 && (
         <section className={`${ADMIN_CARD_CLASS} p-6`}>
-          <h2 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold mb-5">
+          <h2
+            className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold mb-5`}
+          >
             Активність за 30 днів
           </h2>
           <div className="flex items-end gap-0.5 h-28">
@@ -208,7 +216,9 @@ export function StatsTab({ showToast }: Props) {
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-2 text-[9px] text-ui-fg-subtle">
+          <div
+            className={`flex justify-between mt-2 ${typographyClass.label} normal-case text-ui-fg-subtle`}
+          >
             <span>{daily[0]?.date.slice(5)}</span>
             <span>{daily[Math.floor(daily.length / 2)]?.date.slice(5)}</span>
             <span>{daily[daily.length - 1]?.date.slice(5)}</span>
@@ -219,7 +229,9 @@ export function StatsTab({ showToast }: Props) {
       {/* Top packs */}
       {analytics.topPacks.length > 0 && (
         <section>
-          <h2 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold mb-4">
+          <h2
+            className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold mb-4`}
+          >
             Топ паки
           </h2>
           <div className="space-y-2">
@@ -242,7 +254,7 @@ export function StatsTab({ showToast }: Props) {
 
       {/* Push broadcast */}
       <section className={`${ADMIN_CARD_CLASS} p-6 space-y-4`}>
-        <h2 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
+        <h2 className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold`}>
           Push-розсилка
         </h2>
         <div className="space-y-3 max-w-lg">
@@ -264,7 +276,7 @@ export function StatsTab({ showToast }: Props) {
           <button
             onClick={handleBroadcast}
             disabled={broadcasting || !broadcastForm.title || !broadcastForm.body}
-            className="px-6 py-2.5 rounded-xl bg-ui-accent text-ui-accent-contrast font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-ui-accent-hover active:scale-95 disabled:opacity-40"
+            className={`px-6 py-2.5 rounded-xl bg-ui-accent text-ui-accent-contrast ${typographyClass.label} normal-case uppercase tracking-widest transition-all hover:bg-ui-accent-hover active:scale-95 disabled:opacity-40`}
           >
             {broadcasting ? 'Надсилання...' : 'Розіслати всім'}
           </button>

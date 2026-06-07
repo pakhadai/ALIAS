@@ -77,7 +77,7 @@ const generalSettingsPartialSchema = z
     soundEnabled: z.boolean(),
     soundPreset: z.nativeEnum(SoundPreset),
     teamMode: z.enum(['TEAMS', 'SOLO']),
-    teamCount: z.number().int().min(2).max(8),
+    teamCount: z.number().int().min(2).max(10),
     theme: z.nativeEnum(AppTheme),
     customWords: z.string().max(5000).optional(),
     customDeckCode: z.string().max(20).optional(),

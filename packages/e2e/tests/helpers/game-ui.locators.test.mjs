@@ -11,8 +11,20 @@ const addConfirmRe = /^(Додати|Add|Hinzufügen)$/i;
 const addPlayerModalTitleRe = /^(Новий гравець|New Player|Neuer Spieler)$/i;
 const startGameRe = /^(Почати гру|Start|Starten)$/i;
 const joinTeamRe = /^(В команду|Join team|Zum Team)$/i;
-const assignPlayerButtonRe = /^Assign .+$/i;
+function assignPlayerButtonRe(name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^(Призначити ${escaped}|Assign ${escaped}|${escaped} zuweisen)$`, 'i');
+}
+
 const lobbySettingsRulesTabRe = /^(Правила|Rules|Regeln)$/;
+
+test('assignPlayerButtonRe matches locale assign aria-labels', () => {
+  assert.match('Assign Offline Guest', assignPlayerButtonRe('Offline Guest'));
+  assert.match('Призначити Offline Guest', assignPlayerButtonRe('Offline Guest'));
+  assert.match('Offline Guest zuweisen', assignPlayerButtonRe('Offline Guest'));
+  assert.doesNotMatch('Додати гравця', assignPlayerButtonRe('Offline Guest'));
+  assert.doesNotMatch('Join team', assignPlayerButtonRe('Offline Guest'));
+});
 
 const lobbyAddPlayerLabels = [
   'Додати гравця',
@@ -72,13 +84,6 @@ test('joinTeamRe matches team join, not menu join game', () => {
   for (const label of ['Приєднатися', 'Join Game', 'Beitreten', 'Приєднатися до гри']) {
     assert.doesNotMatch(label, joinTeamRe, `team join must not match menu label: ${label}`);
   }
-});
-
-test('assignPlayerButtonRe matches Assign {name} only', () => {
-  assert.match('Assign Offline Guest', assignPlayerButtonRe);
-  assert.match('Assign E2E Host', assignPlayerButtonRe);
-  assert.doesNotMatch('Додати гравця', assignPlayerButtonRe);
-  assert.doesNotMatch('Join team', assignPlayerButtonRe);
 });
 
 test('startGameRe matches lobby start, not countdown or other controls', () => {

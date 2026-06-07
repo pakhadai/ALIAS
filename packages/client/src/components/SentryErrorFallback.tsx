@@ -1,4 +1,5 @@
 import React from 'react';
+import { typographyClass } from '../constants/typography';
 
 export const SentryErrorFallback: React.FC<{
   error?: unknown;
@@ -13,20 +14,26 @@ export const SentryErrorFallback: React.FC<{
           !
         </div>
         <div className="space-y-2">
-          <h1 className="text-lg font-semibold tracking-tight text-ui-fg">Щось пішло не так</h1>
-          <p className="text-sm text-ui-fg-muted leading-relaxed">
+          <h1 className={`${typographyClass.system} font-semibold tracking-tight text-ui-fg`}>
+            Щось пішло не так
+          </h1>
+          <p className={`${typographyClass.body} text-ui-fg-muted leading-relaxed`}>
             Ми вже отримали звіт про проблему. Спробуйте перезавантажити сторінку — зазвичай це
             допомагає.
           </p>
           {message ? (
-            <p className="text-[11px] text-ui-fg-muted font-mono wrap-break-word pt-1">{message}</p>
+            <p
+              className={`${typographyClass.system} font-mono normal-case text-ui-fg-muted wrap-break-word pt-1`}
+            >
+              {message}
+            </p>
           ) : null}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-2xl bg-ui-accent text-ui-accent-contrast px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-ui-accent-hover active:bg-ui-accent-pressed transition-colors"
+            className={`rounded-2xl bg-ui-accent text-ui-accent-contrast px-6 py-3 ${typographyClass.label} tracking-widest hover:bg-ui-accent-hover active:bg-ui-accent-pressed transition-colors`}
           >
             Перезавантажити
           </button>
@@ -34,7 +41,7 @@ export const SentryErrorFallback: React.FC<{
             <button
               type="button"
               onClick={resetError}
-              className="rounded-2xl border border-ui-border px-6 py-3 text-xs font-bold uppercase tracking-widest text-ui-fg-muted hover:bg-ui-surface hover:text-ui-fg transition-colors"
+              className={`rounded-2xl border border-ui-border px-6 py-3 ${typographyClass.label} tracking-widest text-ui-fg-muted hover:bg-ui-surface hover:text-ui-fg transition-colors`}
             >
               Спробувати знову
             </button>

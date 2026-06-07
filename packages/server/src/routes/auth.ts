@@ -97,8 +97,15 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       // Find or create user — use upsert to avoid TOCTOU race on concurrent requests
       let user = await prisma.user.upsert({
         where: { email: verified.email },
-        update: { authProvider: 'google' },
-        create: { email: verified.email, authProvider: 'google' },
+        update: {
+          authProvider: 'google',
+          ...(verified.name ? { name: sanitizeDisplayName(verified.name) } : {}),
+        },
+        create: {
+          email: verified.email,
+          authProvider: 'google',
+          ...(verified.name ? { name: sanitizeDisplayName(verified.name) } : {}),
+        },
       });
 
       // Merge anonymous purchases + player stats if deviceId provided
@@ -255,7 +262,11 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       return;
     }
 
-    const { displayName, avatarId } = req.body as { displayName?: string; avatarId?: string };
+    const { displayName, avatarId, skipNamePrompt } = req.body as {
+      displayName?: string;
+      avatarId?: string;
+      skipNamePrompt?: boolean;
+    };
     const data: Record<string, unknown> = {};
 
     if (displayName !== undefined) {
@@ -266,10 +277,28 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       const idx = parseInt(String(avatarId));
       if (!isNaN(idx) && idx >= 0 && idx <= 19) data.avatarId = String(idx);
     }
+    if (skipNamePrompt !== undefined) {
+      const existing = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { authProvider: true },
+      });
+      if (
+        !existing ||
+        (existing.authProvider !== 'telegram' && existing.authProvider !== 'google')
+      ) {
+        res.status(400).json({ error: 'skipNamePrompt is only available for OAuth accounts' });
+        return;
+      }
+      data.skipNamePrompt = Boolean(skipNamePrompt);
+    }
 
     try {
       const user = await prisma.user.update({ where: { id: payload.sub }, data });
-      res.json({ displayName: user.displayName, avatarId: user.avatarId });
+      res.json({
+        displayName: user.displayName,
+        avatarId: user.avatarId,
+        skipNamePrompt: user.skipNamePrompt,
+      });
     } catch (err) {
       console.error('[Auth] profile update error:', err);
       res.status(500).json({ error: 'Internal server error' });
@@ -499,6 +528,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
         avatarUrl: user.avatarUrl,
         displayName: user.displayName,
         avatarId: user.avatarId,
+        skipNamePrompt: user.skipNamePrompt,
         isAdmin: user.isAdmin,
         createdAt: user.createdAt,
         purchases: user.purchases,

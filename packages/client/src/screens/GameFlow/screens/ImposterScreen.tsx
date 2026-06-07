@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ghost, Pause, Play } from 'lucide-react';
 import { useGame } from '../../../context/GameContext';
 import { Button } from '../../../components/Button';
+import { ConfirmationModal } from '../../../components/ConfirmationModal';
 import { useT } from '../../../hooks/useT';
 import { vibrate } from '../../../utils/haptics';
 import type { Player } from '../../../types';
@@ -249,77 +250,40 @@ function ImposterDiscussionPhase({
   togglePause,
   sendAction,
 }: DiscussionPhaseProps) {
+  const { currentTheme } = useGame();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const urgent = timeLeft <= 10 && timeLeft > 0;
 
-  useEffect(() => {
-    if (confirmEnd) {
-      window.setTimeout(() => {
-        document.getElementById('imposter-end-cancel')?.focus();
-      }, 0);
-    }
-  }, [confirmEnd]);
-
   return (
-    <div className="animate-page-in flex min-h-[var(--tg-viewport-height,100dvh)] flex-col bg-ui-bg pt-safe-top">
-      <ImposterMiniHeader
-        readyCount={0}
-        total={0}
-        showReadyRatio={false}
-        isPaused={isPaused}
-        onTogglePause={togglePause}
-      />
+    <>
+      <div className="animate-page-in flex min-h-[var(--tg-viewport-height,100dvh)] flex-col bg-ui-bg pt-safe-top">
+        <ImposterMiniHeader
+          readyCount={0}
+          total={0}
+          showReadyRatio={false}
+          isPaused={isPaused}
+          onTogglePause={togglePause}
+        />
 
-      <div className="flex flex-1 flex-col px-4 pt-4 pb-safe-bottom">
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <p className="mb-4 text-sm font-medium opacity-60">Обговорення</p>
-          <div
-            role="timer"
-            aria-live="polite"
-            aria-atomic="true"
-            aria-label={`Залишилось часу: ${formatTime(timeLeft)}`}
-            className={[
-              'font-black tabular-nums tracking-tight',
-              'text-[clamp(4rem,18vw,9rem)] leading-none',
-              urgent ? 'motion-reduce:animate-none animate-pulse text-ui-danger' : 'text-ui-fg',
-            ].join(' ')}
-          >
-            {formatTime(timeLeft)}
-          </div>
-        </div>
-
-        <div className="mt-auto space-y-3 pt-6">
-          {confirmEnd ? (
+        <div className="flex flex-1 flex-col px-4 pt-4 pb-safe-bottom">
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <p className="mb-4 text-sm font-medium opacity-60">Обговорення</p>
             <div
-              className="rounded-2xl border border-ui-border bg-ui-surface p-4 text-center"
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="imposter-end-confirm-title"
+              role="timer"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={`Залишилось часу: ${formatTime(timeLeft)}`}
+              className={[
+                'font-black tabular-nums tracking-tight',
+                'text-[clamp(4rem,18vw,9rem)] leading-none',
+                urgent ? 'motion-reduce:animate-none animate-pulse text-ui-danger' : 'text-ui-fg',
+              ].join(' ')}
             >
-              <p id="imposter-end-confirm-title" className="text-sm font-medium">
-                Дійсно завершити гру зараз?
-              </p>
-              <div className="mt-3 flex gap-2">
-                <Button
-                  id="imposter-end-cancel"
-                  variant="ghost"
-                  className="flex-1"
-                  onClick={() => setConfirmEnd(false)}
-                >
-                  Скасувати
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    setConfirmEnd(false);
-                    sendAction({ action: 'IMPOSTER_END_GAME' });
-                  }}
-                >
-                  Так, завершити
-                </Button>
-              </div>
+              {formatTime(timeLeft)}
             </div>
-          ) : (
+          </div>
+
+          <div className="mt-auto space-y-3 pt-6">
             <button
               type="button"
               onClick={() => setConfirmEnd(true)}
@@ -327,10 +291,25 @@ function ImposterDiscussionPhase({
             >
               Завершити гру / відгадали
             </button>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        isOpen={confirmEnd}
+        title="Завершити гру?"
+        message="Дійсно завершити гру зараз?"
+        confirmText="Так, завершити"
+        cancelText="Скасувати"
+        isDanger
+        theme={currentTheme}
+        onCancel={() => setConfirmEnd(false)}
+        onConfirm={() => {
+          setConfirmEnd(false);
+          sendAction({ action: 'IMPOSTER_END_GAME' });
+        }}
+      />
+    </>
   );
 }
 

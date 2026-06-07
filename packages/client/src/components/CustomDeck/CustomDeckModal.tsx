@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import {
   X,
   Plus,
@@ -13,11 +12,18 @@ import {
   Share2,
 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
+import { useAppLogin } from '../../context/AppLoginContext';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import { buildDeckShareUrl } from '../../utils/deckShare';
-import { LoginModal } from '../Auth/LoginModal';
-import { ModalSheet } from '../ModalSheet';
+import { ModalSheet, ModalSheetBody, ModalSheetFooter } from '../ModalSheet';
+import { ModalSheetTitle } from '../Shared';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../constants/typography';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -99,12 +105,12 @@ function DeckItem({
       onClick={() => onSelect?.(deck.accessCode, deck.name)}
     >
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-ui-fg text-sm truncate">{deck.name}</p>
+        <p className="font-semibold text-ui-fg text-ui-body truncate">{deck.name}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="text-[10px] text-ui-fg-muted">{deck.wordCount} слів</span>
+          <span className={`${typographyClass.label} text-ui-fg-muted`}>{deck.wordCount} слів</span>
           <span className="text-ui-fg-muted/60">·</span>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-ui-accent font-mono font-bold">
+            <span className={`${typographyClass.label} text-ui-accent font-mono`}>
               {deck.accessCode}
             </span>
             <CopyButton text={deck.accessCode} />
@@ -113,7 +119,7 @@ function DeckItem({
             <button
               type="button"
               onClick={handleShareLink}
-              className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-all duration-200 ease-out active:scale-[0.98]"
+              className={`ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 ${typographyClass.label} tracking-wider text-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-all duration-200 ease-out active:scale-[0.98]`}
             >
               <Share2 size={12} className="shrink-0" />
               {t.shareDeckLink}
@@ -122,7 +128,7 @@ function DeckItem({
           {deck.status !== 'approved' && (
             <>
               <span className="text-ui-fg-muted/60">·</span>
-              <span className="text-[10px] text-ui-warning">{deck.status}</span>
+              <span className={`${typographyClass.label} text-ui-warning`}>{deck.status}</span>
             </>
           )}
         </div>
@@ -188,19 +194,17 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-ui-fg-muted uppercase tracking-wider block mb-1.5">
-          Назва словника
-        </label>
+        <label className={`${formLabelClass} mb-1.5`}>Назва словника</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
           placeholder="Наприклад: Корпоративна вечірка"
-          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-sm focus:outline-none focus:border-ui-accent"
+          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-ui-body-input focus:outline-none focus:border-ui-accent"
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-ui-fg-muted uppercase tracking-wider block mb-1.5">
+        <label className={`${formLabelClass} mb-1.5`}>
           Слова{' '}
           <span className="text-ui-fg-muted normal-case opacity-70">
             (через кому або з нового рядка)
@@ -211,13 +215,13 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
           onChange={(e) => setWordsText(e.target.value)}
           placeholder={'ноутбук, мишка, клавіатура\nмонітор\nпроцесор'}
           rows={8}
-          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-sm focus:outline-none focus:border-ui-accent resize-none font-mono"
+          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-ui-body-input focus:outline-none focus:border-ui-accent resize-none font-mono"
         />
-        <p className="text-[10px] text-ui-fg-muted mt-1">{wordCount} слів</p>
+        <p className={`${typographyClass.label} text-ui-fg-muted mt-1`}>{wordCount} слів</p>
       </div>
 
       <div>
-        <label className="text-[10px] text-ui-fg-muted uppercase tracking-wider block mb-1.5">
+        <label className={`${formLabelClass} mb-1.5`}>
           Код доступу{' '}
           <span className="text-ui-fg-muted normal-case opacity-70">
             (необов'язково, авто-генерується)
@@ -234,7 +238,7 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
             )
           }
           placeholder="ABCD12"
-          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-sm focus:outline-none focus:border-ui-accent font-mono uppercase"
+          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-ui-body-input focus:outline-none focus:border-ui-accent font-mono uppercase"
         />
       </div>
 
@@ -296,19 +300,17 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
   return (
     <div className="space-y-4 px-4 py-4">
       <div>
-        <label className="text-[10px] text-ui-fg-muted uppercase tracking-wider block mb-1.5">
-          Назва словника
-        </label>
+        <label className={`${formLabelClass} mb-1.5`}>Назва словника</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 80))}
           placeholder="Назва"
-          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-sm focus:outline-none focus:border-ui-accent"
+          className="w-full bg-ui-surface border border-ui-border rounded-xl px-3 py-2.5 text-ui-fg text-ui-body-input focus:outline-none focus:border-ui-accent"
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-ui-fg-muted uppercase tracking-wider block mb-1.5">
+        <label className={`${formLabelClass} mb-1.5`}>
           Файл{' '}
           <span className="text-ui-fg-muted opacity-70 normal-case">
             (.csv або .txt, одне слово на рядок)
@@ -330,7 +332,7 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
             {file ? file.name : 'Натисніть для вибору файлу'}
           </span>
           {file && (
-            <span className="text-[10px] text-ui-fg-muted opacity-70">
+            <span className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
               {(file.size / 1024).toFixed(1)} KB
             </span>
           )}
@@ -354,16 +356,14 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps) {
   const { isAuthenticated } = useAuthContext();
+  const { requestLogin } = useAppLogin();
+  const { currentTheme } = useGame();
   const [view, setView] = useState<View>('list');
   const [decks, setDecks] = useState<CustomDeckSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
-  const [sheetOpen, setSheetOpen] = useDeferredOpen();
+  const [sheetOpen, setSheetOpen] = useState(true);
 
-  const requestClose = () => {
-    setSheetOpen(false);
-    setTimeout(() => onClose(), 300);
-  };
+  const requestClose = () => setSheetOpen(false);
 
   const loadDecks = useCallback(async () => {
     if (!isAuthenticated) {
@@ -399,56 +399,49 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
     requestClose();
   };
 
-  const handleLoginSuccess = useCallback(async () => {
-    await loadDecks();
-  }, [loadDecks]);
-
   return (
     <>
       <ModalSheet
         open={sheetOpen}
         onClose={requestClose}
+        onExited={onClose}
+        size="tall"
         maxWidth="lg"
-        showHandle
+        showClose
+        closeAriaLabel="Закрити"
+        closeIconSize={20}
         paddedContent={false}
-        panelClassName="flex max-h-[92dvh] flex-col min-h-0"
       >
-        <div className="shrink-0 px-5 pt-3 pb-4 border-b border-ui-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {view !== 'list' ? (
-                <button
-                  onClick={() => setView('list')}
-                  className="p-2 rounded-xl text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface transition-all duration-200 ease-out"
-                >
-                  <X size={18} />
-                </button>
-              ) : (
-                <div className="p-2 rounded-xl bg-ui-surface border border-ui-border">
-                  <FileText size={20} className="text-ui-accent" />
-                </div>
-              )}
-              <div>
-                <h1 className="text-lg font-bold text-ui-fg">
-                  {view === 'list'
-                    ? 'Мої словники'
-                    : view === 'create'
-                      ? 'Новий словник'
-                      : 'Завантажити файл'}
-                </h1>
-                <p className="text-xs text-ui-fg-muted">
-                  {view === 'list'
-                    ? 'Власні набори слів для гри'
-                    : 'Введіть слова для свого словника'}
-                </p>
+        <div className="shrink-0 px-5 pb-4 border-b border-ui-border">
+          <div className="flex items-center gap-3 min-w-0">
+            {view !== 'list' ? (
+              <button
+                type="button"
+                onClick={() => setView('list')}
+                aria-label="Назад до списку"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface transition-all duration-200 ease-out"
+              >
+                <X size={18} />
+              </button>
+            ) : (
+              <div className="p-2 rounded-xl bg-ui-surface border border-ui-border">
+                <FileText size={20} className="text-ui-accent" />
               </div>
+            )}
+            <div className="min-w-0">
+              <ModalSheetTitle as="h1" themeClass={currentTheme.textMain}>
+                {view === 'list'
+                  ? 'Мої словники'
+                  : view === 'create'
+                    ? 'Новий словник'
+                    : 'Завантажити файл'}
+              </ModalSheetTitle>
+              <p className="text-xs text-ui-fg-muted">
+                {view === 'list'
+                  ? 'Власні набори слів для гри'
+                  : 'Введіть слова для свого словника'}
+              </p>
             </div>
-            <button
-              onClick={requestClose}
-              className="p-2 rounded-xl text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface transition-all duration-200 ease-out"
-            >
-              <X size={20} />
-            </button>
           </div>
 
           {/* Tabs (only on list view) */}
@@ -457,7 +450,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               <button
                 onClick={() => {
                   if (!isAuthenticated) {
-                    setShowLogin(true);
+                    requestLogin();
                     return;
                   }
                   setView('create');
@@ -470,7 +463,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               <button
                 onClick={() => {
                   if (!isAuthenticated) {
-                    setShowLogin(true);
+                    requestLogin();
                     return;
                   }
                   setView('upload');
@@ -485,14 +478,16 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <ModalSheetBody>
           {view === 'list' && (
             <>
               {!isAuthenticated ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3">
-                  <p className="text-ui-fg-muted text-sm">Увійдіть, щоб створювати словники</p>
+                  <p className={`text-ui-fg-muted ${typographyClass.body}`}>
+                    Увійдіть, щоб створювати словники
+                  </p>
                   <button
-                    onClick={() => setShowLogin(true)}
+                    onClick={requestLogin}
                     className="h-9 px-5 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast text-xs font-bold tracking-wider transition-all duration-200 ease-out"
                   >
                     Увійти
@@ -505,7 +500,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
               ) : decks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-2">
                   <FileText size={32} className="text-ui-fg-muted opacity-50" />
-                  <p className="text-ui-fg-muted text-sm">Ще немає словників</p>
+                  <p className={`text-ui-fg-muted ${typographyClass.body}`}>Ще немає словників</p>
                   <p className="text-ui-fg-muted opacity-70 text-xs">
                     Натисніть «Створити» щоб додати перший
                   </p>
@@ -527,19 +522,14 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
 
           {view === 'create' && <CreateForm onCreated={handleCreated} />}
           {view === 'upload' && <UploadForm onCreated={handleCreated} />}
-        </div>
+        </ModalSheetBody>
 
-        {/* Footer */}
-        <div className="shrink-0 px-5 py-3 border-t border-ui-border">
-          <p className="text-center text-ui-fg-muted text-[10px]">
+        <ModalSheetFooter className="border-t border-ui-border px-5 py-3">
+          <p className={`text-center text-ui-fg-muted ${typographyClass.label}`}>
             Поділіться кодом доступу з іншими гравцями
           </p>
-        </div>
+        </ModalSheetFooter>
       </ModalSheet>
-
-      {showLogin && (
-        <LoginModal onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
-      )}
     </>
   );
 }

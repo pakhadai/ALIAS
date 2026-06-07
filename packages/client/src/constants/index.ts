@@ -21,3 +21,5 @@ export { TRANSLATIONS } from './translations';
 export { TEAM_NAMES } from './team-names';
 export { THEME_CONFIG } from './themes';
 export { zIndex } from './zIndex';
+export { typographyClass, typographyTokens } from './typography';
+export type { TypographyRole } from './typography';

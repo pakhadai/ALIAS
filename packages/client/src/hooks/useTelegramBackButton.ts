@@ -23,7 +23,7 @@ export function useTelegramBackButton({
     const back = tg?.BackButton;
     if (!back?.show || !back.hide || !back.onClick) return;
 
-    const isMain = gameState === GameState.MENU;
+    const isMain = gameState === GameState.MENU || gameState === GameState.ENTER_NAME;
     if (isMain) back.hide();
     else back.show();
 

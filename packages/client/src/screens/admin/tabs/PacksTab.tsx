@@ -9,6 +9,12 @@ import {
   ADMIN_SPINNER_CLASS,
   adminStatusBtn,
 } from '../components/adminStyles';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;
@@ -93,14 +99,14 @@ export function PacksTab({ showToast, confirm }: Props) {
         <div className="flex items-center gap-3">
           <button
             onClick={load}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
+            className={`flex items-center gap-1.5 ${typographyClass.label} tracking-widest text-ui-fg-muted hover:text-ui-fg transition-colors`}
           >
             <RefreshCw size={13} />
             Оновити
           </button>
           <button
             onClick={() => setShowCreate((v) => !v)}
-            className={`flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg ${adminStatusBtn('accent')}`}
+            className={`flex items-center gap-2 ${typographyClass.label} tracking-widest px-4 py-2 rounded-lg ${adminStatusBtn('accent')}`}
           >
             <Plus size={13} />
             {showCreate ? 'Скасувати' : 'Новий пак'}
@@ -297,26 +303,30 @@ function PackRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-ui-fg font-medium text-sm">{pack.name}</span>
-            <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
+            <span
+              className={`${typographyClass.label} font-mono normal-case text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border`}
+            >
               {pack.slug}
             </span>
-            <span className="text-[10px] text-ui-fg-subtle">
+            <span className={`${typographyClass.label} text-ui-fg-subtle normal-case`}>
               {pack.language} · {pack.category} · {pack.difficulty}
             </span>
             {pack.isFree ? (
-              <span className="text-[10px] text-ui-success font-bold">FREE</span>
+              <span className={`${typographyClass.label} text-ui-success normal-case`}>FREE</span>
             ) : (
-              <span className="text-[10px] text-ui-accent font-bold">
+              <span className={`${typographyClass.label} text-ui-accent normal-case`}>
                 ${(pack.price / 100).toFixed(2)}
               </span>
             )}
-            <span className="text-[10px] text-ui-fg-subtle">{pack.wordCount} слів</span>
+            <span className={`${typographyClass.label} text-ui-fg-subtle normal-case`}>
+              {pack.wordCount} слів
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onToggleExpand}
-            className={`flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg ${adminStatusBtn('accent')}`}
+            className={`flex items-center gap-1 ${typographyClass.label} tracking-wider px-3 py-1.5 rounded-lg ${adminStatusBtn('accent')}`}
           >
             {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             Слова
@@ -427,7 +437,7 @@ function EditPackPanel({
 
   return (
     <div className={`${ADMIN_SECTION_INSET_CLASS} space-y-3`}>
-      <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
+      <p className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold`}>
         Редагувати метадані
       </p>
       <div className="grid grid-cols-2 gap-3">
@@ -471,13 +481,13 @@ function EditPackPanel({
         <button
           onClick={handleSave}
           disabled={acting.has(key)}
-          className={`text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
+          className={`${typographyClass.label} tracking-wider px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
         >
           {acting.has(key) ? 'Збереження...' : 'Зберегти'}
         </button>
         <button
           onClick={onCancel}
-          className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors"
+          className={`${typographyClass.label} tracking-wider px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors`}
         >
           Скасувати
         </button>
@@ -605,11 +615,13 @@ function WordsPanel({
   return (
     <div className={`${ADMIN_SECTION_INSET_CLASS} space-y-4`}>
       <div className="flex items-center justify-between">
-        <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
+        <p className={`${typographyClass.label} tracking-widest text-ui-fg-muted font-bold`}>
           Слова ({words.length})
         </p>
         {acting.has(`csv-${pack.id}`) && (
-          <span className="text-[11px] text-ui-accent animate-pulse">Завантаження CSV...</span>
+          <span className={`${typographyClass.label} text-ui-accent normal-case animate-pulse`}>
+            Завантаження CSV...
+          </span>
         )}
       </div>
 
@@ -626,12 +638,12 @@ function WordsPanel({
         <button
           onClick={() => fileRef.current?.click()}
           disabled={acting.has(`csv-${pack.id}`)}
-          className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:text-ui-fg hover:bg-ui-surface-hover transition-colors disabled:opacity-40"
+          className={`flex items-center gap-2 ${typographyClass.label} tracking-wider px-3 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:text-ui-fg hover:bg-ui-surface-hover transition-colors disabled:opacity-40`}
         >
           <Upload size={12} />
           Завантажити CSV
         </button>
-        <span className="text-[10px] text-ui-fg-subtle">
+        <span className={`${typographyClass.label} text-ui-fg-subtle normal-case`}>
           difficulty, word_ua, synonyms_ua, taboo_ua, word_en…
         </span>
       </div>
@@ -647,7 +659,7 @@ function WordsPanel({
         <button
           onClick={handleAdd}
           disabled={!newWords.trim() || acting.has('add-words')}
-          className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 whitespace-nowrap ${adminStatusBtn('accent')}`}
+          className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider px-4 py-2 rounded-lg disabled:opacity-40 whitespace-nowrap ${adminStatusBtn('accent')}`}
         >
           <Plus size={12} />
           {acting.has('add-words') ? '...' : 'Додати'}

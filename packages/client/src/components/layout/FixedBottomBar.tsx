@@ -5,14 +5,14 @@ export interface FixedBottomBarProps {
   className?: string;
   /** Fade from `--ui-bg` above the bar (PreRoundScreen pattern). */
   gradient?: boolean;
-  /** `default` → `pb-safe-bottom`; `lg` → `pb-safe-bottom-8` (modal-style). */
+  /** `default` → `pb-safe-bottom`; `lg` → `pb-safe-bottom-8`. */
   padding?: 'default' | 'lg';
   contentClassName?: string;
   style?: CSSProperties;
 }
 
 const GRADIENT_CLASS =
-  'bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] to-transparent';
+  'bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_72%,transparent)] to-[color-mix(in_srgb,var(--ui-bg)_25%,transparent)]';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');

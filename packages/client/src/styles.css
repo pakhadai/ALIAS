@@ -28,6 +28,18 @@
   --color-ui-word-card-fg: var(--ui-word-card-fg);
   --color-ui-word-card-border: var(--ui-word-card-border);
   --color-ui-surface-hover: var(--ui-surface-hover);
+
+  /* Typography scale → utilities: text-ui-heading, leading-ui-heading, tracking-ui-label, … */
+  --font-size-ui-heading: var(--ui-text-heading);
+  --font-size-ui-body: var(--ui-text-body);
+  --font-size-ui-body-input: var(--ui-text-body-input);
+  --font-size-ui-label: var(--ui-text-label);
+  --font-size-ui-caption: var(--ui-text-caption);
+  --font-size-ui-system: var(--ui-text-system);
+  --line-height-ui-heading: var(--ui-text-heading-leading);
+  --line-height-ui-body: var(--ui-text-body-leading);
+  --letter-spacing-ui-label: var(--ui-text-label-tracking);
+  --letter-spacing-ui-caption-wide: var(--ui-text-caption-tracking-wide);
 }
 
 /* Keep Material Symbols baseline consistent */
@@ -109,6 +121,36 @@ html[data-telegram-app='true'] #root {
 
 /* Theme-aware font overrides — updated at runtime by GameContext */
 :root {
+  /*
+   * TMA safe area — sum content (Telegram UI) + device (notch / env), not max().
+   * See https://core.telegram.org/bots/webapps#contentsafeareainset
+   */
+  --tma-device-inset-top: max(var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+  --tma-device-inset-bottom: max(
+    var(--tg-safe-area-inset-bottom, 0px),
+    env(safe-area-inset-bottom, 0px)
+  );
+  --tma-device-inset-left: max(var(--tg-safe-area-inset-left, 0px), env(safe-area-inset-left, 0px));
+  --tma-device-inset-right: max(
+    var(--tg-safe-area-inset-right, 0px),
+    env(safe-area-inset-right, 0px)
+  );
+  --tma-inset-top: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--tma-device-inset-top));
+  --tma-inset-bottom: calc(
+    var(--tg-content-safe-area-inset-bottom, 0px) + var(--tma-device-inset-bottom)
+  );
+  --tma-inset-left: calc(
+    var(--tg-content-safe-area-inset-left, 0px) + var(--tma-device-inset-left)
+  );
+  --tma-inset-right: calc(
+    var(--tg-content-safe-area-inset-right, 0px) + var(--tma-device-inset-right)
+  );
+
+  /** MenuScreen fixed icon bar below inset — see docs/TMA_LAYOUT.md */
+  --tma-fixed-header-height: 3.5rem;
+  --tma-toast-offset-header: 0px;
+  --tma-toast-top: calc(max(0.75rem, var(--tma-inset-top)) + var(--tma-toast-offset-header));
+
   /* Overlay stacking — use via `constants/zIndex.ts` + Tailwind `z-[var(--…)]` */
   --z-header: 20;
   --z-fx: 40;
@@ -125,6 +167,19 @@ html[data-telegram-app='true'] #root {
   --font-heading-weight: 900;
   --font-heading-transform: uppercase;
   --font-heading-tracking: -0.03em;
+
+  /* TYPO-001 semantic typography — see docs/UI_TOKENS.md#typography-tokens */
+  --ui-text-heading: 1.5rem;
+  --ui-text-body: 0.875rem;
+  --ui-text-body-input: 1rem;
+  --ui-text-label: 0.625rem;
+  --ui-text-caption: 0.625rem;
+  --ui-text-system: 0.75rem;
+  --ui-text-heading-leading: 1.25;
+  --ui-text-body-leading: 1.5;
+  --ui-text-label-tracking: 0.2em;
+  --ui-text-caption-tracking-wide: 0.6em;
+
   --theme-radius: 6px;
   /* First paint before React applies THEME_CONFIG tokens (default PAPER_LUXE ≈ Warm Paper) */
   --ui-bg: #e2e3db;
@@ -140,6 +195,12 @@ html[data-telegram-app='true'] #root {
   --ui-accent-pressed: #d63b33;
   --ui-accent-ring: #ee423966;
 }
+
+/** Screens with a fixed top header (MenuScreen) — toast sits below the bar, not over icons */
+html[data-fixed-header] {
+  --tma-toast-offset-header: var(--tma-fixed-header-height);
+}
+
 .font-serif {
   font-family: var(--font-heading) !important;
   font-weight: var(--font-heading-weight, inherit);
@@ -218,4 +279,468 @@ html[data-telegram-app='true'] #root {
 .scoreboard-progress-fill {
   width: 0;
   animation: scoreboard-progress-grow 1s ease-out forwards;
+}
+
+/* ── Bottom sheet overlay (ModalSheet, RulesModal, AppSettingsModal) ── */
+/* iOS-style frosted glass: full-viewport blur + material tint; panel inset blur (lobby-start-glass pattern) */
+:root {
+  --ui-overlay-blur: 72px;
+  --ui-overlay-blur-secondary: 36px;
+  /** Desaturate bleed-through (accent CTA) — matte tinted glass, not vivid frost */
+  --ui-overlay-saturate: 0.76;
+  --ui-overlay-saturate-secondary: 0.82;
+  --ui-overlay-brightness: 0.87;
+  /** Warm sepia tint for overlay — shared with sheet handle */
+  --ui-sheet-sepia: #9a7b4f;
+  --ui-overlay-tint-base: color-mix(
+    in srgb,
+    var(--ui-bg) 84%,
+    color-mix(in srgb, var(--ui-sheet-sepia) 52%, var(--ui-fg) 48%) 16%
+  );
+  --ui-overlay-glass-top: color-mix(in srgb, var(--ui-overlay-tint-base) 88%, transparent);
+  --ui-overlay-glass-mid: color-mix(in srgb, var(--ui-overlay-tint-base) 66%, transparent);
+  --ui-overlay-glass-bottom: color-mix(in srgb, var(--ui-overlay-tint-base) 56%, transparent);
+  --ui-overlay-glass: linear-gradient(
+    to bottom,
+    var(--ui-overlay-glass-top) 0%,
+    var(--ui-overlay-glass-mid) 42%,
+    var(--ui-overlay-glass-bottom) 100%
+  );
+  --ui-overlay-frost: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ui-overlay-tint-base) 44%, transparent) 0%,
+    color-mix(in srgb, var(--ui-overlay-tint-base) 30%, transparent) 38%,
+    color-mix(in srgb, var(--ui-overlay-tint-base) 38%, transparent) 100%
+  );
+  --ui-sheet-glass-inset: 2px;
+  --ui-sheet-glass-blur: 34px;
+  --ui-sheet-handle: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--ui-sheet-sepia) 58%, var(--ui-fg) 42%) 72%,
+    transparent
+  );
+  --ui-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ui-sheet-anim-ms: 400ms;
+  --ui-sheet-radius: 28px;
+  --ui-sheet-shadow:
+    0 -4px 24px color-mix(in srgb, var(--ui-bg) 35%, transparent),
+    0 -12px 48px color-mix(in srgb, var(--ui-fg) 8%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 7%, transparent),
+    inset 0 14px 18px -16px color-mix(in srgb, var(--ui-fg) 11%, transparent);
+  --lobby-play-mode-anim-ms: 520ms;
+}
+
+/* Lobby bottom panel — clear border; blur only on inner inset (not edges) */
+.lobby-start-glass {
+  --lobby-glass-inset: 2px;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow:
+    inset 0 0 28px color-mix(in srgb, var(--ui-fg) 5%, transparent),
+    0 4px 14px color-mix(in srgb, var(--ui-bg) 32%, transparent),
+    0 14px 40px color-mix(in srgb, var(--ui-bg) 52%, transparent);
+}
+
+.lobby-start-glass::before {
+  content: '';
+  position: absolute;
+  inset: var(--lobby-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(24px) saturate(1.75);
+  -webkit-backdrop-filter: blur(24px) saturate(1.75);
+}
+
+.lobby-start-glass::after {
+  content: '';
+  position: absolute;
+  inset: var(--lobby-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ui-fg) 14%, transparent) 0%,
+    transparent 42%,
+    transparent 58%,
+    color-mix(in srgb, var(--ui-bg) 10%, transparent) 100%
+  );
+}
+
+.lobby-start-glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Lobby start CTA — clockwise comet ring with blur when host can start */
+.lobby-start-btn-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.lobby-start-btn-shell--ready::before,
+.lobby-start-btn-shell--ready::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  transform-origin: center center;
+  animation: lobby-start-ring-spin 2.6s linear infinite;
+}
+
+.lobby-start-btn-shell--ready::before {
+  inset: -4px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 228deg,
+    color-mix(in srgb, var(--ui-accent) 18%, transparent) 258deg,
+    color-mix(in srgb, var(--ui-accent) 48%, transparent) 288deg,
+    var(--ui-accent) 306deg,
+    color-mix(in srgb, var(--ui-accent) 88%, white 12%) 318deg,
+    color-mix(in srgb, var(--ui-accent) 32%, transparent) 336deg,
+    transparent 360deg
+  );
+  filter: blur(7px);
+  opacity: 0.8;
+}
+
+.lobby-start-btn-shell--ready::after {
+  inset: -1px;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 262deg,
+    color-mix(in srgb, var(--ui-accent) 42%, transparent) 292deg,
+    var(--ui-accent) 308deg,
+    color-mix(in srgb, var(--ui-accent) 78%, white 22%) 320deg,
+    transparent 342deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.92;
+}
+
+@keyframes lobby-start-ring-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobby-start-btn-shell--ready::before,
+  .lobby-start-btn-shell--ready::after {
+    animation: none;
+  }
+}
+
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  isolation: isolate;
+  pointer-events: auto;
+}
+
+.bottom-sheet-backdrop--absolute {
+  position: absolute;
+}
+
+.bottom-sheet-backdrop::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--ui-overlay-glass);
+  backdrop-filter: blur(var(--ui-overlay-blur)) saturate(var(--ui-overlay-saturate))
+    brightness(var(--ui-overlay-brightness));
+  -webkit-backdrop-filter: blur(var(--ui-overlay-blur)) saturate(var(--ui-overlay-saturate))
+    brightness(var(--ui-overlay-brightness));
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.96) 30%,
+    rgba(0, 0, 0, 0.88) 50%,
+    rgba(0, 0, 0, 0.78) 70%,
+    rgba(0, 0, 0, 0.72) 86%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.96) 30%,
+    rgba(0, 0, 0, 0.88) 50%,
+    rgba(0, 0, 0, 0.78) 70%,
+    rgba(0, 0, 0, 0.72) 86%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  opacity: 0;
+  transition: opacity 0s;
+}
+
+.bottom-sheet-backdrop::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--ui-overlay-frost);
+  backdrop-filter: blur(var(--ui-overlay-blur-secondary))
+    saturate(var(--ui-overlay-saturate-secondary)) brightness(0.9);
+  -webkit-backdrop-filter: blur(var(--ui-overlay-blur-secondary))
+    saturate(var(--ui-overlay-saturate-secondary)) brightness(0.9);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.96) 30%,
+    rgba(0, 0, 0, 0.88) 50%,
+    rgba(0, 0, 0, 0.78) 70%,
+    rgba(0, 0, 0, 0.72) 86%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.96) 30%,
+    rgba(0, 0, 0, 0.88) 50%,
+    rgba(0, 0, 0, 0.78) 70%,
+    rgba(0, 0, 0, 0.72) 86%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  opacity: 0;
+  transition: opacity 0s;
+}
+
+.bottom-sheet-backdrop[data-open='true']::before,
+.bottom-sheet-backdrop[data-open='true']::after {
+  opacity: 1;
+  transition: opacity 320ms var(--ui-sheet-ease);
+}
+
+.bottom-sheet-backdrop[data-open='false']::before,
+.bottom-sheet-backdrop[data-open='false']::after {
+  opacity: 0;
+  transition: opacity 320ms var(--ui-sheet-ease);
+}
+
+.bottom-sheet-backdrop[data-open='false'] {
+  pointer-events: none;
+}
+
+.bottom-sheet-panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  min-height: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  background: transparent;
+  box-shadow: var(--ui-sheet-shadow);
+  transform: translateY(100%);
+  transition: transform var(--ui-sheet-anim-ms) var(--ui-sheet-ease);
+  touch-action: pan-y;
+}
+
+.bottom-sheet-panel::before {
+  content: '';
+  position: absolute;
+  inset: var(--ui-sheet-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(1.95);
+  -webkit-backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(1.95);
+}
+
+.bottom-sheet-panel::after {
+  content: '';
+  position: absolute;
+  inset: var(--ui-sheet-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ui-card) 93%, var(--ui-elevated) 7%) 0%,
+    color-mix(in srgb, var(--ui-card) 88%, transparent) 44%,
+    color-mix(in srgb, var(--ui-card) 86%, var(--ui-bg) 14%) 100%
+  );
+}
+
+.bottom-sheet-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bottom-sheet-panel[data-open='true'] {
+  transform: translateY(0);
+}
+
+.bottom-sheet-panel[data-open='false'] {
+  transform: translateY(100%);
+  box-shadow: none;
+}
+
+.bottom-sheet-panel[data-open='true'],
+.bottom-sheet-panel[data-dragging='true'] {
+  will-change: transform;
+}
+
+.bottom-sheet-panel[data-dragging='true'] {
+  transition: none;
+}
+
+.bottom-sheet-panel--sheet {
+  border-radius: var(--ui-sheet-radius) var(--ui-sheet-radius) 0 0;
+  height: auto;
+  overflow-y: auto;
+  overscroll-y: contain;
+}
+
+.bottom-sheet-panel--sheet.bottom-sheet-panel--size-compact,
+.bottom-sheet-panel--sheet.bottom-sheet-panel--size-default {
+  max-height: min(88dvh, 820px);
+}
+
+.bottom-sheet-panel--sheet.bottom-sheet-panel--size-tall {
+  max-height: min(92dvh, 820px);
+}
+
+.bottom-sheet-panel--sheet.bottom-sheet-panel--size-tall[data-sheet-scroll] {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bottom-sheet-top-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.bottom-sheet-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 1.25rem 0.875rem;
+  min-height: 2.5rem;
+}
+
+.bottom-sheet-header-row__title {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.bottom-sheet-handle {
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: var(--ui-sheet-handle);
+  flex-shrink: 0;
+}
+
+.bottom-sheet-handle-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0.625rem 0 0.375rem;
+  flex: none;
+  min-width: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bottom-sheet-handle-row:active {
+  cursor: grabbing;
+}
+
+/** Lobby play-format bar — height + lift (clip-safe inside scroll containers). */
+.lobby-play-mode-slot {
+  width: 100%;
+  max-width: 24rem;
+  overflow: hidden;
+  will-change: height, opacity;
+}
+
+.lobby-play-mode-slot__inner {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobby-play-mode-slot,
+  .lobby-play-mode-slot__inner {
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .bottom-sheet-backdrop::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ui-overlay-tint-base) 90%, transparent),
+      color-mix(in srgb, var(--ui-overlay-tint-base) 76%, transparent)
+    );
+  }
+
+  .bottom-sheet-backdrop::after {
+    display: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .bottom-sheet-panel::before,
+  .bottom-sheet-panel::after {
+    display: none;
+  }
+
+  .bottom-sheet-panel {
+    background: color-mix(in srgb, var(--ui-card) 94%, var(--ui-elevated) 6%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-sheet-backdrop::before,
+  .bottom-sheet-panel {
+    transition: none !important;
+  }
 }

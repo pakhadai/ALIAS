@@ -1,7 +1,7 @@
 # Lobby Team Builder
 
 > Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — **UX лобі та команд** (team builder, Solo).  
-> **Оновлено:** 2026-06-06 (dual UI: `LobbyScreen` + `TeamSetupScreen`).
+> **Оновлено:** 2026-06-07 (Phase 3 + play format bar animation).
 
 ## UI: два екрани, одна логіка
 
@@ -21,6 +21,7 @@
 - **Host controls**: shuffle, lock/unlock, rename teams.
 - **OFFLINE host assignment**: tap player chip → bottom sheet → assign/unassign (`TeamSetupScreen` або sheet у лобі).
 - **Start validation**: host стартує лише коли всі розподілені і кожна команда має ≥1 гравця.
+- **Play format (Teams/Solo):** `LobbyPlayModeBar` — host керує форматом; **online guest** бачить блок до вибору команди, потім `LobbyPlayModeBarSlot` ховає його з анімацією (host завжди бачить).
 
 ### Team mode: **Solo** (`general.teamMode === 'SOLO'`)
 
@@ -36,6 +37,7 @@
 ### ONLINE (`GameState.LOBBY`)
 
 - Inline builder у `packages/client/src/screens/lobby/LobbyScreen.tsx` + `screens/lobby/components/*`.
+- **ONLINE player list:** компактний `LobbyAvatarStrip` (аватар + online dot); повний `PlayersSection` лише в **OFFLINE**.
 - Server тримає `teams` з team shells (порожні команди збережені в лобі).
 - `TEAM_JOIN` / `TEAM_LEAVE` для self-join, якщо `teamsLocked !== true`.
 - Host: `TEAM_RENAME`, `TEAM_LOCK`, `TEAM_SHUFFLE_UNASSIGNED`, `TEAM_SHUFFLE_ALL`.
@@ -85,14 +87,18 @@
 |-----------|------|
 | `LobbyScreen.tsx` | ONLINE inline builder + start |
 | `TeamSetupScreen.tsx` | OFFLINE / `TEAMS` state — assign + shuffle + start |
-| `components/OnlineLobbyIntro.tsx` | QR, share, deep link (`lobby_*`) |
+| `components/OnlineLobbyIntro.tsx` | Room code, invite trigger, settings chips |
+| `components/LobbyInviteSheet.tsx` | Telegram-native invite options (copy code/link, TG share, nested QR) |
+| `components/LobbyPlayModeBar.tsx`, `LobbyPlayModeBarSlot.tsx` | Solo/Teams + team count; animated collapse for guests after team pick |
 | `components/UnassignedPool.tsx`, `TeamCard.tsx`, `AssignPlayerSheet.tsx` | Subcomponents |
+| `components/LobbyReadinessBar.tsx`, `deriveLobbyReadiness.ts` | Host start checklist above CTA (Phase 2) |
+| `components/LobbyGuestWaitingCard.tsx` | Online guest next-step card (Phase 2) |
 
 ---
 
 ## Quick test checklist
 
-- **ONLINE:** join/leave, lock, shuffle, start validation, Solo без team UI.
+- **ONLINE:** join/leave, lock, shuffle, start validation, Solo без team UI; guest play-format bar hide after team join.
 - **OFFLINE:** chip → assign sheet, rename, `GENERATE_TEAMS` → `TEAMS`, start when valid.
 
 Детальні критерії — [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md).

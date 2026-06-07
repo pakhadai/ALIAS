@@ -11,10 +11,12 @@ import {
   ShoppingBag,
   Lock,
 } from 'lucide-react';
+import { typographyClass, formLabelClass } from '../../constants/typography';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -154,18 +156,16 @@ export const MyWordPacksScreen = () => {
                 <ArrowLeft size={22} />
               </button>
             )}
-            <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
-              Мої паки слів
-            </h2>
+            <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
           </header>
           <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
             <div className="w-20 h-20 rounded-full bg-ui-surface flex items-center justify-center border border-ui-border">
               <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
             </div>
             <div>
-              <h3 className={`font-serif text-2xl mb-2 ${currentTheme.textMain}`}>
+              <ScreenTitle as="h3" themeClass={currentTheme.textMain} className="mb-2">
                 Функція заблокована
-              </h3>
+              </ScreenTitle>
               <p className="text-sm leading-relaxed text-ui-fg-muted opacity-80">
                 Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}Розблокуйте цю
                 функцію в Магазині.
@@ -173,7 +173,7 @@ export const MyWordPacksScreen = () => {
             </div>
             <button
               onClick={() => setGameState(GameState.STORE)}
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98]`}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98]`}
             >
               <ShoppingBag size={16} />
               Відкрити магазин
@@ -199,18 +199,14 @@ export const MyWordPacksScreen = () => {
                 <ArrowLeft size={22} />
               </button>
             )}
-            <h2 className={`font-serif text-2xl tracking-wide ${currentTheme.textMain}`}>
-              Новий пак
-            </h2>
+            <ScreenTitle themeClass={currentTheme.textMain}>Новий пак</ScreenTitle>
           </header>
           <div
             className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-5"
             style={{ scrollbarWidth: 'none' }}
           >
             <div className="space-y-2">
-              <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
-                Назва паку
-              </label>
+              <label className={`${formLabelClass} opacity-80`}>Назва паку</label>
               <input
                 value={deckName}
                 onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
@@ -220,15 +216,17 @@ export const MyWordPacksScreen = () => {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold tracking-[0.25em] uppercase text-ui-fg-muted opacity-80">
+                <label className={`${formLabelClass} opacity-80`}>
                   Слова
-                  <span className="ml-2 font-normal normal-case tracking-normal text-[10px] opacity-60">
+                  <span
+                    className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} opacity-60`}
+                  >
                     (кожне з нового рядка або через кому)
                   </span>
                 </label>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-ui-fg-muted hover:text-ui-fg transition-colors"
+                  className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider text-ui-fg-muted hover:text-ui-fg transition-colors`}
                 >
                   <Upload size={12} />
                   Завантажити .txt/.csv
@@ -248,17 +246,19 @@ export const MyWordPacksScreen = () => {
                 rows={10}
                 className={`${inputCls} resize-none`}
               />
-              <p className="text-[11px] text-ui-fg-muted opacity-70">
+              <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
                 {wordsText.split(/[\n,;]+/).filter((w) => w.trim()).length} слів
               </p>
             </div>
-            {createError && <p className="text-ui-danger text-[12px] font-sans">{createError}</p>}
+            {createError && (
+              <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
+            )}
           </div>
           <div className="px-6 md:px-8 pt-4 pb-safe-bottom">
             <button
               onClick={handleCreate}
               disabled={creating}
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
             >
               {creating ? <Loader2 size={16} className="animate-spin" /> : 'Створити пак'}
             </button>
@@ -275,10 +275,8 @@ export const MyWordPacksScreen = () => {
         </div>
         <div className="px-6 md:px-8 pb-5 pt-2 flex justify-between items-center">
           <div>
-            <h2 className={`font-serif text-3xl tracking-wide ${currentTheme.textMain}`}>
-              Мої паки слів
-            </h2>
-            <p className="text-[10px] mt-1 text-ui-fg-muted opacity-70">
+            <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
+            <p className={`${typographyClass.label} mt-1 text-ui-fg-muted opacity-70`}>
               {decks.length} / {MAX_USER_PACKS}
             </p>
           </div>
@@ -303,7 +301,7 @@ export const MyWordPacksScreen = () => {
             >
               <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
               <p
-                className={`text-[12px] font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+                className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
               >
                 Немає паків
               </p>
@@ -314,11 +312,13 @@ export const MyWordPacksScreen = () => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
                     <h3
-                      className={`font-serif text-[18px] leading-tight ${currentTheme.textMain} truncate`}
+                      className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
                     >
                       {deck.name}
                     </h3>
-                    <p className={`text-[11px] font-sans mt-1 ${currentTheme.textSecondary}`}>
+                    <p
+                      className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                    >
                       {deck.wordCount} слів
                     </p>
                   </div>
@@ -336,7 +336,7 @@ export const MyWordPacksScreen = () => {
                 </div>
                 <div className="flex items-center justify-between pt-1">
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+                    className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
                   >
                     {deck.status === 'approved'
                       ? 'Активний'
@@ -347,7 +347,7 @@ export const MyWordPacksScreen = () => {
                   {deck.accessCode && (
                     <button
                       onClick={() => handleCopyCode(deck.accessCode!)}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border"
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
                     >
                       <Copy size={11} />
                       {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}
@@ -363,7 +363,7 @@ export const MyWordPacksScreen = () => {
             <div className="w-full max-w-2xl pointer-events-auto">
               <button
                 onClick={() => setView('create')}
-                className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 font-sans font-bold text-[10px] uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+                className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
               >
                 <Plus size={16} />
                 Створити пак

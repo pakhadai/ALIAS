@@ -1,8 +1,16 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useId } from 'react';
 import type { Player, Team, GameActionPayload } from '../../../types';
+import { Button } from '../../../components/Button';
 import { ModalSheet } from '../../../components/ModalSheet';
+import { ModalSheetTitle } from '../../../components/Shared';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import type { TranslationStrings } from '../../../hooks/useT';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 type T = TranslationStrings;
 
@@ -15,33 +23,18 @@ export function AssignPlayerSheet(props: {
   sendAction: (a: GameActionPayload) => void;
 }): React.ReactNode {
   const { isOpen, target, teamShells, t, onClose, sendAction } = props;
-  const [sheetOpen, setSheetOpen] = useState(false);
   const titleId = useId();
 
-  useEffect(() => {
-    if (isOpen && target) {
-      const r = requestAnimationFrame(() => setSheetOpen(true));
-      return () => cancelAnimationFrame(r);
-    }
-    setSheetOpen(false);
-    return undefined;
-  }, [isOpen, target]);
+  if (!target) return null;
 
-  const requestClose = () => {
-    setSheetOpen(false);
-    setTimeout(onClose, 300);
-  };
-
-  if (!isOpen || !target) return null;
+  const dismiss = () => onClose();
 
   return (
     <ModalSheet
-      open={sheetOpen}
-      onClose={requestClose}
+      open={isOpen}
+      onClose={dismiss}
       zLayer="modalNested"
-      maxWidth="sm"
-      showHandle
-      paddedContent
+      size="default"
       ariaLabelledBy={titleId}
     >
       <div className="flex items-center gap-3 mb-4">
@@ -51,10 +44,8 @@ export function AssignPlayerSheet(props: {
           <span className="text-2xl">{target.avatar}</span>
         )}
         <div className="min-w-0">
-          <p id={titleId} className="text-ui-fg font-sans font-semibold">
-            {target.name}
-          </p>
-          <p className="text-ui-fg-muted text-xs">Розподілити в команду</p>
+          <ModalSheetTitle id={titleId}>{target.name}</ModalSheetTitle>
+          <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.assignPlayerSheetHint}</p>
         </div>
       </div>
 
@@ -68,8 +59,7 @@ export function AssignPlayerSheet(props: {
                 action: 'TEAM_JOIN',
                 data: { teamId: team.id, playerId: target.id },
               });
-              setSheetOpen(false);
-              setTimeout(onClose, 300);
+              dismiss();
             }}
             className="w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] flex items-center justify-between px-4"
           >
@@ -78,11 +68,11 @@ export function AssignPlayerSheet(props: {
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: team.colorHex || undefined }}
               />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-ui-fg-muted truncate">
+              <span className={`${typographyClass.label} tracking-wide text-ui-fg-muted truncate`}>
                 {team.name}
               </span>
             </span>
-            <span className="text-[10px] font-bold text-ui-fg-muted opacity-60">
+            <span className={`${typographyClass.body} font-bold text-ui-fg-muted tabular-nums`}>
               {team.players.length}
             </span>
           </button>
@@ -92,22 +82,19 @@ export function AssignPlayerSheet(props: {
           type="button"
           onClick={() => {
             sendAction({ action: 'TEAM_LEAVE', data: { playerId: target.id } });
-            setSheetOpen(false);
-            setTimeout(onClose, 300);
+            dismiss();
           }}
-          className="w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted"
+          className={`w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] ${typographyClass.label} tracking-wide text-ui-fg-muted`}
         >
-          Зробити нерозподіленим
+          {t.makeUnassigned}
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={requestClose}
-        className="mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
-      >
-        {t.cancel}
-      </button>
+      <Button variant="ghost" fullWidth size="lg" className="mt-4" onClick={dismiss}>
+        <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+          {t.cancel}
+        </span>
+      </Button>
     </ModalSheet>
   );
 }

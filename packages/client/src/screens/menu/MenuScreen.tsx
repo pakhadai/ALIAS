@@ -1,24 +1,23 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize, ArrowRight } from 'lucide-react';
-import { Logo } from '../../components/Shared';
+import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize } from 'lucide-react';
+import { Logo, ModalSheetTitle } from '../../components/Shared';
 import { ModalSheet } from '../../components/ModalSheet';
+import { QuickJoinSheet } from './QuickJoinSheet';
+import { EnterNameSheet } from './EnterNameSheet';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
-import {
-  keyboardAvoidingBottomPadding,
-  scrollElementIntoViewCentered,
-  useVisualViewportBottomInset,
-} from '../../hooks/useVisualViewportBottomInset';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
 import { ROOM_CODE_LENGTH } from '../../constants';
+import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
 
 export const MenuScreen = () => {
   const {
+    gameState,
     setGameState,
     settings,
     setSettings,
@@ -30,49 +29,26 @@ export const MenuScreen = () => {
     checkRoomExists,
     showNotification,
   } = useGame();
+  const isEnterName = gameState === GameState.ENTER_NAME;
   const { isAuthenticated } = useAuthContext();
   const [showRules, setShowRules] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
-  const [fullscreenHintVisible, setFullscreenHintVisible] = useState(false);
   const [showQuickJoin, setShowQuickJoin] = useState(false);
-  const [quickJoinVisible, setQuickJoinVisible] = useState(false);
   const [quickJoinCode, setQuickJoinCode] = useState('');
   const [quickJoinChecking, setQuickJoinChecking] = useState(false);
   const [createRoomBusy, setCreateRoomBusy] = useState(false);
   const t = useT();
-  const keyboardBottomInset = useVisualViewportBottomInset();
   const isTelegram = isTelegramMiniApp();
 
   void setSettings;
 
   useEffect(() => {
-    if (showFullscreenHint) {
-      const r = requestAnimationFrame(() => setFullscreenHintVisible(true));
-      return () => cancelAnimationFrame(r);
-    }
-    setFullscreenHintVisible(false);
-    return undefined;
-  }, [showFullscreenHint]);
-
-  useEffect(() => {
-    if (showQuickJoin) {
-      const r = requestAnimationFrame(() => setQuickJoinVisible(true));
-      return () => cancelAnimationFrame(r);
-    }
-    setQuickJoinVisible(false);
-    return undefined;
-  }, [showQuickJoin]);
-
-  const closeFullscreenHint = () => {
-    setFullscreenHintVisible(false);
-    setTimeout(() => setShowFullscreenHint(false), 300);
-  };
-
-  const closeQuickJoin = () => {
-    setQuickJoinVisible(false);
-    setTimeout(() => setShowQuickJoin(false), 300);
-  };
+    document.documentElement.dataset.fixedHeader = 'true';
+    return () => {
+      delete document.documentElement.dataset.fixedHeader;
+    };
+  }, []);
 
   const handleProfileClick = () => {
     setGameState(GameState.PROFILE);
@@ -129,7 +105,7 @@ export const MenuScreen = () => {
 
   return (
     <div
-      className={`relative flex flex-col h-screen w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
+      className={`relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -148,11 +124,13 @@ export const MenuScreen = () => {
         }}
       />
       <header
+        aria-hidden={isEnterName ? true : undefined}
         className={[
           'fixed left-0 right-0 top-0 z-20',
+          isEnterName ? 'pointer-events-none select-none' : '',
           'flex justify-end items-center gap-2 sm:gap-3',
-          'px-4 pb-3',
-          /* Лише офіційні інсети Mini App: --tg-content-safe-area-inset-top, --tg-safe-area-inset-top, env() */
+          'px-4 pb-3 pl-env-left pr-env-right',
+          /* --tma-inset-top = content (Telegram chrome) + device (status bar) */
           'pt-env-top',
           'backdrop-blur-xl',
           'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--ui-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--ui-bg)_65%,transparent)_60%,transparent_100%)]',
@@ -206,12 +184,19 @@ export const MenuScreen = () => {
         <div
           className="w-full shrink-0"
           style={{
-            height:
-              'calc(max(var(--tg-content-safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px)) + 3.5rem)',
+            height: 'calc(var(--tma-inset-top) + var(--tma-fixed-header-height))',
           }}
           aria-hidden
         />
-        <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs px-6 md:px-8 pb-20">
+        <main
+          aria-hidden={isEnterName ? true : undefined}
+          className={[
+            'relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs px-6 md:px-8 pb-20',
+            isEnterName ? 'pointer-events-none select-none' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <div className="scale-[0.85] origin-top">
             <Logo theme={currentTheme} />
           </div>
@@ -219,7 +204,7 @@ export const MenuScreen = () => {
           {connectionError && (
             <div className="mt-8 p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake">
               <AlertCircle className="text-ui-danger" size={20} />
-              <p className="text-xs uppercase tracking-wide text-ui-danger font-bold">
+              <p className={`${systemBannerClass} tracking-wide text-ui-danger`}>
                 Server Error: {connectionError}
               </p>
             </div>
@@ -261,7 +246,9 @@ export const MenuScreen = () => {
 
             <div className="flex items-center gap-3 w-full opacity-20 py-1">
               <div className="h-px flex-1 bg-ui-border" />
-              <span className="text-[9px] uppercase tracking-widest text-ui-fg-muted shrink-0">
+              <span
+                className={`${typographyClass.label} tracking-widest text-ui-fg-muted shrink-0`}
+              >
                 {t.menuOrDivider}
               </span>
               <div className="h-px flex-1 bg-ui-border" />
@@ -281,121 +268,61 @@ export const MenuScreen = () => {
           <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pt-4 pb-safe-bottom">
             <div className="flex items-center gap-2 opacity-25">
               <div className="h-px w-6 bg-ui-border" />
-              <span className="text-[8px] font-mono tracking-widest text-ui-fg-muted">
-                v{__APP_VERSION__}
-              </span>
+              <span className={`${brandCaptionClass} text-ui-fg-muted`}>v{__APP_VERSION__}</span>
               <div className="h-px w-6 bg-ui-border" />
             </div>
           </div>
         </main>
       </div>
 
-      <RulesModal
-        isOpen={showRules}
-        onClose={() => setShowRules(false)}
-        t={t}
-        currentTheme={currentTheme}
-        settings={settings}
-      />
+      {!isEnterName ? (
+        <RulesModal
+          isOpen={showRules}
+          onClose={() => setShowRules(false)}
+          t={t}
+          currentTheme={currentTheme}
+          settings={settings}
+        />
+      ) : null}
 
-      {showFullscreenHint && (
+      {!isEnterName ? (
         <ModalSheet
-          open={fullscreenHintVisible}
-          onClose={closeFullscreenHint}
-          showHandle
+          open={showFullscreenHint}
+          onClose={() => setShowFullscreenHint(false)}
+          size="compact"
           showClose
           closeAriaLabel={t.close}
-          paddedContent={false}
-          panelClassName="px-5 pt-0 pb-safe-bottom-8"
           ariaLabelledBy="fullscreen-hint-title"
+          header={
+            <ModalSheetTitle id="fullscreen-hint-title" themeClass={currentTheme.textMain}>
+              {t.fullscreenUnavailableTitle}
+            </ModalSheetTitle>
+          }
         >
-          <p
-            id="fullscreen-hint-title"
-            className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-12 mb-4"
-          >
-            {t.fullscreenUnavailableTitle}
-          </p>
-          <p className="text-ui-fg-muted text-sm leading-relaxed font-sans mb-6">
+          <p className={`text-ui-fg-muted ${typographyClass.body} leading-relaxed`}>
             {t.fullscreenUnavailableBody}
           </p>
-          <button
-            type="button"
-            onClick={closeFullscreenHint}
-            className={`w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest transition-all duration-200 ease-out active:scale-[0.98] ${currentTheme.button}`}
-          >
-            {t.close}
-          </button>
         </ModalSheet>
-      )}
+      ) : null}
 
-      {showQuickJoin && (
-        <ModalSheet
-          open={quickJoinVisible}
-          onClose={closeQuickJoin}
-          maxWidth="sm"
-          showHandle
-          showClose
-          closeAriaLabel={t.close}
-          paddedContent={false}
-          panelClassName="px-5 pt-0 pb-safe-bottom-8"
-          backdropStyle={keyboardAvoidingBottomPadding(keyboardBottomInset)}
-          ariaLabelledBy="quick-join-title"
-        >
-          <p
-            id="quick-join-title"
-            className="text-ui-fg text-sm font-sans font-semibold tracking-wide pr-12 mb-4"
-          >
-            {t.enterCode}
-          </p>
+      {showQuickJoin && !isEnterName ? (
+        <QuickJoinSheet
+          onDismiss={() => setShowQuickJoin(false)}
+          theme={currentTheme}
+          t={t}
+          canSubmit={canQuickJoin}
+          checking={quickJoinChecking}
+          code={quickJoinCode}
+          onCodeChange={setQuickJoinCode}
+          onSubmit={() => void handleQuickJoin()}
+        />
+      ) : null}
 
-          <div className="rounded-3xl bg-ui-surface border border-ui-border px-4 py-3 transition-colors duration-200">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                inputMode="numeric"
-                value={quickJoinCode}
-                onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9]/g, '');
-                  if (val.length <= ROOM_CODE_LENGTH) setQuickJoinCode(val);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') void handleQuickJoin();
-                }}
-                placeholder="00000"
-                data-testid="menu-quick-join-code"
-                className="flex-1 bg-transparent text-ui-fg font-sans font-bold tracking-[0.25em] text-[12px] px-2 py-2 outline-none placeholder:text-ui-fg-muted"
-                aria-label={t.enterCode}
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={() => void handleQuickJoin()}
-                disabled={!canQuickJoin || quickJoinChecking}
-                data-testid="menu-quick-join-submit"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-ui-accent text-ui-accent-contrast transition-all duration-200 ease-out active:scale-95 disabled:opacity-40"
-                aria-label={t.enter}
-              >
-                {quickJoinChecking ? (
-                  <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                ) : (
-                  <ArrowRight size={18} strokeWidth={2.5} />
-                )}
-              </button>
-            </div>
-          </div>
+      {showAppSettings && !isEnterName ? (
+        <AppSettingsModal onClose={() => setShowAppSettings(false)} />
+      ) : null}
 
-          <button
-            type="button"
-            onClick={closeQuickJoin}
-            className={`mt-4 w-full py-3 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover transition-all duration-200 ease-out active:scale-[0.98]`}
-          >
-            {t.cancel}
-          </button>
-        </ModalSheet>
-      )}
-
-      {showAppSettings && <AppSettingsModal onClose={() => setShowAppSettings(false)} />}
+      {isEnterName ? <EnterNameSheet /> : null}
     </div>
   );
 };

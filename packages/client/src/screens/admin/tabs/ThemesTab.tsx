@@ -9,6 +9,12 @@ import {
   ADMIN_SPINNER_CLASS,
   adminStatusBtn,
 } from '../components/adminStyles';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;
@@ -89,7 +95,7 @@ export function ThemesTab({ showToast, confirm }: Props) {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
+          className={`flex items-center gap-1.5 ${typographyClass.label} tracking-widest text-ui-fg-muted hover:text-ui-fg transition-colors`}
         >
           <RefreshCw size={13} />
           Оновити
@@ -119,13 +125,17 @@ export function ThemesTab({ showToast, confirm }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-ui-fg font-medium text-sm">{theme.name}</span>
-                    <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
+                    <span
+                      className={`${typographyClass.label} font-mono normal-case text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border`}
+                    >
                       {theme.slug}
                     </span>
                     {theme.isFree ? (
-                      <span className="text-[10px] text-ui-success font-bold">FREE</span>
+                      <span className={`${typographyClass.label} text-ui-success normal-case`}>
+                        FREE
+                      </span>
                     ) : (
-                      <span className="text-[10px] text-ui-accent font-bold">
+                      <span className={`${typographyClass.label} text-ui-accent normal-case`}>
                         ${(theme.price / 100).toFixed(2)}
                       </span>
                     )}
@@ -256,13 +266,13 @@ function EditThemePanel({
           <button
             onClick={handleSave}
             disabled={acting.has(key)}
-            className={`text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
+            className={`${typographyClass.label} tracking-wider px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
           >
             {acting.has(key) ? '...' : 'Зберегти'}
           </button>
           <button
             onClick={onCancel}
-            className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors"
+            className={`${typographyClass.label} tracking-wider px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors`}
           >
             Скасувати
           </button>

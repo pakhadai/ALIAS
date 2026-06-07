@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Settings,
@@ -13,20 +13,21 @@ import { AvatarDisplay } from '../../components/AvatarDisplay';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
+import { useAppLogin } from '../../context/AppLoginContext';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useT } from '../../hooks/useT';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
 import { LogoutConfirmBottomSheet } from '../../components/Auth/LogoutConfirmBottomSheet';
-import {
-  renderGoogleSignInButton,
-  type GoogleIdCredentialResponse,
-} from '../../utils/googleIdentity';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { typographyClass, labelSectionTitleClass } from '../../constants/typography';
 
 export function ProviderBadge({ provider }: { provider: string }) {
   const label =
     provider === 'google' ? 'GOOGLE' : provider === 'apple' ? 'APPLE' : provider.toUpperCase();
   return (
-    <span className="bg-ui-accent text-ui-accent-contrast text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
+    <span
+      className={`bg-ui-accent text-ui-accent-contrast ${typographyClass.label} tracking-[0.18em] px-3 py-[3px] rounded-full shadow-md`}
+    >
       {label}
     </span>
   );
@@ -34,7 +35,9 @@ export function ProviderBadge({ provider }: { provider: string }) {
 
 function GuestAccountBadge({ label }: { label: string }) {
   return (
-    <span className="bg-ui-accent text-ui-accent-contrast text-[7px] font-bold tracking-[0.18em] uppercase px-3 py-[3px] rounded-full shadow-md">
+    <span
+      className={`bg-ui-accent text-ui-accent-contrast ${typographyClass.label} tracking-[0.18em] px-3 py-[3px] rounded-full shadow-md`}
+    >
       {label}
     </span>
   );
@@ -45,62 +48,20 @@ const statCardInteractive = `rounded-2xl px-4 py-4 text-left border border-ui-bo
   group-active:scale-[0.98]`;
 
 export const ProfileScreen = () => {
-  const { setGameState, currentTheme, uiLanguage } = useGame();
-  const { authState, profile, logout, loginWithGoogle } = useAuthContext();
+  const { setGameState, currentTheme } = useGame();
+  const { authState, profile, logout } = useAuthContext();
+  const { requestLogin } = useAppLogin();
   const { isTelegram } = useTelegramApp();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
   const isDark = currentTheme.isDark;
   const { get: getStats } = usePlayerStats();
   const t = useT();
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const loadingAuth = authState.status === 'loading';
   const isGuest = authState.status === 'anonymous';
   const email = authState.status === 'authenticated' ? authState.email : '';
   const provider = authState.status === 'authenticated' ? authState.provider : '';
-
-  useEffect(() => {
-    if (showLogoutConfirm) {
-      const r = requestAnimationFrame(() => setLogoutConfirmVisible(true));
-      return () => cancelAnimationFrame(r);
-    }
-    setLogoutConfirmVisible(false);
-    return undefined;
-  }, [showLogoutConfirm]);
-
-  const locale = useMemo(() => {
-    if (uiLanguage === 'DE') return 'de';
-    if (uiLanguage === 'EN') return 'en';
-    return 'uk';
-  }, [uiLanguage]);
-
-  const handleGoogleSuccess = useCallback(
-    async (cred: GoogleIdCredentialResponse) => {
-      if (!cred.credential) return;
-      await loginWithGoogle(cred.credential);
-    },
-    [loginWithGoogle]
-  );
-
-  useEffect(() => {
-    if (!isGuest || isTelegram) return;
-    if (!googleButtonRef.current) return;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
-    if (!clientId) return;
-    renderGoogleSignInButton(googleButtonRef.current, {
-      clientId,
-      locale,
-      colorScheme: currentTheme.isDark ? 'dark' : 'light',
-      onCredential: handleGoogleSuccess,
-    });
-  }, [locale, currentTheme.isDark, handleGoogleSuccess, isGuest, isTelegram]);
-
-  const closeLogoutConfirm = () => {
-    setLogoutConfirmVisible(false);
-    setTimeout(() => setShowLogoutConfirm(false), 300);
-  };
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -135,8 +96,8 @@ export const ProfileScreen = () => {
       ? 'bg-ui-surface border border-ui-border hover:bg-ui-surface-hover'
       : 'bg-ui-card border border-ui-border hover:bg-ui-surface-hover shadow-sm'
   }`;
-  const navLabel = `font-sans font-bold text-[11px] uppercase tracking-[0.25em] ${currentTheme.textMain}`;
-  const sectionTitle = `text-[9px] font-sans font-bold tracking-[0.28em] uppercase text-ui-fg-muted`;
+  const navLabel = `${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`;
+  const sectionTitle = labelSectionTitleClass;
 
   const showAdminEntry =
     authState.status === 'authenticated' && (authState.isAdmin || (profile?.isAdmin ?? false));
@@ -202,11 +163,13 @@ export const ProfileScreen = () => {
             name={displayName}
             size={96}
           />
-          <h1 className={`mt-5 font-serif text-[26px] tracking-wide ${currentTheme.textMain}`}>
+          <ScreenTitle as="h1" themeClass={currentTheme.textMain} className="mt-5">
             {displayName}
-          </h1>
+          </ScreenTitle>
           {guestSub && (
-            <p className={`text-[13px] mt-1 mb-2 ${currentTheme.textSecondary}`}>{guestSub}</p>
+            <p className={`${typographyClass.body} mt-1 mb-2 ${currentTheme.textSecondary}`}>
+              {guestSub}
+            </p>
           )}
           {!loadingAuth && isGuest ? (
             <GuestAccountBadge label={t.profileFreeAccount} />
@@ -217,7 +180,13 @@ export const ProfileScreen = () => {
 
         {isGuest && !isTelegram && (
           <div className="px-6 md:px-8 pb-6 flex flex-col items-center">
-            <div ref={googleButtonRef} className="w-full max-w-[320px] min-h-[44px]" />
+            <button
+              type="button"
+              onClick={requestLogin}
+              className={`w-full max-w-[320px] min-h-[44px] rounded-xl font-sans text-xs font-bold uppercase tracking-[0.2em] ${currentTheme.button}`}
+            >
+              {t.loginGoogle}
+            </button>
           </div>
         )}
 
@@ -235,12 +204,16 @@ export const ProfileScreen = () => {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-[18px] leading-none">{item.emoji}</span>
-                      <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
+                      <span className="text-lg leading-none">{item.emoji}</span>
+                      <p
+                        className={`${typographyClass.label} font-sans tracking-[0.18em] text-ui-fg line-clamp-2`}
+                      >
                         {item.label}
                       </p>
                     </div>
-                    <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
+                    <p
+                      className={`${typographyClass.label} font-sans mt-2 leading-snug text-ui-fg-muted normal-case line-clamp-3`}
+                    >
                       {item.sub}
                     </p>
                   </div>
@@ -253,12 +226,16 @@ export const ProfileScreen = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-[18px] leading-none">{guestBenefits[4].emoji}</span>
-                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-ui-fg line-clamp-2">
+                    <span className="text-lg leading-none">{guestBenefits[4].emoji}</span>
+                    <p
+                      className={`${typographyClass.label} font-sans tracking-[0.18em] text-ui-fg line-clamp-2`}
+                    >
                       {guestBenefits[4].label}
                     </p>
                   </div>
-                  <p className="text-[10px] font-sans mt-2 leading-snug text-ui-fg-muted line-clamp-3">
+                  <p
+                    className={`${typographyClass.label} font-sans mt-2 leading-snug text-ui-fg-muted normal-case line-clamp-3`}
+                  >
                     {guestBenefits[4].sub}
                   </p>
                 </div>
@@ -280,36 +257,34 @@ export const ProfileScreen = () => {
               <div
                 className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
+                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
                   {t.profileStatsCardGames ?? t.statsRowGamesPlayed ?? 'Played'}
                 </p>
-                <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
+                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>
                   {stats.gamesPlayed}
                 </p>
               </div>
               <div
                 className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
+                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
                   {t.profileStatsCardGuessed ?? t.statsRowWordsGuessed ?? 'Guessed'}
                 </p>
-                <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
+                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>
                   {stats.wordsGuessed}
                 </p>
               </div>
               <div
                 className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
               >
-                <p className="text-[8px] font-sans font-bold uppercase tracking-[0.28em] text-ui-fg-muted">
+                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
                   {t.profileStatsCardAccuracy ?? t.statsRowAccuracy ?? 'Accuracy'}
                 </p>
-                <p className={`mt-1 font-serif text-[20px] ${currentTheme.textMain}`}>
-                  {accuracy}%
-                </p>
+                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>{accuracy}%</p>
               </div>
             </div>
             <p
-              className={`mt-3 text-center text-[10px] uppercase tracking-[0.35em] font-bold text-ui-fg-muted group-hover:text-ui-accent transition-colors`}
+              className={`mt-3 text-center ${typographyClass.label} tracking-[0.35em] text-ui-fg-muted group-hover:text-ui-accent transition-colors`}
             >
               {t.profileTapForDetails ?? 'Tap for details'}
             </p>
@@ -347,7 +322,9 @@ export const ProfileScreen = () => {
                         : (t.profileNavUnlockPacks ?? 'Unlock custom packs')}
                     </span>
                     {!hasCustomPacks && (
-                      <p className="text-[9px] mt-0.5 uppercase tracking-widest text-ui-fg-muted">
+                      <p
+                        className={`${typographyClass.label} mt-0.5 tracking-widest text-ui-fg-muted`}
+                      >
                         {t.profileNavUnlockPacksSub ?? 'Available in the store'}
                       </p>
                     )}
@@ -401,7 +378,7 @@ export const ProfileScreen = () => {
               >
                 <div className="flex items-center gap-3">
                   <ShoppingBag size={16} />
-                  <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em]">
+                  <span className={`${typographyClass.label} font-sans tracking-[0.25em]`}>
                     {t.profileNavStore ?? t.store ?? 'Store'}
                   </span>
                 </div>
@@ -426,7 +403,7 @@ export const ProfileScreen = () => {
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
             disabled={loggingOut}
-            className="w-full text-center text-ui-danger font-sans font-bold text-[10px] tracking-[0.3em] uppercase py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30"
+            className={`w-full text-center text-ui-danger font-sans ${typographyClass.label} tracking-[0.3em] py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30`}
           >
             {loggingOut ? (
               <Loader2 size={14} className="animate-spin inline" />
@@ -439,17 +416,14 @@ export const ProfileScreen = () => {
 
       {showLogoutConfirm && (
         <LogoutConfirmBottomSheet
-          sheetOpen={logoutConfirmVisible}
           titleId="profile-screen-logout-confirm"
-          onRequestClose={closeLogoutConfirm}
-          onCancel={closeLogoutConfirm}
+          onDismiss={() => setShowLogoutConfirm(false)}
           onConfirm={handleLogout}
           loggingOut={loggingOut}
           title={t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
           cancelLabel={t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
           confirmLabel={t.profileLogoutConfirm ?? 'Log out'}
           loadingLabel={t.profileLogoutLoading ?? 'Logging out...'}
-          closeAriaLabel={t.close ?? 'Close'}
         />
       )}
     </div>

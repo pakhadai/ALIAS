@@ -4,6 +4,13 @@ import type { Player, ThemeConfig } from '../../../types';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { MAX_PLAYERS } from '../../../constants';
 import type { TranslationStrings } from '../../../hooks/useT';
+import { ScreenTitle } from '../../../components/typography/ScreenTitle';
+import {
+  typographyClass,
+  labelSectionClass,
+  labelSectionTitleClass,
+  formLabelClass,
+} from '../../../constants/typography';
 
 type T = TranslationStrings;
 
@@ -41,10 +48,10 @@ export function PlayersSection(props: {
   const isPlayerSocketConnected = (p: { isConnected?: boolean }) => p.isConnected !== false;
 
   return (
-    <div className="w-full max-w-sm space-y-6">
-      <h3 className={`font-serif text-xl ${theme.textMain}`}>
+    <div className="w-full max-w-sm space-y-6" data-testid="lobby-players-section">
+      <ScreenTitle as="h3" themeClass={theme.textMain}>
         {t.players} ({players.length})
-      </h3>
+      </ScreenTitle>
 
       <div className="space-y-3">
         {players.map((p) => {
@@ -58,9 +65,9 @@ export function PlayersSection(props: {
                 theme.isDark ? 'bg-ui-surface border-ui-border' : 'bg-ui-card border-ui-border'
               } ${
                 !online
-                  ? 'opacity-75 border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)]'
+                  ? 'border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_8%,var(--ui-surface))]'
                   : ''
-              } ${justJoined ? 'animate-fade-in' : ''}`}
+              } ${justJoined ? 'motion-safe:animate-fade-in' : ''}`}
             >
               {p.avatarId != null ? (
                 <AvatarDisplay avatarId={p.avatarId} size={36} />
@@ -70,7 +77,7 @@ export function PlayersSection(props: {
 
               <div className="ml-4 flex flex-col min-w-0 flex-1">
                 <span
-                  className={`font-bold truncate ${theme.textMain} inline-flex items-center gap-2`}
+                  className={`font-bold truncate ${theme.textMain} inline-flex items-center gap-2 ${typographyClass.body}`}
                 >
                   {p.name}
                   {p.isHost && (
@@ -93,24 +100,25 @@ export function PlayersSection(props: {
                           setKickMenuPlayerId(null);
                           onKick({ id: p.id, name: p.name });
                         }}
-                        className="p-1.5 rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
+                        className="min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
                         title={t.kickPlayerTitle}
-                        aria-label={t.kickPlayerTitle ?? 'Kick player'}
+                        aria-label={t.kickPlayerTitle}
                       >
-                        <X
-                          size={14}
-                          className="text-ui-danger opacity-90 group-hover:opacity-100"
-                        />
+                        <X size={14} className="text-ui-danger" />
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => setKickMenuPlayerId((cur) => (cur === p.id ? null : p.id))}
-                        className="p-1.5 rounded-lg hover:bg-ui-surface-hover border border-ui-border transition-all duration-200 active:scale-95"
+                        className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-ui-surface-hover border border-ui-border transition-all duration-200 active:scale-95"
                         title={t.more ?? 'More'}
                         aria-label={t.more ?? 'More'}
+                        aria-expanded={kickMenuPlayerId === p.id}
                       >
-                        <MoreHorizontal size={14} className={`${theme.iconColor} opacity-60`} />
+                        <MoreHorizontal
+                          size={14}
+                          className={`${theme.iconColor} text-ui-fg-muted`}
+                        />
                       </button>
                     )}
                   </div>
@@ -120,19 +128,16 @@ export function PlayersSection(props: {
                   <button
                     type="button"
                     onClick={() => onRemoveOffline(p.id)}
-                    className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
+                    className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
                     aria-label={t.removePlayer ?? 'Remove player'}
                   >
-                    <Minus
-                      size={14}
-                      className="text-ui-danger opacity-80 group-hover:opacity-100"
-                    />
+                    <Minus size={14} className="text-ui-danger" />
                   </button>
                 )}
 
                 {gameMode === 'ONLINE' && online && (
                   <span
-                    className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-success)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-success"
+                    className={`inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-success)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] px-2 py-0.5 ${typographyClass.label} tracking-wide text-ui-success`}
                     title={t.playerOnlineHint}
                   >
                     {t.playerOnlineHint}
@@ -140,7 +145,7 @@ export function PlayersSection(props: {
                 )}
                 {gameMode === 'ONLINE' && !online && (
                   <span
-                    className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-warning)_40%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-warning"
+                    className={`inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--ui-warning)_40%,transparent)] bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] px-2 py-0.5 ${typographyClass.label} tracking-wide text-ui-warning`}
                     title={t.playerDisconnected}
                   >
                     {t.playerDisconnected}
@@ -154,6 +159,8 @@ export function PlayersSection(props: {
 
       {isHost && gameMode === 'OFFLINE' && (
         <button
+          type="button"
+          data-testid="lobby-add-player-trigger"
           onClick={onAddOfflineClick}
           disabled={!canAddOfflinePlayer}
           className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${
@@ -164,7 +171,7 @@ export function PlayersSection(props: {
         >
           <span className="inline-flex items-center gap-3">
             <Plus size={18} />
-            <span className="text-[10px] uppercase tracking-widest font-bold">
+            <span className={`${typographyClass.label} tracking-wide`}>
               {players.length >= MAX_PLAYERS
                 ? `${t.addPlayer} (${players.length}/${MAX_PLAYERS})`
                 : t.addPlayer}
