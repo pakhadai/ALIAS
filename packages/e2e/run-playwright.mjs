@@ -15,6 +15,15 @@ const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs;
 // Run the CLI with `node …/cli.js` (works on Windows without shell / .cmd quirks).
 const cliJs = path.join(__dirname, 'node_modules', '@playwright', 'test', 'cli.js');
 
+const locatorTest = spawnSync(
+  process.execPath,
+  ['--test', path.join(__dirname, 'tests', 'helpers', 'game-ui.locators.test.mjs')],
+  { stdio: 'inherit', cwd: __dirname, env: process.env }
+);
+if (locatorTest.status !== 0) {
+  process.exit(locatorTest.status ?? 1);
+}
+
 const res = spawnSync(process.execPath, [cliJs, 'test', ...args], {
   stdio: 'inherit',
   cwd: __dirname,

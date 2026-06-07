@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node run-playwright.mjs",
+    "test:locators": "node --test tests/helpers/game-ui.locators.test.mjs",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "install:browsers": "playwright install chromium"

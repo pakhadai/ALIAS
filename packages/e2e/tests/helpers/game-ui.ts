@@ -16,7 +16,24 @@ export const continueRe = /Далі|Continue|Weiter/i;
 export const roundSummaryRe = /Час вийшов|Time's up|Zeit um/i;
 export const scoreboardRe = /Очки|Points|Punkte/i;
 export const rematchRe = /Реванш|Rematch|Revanche/i;
-export const addPlayerRe = /Додати гравця|Add player|Spieler hinzufügen/i;
+export const addPlayerRe = /Додати гравця|Add Player|Spieler hinzufügen/i;
+
+/** In-room settings gear (`t.settings` aria-label). */
+export const lobbySettingsButtonRe = /^(Settings|Налаштування|Einstellungen)$/i;
+/**
+ * SettingsScreen rules tab — code uses `t.rules ?? 'Правила'` (no `rules` i18n key yet).
+ * @see packages/client/src/screens/lobby/SettingsScreen.tsx
+ */
+export const lobbySettingsRulesTabRe = /^Правила$/;
+/** Collapsible "Time & goal" block on the rules tab (`t.lobbyRulesSectionBasics`). */
+export const lobbyRulesBasicsRe = /^(Час і перемога|Zeit & Ziel|Time & goal)$/i;
+/** Round-time stepper minus (`aria-label={t.roundTime + ' −10'}`), Unicode minus U+2212. */
+export const roundTimeMinusButtonRe = /^(Час|Zeit|Time) −10$/;
+
+/** Modal sheet title (t.addPlayerTitle). */
+const addPlayerModalTitleRe = /^(Новий гравець|New Player|Neuer Spieler)$/i;
+/** Modal confirm (t.add). Anchors required — Playwright ignores `exact` when name is RegExp. */
+const addConfirmRe = /^(Додати|Add|Hinzufügen)$/i;
 
 export type TwoPlayerSession = {
   hostContext: Awaited<ReturnType<Browser['newContext']>>;
@@ -116,7 +133,17 @@ export async function confirmRoundSummary(host: Page): Promise<void> {
 }
 
 export async function openLobbySettings(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /Settings|Налаштування/i }).click();
+  await page.getByRole('button', { name: lobbySettingsButtonRe }).click();
+  await expect(page.getByText(lobbySettingsButtonRe).first()).toBeVisible({ timeout: 15_000 });
+}
+
+/** Round time / score-to-win live under Settings → Rules (default tab is Mode). */
+export async function openLobbySettingsRulesTab(page: Page): Promise<void> {
+  await openLobbySettings(page);
+  await page.getByRole('button', { name: lobbySettingsRulesTabRe, exact: true }).click();
+  await expect(page.getByRole('button', { name: lobbyRulesBasicsRe })).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 export async function closeLobbySettings(page: Page): Promise<void> {
@@ -133,14 +160,22 @@ export async function lockTeams(host: Page): Promise<void> {
   await host.getByRole('button', { name: 'Lock teams', exact: true }).click();
 }
 
-const addConfirmRe = /Додати|Add|Hinzufügen/i;
 export const nextRoundRe = /Раунд|Round|Runde/i;
+
+function offlineAddPlayerModal(page: Page) {
+  return page.getByRole('dialog').filter({
+    has: page.getByRole('heading', { name: addPlayerModalTitleRe }),
+  });
+}
 
 export async function addOfflinePlayer(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: addPlayerRe }).click();
-  await page.locator('input').last().fill(name);
-  // Modal confirm is t.add ("Додати"), not t.addPlayer ("Додати гравця") — exact avoids strict-mode clash.
-  await page.getByRole('button', { name: addConfirmRe, exact: true }).click();
+
+  const modal = offlineAddPlayerModal(page);
+  await expect(modal).toBeVisible({ timeout: 10_000 });
+  await modal.locator('input').fill(name);
+  await modal.getByRole('button', { name: addConfirmRe }).click();
+  await expect(modal).toBeHidden({ timeout: 10_000 });
 }
 
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
@@ -154,8 +189,13 @@ export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): 
 }
 
 export async function setMinimumRoundTime(host: Page): Promise<void> {
-  await openLobbySettings(host);
-  const minus = host.getByRole('button', { name: /−10/ }).first();
+  await openLobbySettingsRulesTab(host);
+  const basics = host.getByRole('button', { name: lobbyRulesBasicsRe });
+  const minus = host.getByRole('button', { name: roundTimeMinusButtonRe });
+  if (!(await minus.isVisible().catch(() => false))) {
+    await basics.click();
+  }
+  await expect(minus).toBeVisible({ timeout: 10_000 });
   // Default 60s → UI floor 30s (SettingsScreen Math.max(30, …)).
   for (let i = 0; i < 3; i++) {
     await minus.click();
@@ -164,8 +204,13 @@ export async function setMinimumRoundTime(host: Page): Promise<void> {
 }
 
 export async function lowerScoreToWin(host: Page, target = 10): Promise<void> {
-  await openLobbySettings(host);
+  await openLobbySettingsRulesTab(host);
+  const basics = host.getByRole('button', { name: lobbyRulesBasicsRe });
   const scoreInput = host.locator('input[type="number"]').last();
+  if (!(await scoreInput.isVisible().catch(() => false))) {
+    await basics.click();
+  }
+  await expect(scoreInput).toBeVisible({ timeout: 10_000 });
   await scoreInput.fill(String(target));
   await scoreInput.blur();
   await closeLobbySettings(host);
