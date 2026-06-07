@@ -13,9 +13,33 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 
 **Bundle (C-1):** lazy routes — `main` **305.5 KB** / **93.83 KB gzip** (baseline was 500 KB). Chunks: `GameFlow` 50 KB, `LobbyScreen` 59 KB, `SettingsScreen` 47 KB, `StoreScreen` 14 KB, `RulesScreen` 1 KB.
 
-**Статус:** ACTIVE (session 5 — verify + polish: RulesModal split, lint 0)  
-**Останній аудит:** 2026-06-07  
-**Відкритих issues:** 0 (audit closed session 4)
+**Статус:** ACTIVE (test-gap Phases 1–8 ✅, commit `db1ecf5`)  
+**Останній аудит:** 2026-06-07 — Block G (G-1…G-8) ✅, деталі в `AUDIT_RESULTS.md`  
+**Відкритих issues:** 0
+
+**Test baseline (2026-06-07):**
+
+| Пакет | Тести | Примітка |
+|-------|-------|----------|
+| `@alias/server` | **341** | unit + integration (authorizeGameAction, GameEngine, RoomManager, routes, socketHandlers) |
+| `@alias/client` | **44** | GameContext, offlineGameActions, gameReducer, QuickBuyModal |
+| `@alias/shared` | **12** | `utils.test.ts` (shuffleArray, getTeamColor, constants) |
+
+**Coverage floor** (`packages/server/vitest.config.ts`, measured after Phases 1–7): **67%** stmts/lines, **71%** branches, **89%** functions. Core modules: GameEngine ~92%, RoomManager ~89%.
+
+**Verify:** `pnpm verify` green (typecheck, lint, format, server coverage, client + shared tests).
+
+**E2E:** `packages/e2e/tests/smoke-round.spec.ts` (`@smoke`), `core-acceptance.spec.ts` (`@core`); helpers у `helpers/game-ui.ts`. Локально потрібен Postgres (`docker compose up -d postgres`); CI — chromium + mobile-chrome.
+
+## Post test-gap backlog (optional, не блокери)
+
+| Область | Зараз | Наступний крок |
+|---------|-------|----------------|
+| `routes/` (auth, admin, purchases) | ~18–40% coverage | integration-тести при зміні API |
+| `handlers/socketHandlers.ts` | ~48% | relay / multi-node сценарії |
+| client | 44 тести | розширювати лише з новими фічаx |
+| D-4 deferred | `useSocketConnection`, `GameContext` deep-link rejoin, auth bootstrap | рефактор за потреби |
+| C-1 bundle | main 305 KB gzip OK | діяти лише якщо знову росте main/styles |
 
 ## Критичні файли — знай напам'ять
 
@@ -61,14 +85,18 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 
 ```bash
 pnpm dev                                    # запуск dev середовища
+pnpm verify                                 # typecheck + lint + format + coverage + tests
 pnpm typecheck                              # перевірка типів (0 помилок = норма)
 pnpm lint                                   # ESLint
 pnpm test:server                            # unit тести сервера
-pnpm --filter @alias/client test            # unit тести клієнта
+pnpm --filter @alias/server test:coverage   # server tests + coverage thresholds
+pnpm --filter @alias/client test            # unit тести клієнта (44)
+pnpm --filter @alias/shared test            # shared utils (12)
 pnpm --filter @alias/server db:migrate      # нова міграція Prisma
 pnpm --filter @alias/server db:seed         # seed БД
 pnpm build                                  # production build через Turbo
-pnpm --filter @alias/e2e run test -- --grep "@smoke"  # smoke E2E
+pnpm test:e2e                               # Playwright (@smoke / @core у CI)
+pnpm --filter @alias/e2e run test -- --grep "@smoke"  # smoke E2E only
 ```
 
 ## Відкриті питання / ToDo для мене (власника)
