@@ -20,6 +20,7 @@ import {
   tapCorrect,
   waitForRoundSummary,
   startGameRe,
+  playingNowRe,
 } from './helpers/game-ui';
 
 test.describe.configure({ mode: 'serial' });
@@ -35,11 +36,9 @@ test.describe('@core Host migration', () => {
         timeout: 45_000,
       });
       await session.guest.getByRole('button', { name: startGameRe }).click();
-      await expect(session.guest.getByRole('button', { name: /Я ГОТОВИЙ|I'M READY/i })).toBeVisible(
-        {
-          timeout: 30_000,
-        }
-      );
+      // Guest is new host but not the round explainer (disconnected host still on team 0).
+      await expect(session.guest.getByText(playingNowRe)).toBeVisible({ timeout: 30_000 });
+      await expect(session.guest.getByTestId('lobby-room-code')).not.toBeVisible();
     } finally {
       await session.guestContext.close();
     }

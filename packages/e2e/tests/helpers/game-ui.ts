@@ -10,6 +10,7 @@ export const nextRe = /Далі|Next|Weiter/i;
 export const enterRoomRe = /Увійти|Enter|Eintreten/i;
 export const startGameRe = /Почати гру|Start|Starten/i;
 export const imReadyRe = /Я ГОТОВИЙ|I'M READY|ICH BIN BEREIT/i;
+export const playingNowRe = /Зараз грає|Playing|Spielt gerade/i;
 export const correctRe = /Вгадано|Correct|Richtig/i;
 export const continueRe = /Далі|Continue|Weiter/i;
 export const roundSummaryRe = /Час вийшов|Time's up|Zeit um/i;
