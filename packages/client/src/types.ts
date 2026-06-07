@@ -43,47 +43,22 @@ export interface ThemeConfig {
   isFree: boolean;
   isDark: boolean;
   preview: { bg: string; accent: string };
-  /** Core semantic token colors used to set `--ui-*` variables. */
+  /**
+   * Five base semantic colors; all other `--ui-*` values are derived in GameContext.
+   * Premium multi-accent themes may add at most `accentAlt` + `accentWarm` (see docs/UI_TOKENS.md).
+   */
   tokens?: {
     bg: string;
     surface: string;
-    border: string;
-    accent: string;
-    fgMuted: string;
     fg: string;
-    /** Raised surfaces (modals, nav). Falls back to a mix of surface/bg if omitted. */
+    accent: string;
+    border: string;
+    /** Raised surfaces (modals, nav). Recommended for dark themes; falls back to surface/bg mix. */
     elevated?: string;
-    /** Stronger separators than border. Falls back to `border` if omitted. */
-    divider?: string;
-    /** Hover/focus/glow around primary accent. */
-    accentSoft?: string;
-    /** Secondary accent (e.g. outline buttons, links). */
+    /** Premium exception: secondary accent partner for `--ui-accent-alt`. */
     accentAlt?: string;
-    /** Warm premium CTA / highlights. Falls back to `accent` if omitted. */
+    /** Premium exception: warm accent partner for `--ui-accent-warm`. */
     accentWarm?: string;
-    /** Hover state for warm accent. */
-    accentWarmSoft?: string;
-    /** Tertiary text (captions, disabled, placeholders). */
-    fgSubtle?: string;
-    /** Delicate separators; maps to `--ui-border-subtle`. */
-    borderSubtle?: string;
-    /** Verbatim `--ui-surface-hover` (skips accent tint mix). */
-    surfaceHoverColor?: string;
-    /** When true, `--ui-fg-muted` uses `fgMuted` without transparency mix. */
-    fgMutedOpaque?: boolean;
-    /** When true with `fgSubtle`, `--ui-fg-subtle` is solid. */
-    fgSubtleOpaque?: boolean;
-    /** Disabled / lowest-contrast text. */
-    fgDisabled?: string;
-    accentHover?: string;
-    accentPressed?: string;
-    /** Solid-ish accent-tinted surfaces (badges, soft fills). */
-    accentMuted?: string;
-    /** Focus ring color (may include alpha, e.g. `#RRGGBBAA`). */
-    accentRing?: string;
-    success?: string;
-    warning?: string;
-    danger?: string;
   };
   fonts: { heading: string; body: string };
   borderRadius: string;

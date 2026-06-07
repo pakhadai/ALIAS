@@ -61,7 +61,10 @@ export function TeamCard(props: {
       style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
     >
       <div className="flex items-center gap-3">
-        <div className={`w-3 h-3 rounded-full ${team.color}`} />
+        <div
+          className="w-3 h-3 rounded-full shrink-0"
+          style={{ backgroundColor: team.colorHex || undefined }}
+        />
 
         {editingTeamId === team.id ? (
           <div className="flex items-center gap-2 flex-1 min-w-0">

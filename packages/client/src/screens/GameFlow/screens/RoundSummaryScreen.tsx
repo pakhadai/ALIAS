@@ -55,7 +55,7 @@ export const RoundSummaryScreen = () => {
   return (
     <div
       data-testid="round-summary"
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 relative`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-safe-bottom relative`}
     >
       {milestone && (
         <MilestoneNotification

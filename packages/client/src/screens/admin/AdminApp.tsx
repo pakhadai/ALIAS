@@ -17,6 +17,7 @@ import { StatsTab } from './tabs/StatsTab';
 import { DecksTab } from './tabs/DecksTab';
 import { PacksTab } from './tabs/PacksTab';
 import { ThemesTab } from './tabs/ThemesTab';
+import { ADMIN_SPINNER_CLASS } from './components/adminStyles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -58,10 +59,10 @@ function ToastContainer({
           key={t.id}
           className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-xl pointer-events-auto animate-slide-in ${
             t.type === 'success'
-              ? 'bg-[color-mix(in_srgb,#44ff44_12%,#111)] border-[color-mix(in_srgb,#44ff44_28%,transparent)] text-[#44ff44]'
+              ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,var(--ui-bg))] border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success'
               : t.type === 'error'
-                ? 'bg-[color-mix(in_srgb,#ff4444_12%,#111)] border-[color-mix(in_srgb,#ff4444_28%,transparent)] text-[#ff4444]'
-                : 'bg-[#1a1a1a] border-[#333] text-white'
+                ? 'bg-[color-mix(in_srgb,var(--ui-danger)_12%,var(--ui-bg))] border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-ui-danger'
+                : 'bg-ui-surface border-ui-border text-ui-fg'
           }`}
           style={{ animation: 'toast-in 0.2s ease-out' }}
         >
@@ -140,18 +141,18 @@ function ConfirmModal({
 
 function NotAuthorizedScreen({ message }: { message: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-[#111] text-white">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-ui-bg text-ui-fg">
       <div className="max-w-md text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,#ff4444_14%,transparent)] border border-[color-mix(in_srgb,#ff4444_28%,transparent)] flex items-center justify-center mx-auto">
-          <AlertCircle size={28} className="text-[#ff4444]" />
+        <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] flex items-center justify-center mx-auto">
+          <AlertCircle size={28} className="text-ui-danger" />
         </div>
         <div>
           <h1 className="text-2xl font-serif mb-2">Доступ закрито</h1>
-          <p className="text-[#888] text-sm leading-relaxed">{message}</p>
+          <p className="text-ui-fg-muted text-sm leading-relaxed">{message}</p>
         </div>
         <a
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#E3FF5B] text-black font-bold text-sm hover:brightness-110 transition-all"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ui-accent text-ui-accent-contrast font-bold text-sm hover:bg-ui-accent-hover transition-all"
         >
           <ExternalLink size={16} />
           Перейти в головний додаток
@@ -163,10 +164,10 @@ function NotAuthorizedScreen({ message }: { message: string }) {
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#111]">
+    <div className="min-h-screen flex items-center justify-center bg-ui-bg">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-2 border-[#E3FF5B] border-t-transparent rounded-full animate-spin" />
-        <p className="text-[#888] text-sm">Перевірка авторизації…</p>
+        <div className={`w-10 h-10 ${ADMIN_SPINNER_CLASS}`} />
+        <p className="text-ui-fg-muted text-sm">Перевірка авторизації…</p>
       </div>
     </div>
   );
@@ -281,29 +282,29 @@ export function AdminApp() {
   const tabProps = { showToast, confirm };
 
   return (
-    <div className="min-h-screen bg-[#111] text-white flex flex-col">
+    <div className="min-h-screen bg-ui-bg text-ui-fg flex flex-col">
       {/* Top bar */}
-      <header className="border-b border-[#222] px-6 py-3.5 flex items-center justify-between shrink-0">
+      <header className="border-b border-ui-border-subtle px-6 py-3.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="font-serif text-lg tracking-wide text-white">ALIAS</h1>
-          <span className="text-[10px] uppercase tracking-widest text-[#555] font-bold border border-[#333] px-2 py-0.5 rounded">
+          <h1 className="font-serif text-lg tracking-wide text-ui-fg">ALIAS</h1>
+          <span className="text-[10px] uppercase tracking-widest text-ui-fg-subtle font-bold border border-ui-border px-2 py-0.5 rounded">
             Admin
           </span>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={handleBackToApp}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-[#666] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-subtle hover:text-ui-fg transition-colors"
             title="Повернутися в додаток"
           >
             <ExternalLink size={13} />В додаток
           </button>
           {user?.email && (
-            <span className="text-[11px] text-[#666] hidden sm:block">{user.email}</span>
+            <span className="text-[11px] text-ui-fg-subtle hidden sm:block">{user.email}</span>
           )}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-[#666] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-subtle hover:text-ui-fg transition-colors"
           >
             <LogOut size={13} />
             Вийти
@@ -312,15 +313,15 @@ export function AdminApp() {
       </header>
 
       {/* Nav tabs */}
-      <nav className="border-b border-[#222] px-4 flex gap-1 overflow-x-auto shrink-0">
+      <nav className="border-b border-ui-border-subtle px-4 flex gap-1 overflow-x-auto shrink-0">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 py-3 px-4 text-[11px] uppercase tracking-widest font-bold border-b-2 transition-colors whitespace-nowrap ${
               tab === t.id
-                ? 'border-[#E3FF5B] text-[#E3FF5B]'
-                : 'border-transparent text-[#666] hover:text-[#aaa]'
+                ? 'border-ui-accent text-ui-accent'
+                : 'border-transparent text-ui-fg-subtle hover:text-ui-fg-muted'
             }`}
           >
             {t.icon}

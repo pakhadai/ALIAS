@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../../components/Button';
+import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { GameState } from '../../../types';
 import { useGame } from '../../../context/GameContext';
@@ -23,8 +24,9 @@ export const PreRoundScreen = () => {
 
   if (!activeTeam || activeTeam.players.length === 0) {
     return (
-      <div
-        className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center text-center`}
+      <ScreenShell
+        className={`${currentTheme.bg} px-8 text-center`}
+        contentClassName="justify-center items-center"
       >
         <div className="space-y-8">
           <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
@@ -34,7 +36,7 @@ export const PreRoundScreen = () => {
             </Button>
           )}
         </div>
-      </div>
+      </ScreenShell>
     );
   }
 
@@ -42,20 +44,35 @@ export const PreRoundScreen = () => {
   const explainer = activeTeam.players[playerIdx] || activeTeam.players[0];
   if (!explainer) {
     return (
-      <div
-        className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center text-center`}
+      <ScreenShell
+        className={`${currentTheme.bg} px-8 text-center`}
+        contentClassName="justify-center items-center"
       >
         <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
-      </div>
+      </ScreenShell>
     );
   }
   const isActualExplainer = explainer.id === myPlayerId;
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 text-center relative`}
+    <ScreenShell
+      className={`${currentTheme.bg} px-8 text-center relative`}
+      contentClassName="justify-center items-center"
+      footer={
+        <FixedBottomBar contentClassName="max-w-sm mx-auto">
+          <Button
+            themeClass={currentTheme.button}
+            variant="outline"
+            fullWidth
+            icon={<X size={18} />}
+            onClick={leaveRoom}
+          >
+            {t.toMainMenu}
+          </Button>
+        </FixedBottomBar>
+      }
     >
-      <div className="flex-1 flex flex-col justify-center items-center">
+      <div className="flex flex-col justify-center items-center w-full max-w-sm">
         <div className="space-y-8 animate-pop-in w-full max-w-sm">
           <h2
             className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] ${currentTheme.textSecondary}`}
@@ -115,20 +132,6 @@ export const PreRoundScreen = () => {
           </div>
         </div>
       </div>
-
-      <div className="fixed bottom-0 left-0 right-0 p-6 pt-4 pb-safe-bottom bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_55%,transparent)] to-transparent pointer-events-none">
-        <div className="max-w-sm mx-auto pointer-events-auto">
-          <Button
-            themeClass={currentTheme.button}
-            variant="outline"
-            fullWidth
-            icon={<X size={18} />}
-            onClick={leaveRoom}
-          >
-            {t.toMainMenu}
-          </Button>
-        </div>
-      </div>
-    </div>
+    </ScreenShell>
   );
 };

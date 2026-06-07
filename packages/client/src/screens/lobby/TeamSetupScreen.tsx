@@ -68,7 +68,9 @@ export const TeamSetupScreen = () => {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8`}>
+    <div
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-safe-bottom`}
+    >
       <header className="flex justify-between items-center py-6 mb-8">
         <button
           onClick={() => setGameState(GameState.LOBBY)}
@@ -101,7 +103,10 @@ export const TeamSetupScreen = () => {
               style={{ borderLeftWidth: '6px', borderLeftColor: team.colorHex || undefined }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-3 h-3 rounded-full ${team.color}`} />
+                <div
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: team.colorHex || undefined }}
+                />
                 {editingTeamId === team.id ? (
                   <div className="flex items-center gap-2 flex-1">
                     <input

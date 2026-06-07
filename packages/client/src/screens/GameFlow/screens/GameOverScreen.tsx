@@ -256,7 +256,7 @@ export const GameOverScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-12 pb-safe-bottom items-center overflow-y-auto no-scrollbar`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-safe-bottom items-center overflow-y-auto no-scrollbar`}
     >
       <Confetti />
 

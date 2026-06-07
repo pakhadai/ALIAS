@@ -74,7 +74,10 @@ export function AssignPlayerSheet(props: {
             className="w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] flex items-center justify-between px-4"
           >
             <span className="inline-flex items-center gap-2 min-w-0">
-              <span className={`w-2.5 h-2.5 rounded-full ${team.color}`} />
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: team.colorHex || undefined }}
+              />
               <span className="text-[11px] font-bold uppercase tracking-widest text-ui-fg-muted truncate">
                 {team.name}
               </span>

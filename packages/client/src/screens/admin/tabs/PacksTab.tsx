@@ -2,14 +2,18 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, ChevronUp, Pencil, Trash2, Upload, Plus, X, RefreshCw } from 'lucide-react';
 import { api, type WordPackRow, type PackWord } from '../adminApi';
 import type { ShowToast, ConfirmFn } from '../AdminApp';
+import { AdminInput, AdminSelect, AdminTextarea } from '../components/AdminInput';
+import {
+  ADMIN_PANEL_CLASS,
+  ADMIN_SECTION_INSET_CLASS,
+  ADMIN_SPINNER_CLASS,
+  adminStatusBtn,
+} from '../components/adminStyles';
 
 interface Props {
   showToast: ShowToast;
   confirm: ConfirmFn;
 }
-
-const INP =
-  'bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[#E3FF5B] transition-colors';
 
 export function PacksTab({ showToast, confirm }: Props) {
   const [packs, setPacks] = useState<WordPackRow[]>([]);
@@ -74,7 +78,7 @@ export function PacksTab({ showToast, confirm }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center pt-24">
-        <div className="w-8 h-8 border-2 border-[#E3FF5B] border-t-transparent rounded-full animate-spin" />
+        <div className={`w-8 h-8 ${ADMIN_SPINNER_CLASS}`} />
       </div>
     );
   }
@@ -83,20 +87,20 @@ export function PacksTab({ showToast, confirm }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-serif text-white">Word Packs</h2>
-          <p className="text-sm text-[#888] mt-0.5">{packs.length} паків</p>
+          <h2 className="text-lg font-serif text-ui-fg">Word Packs</h2>
+          <p className="text-sm text-ui-fg-muted mt-0.5">{packs.length} паків</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={load}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-[#888] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
           >
             <RefreshCw size={13} />
             Оновити
           </button>
           <button
             onClick={() => setShowCreate((v) => !v)}
-            className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,#E3FF5B_14%,transparent)] text-[#E3FF5B] border border-[color-mix(in_srgb,#E3FF5B_25%,transparent)] hover:bg-[color-mix(in_srgb,#E3FF5B_22%,transparent)] transition-colors"
+            className={`flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg ${adminStatusBtn('accent')}`}
           >
             <Plus size={13} />
             {showCreate ? 'Скасувати' : 'Новий пак'}
@@ -138,7 +142,9 @@ export function PacksTab({ showToast, confirm }: Props) {
             showToast={showToast}
           />
         ))}
-        {packs.length === 0 && <div className="text-center py-16 text-[#888]">Паків немає</div>}
+        {packs.length === 0 && (
+          <div className="text-center py-16 text-ui-fg-muted">Паків немає</div>
+        )}
       </div>
     </div>
   );
@@ -200,62 +206,46 @@ function CreatePackForm({
     setForm((v) => ({ ...v, [field]: e.target.value }));
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-[#141414] border border-[#333] rounded-2xl p-5 space-y-4"
-    >
-      <h3 className="text-sm font-bold text-white">Новий Word Pack</h3>
+    <form onSubmit={handleSubmit} className={`${ADMIN_PANEL_CLASS} p-5 space-y-4`}>
+      <h3 className="text-sm font-bold text-ui-fg">Новий Word Pack</h3>
       <div className="grid grid-cols-2 gap-3">
-        <input
-          className={INP}
+        <AdminInput
           placeholder="slug (ua-general)"
           value={form.slug}
           onChange={f('slug')}
           required
         />
-        <input
-          className={INP}
-          placeholder="Назва"
-          value={form.name}
-          onChange={f('name')}
-          required
-        />
-        <select className={INP} value={form.language} onChange={f('language')}>
+        <AdminInput placeholder="Назва" value={form.name} onChange={f('name')} required />
+        <AdminSelect value={form.language} onChange={f('language')}>
           {['UA', 'EN', 'DE'].map((l) => (
             <option key={l}>{l}</option>
           ))}
-        </select>
-        <input
-          className={INP}
-          placeholder="Category"
-          value={form.category}
-          onChange={f('category')}
-        />
-        <select className={INP} value={form.difficulty} onChange={f('difficulty')}>
+        </AdminSelect>
+        <AdminInput placeholder="Category" value={form.category} onChange={f('category')} />
+        <AdminSelect value={form.difficulty} onChange={f('difficulty')}>
           {['easy', 'medium', 'hard', 'mixed', '18+'].map((d) => (
             <option key={d}>{d}</option>
           ))}
-        </select>
-        <input
-          className={INP}
+        </AdminSelect>
+        <AdminInput
           type="number"
           min="0"
           placeholder="Ціна (центи)"
           value={form.price}
           onChange={f('price')}
         />
-        <input
-          className={INP + ' col-span-2'}
+        <AdminInput
+          className="col-span-2"
           placeholder="Опис (необов'язково)"
           value={form.description}
           onChange={f('description')}
         />
-        <label className="flex items-center gap-2 text-xs text-[#888] cursor-pointer col-span-2">
+        <label className="flex items-center gap-2 text-xs text-ui-fg-muted cursor-pointer col-span-2">
           <input
             type="checkbox"
             checked={form.isFree}
             onChange={(e) => setForm((v) => ({ ...v, isFree: e.target.checked }))}
-            className="accent-[#E3FF5B]"
+            className="accent-ui-accent"
           />
           Безкоштовний
         </label>
@@ -263,7 +253,7 @@ function CreatePackForm({
       <button
         type="submit"
         disabled={acting.has('create-pack')}
-        className="w-full bg-[#E3FF5B] text-black font-bold py-2.5 rounded-xl text-sm hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-40"
+        className="w-full bg-ui-accent text-ui-accent-contrast font-bold py-2.5 rounded-xl text-sm hover:bg-ui-accent-hover transition-all active:scale-[0.98] disabled:opacity-40"
       >
         {acting.has('create-pack') ? 'Створення...' : 'Створити пак'}
       </button>
@@ -301,39 +291,39 @@ function PackRow({
   showToast: ShowToast;
 }) {
   return (
-    <div className="bg-[#141414] border border-[#333] rounded-2xl overflow-hidden">
+    <div className={ADMIN_PANEL_CLASS}>
       {/* Header row */}
       <div className="px-5 py-3.5 flex items-center gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-white font-medium text-sm">{pack.name}</span>
-            <span className="text-[10px] font-mono text-[#888] bg-[#111] px-2 py-0.5 rounded border border-[#333]">
+            <span className="text-ui-fg font-medium text-sm">{pack.name}</span>
+            <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
               {pack.slug}
             </span>
-            <span className="text-[10px] text-[#666]">
+            <span className="text-[10px] text-ui-fg-subtle">
               {pack.language} · {pack.category} · {pack.difficulty}
             </span>
             {pack.isFree ? (
-              <span className="text-[10px] text-[#44ff44] font-bold">FREE</span>
+              <span className="text-[10px] text-ui-success font-bold">FREE</span>
             ) : (
-              <span className="text-[10px] text-[#E3FF5B] font-bold">
+              <span className="text-[10px] text-ui-accent font-bold">
                 ${(pack.price / 100).toFixed(2)}
               </span>
             )}
-            <span className="text-[10px] text-[#666]">{pack.wordCount} слів</span>
+            <span className="text-[10px] text-ui-fg-subtle">{pack.wordCount} слів</span>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,#E3FF5B_12%,transparent)] text-[#E3FF5B] border border-[color-mix(in_srgb,#E3FF5B_22%,transparent)] hover:bg-[color-mix(in_srgb,#E3FF5B_20%,transparent)] transition-colors"
+            className={`flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg ${adminStatusBtn('accent')}`}
           >
             {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             Слова
           </button>
           <button
             onClick={onToggleEdit}
-            className="p-1.5 rounded-lg bg-[#222] border border-[#333] text-[#888] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+            className="p-1.5 rounded-lg bg-ui-surface-hover border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-elevated transition-colors"
             title="Редагувати"
           >
             <Pencil size={14} />
@@ -341,11 +331,11 @@ function PackRow({
           <button
             onClick={() => onDelete(pack)}
             disabled={acting.has(`del-${pack.id}`)}
-            className="p-1.5 rounded-lg bg-[color-mix(in_srgb,#ff4444_12%,transparent)] border border-[color-mix(in_srgb,#ff4444_22%,transparent)] text-[#ff4444] hover:bg-[color-mix(in_srgb,#ff4444_20%,transparent)] transition-colors disabled:opacity-40"
+            className={`p-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('danger')}`}
             title="Видалити пак"
           >
             {acting.has(`del-${pack.id}`) ? (
-              <span className="w-3.5 h-3.5 border border-[#ff4444] border-t-transparent rounded-full animate-spin block" />
+              <span className="w-3.5 h-3.5 border border-ui-danger border-t-transparent rounded-full animate-spin block" />
             ) : (
               <Trash2 size={14} />
             )}
@@ -436,45 +426,42 @@ function EditPackPanel({
   };
 
   return (
-    <div className="border-t border-[#333] px-5 py-4 bg-[#111] space-y-3">
-      <p className="text-[10px] uppercase tracking-widest text-[#888] font-bold">
+    <div className={`${ADMIN_SECTION_INSET_CLASS} space-y-3`}>
+      <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
         Редагувати метадані
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <input
-          className={INP}
+        <AdminInput
           placeholder="Назва"
           value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         />
-        <select
-          className={INP}
+        <AdminSelect
           value={form.difficulty}
           onChange={(e) => setForm((f) => ({ ...f, difficulty: e.target.value }))}
         >
           {['easy', 'medium', 'hard', 'mixed', '18+'].map((d) => (
             <option key={d}>{d}</option>
           ))}
-        </select>
-        <input
-          className={INP}
+        </AdminSelect>
+        <AdminInput
           type="number"
           min="0"
           placeholder="Ціна (центи)"
           value={form.price}
           onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
         />
-        <label className="flex items-center gap-2 text-xs text-[#888] cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-ui-fg-muted cursor-pointer">
           <input
             type="checkbox"
             checked={form.isFree}
             onChange={(e) => setForm((f) => ({ ...f, isFree: e.target.checked }))}
-            className="accent-[#E3FF5B]"
+            className="accent-ui-accent"
           />
           Безкоштовний
         </label>
-        <input
-          className={INP + ' col-span-2'}
+        <AdminInput
+          className="col-span-2"
           placeholder="Опис"
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -484,13 +471,13 @@ function EditPackPanel({
         <button
           onClick={handleSave}
           disabled={acting.has(key)}
-          className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,#44ff44_12%,transparent)] text-[#44ff44] border border-[color-mix(in_srgb,#44ff44_22%,transparent)] hover:bg-[color-mix(in_srgb,#44ff44_20%,transparent)] transition-colors disabled:opacity-40"
+          className={`text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
         >
           {acting.has(key) ? 'Збереження...' : 'Зберегти'}
         </button>
         <button
           onClick={onCancel}
-          className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-[#1a1a1a] text-[#888] border border-[#333] hover:bg-[#222] transition-colors"
+          className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors"
         >
           Скасувати
         </button>
@@ -616,13 +603,13 @@ function WordsPanel({
   );
 
   return (
-    <div className="border-t border-[#333] px-5 py-4 bg-[#111] space-y-4">
+    <div className={`${ADMIN_SECTION_INSET_CLASS} space-y-4`}>
       <div className="flex items-center justify-between">
-        <p className="text-[10px] uppercase tracking-widest text-[#888] font-bold">
+        <p className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold">
           Слова ({words.length})
         </p>
         {acting.has(`csv-${pack.id}`) && (
-          <span className="text-[11px] text-[#E3FF5B] animate-pulse">Завантаження CSV...</span>
+          <span className="text-[11px] text-ui-accent animate-pulse">Завантаження CSV...</span>
         )}
       </div>
 
@@ -639,20 +626,20 @@ function WordsPanel({
         <button
           onClick={() => fileRef.current?.click()}
           disabled={acting.has(`csv-${pack.id}`)}
-          className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg bg-[#1a1a1a] text-[#888] border border-[#333] hover:text-white hover:bg-[#222] transition-colors disabled:opacity-40"
+          className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:text-ui-fg hover:bg-ui-surface-hover transition-colors disabled:opacity-40"
         >
           <Upload size={12} />
           Завантажити CSV
         </button>
-        <span className="text-[10px] text-[#555]">
+        <span className="text-[10px] text-ui-fg-subtle">
           difficulty, word_ua, synonyms_ua, taboo_ua, word_en…
         </span>
       </div>
 
       {/* Add words */}
       <div className="flex gap-2 items-start">
-        <textarea
-          className={INP + ' flex-1 resize-none h-20 text-xs font-mono'}
+        <AdminTextarea
+          className="flex-1 resize-none h-20 text-xs font-mono"
           placeholder="Нові слова (по одному на рядок)"
           value={newWords}
           onChange={(e) => setNewWords(e.target.value)}
@@ -660,7 +647,7 @@ function WordsPanel({
         <button
           onClick={handleAdd}
           disabled={!newWords.trim() || acting.has('add-words')}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,#E3FF5B_14%,transparent)] text-[#E3FF5B] border border-[color-mix(in_srgb,#E3FF5B_22%,transparent)] hover:bg-[color-mix(in_srgb,#E3FF5B_22%,transparent)] transition-colors disabled:opacity-40 whitespace-nowrap"
+          className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 whitespace-nowrap ${adminStatusBtn('accent')}`}
         >
           <Plus size={12} />
           {acting.has('add-words') ? '...' : 'Додати'}
@@ -669,8 +656,8 @@ function WordsPanel({
 
       {/* Filter */}
       {words.length > 10 && (
-        <input
-          className={INP + ' w-full'}
+        <AdminInput
+          className="w-full"
           placeholder="Фільтр слів..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -680,30 +667,32 @@ function WordsPanel({
       {/* Word chips */}
       {wordsLoading ? (
         <div className="flex justify-center py-4">
-          <div className="w-5 h-5 border-2 border-[#E3FF5B] border-t-transparent rounded-full animate-spin" />
+          <div className={`w-5 h-5 ${ADMIN_SPINNER_CLASS}`} />
         </div>
       ) : (
         <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
           {filtered.map((w) => (
             <span
               key={w.id}
-              className="flex items-center gap-1 bg-[#1a1a1a] text-white text-xs px-2.5 py-1 rounded-full border border-[#333]"
+              className="flex items-center gap-1 bg-ui-surface text-ui-fg text-xs px-2.5 py-1 rounded-full border border-ui-border"
             >
               {w.text}
               <button
                 onClick={() => handleDeleteWord(w)}
                 disabled={acting.has(`del-word-${w.id}`)}
-                className="text-[#666] hover:text-[#ff4444] transition-colors ml-0.5 leading-none disabled:opacity-40"
+                className="text-ui-fg-subtle hover:text-ui-danger transition-colors ml-0.5 leading-none disabled:opacity-40"
               >
                 <X size={11} />
               </button>
             </span>
           ))}
           {filtered.length === 0 && words.length > 0 && (
-            <p className="text-[#666] text-xs">Нічого не знайдено</p>
+            <p className="text-ui-fg-subtle text-xs">Нічого не знайдено</p>
           )}
           {words.length === 0 && (
-            <p className="text-[#666] text-xs">Слів немає — додайте вище або завантажте CSV</p>
+            <p className="text-ui-fg-subtle text-xs">
+              Слів немає — додайте вище або завантажте CSV
+            </p>
           )}
         </div>
       )}

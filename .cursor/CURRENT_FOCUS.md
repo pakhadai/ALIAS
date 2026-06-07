@@ -1,31 +1,32 @@
 # Current Focus — Alias Master
 
 **Last updated:** 2026-06-07  
-**Active branch:** `main` (uncommitted E2E hardening + offline TEAM_JOIN fix)
+**Active branch:** `main` (uncommitted: UI tokens + TMA session 7/7 verification)
 
 ## What's in progress
 
-E2E hardening після offline TEAM_JOIN fix — локально закомічено; push лише на явний запит.
+**Нічого активного** — UI tokens (1–7/7) і TMA safe-area refactor **закрито** verification-сесією 7/7.
 
 ## What was just completed
 
-- **Offline TEAM_JOIN:** `materializeOfflineTeamsIfNeeded()` — TEAM_JOIN/LEAVE/shuffle/rename при `teams: []`
-- **E2E helpers:** `expectLobbyReadyToStart`, `settings-close` testid, multilingual locators (`joinTeamRe`, `lockTeamsRe`, anchored `startGameRe`, `imposter-reveal-cta`)
-- **Client i18n:** `teamJoin`/`teamLeave`, `lockTeams`/`unlockTeams`, `imposterTapToFlip`; Settings rules tab → `rulesTitle`
-- **Specs:** `core-acceptance.spec.ts`, `multiplayer.spec.ts` → shared helpers; locator regression tests (8 cases)
-- **Verify:** `pnpm typecheck` green; client offlineGameActions 12/12; locator tests 8/8
+- **Session 7/7 verification:** static grep audit (0× `text-white`/`bg-white` game screens, 0× admin raw `#111`/`#333` in className, 0× fixed bottom без `pb-safe-*`, 0× legacy tailwind colors)
+- **`pnpm build:shared && pnpm verify`** — green (після Prettier fix 7 файлів)
+- **Unit tests:** client **48/48**, server **341/341**, shared **12/12**
+- **E2E `@smoke` mobile-chrome (Pixel 5 / 375px):** **7/7 passed**
+- **TMA checklist** — code-verified + задокументовано в `docs/daily/2026-06-07.md`
+- **`docs/UI_TOKENS.md`** — status `implemented`
 
 ## Next steps
 
-1. [ ] Push — лише на явний запит власника
-2. [ ] E2E CI: `@smoke` + `@core` on chromium + mobile-chrome (Postgres у CI)
-3. [ ] E2E local (optional): `docker compose up -d postgres redis` → `pnpm test:e2e`
+1. [ ] Manual TMA smoke на реальному Telegram Mini App (owner device) — checklist у daily
+2. [ ] Push — лише на явний запит власника
+3. [ ] Post test-gap backlog (optional): routes ~18–40%, `socketHandlers` ~48%
 
 ## Known issues / blockers
 
-- E2E локально потребує Postgres на `:5432` (Docker Desktop не запущений на dev machine)
-- Post test-gap backlog (optional): routes ~18–40%, `socketHandlers` ~48% — див. `AGENT_BRIEF.md`
+- `@code-reviewer` subagent недоступний (usage limit) — ручний security/style review у daily 7/7
+- Manual TMA на device не виконано в CI/agent session
 
 ## Context for next session
 
-Оперативний знімок → `AGENT_BRIEF.md`. Audit → `AUDIT_RESULTS.md` (0 open issues). Commit message: `fix(e2e): materialize offline teams and harden lobby helpers`.
+TMA layout → `docs/TMA_LAYOUT.md`. UI canon → `docs/UI_TOKENS.md` (implemented). Audit → `AUDIT_RESULTS.md`.

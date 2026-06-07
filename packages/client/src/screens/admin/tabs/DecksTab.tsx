@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, Trash2, RefreshCw } from 'lucide-react';
 import { api, type CustomDeckRow } from '../adminApi';
 import type { ShowToast, ConfirmFn } from '../AdminApp';
+import { ADMIN_CARD_CLASS, ADMIN_SPINNER_CLASS, adminStatusBtn } from '../components/adminStyles';
 
 interface Props {
   showToast: ShowToast;
@@ -11,11 +12,11 @@ interface Props {
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     approved:
-      'bg-[color-mix(in_srgb,#44ff44_14%,transparent)] text-[#44ff44] border-[color-mix(in_srgb,#44ff44_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] text-ui-success border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)]',
     pending:
-      'bg-[color-mix(in_srgb,#ffaa00_14%,transparent)] text-[#ffaa00] border-[color-mix(in_srgb,#ffaa00_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-warning)_14%,transparent)] text-ui-warning border-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)]',
     rejected:
-      'bg-[color-mix(in_srgb,#ff4444_14%,transparent)] text-[#ff4444] border-[color-mix(in_srgb,#ff4444_28%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] text-ui-danger border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)]',
   };
   const labels: Record<string, string> = {
     approved: 'Схвалено',
@@ -24,7 +25,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border ${styles[status] ?? 'bg-[#222] text-[#888] border-[#333]'}`}
+      className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border ${styles[status] ?? 'bg-ui-surface-hover text-ui-fg-muted border-ui-border'}`}
     >
       {labels[status] ?? status}
     </span>
@@ -131,7 +132,7 @@ export function DecksTab({ showToast, confirm }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center pt-24">
-        <div className="w-8 h-8 border-2 border-[#E3FF5B] border-t-transparent rounded-full animate-spin" />
+        <div className={`w-8 h-8 ${ADMIN_SPINNER_CLASS}`} />
       </div>
     );
   }
@@ -143,14 +144,14 @@ export function DecksTab({ showToast, confirm }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-serif text-white">Власні колоди</h2>
-          <p className="text-sm text-[#888] mt-0.5">
+          <h2 className="text-lg font-serif text-ui-fg">Власні колоди</h2>
+          <p className="text-sm text-ui-fg-muted mt-0.5">
             {decks.length} всього · {pending.length} на розгляді
           </p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-[#888] hover:text-white transition-colors"
+          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
         >
           <RefreshCw size={13} />
           Оновити
@@ -159,7 +160,7 @@ export function DecksTab({ showToast, confirm }: Props) {
 
       {pending.length > 0 && (
         <section>
-          <h3 className="text-[10px] uppercase tracking-widest text-[#ffaa00] font-bold mb-3">
+          <h3 className="text-[10px] uppercase tracking-widest text-ui-warning font-bold mb-3">
             На розгляді ({pending.length})
           </h3>
           <div className="space-y-2">
@@ -179,7 +180,7 @@ export function DecksTab({ showToast, confirm }: Props) {
 
       {rest.length > 0 && (
         <section>
-          <h3 className="text-[10px] uppercase tracking-widest text-[#888] font-bold mb-3">
+          <h3 className="text-[10px] uppercase tracking-widest text-ui-fg-muted font-bold mb-3">
             Решта ({rest.length})
           </h3>
           <div className="space-y-2">
@@ -198,7 +199,7 @@ export function DecksTab({ showToast, confirm }: Props) {
       )}
 
       {decks.length === 0 && (
-        <div className="text-center py-16 text-[#888]">Власних колод немає</div>
+        <div className="text-center py-16 text-ui-fg-muted">Власних колод немає</div>
       )}
     </div>
   );
@@ -222,21 +223,21 @@ function DeckRow({
   const isDeleting = acting.has(`${deck.id}-delete`);
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#333] rounded-2xl px-5 py-4 flex items-start gap-4">
+    <div className={`${ADMIN_CARD_CLASS} px-5 py-4 flex items-start gap-4`}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-          <span className="text-white font-semibold text-sm">{deck.name}</span>
+          <span className="text-ui-fg font-semibold text-sm">{deck.name}</span>
           <StatusBadge status={deck.status} />
           {deck.accessCode && (
-            <span className="text-[10px] font-mono text-[#888] bg-[#111] px-2 py-0.5 rounded border border-[#333]">
+            <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
               {deck.accessCode}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-4 text-[11px] text-[#888]">
+        <div className="flex items-center gap-4 text-[11px] text-ui-fg-muted">
           <span>{deck.wordCount} слів</span>
           <span>{new Date(deck.createdAt).toLocaleDateString('uk')}</span>
-          <span className="text-[#555] font-mono text-[10px] truncate max-w-[120px]">
+          <span className="text-ui-fg-subtle font-mono text-[10px] truncate max-w-[120px]">
             {deck.userId.slice(0, 8)}…
           </span>
         </div>
@@ -247,10 +248,10 @@ function DeckRow({
           <button
             onClick={() => onApprove(deck)}
             disabled={isApproving}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,#44ff44_12%,transparent)] text-[#44ff44] border border-[color-mix(in_srgb,#44ff44_25%,transparent)] hover:bg-[color-mix(in_srgb,#44ff44_20%,transparent)] transition-colors disabled:opacity-40"
+            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
           >
             {isApproving ? (
-              <span className="w-3 h-3 border border-[#44ff44] border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-ui-success border-t-transparent rounded-full animate-spin" />
             ) : (
               <Check size={11} />
             )}
@@ -261,10 +262,10 @@ function DeckRow({
           <button
             onClick={() => onReject(deck)}
             disabled={isRejecting}
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,#ffaa00_12%,transparent)] text-[#ffaa00] border border-[color-mix(in_srgb,#ffaa00_25%,transparent)] hover:bg-[color-mix(in_srgb,#ffaa00_20%,transparent)] transition-colors disabled:opacity-40"
+            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('warning')}`}
           >
             {isRejecting ? (
-              <span className="w-3 h-3 border border-[#ffaa00] border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-ui-warning border-t-transparent rounded-full animate-spin" />
             ) : (
               <X size={11} />
             )}
@@ -274,10 +275,10 @@ function DeckRow({
         <button
           onClick={() => onDelete(deck)}
           disabled={isDeleting}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg bg-[color-mix(in_srgb,#ff4444_12%,transparent)] text-[#ff4444] border border-[color-mix(in_srgb,#ff4444_25%,transparent)] hover:bg-[color-mix(in_srgb,#ff4444_20%,transparent)] transition-colors disabled:opacity-40"
+          className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('danger')}`}
         >
           {isDeleting ? (
-            <span className="w-3 h-3 border border-[#ff4444] border-t-transparent rounded-full animate-spin" />
+            <span className="w-3 h-3 border border-ui-danger border-t-transparent rounded-full animate-spin" />
           ) : (
             <Trash2 size={11} />
           )}

@@ -30,7 +30,7 @@ export const VSScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-8 justify-center items-center overflow-hidden`}
+      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-safe-bottom justify-center items-center overflow-hidden`}
     >
       <div className="flex flex-col items-center gap-6 w-full max-w-sm">
         {elements.map((el, i) => {
@@ -60,7 +60,11 @@ export const VSScreen = () => {
                 {isFromLeft ? (
                   <>
                     <div
-                      className={`w-4 h-4 rounded-full ${el.type === 'player' ? el.team.color : ''}`}
+                      className="w-4 h-4 rounded-full shrink-0"
+                      style={{
+                        backgroundColor:
+                          el.type === 'player' ? el.team.colorHex || undefined : undefined,
+                      }}
                     />
                     {el.type === 'player' && el.player?.avatarId != null ? (
                       <AvatarDisplay avatarId={el.player.avatarId} size={56} />
@@ -90,7 +94,11 @@ export const VSScreen = () => {
                       </span>
                     )}
                     <div
-                      className={`w-4 h-4 rounded-full ${el.type === 'player' ? el.team.color : ''}`}
+                      className="w-4 h-4 rounded-full shrink-0"
+                      style={{
+                        backgroundColor:
+                          el.type === 'player' ? el.team.colorHex || undefined : undefined,
+                      }}
                     />
                   </>
                 )}

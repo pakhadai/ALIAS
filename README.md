@@ -769,12 +769,12 @@ switch (gameState) {
 
 | Тема | Опис | Free |
 |------|------|------|
-| `PREMIUM_DARK` (Midnight Ruby) | OLED «шоколадно-чорний» фон, перлинний текст, рубінові акценти (default) | Так |
-| `CYBERPUNK` (Earthy Dark) | Темна “земляна” | Так* |
-| `FOREST` (Luminous Aero) | Світла «киснева» палітра, індиго / ціан / корал | Так* |
-| `SLEEK` (Dark Ruby) | Окремий винний / ruby варіант (преміум) | Так* |
-| `VOID_LUXE` (Void Luxe) | OLED black, холодний синій + теплий акцент | Так* |
-| `QUANTUM_ECLIPSE` (Quantum Eclipse) | OLED-чорний, фіолетовий + ціан + неоновий помаранч | Так* |
+| `PREMIUM_DARK` (Midnight Ruby) | 5 базових кольорів + `elevated`; решта derive (default) | Так |
+| `CYBERPUNK` (Earthy Dark) | 5 базових, derive | Так* |
+| `FOREST` (Luminous Aero) | 5 базових + premium `accentAlt` / `accentWarm` | Так* |
+| `SLEEK` (Dark Ruby) | 5 базових, derive | Так* |
+| `VOID_LUXE` (Void Luxe) | 5 базових + `elevated` + premium accents | Так* |
+| `QUANTUM_ECLIPSE` (Quantum Eclipse) | 5 базових + `elevated` + premium accents | Так* |
 
 `PREMIUM_LIGHT` — застарілий ідентифікатор теми; у клієнті він зіставлений з тією ж палітрою, що й `PREMIUM_DARK`, і **не** показується окремо у виборі (`UI_THEME_IDS` його фільтрує).
 
@@ -792,34 +792,24 @@ CSS custom properties встановлюються динамічно: `--font-h
 - **Акцент:** `--ui-accent`, `--ui-accent-contrast`, `--ui-accent-hover`, `--ui-accent-pressed`, `--ui-accent-muted`, `--ui-accent-ring`, `--ui-accent-soft`, `--ui-accent-alt`, `--ui-accent-warm`, `--ui-accent-warm-soft`
 - **Статуси:** `--ui-danger`, `--ui-success`, `--ui-warning`
 
-Частина змінних для тем без явних значень **обчислюється** у `GameContext` (наприклад змішування `accent` з `surface` / білим / чорним). Повний явний набір задається в `ThemeConfig.tokens` у `THEME_CONFIG` (див. **Midnight Ruby** нижче та теми на кшталт **Void Luxe** / **Quantum Eclipse**).
+Кожна тема задає **5 базових кольорів** у `ThemeConfig.tokens` (`bg`, `surface`, `fg`, `accent`, `border`) плюс опційно `elevated` і до двох premium-партнерів (`accentAlt`, `accentWarm`). Усі інші `--ui-*` **обчислюються** у `GameContext` через `color-mix` — див. [docs/UI_TOKENS.md](docs/UI_TOKENS.md).
 
-Джерело: `packages/client/src/context/GameContext.tsx`, конфіг: `packages/client/src/constants.ts`, типи токенів: `packages/client/src/types.ts`.
+Джерело: `packages/client/src/context/GameContext.tsx`, конфіг: `packages/client/src/constants/themes.ts`, типи: `packages/client/src/types.ts`.
 
 #### Палітра за замовчуванням: Midnight Ruby (`PREMIUM_DARK`)
 
-Орієнтовна відповідність HEX → роль → CSS-змінна (як у продакшен-темі):
+Явні значення в `THEME_CONFIG.tokens`:
 
 | HEX | Роль | Змінна |
 |-----|------|--------|
 | `#0A0809` | Найглибший фон екрану | `--ui-bg` |
-| `#141012` | Картки, панелі, базові контейнери | `--ui-surface` |
-| `#1F181C` | Підняті поверхні (модалки, меню) | `--ui-elevated` |
-| `#281E23` | Hover для інтерактивних карток / рядків | `--ui-surface-hover` |
-| `#2A2025` | Делікатні розділювачі | `--ui-border-subtle`, `--ui-divider` |
-| `#382A31` | Звичайні рамки, контури інпутів | `--ui-border` |
+| `#141012` | Картки, панелі | `--ui-surface` |
+| `#1F181C` | Підняті поверхні (опційно в tokens) | `--ui-elevated` |
+| `#382A31` | Рамки | `--ui-border` |
 | `#F4EFF1` | Основний текст | `--ui-fg` |
-| `#B5A8AE` | Вторинний текст | `--ui-fg-muted` |
-| `#82757B` | Підписи, плейсхолдери | `--ui-fg-subtle` |
-| `#594F54` | Disabled | `--ui-fg-disabled` |
 | `#E11D48` | Primary акцент | `--ui-accent` |
-| `#F43F5E` | Hover primary | `--ui-accent-hover` |
-| `#BE123C` | Натиснутий стан | `--ui-accent-pressed` |
-| `#3D1520` | Тлі бейджів / soft-кнопок | `--ui-accent-muted` |
-| `#F43F5E66` | Focus ring (рубін з ~40% альфою) | `--ui-accent-ring` |
-| `#34D399` | Успіх | `--ui-success` |
-| `#FBBF24` | Попередження | `--ui-warning` |
-| `#FF5252` | Небезпека (відділена від рубінового акценту) | `--ui-danger` |
+
+Решта (`--ui-fg-muted`, hover/pressed акцент, статуси тощо) — derive у `GameContext`; орієнтовні значення — [docs/UI_TOKENS.md](docs/UI_TOKENS.md).
 
 **Переклади** (`constants.ts` → `TRANSLATIONS`): об'єкт з ключами `UA`, `EN`, `DE`. ~150 ключів на мову.
 

@@ -8,6 +8,7 @@ import {
   GameMode,
   MAX_PLAYERS,
   getTeamColor,
+  getTeamColorToken,
 } from '@alias/shared';
 import type {
   Player,
@@ -234,7 +235,7 @@ export class RoomManager {
         id: `team-${i}`,
         name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
         score: 0,
-        color: getTeamColor(i).class,
+        color: getTeamColorToken(i),
         colorHex: getTeamColor(i).hex,
         players: [],
         nextPlayerIndex: 0,

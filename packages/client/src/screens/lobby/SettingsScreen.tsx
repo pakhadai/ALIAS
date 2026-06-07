@@ -16,6 +16,7 @@ import {
   Clapperboard,
 } from 'lucide-react';
 import { Button } from '../../components/Button';
+import { FixedBottomBar, ScreenShell } from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameMode } from '../../types';
 
@@ -252,8 +253,21 @@ export const SettingsScreen = () => {
   };
 
   return (
-    <div
-      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-8 md:pb-8 overflow-y-auto no-scrollbar`}
+    <ScreenShell
+      className={`items-center ${currentTheme.bg} px-6 md:px-8`}
+      contentClassName="items-center overflow-y-auto no-scrollbar"
+      footer={
+        <FixedBottomBar contentClassName="max-w-2xl w-full">
+          <Button
+            themeClass={currentTheme.button}
+            fullWidth
+            size="xl"
+            onClick={() => setGameState(GameState.LOBBY)}
+          >
+            {t.save}
+          </Button>
+        </FixedBottomBar>
+      }
     >
       <div className="max-w-2xl w-full">
         <header className="flex justify-between items-center py-6 mb-8">
@@ -1334,19 +1348,6 @@ export const SettingsScreen = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 md:p-8 bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_85%,transparent)] to-transparent pointer-events-none flex justify-center">
-        <div className="max-w-2xl w-full pointer-events-auto">
-          <Button
-            themeClass={currentTheme.button}
-            fullWidth
-            size="xl"
-            onClick={() => setGameState(GameState.LOBBY)}
-          >
-            {t.save}
-          </Button>
-        </div>
-      </div>
-
       {showCustomDeckPicker && (
         <CustomDeckModal
           onClose={() => setShowCustomDeckPicker(false)}
@@ -1356,6 +1357,6 @@ export const SettingsScreen = () => {
           }}
         />
       )}
-    </div>
+    </ScreenShell>
   );
 };

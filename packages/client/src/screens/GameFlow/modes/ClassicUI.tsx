@@ -186,7 +186,7 @@ export function ClassicActionFooter({
   onSkip,
 }: ClassicActionFooterProps): React.ReactElement {
   return (
-    <footer className="w-full fixed bottom-0 left-0 z-20 flex pb-env-bottom">
+    <footer className="w-full fixed bottom-0 left-0 z-20 flex pb-safe-bottom-sm">
       <button
         type="button"
         onClick={onSkip}

@@ -136,7 +136,7 @@ function ImposterRevealPhase({
   return (
     <div
       className={[
-        'animate-page-in flex min-h-dvh flex-col',
+        'animate-page-in flex min-h-[var(--tg-viewport-height,100dvh)] flex-col pt-safe-top',
         imposterDrama
           ? 'bg-linear-to-b from-[color-mix(in_srgb,var(--ui-danger)_38%,var(--ui-bg))] via-[color-mix(in_srgb,var(--ui-danger)_18%,var(--ui-bg))] to-ui-bg text-ui-fg'
           : 'bg-ui-bg',
@@ -151,7 +151,7 @@ function ImposterRevealPhase({
         imposterDrama={imposterDrama}
       />
 
-      <div className="flex flex-1 flex-col px-4 py-6">
+      <div className="flex flex-1 flex-col px-4 pt-4 pb-safe-bottom">
         {showHandoff ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-10 text-center">
             <p className="max-w-md text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
@@ -261,7 +261,7 @@ function ImposterDiscussionPhase({
   }, [confirmEnd]);
 
   return (
-    <div className="animate-page-in flex min-h-dvh flex-col bg-ui-bg">
+    <div className="animate-page-in flex min-h-[var(--tg-viewport-height,100dvh)] flex-col bg-ui-bg pt-safe-top">
       <ImposterMiniHeader
         readyCount={0}
         total={0}
@@ -270,7 +270,7 @@ function ImposterDiscussionPhase({
         onTogglePause={togglePause}
       />
 
-      <div className="flex flex-1 flex-col px-4 pb-8 pt-4">
+      <div className="flex flex-1 flex-col px-4 pt-4 pb-safe-bottom">
         <div className="flex flex-1 flex-col items-center justify-center">
           <p className="mb-4 text-sm font-medium opacity-60">Обговорення</p>
           <div
@@ -351,7 +351,7 @@ function ImposterResultsPhase({
   const title = imposter ? 'Імпостер викритий!' : 'Результати раунду';
 
   return (
-    <div className="animate-page-in px-4 py-8">
+    <div className="animate-page-in flex min-h-[var(--tg-viewport-height,100dvh)] flex-col px-4 pt-safe-top pb-safe-bottom">
       <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center gap-4">
           <div

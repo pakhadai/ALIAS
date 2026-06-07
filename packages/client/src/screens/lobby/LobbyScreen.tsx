@@ -13,7 +13,7 @@ import {
   scrollElementIntoViewCentered,
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
-import { getTeamColor } from '@alias/shared';
+import { getTeamColor, getTeamColorToken } from '@alias/shared';
 import { MAX_PLAYERS, TEAM_NAMES } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
@@ -267,7 +267,7 @@ export const LobbyScreen = () => {
       id: `team-${i}`,
       name: names[i % names.length] ?? `Team ${i + 1}`,
       score: 0,
-      color: getTeamColor(i).class,
+      color: getTeamColorToken(i),
       colorHex: getTeamColor(i).hex,
       players: teams[i]?.players ?? [],
       nextPlayerIndex: 0,
@@ -307,7 +307,7 @@ export const LobbyScreen = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-8 md:pb-8`}
+      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} px-6 pt-safe-top pb-safe-bottom md:px-8`}
     >
       <div className="max-w-2xl w-full flex-1 flex flex-col">
         <ConfirmationModal

@@ -30,9 +30,22 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **UI tokens + TMA session 7/7 (verification):** static grep audit green (`text-white`/`bg-white` 0 on game screens, admin className hex 0, fixed bottom always `pb-safe-*`, legacy tailwind colors 0); Prettier on 7 client files; unit tests client 48 / server 341 / shared 12; E2E `@smoke` mobile-chrome 7/7. `docs/UI_TOKENS.md` status → `implemented`. Manual TMA device checklist documented in `docs/daily/2026-06-07.md`.
+
+- **TMA safe area session 6/7:** Telegram content/device insets on lobby and game-flow screens — `pb-safe-*` / `pt-safe-top` instead of bare `pb-8`/`pt-12`; `SettingsScreen` and `PreRoundScreen` migrated to `ScreenShell` + `FixedBottomBar`; `ClassicUI` action footer uses `pb-safe-bottom-sm` for MainButton clearance. See `docs/TMA_LAYOUT.md`.
+
+### Changed
+
+- **UI tokens session 4/7:** `TEAM_COLORS` in `@alias/shared` — hex-only jewel palette (8 colors) for Midnight Ruby; optional `--team-color-*` CSS var names; `getTeamColorToken()` for `Team.color`. Removed Tailwind `bg-*-500` from shared; team dots/borders use inline `colorHex` (TeamCard, TeamSetup, VSScreen, AssignPlayerSheet).
+- **UI tokens session 3/7:** Admin panel unified on `--ui-*` — admin-only theme in `admin.html`, refactored `screens/admin/**` (AdminApp, StatsTab, PacksTab, DecksTab, ThemesTab), shared `AdminInput` + `adminStyles.ts`.
+- **UI tokens session 2/7:** `ThemeConfig.tokens` reduced to 5 base colors (`bg`, `surface`, `fg`, `accent`, `border`) + optional `elevated` and premium `accentAlt`/`accentWarm`; all other `--ui-*` derived in `GameContext` via `color-mix`. Updated `themes.ts`, `types.ts`, `docs/UI_TOKENS.md`, README theme table; Vitest for CSS var application on theme change.
+
 ### Added
 
-- **Test coverage Phase 1:** `authorizeGameAction.test.ts` — 42 table-driven cases (host-only, teams locked, IMPOSTER, explainer, GUESS_OPTION, relay host migration). Server tests 208 → 250.
+- **TMA layout session 5/7:** `ScreenShell` and `FixedBottomBar` layout primitives (`packages/client/src/components/layout/`); `docs/TMA_LAYOUT.md` with safe-area guidelines, keyboard hook reference, and grep audit (file:line) for pending screen migrations.
+ `authorizeGameAction.test.ts` — 42 table-driven cases (host-only, teams locked, IMPOSTER, explainer, GUESS_OPTION, relay host migration). Server tests 208 → 250.
 - **Test coverage Phase 2:** extended `GameEngine.test.ts` (+25) and `RoomManager.test.ts` (+20) — IMPOSTER flow, team builder, QUIZ lifecycle, Redis restore/rejoin/grace. Coverage: GameEngine 70%→**91.66%**, RoomManager 68%→**89.27%**. Server tests 250 → 295.
 - **Test coverage Phase 3:** REST integration tests — `store`, `purchases` (Stripe webhook invalid/valid), `custom-decks`, `push`, `admin` (IP whitelist + auth); `AuthService` Telegram HMAC + JWT expiry. Server tests 295 → 329.
 - **Test coverage Phase 4:** Socket integration + pipeline — `socketHandlers.int.test.ts` (+4: `room:exists` ack, grace `room:rejoin`, `game:action` NOT_HOST/NOT_EXPLAINER via socket), `gameActionPipeline.test.ts` (broadcast, KICK, IMPOSTER secrets), `RoomActionRelay.test.ts` (publish failures, relay timeout). Server tests 329 → **341**.
@@ -51,6 +64,7 @@
 
 ### Changed
 
+- **UI tokens canon (session 1/7):** `docs/UI_TOKENS.md` — `--ui-*`, Tailwind `*-ui-*`, safe-area utilities, заборони `text-white`/`bg-white`/raw hex; видалено невикористані legacy colors з `packages/client/tailwind.config.ts`.
 - **E2E i18n locators:** TeamCard `teamJoin`/`teamLeave`, settings rules tab UA/DE/EN, lock teams aria-labels; locator regression tests for join/start/assign/rules tab.
 - **E2E timeouts:** `@core Offline`/`Rematch` round summary 90s (30s floor); host migration Start enabled wait 60s; `multiplayer.spec.ts` uses shared helpers + opposing-team `playingNowRe` OR timer.
 - **Lint cleanup:** removed unused imports/deps across client (14 warnings → 0).

@@ -377,7 +377,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             ))}
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">{tabContent[activeTab]()}</div>
-          <div className="shrink-0 px-8 pb-8 pt-4">
+          <div className="shrink-0 px-8 pb-safe-bottom-8 pt-4">
             <Button themeClass={currentTheme.button} fullWidth onClick={handleClose} size="lg">
               {t.close}
             </Button>

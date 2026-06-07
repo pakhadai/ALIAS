@@ -2,14 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Pencil, Trash2, X, RefreshCw } from 'lucide-react';
 import { api, type ThemeRow } from '../adminApi';
 import type { ShowToast, ConfirmFn } from '../AdminApp';
+import { AdminInput } from '../components/AdminInput';
+import {
+  ADMIN_PANEL_CLASS,
+  ADMIN_SECTION_INSET_CLASS,
+  ADMIN_SPINNER_CLASS,
+  adminStatusBtn,
+} from '../components/adminStyles';
 
 interface Props {
   showToast: ShowToast;
   confirm: ConfirmFn;
 }
-
-const INP =
-  'bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[#E3FF5B] transition-colors';
 
 export function ThemesTab({ showToast, confirm }: Props) {
   const [themes, setThemes] = useState<ThemeRow[]>([]);
@@ -71,7 +75,7 @@ export function ThemesTab({ showToast, confirm }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center pt-24">
-        <div className="w-8 h-8 border-2 border-[#E3FF5B] border-t-transparent rounded-full animate-spin" />
+        <div className={`w-8 h-8 ${ADMIN_SPINNER_CLASS}`} />
       </div>
     );
   }
@@ -80,12 +84,12 @@ export function ThemesTab({ showToast, confirm }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-serif text-white">Теми</h2>
-          <p className="text-sm text-[#888] mt-0.5">{themes.length} тем</p>
+          <h2 className="text-lg font-serif text-ui-fg">Теми</h2>
+          <p className="text-sm text-ui-fg-muted mt-0.5">{themes.length} тем</p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-[#888] hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-ui-fg-muted hover:text-ui-fg transition-colors"
         >
           <RefreshCw size={13} />
           Оновити
@@ -99,14 +103,11 @@ export function ThemesTab({ showToast, confirm }: Props) {
           const isEditing = editingId === theme.id;
 
           return (
-            <div
-              key={theme.id}
-              className="bg-[#141414] border border-[#333] rounded-2xl overflow-hidden"
-            >
+            <div key={theme.id} className={ADMIN_PANEL_CLASS}>
               <div className="px-5 py-4 flex items-center gap-4">
-                {/* Color swatch */}
+                {/* Color swatch — theme preview hex allowed */}
                 <div
-                  className="w-12 h-12 rounded-xl shrink-0 border border-[#333] relative overflow-hidden"
+                  className="w-12 h-12 rounded-xl shrink-0 border border-ui-border relative overflow-hidden"
                   style={{ background: previewBg }}
                 >
                   <div
@@ -117,14 +118,14 @@ export function ThemesTab({ showToast, confirm }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-white font-medium text-sm">{theme.name}</span>
-                    <span className="text-[10px] font-mono text-[#888] bg-[#111] px-2 py-0.5 rounded border border-[#333]">
+                    <span className="text-ui-fg font-medium text-sm">{theme.name}</span>
+                    <span className="text-[10px] font-mono text-ui-fg-muted bg-ui-bg px-2 py-0.5 rounded border border-ui-border">
                       {theme.slug}
                     </span>
                     {theme.isFree ? (
-                      <span className="text-[10px] text-[#44ff44] font-bold">FREE</span>
+                      <span className="text-[10px] text-ui-success font-bold">FREE</span>
                     ) : (
-                      <span className="text-[10px] text-[#E3FF5B] font-bold">
+                      <span className="text-[10px] text-ui-accent font-bold">
                         ${(theme.price / 100).toFixed(2)}
                       </span>
                     )}
@@ -134,7 +135,7 @@ export function ThemesTab({ showToast, confirm }: Props) {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => setEditingId(isEditing ? null : theme.id)}
-                    className="p-1.5 rounded-lg bg-[#222] border border-[#333] text-[#888] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+                    className="p-1.5 rounded-lg bg-ui-surface-hover border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-elevated transition-colors"
                     title="Редагувати"
                   >
                     {isEditing ? <X size={14} /> : <Pencil size={14} />}
@@ -142,11 +143,11 @@ export function ThemesTab({ showToast, confirm }: Props) {
                   <button
                     onClick={() => handleDelete(theme)}
                     disabled={acting.has(`del-${theme.id}`)}
-                    className="p-1.5 rounded-lg bg-[color-mix(in_srgb,#ff4444_12%,transparent)] border border-[color-mix(in_srgb,#ff4444_22%,transparent)] text-[#ff4444] hover:bg-[color-mix(in_srgb,#ff4444_20%,transparent)] transition-colors disabled:opacity-40"
+                    className={`p-1.5 rounded-lg disabled:opacity-40 ${adminStatusBtn('danger')}`}
                     title="Видалити"
                   >
                     {acting.has(`del-${theme.id}`) ? (
-                      <span className="w-3.5 h-3.5 border border-[#ff4444] border-t-transparent rounded-full animate-spin block" />
+                      <span className="w-3.5 h-3.5 border border-ui-danger border-t-transparent rounded-full animate-spin block" />
                     ) : (
                       <Trash2 size={14} />
                     )}
@@ -173,7 +174,7 @@ export function ThemesTab({ showToast, confirm }: Props) {
             </div>
           );
         })}
-        {themes.length === 0 && <div className="text-center py-16 text-[#888]">Тем немає</div>}
+        {themes.length === 0 && <div className="text-center py-16 text-ui-fg-muted">Тем немає</div>}
       </div>
     </div>
   );
@@ -224,30 +225,30 @@ function EditThemePanel({
   };
 
   return (
-    <div className="border-t border-[#333] px-5 py-4 bg-[#111]">
+    <div className={ADMIN_SECTION_INSET_CLASS}>
       <div className="flex items-center gap-3 flex-wrap">
-        <input
-          className={INP + ' w-40'}
+        <AdminInput
+          className="w-40"
           placeholder="Назва теми"
           value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         />
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#888]">Ціна (центи):</span>
-          <input
-            className={INP + ' w-28'}
+          <span className="text-xs text-ui-fg-muted">Ціна (центи):</span>
+          <AdminInput
+            className="w-28"
             type="number"
             min="0"
             value={form.price}
             onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           />
         </div>
-        <label className="flex items-center gap-2 text-xs text-[#888] cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-ui-fg-muted cursor-pointer">
           <input
             type="checkbox"
             checked={form.isFree}
             onChange={(e) => setForm((f) => ({ ...f, isFree: e.target.checked }))}
-            className="accent-[#E3FF5B]"
+            className="accent-ui-accent"
           />
           Безкоштовна
         </label>
@@ -255,13 +256,13 @@ function EditThemePanel({
           <button
             onClick={handleSave}
             disabled={acting.has(key)}
-            className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-[color-mix(in_srgb,#44ff44_12%,transparent)] text-[#44ff44] border border-[color-mix(in_srgb,#44ff44_22%,transparent)] hover:bg-[color-mix(in_srgb,#44ff44_20%,transparent)] transition-colors disabled:opacity-40"
+            className={`text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg disabled:opacity-40 ${adminStatusBtn('success')}`}
           >
             {acting.has(key) ? '...' : 'Зберегти'}
           </button>
           <button
             onClick={onCancel}
-            className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-[#1a1a1a] text-[#888] border border-[#333] hover:bg-[#222] transition-colors"
+            className="text-[10px] uppercase tracking-wider font-bold px-4 py-2 rounded-lg bg-ui-surface text-ui-fg-muted border border-ui-border hover:bg-ui-surface-hover transition-colors"
           >
             Скасувати
           </button>

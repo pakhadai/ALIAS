@@ -32,6 +32,8 @@
 | [`PRISMA_WORD_DATA.md`](./PRISMA_WORD_DATA.md) | Seed, JSON, `WordConcept` / `WordTranslation` |
 | [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md) | Лобі, команди, Solo, `LobbyScreen` vs `TeamSetupScreen` |
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
+| [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
+| [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, `FixedBottomBar`, safe-area audit |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |
@@ -56,6 +58,8 @@
 | Міграція БД | `schema.prisma` → `PRISMA_WORD_DATA.md` → `PROJECT_STATE` |
 | Лобі / команди | `LOBBY_TEAM_BUILDER.md` |
 | TMA / Stars | `TELEGRAM_SKILL.md` |
+| TMA safe area / layout primitives | `TMA_LAYOUT.md` |
+| UI-токени / теми в компонентах | `UI_TOKENS.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |
 | Тести | `TESTING_ACCEPTANCE.md` + `pnpm verify` |
 | Кінець сесії | `docs/daily/YYYY-MM-DD.md` + `CHANGELOG` `[Unreleased]` |

@@ -1,4 +1,4 @@
-import { GameMode, GameState, getTeamColor, shuffleArray } from '@alias/shared';
+import { GameMode, GameState, getTeamColor, getTeamColorToken, shuffleArray } from '@alias/shared';
 import type { GameActionPayload, ModeSettings, ModeSettingsUpdate, Team } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
@@ -115,7 +115,7 @@ export class GameEngine {
         id: prev?.id ?? `team-${i}`,
         name: prev?.name ?? names[i % names.length] ?? `Team ${i + 1}`,
         score: prev?.score ?? 0,
-        color: prev?.color ?? getTeamColor(i).class,
+        color: prev?.color ?? getTeamColorToken(i),
         colorHex: prev?.colorHex ?? getTeamColor(i).hex,
         players: prev?.players ?? [],
         nextPlayerIndex: prev?.nextPlayerIndex ?? 0,
@@ -423,7 +423,7 @@ export class GameEngine {
           id: `team-${i}`,
           name: p.name,
           score: 0,
-          color: getTeamColor(i).class,
+          color: getTeamColorToken(i),
           colorHex: getTeamColor(i).hex,
           players: [p],
           nextPlayerIndex: 0,
@@ -448,7 +448,7 @@ export class GameEngine {
           id: `team-${i}`,
           name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
           score: 0,
-          color: getTeamColor(i).class,
+          color: getTeamColorToken(i),
           colorHex: getTeamColor(i).hex,
           players: [],
           nextPlayerIndex: 0,
@@ -469,7 +469,7 @@ export class GameEngine {
             id: `team-${i}`,
             name: p.name,
             score: 0,
-            color: getTeamColor(i).class,
+            color: getTeamColorToken(i),
             colorHex: getTeamColor(i).hex,
             players: [p],
             nextPlayerIndex: 0,

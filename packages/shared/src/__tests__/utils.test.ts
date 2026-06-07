@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { shuffleArray } from '../utils';
 import {
   getTeamColor,
+  getTeamColorToken,
   TEAM_COLORS,
   ROOM_CODE_LENGTH,
   MAX_PLAYERS,
@@ -59,11 +60,14 @@ describe('getTeamColor', () => {
     expect(getTeamColor(len + 2)).toEqual(TEAM_COLORS[2]);
   });
 
-  it('should expose stable hex and class tokens for all team slots', () => {
+  it('should expose stable hex and optional CSS var names for all team slots', () => {
     for (let i = 0; i < TEAM_COLORS.length; i += 1) {
       const color = getTeamColor(i);
-      expect(color.class).toMatch(/^bg-/);
       expect(color.hex).toMatch(/^#[0-9a-f]{6}$/i);
+      if (color.varName) {
+        expect(color.varName).toMatch(/^--team-color-/);
+      }
+      expect(getTeamColorToken(i)).toBe(color.varName ?? color.hex);
     }
   });
 });

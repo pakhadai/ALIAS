@@ -5,7 +5,7 @@ import { initialState } from './gameReducer';
 import type { AppState, Player, Team } from '../types';
 import { GameState, GameMode } from '../types';
 import type { GameSoundId } from '../types';
-import { getTeamColor, shuffleArray } from '@alias/shared';
+import { getTeamColor, getTeamColorToken, shuffleArray } from '@alias/shared';
 import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
 import { AVATARS } from '../utils/avatars';
 import { getUiStrings } from '../hooks/useT';
@@ -35,7 +35,7 @@ function materializeOfflineTeamsIfNeeded(state: AppState): Team[] {
       id: `team-${i}`,
       name: names[i % names.length] ?? `Team ${i + 1}`,
       score: existing?.score ?? 0,
-      color: getTeamColor(i).class,
+      color: getTeamColorToken(i),
       colorHex: getTeamColor(i).hex,
       players: existing?.players ? [...existing.players] : [],
       nextPlayerIndex: existing?.nextPlayerIndex ?? 0,
@@ -318,7 +318,7 @@ export function applyOfflineGameAction(
         id: `team-${i}`,
         name: p.name,
         score: 0,
-        color: getTeamColor(i).class,
+        color: getTeamColorToken(i),
         colorHex: getTeamColor(i).hex,
         players: [p],
         nextPlayerIndex: 0,
@@ -339,7 +339,7 @@ export function applyOfflineGameAction(
         id: `team-${i}`,
         name: teamNames[i % teamNames.length] ?? `Team ${i + 1}`,
         score: 0,
-        color: getTeamColor(i).class,
+        color: getTeamColorToken(i),
         colorHex: getTeamColor(i).hex,
         players: [],
         nextPlayerIndex: 0,

@@ -5,15 +5,16 @@ export const WINNING_SCORE = 30;
 export const ROOM_CODE_LENGTH = 5;
 export const MAX_PLAYERS = 20;
 
+/** Jewel-tone palette tuned for Midnight Ruby (`--ui-bg` ≈ #0A0809). */
 export const TEAM_COLORS = [
-  { class: 'bg-indigo-500', hex: '#6366f1' },
-  { class: 'bg-pink-500', hex: '#ec4899' },
-  { class: 'bg-emerald-500', hex: '#10b981' },
-  { class: 'bg-yellow-500', hex: '#f59e0b' },
-  { class: 'bg-purple-500', hex: '#a855f7' },
-  { class: 'bg-blue-500', hex: '#3b82f6' },
-  { class: 'bg-orange-500', hex: '#f97316' },
-  { class: 'bg-red-500', hex: '#ef4444' },
+  { hex: '#FF6B9D', varName: '--team-color-rose' },
+  { hex: '#5B9EFF', varName: '--team-color-sky' },
+  { hex: '#4ADE80', varName: '--team-color-emerald' },
+  { hex: '#FACC15', varName: '--team-color-gold' },
+  { hex: '#C084FC', varName: '--team-color-amethyst' },
+  { hex: '#22D3EE', varName: '--team-color-cyan' },
+  { hex: '#FB923C', varName: '--team-color-tangerine' },
+  { hex: '#F472B6', varName: '--team-color-fuchsia' },
 ] as const;
 
 export type TeamColorEntry = (typeof TEAM_COLORS)[number];
@@ -25,6 +26,12 @@ export function getTeamColor(index: number): TeamColorEntry {
     throw new Error('TEAM_COLORS must not be empty');
   }
   return color;
+}
+
+/** Value for Team.color — CSS var name when defined, else hex. */
+export function getTeamColorToken(index: number): string {
+  const { hex, varName } = getTeamColor(index);
+  return varName ?? hex;
 }
 
 export const MOCK_WORDS: Record<Language, Partial<Record<Category, string[]>>> = {

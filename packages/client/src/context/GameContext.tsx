@@ -570,22 +570,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       r.style.setProperty('--ui-accent', tokens.accent);
       r.style.setProperty('--ui-fg', tokens.fg);
 
+      const fgMutedBase = currentTheme.isDark
+        ? `color-mix(in_srgb, ${tokens.fg} 72%, ${tokens.bg} 28%)`
+        : `color-mix(in_srgb, ${tokens.fg} 55%, ${tokens.surface} 45%)`;
       r.style.setProperty(
         '--ui-fg-muted',
-        tokens.fgMutedOpaque
-          ? tokens.fgMuted
-          : `color-mix(in_srgb, ${tokens.fgMuted} 70%, transparent)`
+        currentTheme.isDark ? fgMutedBase : `color-mix(in_srgb, ${fgMutedBase} 70%, transparent)`
       );
 
-      if (tokens.surfaceHoverColor) {
-        r.style.setProperty('--ui-surface-hover', tokens.surfaceHoverColor);
-      } else {
-        const hoverAccent = tokens.accentSoft ?? tokens.accent;
-        r.style.setProperty(
-          '--ui-surface-hover',
-          `color-mix(in_srgb, ${tokens.surface} 88%, ${hoverAccent} 12%)`
-        );
-      }
+      r.style.setProperty(
+        '--ui-surface-hover',
+        `color-mix(in_srgb, ${tokens.surface} 88%, ${tokens.accent} 12%)`
+      );
 
       const elevatedBase =
         tokens.elevated ?? `color-mix(in_srgb, ${tokens.surface} 72%, ${tokens.bg} 28%)`;
@@ -614,75 +610,55 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         r.style.setProperty('--ui-word-card-fg', tokens.fg);
         r.style.setProperty('--ui-word-card-border', tokens.border);
       }
-      r.style.setProperty('--ui-divider', tokens.divider ?? tokens.border);
+      r.style.setProperty('--ui-divider', tokens.border);
       r.style.setProperty(
         '--ui-border-subtle',
-        tokens.borderSubtle ?? `color-mix(in_srgb, ${tokens.border} 62%, ${tokens.bg} 38%)`
+        `color-mix(in_srgb, ${tokens.border} 62%, ${tokens.bg} 38%)`
       );
 
-      const accentSoftComputed =
-        tokens.accentSoft ??
-        (tokens.accentMuted
-          ? tokens.accentMuted
-          : `color-mix(in_srgb, ${tokens.accent} 58%, ${tokens.surface} 42%)`);
+      const accentSoftComputed = `color-mix(in_srgb, ${tokens.accent} 58%, ${tokens.surface} 42%)`;
       r.style.setProperty('--ui-accent-soft', accentSoftComputed);
-      r.style.setProperty('--ui-accent-muted', tokens.accentMuted ?? accentSoftComputed);
+      r.style.setProperty('--ui-accent-muted', accentSoftComputed);
       r.style.setProperty(
         '--ui-accent-hover',
-        tokens.accentHover ?? `color-mix(in_srgb, ${tokens.accent} 88%, #ffffff 12%)`
+        `color-mix(in_srgb, ${tokens.accent} 88%, #ffffff 12%)`
       );
       r.style.setProperty(
         '--ui-accent-pressed',
-        tokens.accentPressed ?? `color-mix(in_srgb, ${tokens.accent} 82%, #000000 18%)`
+        `color-mix(in_srgb, ${tokens.accent} 82%, #000000 18%)`
       );
       r.style.setProperty(
         '--ui-accent-ring',
-        tokens.accentRing ?? `color-mix(in_srgb, ${tokens.accent} 40%, transparent)`
+        `color-mix(in_srgb, ${tokens.accent} 40%, transparent)`
       );
 
       r.style.setProperty(
         '--ui-accent-alt',
         tokens.accentAlt ?? `color-mix(in_srgb, ${tokens.accent} 65%, ${tokens.fg} 35%)`
       );
-      r.style.setProperty('--ui-accent-warm', tokens.accentWarm ?? tokens.accent);
+      const accentWarmBase = tokens.accentWarm ?? tokens.accent;
+      r.style.setProperty('--ui-accent-warm', accentWarmBase);
       r.style.setProperty(
         '--ui-accent-warm-soft',
-        tokens.accentWarmSoft ??
-          (tokens.accentWarm
-            ? `color-mix(in_srgb, ${tokens.accentWarm} 72%, ${tokens.fg} 28%)`
-            : `color-mix(in_srgb, ${tokens.accent} 72%, ${tokens.fg} 28%)`)
+        `color-mix(in_srgb, ${accentWarmBase} 72%, ${tokens.fg} 28%)`
       );
       r.style.setProperty(
         '--ui-fg-subtle',
-        tokens.fgSubtle
-          ? tokens.fgSubtleOpaque
-            ? tokens.fgSubtle
-            : `color-mix(in_srgb, ${tokens.fgSubtle} 78%, transparent)`
-          : `color-mix(in_srgb, ${tokens.fgMuted} 55%, transparent)`
+        currentTheme.isDark
+          ? `color-mix(in_srgb, ${tokens.fg} 48%, ${tokens.bg} 52%)`
+          : `color-mix(in_srgb, ${fgMutedBase} 55%, transparent)`
       );
       r.style.setProperty(
         '--ui-fg-disabled',
-        tokens.fgDisabled ?? `color-mix(in_srgb, ${tokens.fgMuted} 45%, transparent)`
+        `color-mix(in_srgb, ${fgMutedBase} 45%, transparent)`
       );
       r.style.setProperty('--ui-accent-contrast', bestTextOnColor(tokens.accent));
     }
 
     const accent = (tokens?.accent ?? currentTheme.preview?.accent ?? '#4A5C6A').trim();
-    if (tokens?.success) {
-      r.style.setProperty('--ui-success', tokens.success);
-    } else {
-      r.style.setProperty('--ui-success', `color-mix(in_srgb, ${accent} 10%, #22C55E 90%)`);
-    }
-    if (tokens?.warning) {
-      r.style.setProperty('--ui-warning', tokens.warning);
-    } else {
-      r.style.setProperty('--ui-warning', `color-mix(in_srgb, ${accent} 10%, #F59E0B 90%)`);
-    }
-    if (tokens?.danger) {
-      r.style.setProperty('--ui-danger', tokens.danger);
-    } else {
-      r.style.setProperty('--ui-danger', `color-mix(in_srgb, ${accent} 10%, #FF3B3B 90%)`);
-    }
+    r.style.setProperty('--ui-success', `color-mix(in_srgb, ${accent} 10%, #22C55E 90%)`);
+    r.style.setProperty('--ui-warning', `color-mix(in_srgb, ${accent} 10%, #F59E0B 90%)`);
+    r.style.setProperty('--ui-danger', `color-mix(in_srgb, ${accent} 10%, #FF3B3B 90%)`);
 
     // Browser / PWA chrome (address bar, Android nav) — must track *app* theme, not only OS.
     const themeColor = tokens?.bg ?? currentTheme.preview?.bg ?? '#1A1A1A';

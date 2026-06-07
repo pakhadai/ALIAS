@@ -32,7 +32,7 @@ function makeTeam(overrides: Partial<Team> = {}): Team {
     id: 'team-0',
     name: 'Rockets',
     score: 0,
-    color: TEAM_COLORS[0].class,
+    color: TEAM_COLORS[0].varName ?? TEAM_COLORS[0].hex,
     colorHex: TEAM_COLORS[0].hex,
     players: [p1, p2],
     nextPlayerIndex: 0,

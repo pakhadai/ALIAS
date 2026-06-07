@@ -157,6 +157,44 @@ describe('GameProvider', () => {
     expect(screen.getByTestId('is-host').textContent).toBe('true');
   });
 
+  it('should set --ui-bg, --ui-accent, and --ui-fg when theme changes', async () => {
+    function ThemeCssProbe() {
+      const game = useGame();
+      return (
+        <button
+          type="button"
+          onClick={() =>
+            game.setSettings((prev) => ({
+              ...prev,
+              general: { ...prev.general, theme: AppTheme.FOREST },
+            }))
+          }
+        >
+          switch-forest
+        </button>
+      );
+    }
+
+    render(
+      <GameProvider>
+        <ThemeCssProbe />
+      </GameProvider>
+    );
+
+    const root = document.documentElement;
+    expect(root.style.getPropertyValue('--ui-bg')).toBe('#0A0809');
+    expect(root.style.getPropertyValue('--ui-accent')).toBe('#E11D48');
+    expect(root.style.getPropertyValue('--ui-fg')).toBe('#F4EFF1');
+
+    await act(async () => {
+      screen.getByText('switch-forest').click();
+    });
+
+    expect(root.style.getPropertyValue('--ui-bg')).toBe('#FAFCFF');
+    expect(root.style.getPropertyValue('--ui-accent')).toBe('#6366F1');
+    expect(root.style.getPropertyValue('--ui-fg')).toBe('#0F172A');
+  });
+
   it('should preserve local theme when server sync includes different theme', async () => {
     localStorage.setItem(
       'alias_preferences',
