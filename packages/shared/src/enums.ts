@@ -38,6 +38,7 @@ export enum Category {
 }
 
 export enum AppTheme {
+  PAPER_LUXE = 'PAPER_LUXE',
   PREMIUM_DARK = 'PREMIUM_DARK',
   PREMIUM_LIGHT = 'PREMIUM_LIGHT',
   CYBERPUNK = 'CYBERPUNK',

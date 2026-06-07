@@ -69,6 +69,7 @@ body {
   user-select: none;
   background: var(--ui-bg);
   color: var(--ui-fg);
+  line-height: 1.4;
 }
 
 /* Telegram Mini App theming (when running inside Telegram) */
@@ -119,25 +120,31 @@ html[data-telegram-app='true'] #root {
   --z-modal-confirm: 600;
   --z-toast: 1000;
 
-  --font-heading: 'Playfair Display', serif;
+  --font-heading: 'Montserrat', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
-  --theme-radius: 9999px;
-  /* First paint before React applies THEME_CONFIG tokens (default PREMIUM_DARK ≈ Midnight Ruby) */
-  --ui-bg: #0a0809;
-  --ui-fg: #f4eff1;
-  --ui-card: #141012;
-  --ui-border: #382a31;
+  --font-heading-weight: 900;
+  --font-heading-transform: uppercase;
+  --font-heading-tracking: -0.03em;
+  --theme-radius: 6px;
+  /* First paint before React applies THEME_CONFIG tokens (default PAPER_LUXE ≈ Warm Paper) */
+  --ui-bg: #e2e3db;
+  --ui-fg: #272828;
+  --ui-card: #ffffff;
+  --ui-border: #272828;
   /* Word card: overridden per theme in GameContext */
   --ui-word-card-bg: var(--ui-card);
   --ui-word-card-fg: var(--ui-fg);
   --ui-word-card-border: var(--ui-border);
-  --ui-accent: #e11d48;
-  --ui-accent-hover: #f43f5e;
-  --ui-accent-pressed: #be123c;
-  --ui-accent-ring: #f43f5e66;
+  --ui-accent: #ee4239;
+  --ui-accent-hover: #f2554d;
+  --ui-accent-pressed: #d63b33;
+  --ui-accent-ring: #ee423966;
 }
 .font-serif {
   font-family: var(--font-heading) !important;
+  font-weight: var(--font-heading-weight, inherit);
+  text-transform: var(--font-heading-transform, none);
+  letter-spacing: var(--font-heading-tracking, normal);
 }
 .font-sans {
   font-family: var(--font-body) !important;

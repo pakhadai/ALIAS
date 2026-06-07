@@ -15,7 +15,6 @@ import {
   GameSettings,
   Category,
   Player,
-  AppTheme,
   GameActionPayload,
   AppState,
   GameContextType,
@@ -24,7 +23,7 @@ import {
   GameUIContextValue,
   GameActionsContextValue,
 } from '../types';
-import { MOCK_WORDS, THEME_CONFIG, ROOM_CODE_LENGTH } from '../constants';
+import { MOCK_WORDS, THEME_CONFIG, ROOM_CODE_LENGTH, DEFAULT_APP_THEME } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
@@ -527,13 +526,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [socketApi.myPlayerId, socketApi.roomCode, state.gameMode, state.myPlayerId, state.roomCode]);
 
   const currentTheme = useMemo(() => {
-    const fallback = THEME_CONFIG[AppTheme.PREMIUM_DARK];
+    const fallback = THEME_CONFIG[DEFAULT_APP_THEME];
     const themeId = state.settings.general.theme;
     const allowed = Object.prototype.hasOwnProperty.call(THEME_CONFIG, themeId);
     return allowed ? THEME_CONFIG[themeId] : fallback;
   }, [state.settings.general.theme]);
 
-  // Hard-reset unknown themes to default (Midnight Ruby / PREMIUM_DARK)
+  // Hard-reset unknown themes to default (Warm Paper / PAPER_LUXE)
   useEffect(() => {
     const themeId = state.settings.general.theme;
     const allowed = Object.prototype.hasOwnProperty.call(THEME_CONFIG, themeId);
@@ -543,7 +542,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       payload: {
         settings: {
           ...stateRef.current.settings,
-          general: { ...stateRef.current.settings.general, theme: AppTheme.PREMIUM_DARK },
+          general: { ...stateRef.current.settings.general, theme: DEFAULT_APP_THEME },
         },
       },
     });
@@ -560,6 +559,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     r.style.setProperty('--font-heading', currentTheme.fonts.heading);
     r.style.setProperty('--font-body', currentTheme.fonts.body);
     r.style.setProperty('--theme-radius', currentTheme.borderRadius);
+    r.style.setProperty('--font-heading-weight', currentTheme.heading?.fontWeight ?? 'inherit');
+    r.style.setProperty('--font-heading-transform', currentTheme.heading?.textTransform ?? 'none');
+    r.style.setProperty('--font-heading-tracking', currentTheme.heading?.letterSpacing ?? 'normal');
     r.style.colorScheme = currentTheme.isDark ? 'dark' : 'light';
 
     const tokens = currentTheme.tokens;

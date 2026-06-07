@@ -1,5 +1,6 @@
-import { Category, Language } from './enums';
+import { AppTheme, Category, Language } from './enums';
 
+export const DEFAULT_APP_THEME = AppTheme.PAPER_LUXE;
 export const DEFAULT_ROUND_TIME = 60;
 export const WINNING_SCORE = 30;
 export const ROOM_CODE_LENGTH = 5;

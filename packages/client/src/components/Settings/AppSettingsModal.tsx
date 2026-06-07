@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useDeferredOpen } from '../../hooks/useDeferredOpen';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate, X } from 'lucide-react';
-import { AppTheme, Language, SoundPreset } from '../../types';
+import { Language, SoundPreset } from '../../types';
 import { THEME_CONFIG, UI_THEME_IDS } from '../../constants';
 import { useT } from '../../hooks/useT';
 import { useGame } from '../../context/GameContext';
@@ -121,7 +121,7 @@ export function AppSettingsModal({ onClose }: Props) {
                   const themeName = theme.labels?.[uiLanguage]?.name ?? theme.name;
                   const themeDesc = theme.labels?.[uiLanguage]?.description ?? theme.description;
                   const isActive = settings.general.theme === themeId;
-                  const locked = themeId !== AppTheme.PREMIUM_DARK && !isAuthenticated;
+                  const locked = !theme.isFree && !isAuthenticated;
                   return (
                     <button
                       key={theme.id}

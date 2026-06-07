@@ -2,6 +2,53 @@ import { Language } from '@alias/shared';
 import { AppTheme, type ThemeConfig } from '../types';
 
 export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
+  [AppTheme.PAPER_LUXE]: {
+    id: AppTheme.PAPER_LUXE,
+    name: 'Warm Paper',
+    description: 'Warm paper background, graphite type, coral accents, editorial geometry',
+    labels: {
+      [Language.UA]: {
+        name: 'Теплий папір',
+        description:
+          'Теплий приглушений фон, графітовий текст, коралові акценти та геометричні заголовки.',
+      },
+      [Language.DE]: {
+        name: 'Warmes Papier',
+        description: 'Warmer Papierhintergrund, Graphit-Text und Korall-Akzente.',
+      },
+    },
+    isFree: true,
+    isDark: false,
+    preview: { bg: '#E2E3DB', accent: '#EE4239' },
+    tokens: {
+      bg: '#E2E3DB',
+      surface: '#EBECE5',
+      elevated: '#FFFFFF',
+      border: '#272828',
+      accent: '#EE4239',
+      fg: '#272828',
+    },
+    fonts: {
+      heading: "'Montserrat', 'Inter', system-ui, sans-serif",
+      body: "'Inter', system-ui, sans-serif",
+    },
+    heading: {
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: '-0.03em',
+    },
+    borderRadius: '6px',
+    bg: 'bg-ui-bg',
+    card: 'bg-ui-card border border-ui-border',
+    textMain: 'text-ui-fg font-serif',
+    textSecondary: 'text-ui-fg-muted font-sans',
+    textAccent: 'text-ui-accent font-sans',
+    textGradient: 'text-ui-fg font-serif',
+    button:
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans border border-ui-border',
+    iconColor: 'text-ui-fg',
+    progressBar: 'bg-ui-accent',
+  },
   [AppTheme.PREMIUM_DARK]: {
     id: AppTheme.PREMIUM_DARK,
     name: 'Midnight Ruby',

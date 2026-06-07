@@ -61,6 +61,12 @@ export interface ThemeConfig {
     accentWarm?: string;
   };
   fonts: { heading: string; body: string };
+  /** Display heading overrides applied via CSS vars on `:root` (see `.font-serif`). */
+  heading?: {
+    fontWeight?: string;
+    textTransform?: string;
+    letterSpacing?: string;
+  };
   borderRadius: string;
   bg: string;
   card: string;

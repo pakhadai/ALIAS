@@ -1,14 +1,13 @@
 import React from 'react';
 import { Logo } from './Shared';
-import { THEME_CONFIG } from '../constants';
-import { AppTheme } from '../types';
+import { THEME_CONFIG, DEFAULT_APP_THEME } from '../constants';
 
 /**
  * Full-screen boot state for Telegram Mini App: matches ALIAS typography and UI tokens.
  * Shown until JWT handshake completes (GameProvider is not mounted yet).
  */
 export const TelegramAuthLoadingScreen: React.FC = () => {
-  const theme = THEME_CONFIG[AppTheme.PREMIUM_DARK];
+  const theme = THEME_CONFIG[DEFAULT_APP_THEME];
 
   return (
     <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex flex-col items-center justify-center px-8 relative overflow-hidden selection:bg-ui-accent selection:text-ui-accent-contrast">

@@ -30,6 +30,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Theme `PAPER_LUXE` (Warm Paper):** editorial light palette — bg `#E2E3DB`, fg `#272828`, accent `#EE4239`, Montserrat 900 uppercase headings, Inter body, flat borders (no card shadows), `6px` radius. Set as default via `DEFAULT_APP_THEME` in `@alias/shared`. Files: `enums.ts`, `constants.ts`, `themes.ts`, `GameContext.tsx`, `styles.css`, `index.html`.
+
+### Changed
+
+- **Default app theme:** `PAPER_LUXE` replaces `PREMIUM_DARK` for new sessions, room defaults, and `:root` CSS fallback. Guest-unlocked themes now use `ThemeConfig.isFree` instead of hardcoded `PREMIUM_DARK`.
+
 ### Fixed
 
 - **UI tokens + TMA session 7/7 (verification):** static grep audit green (`text-white`/`bg-white` 0 on game screens, admin className hex 0, fixed bottom always `pb-safe-*`, legacy tailwind colors 0); Prettier on 7 client files; unit tests client 48 / server 341 / shared 12; E2E `@smoke` mobile-chrome 7/7. `docs/UI_TOKENS.md` status → `implemented`. Manual TMA device checklist documented in `docs/daily/2026-06-07.md`.

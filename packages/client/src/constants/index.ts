@@ -1,5 +1,6 @@
 // Barrel: shared re-exports + client constants split for maintainability
 export {
+  DEFAULT_APP_THEME,
   DEFAULT_ROUND_TIME,
   WINNING_SCORE,
   ROOM_CODE_LENGTH,

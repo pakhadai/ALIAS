@@ -182,9 +182,9 @@ describe('GameProvider', () => {
     );
 
     const root = document.documentElement;
-    expect(root.style.getPropertyValue('--ui-bg')).toBe('#0A0809');
-    expect(root.style.getPropertyValue('--ui-accent')).toBe('#E11D48');
-    expect(root.style.getPropertyValue('--ui-fg')).toBe('#F4EFF1');
+    expect(root.style.getPropertyValue('--ui-bg')).toBe('#E2E3DB');
+    expect(root.style.getPropertyValue('--ui-accent')).toBe('#EE4239');
+    expect(root.style.getPropertyValue('--ui-fg')).toBe('#272828');
 
     await act(async () => {
       screen.getByText('switch-forest').click();

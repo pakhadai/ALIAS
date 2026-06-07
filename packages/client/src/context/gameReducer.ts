@@ -1,4 +1,5 @@
-import { GameState, Language, Category, AppTheme, SoundPreset, GameMode } from '../types';
+import { GameState, Language, Category, SoundPreset, GameMode } from '../types';
+import { DEFAULT_APP_THEME } from '../constants';
 import type { AppState, Player, GameSettings } from '../types';
 
 export const SESSION_KEY = 'alias_active_session';
@@ -37,7 +38,7 @@ export const initialState: AppState = {
       soundPreset: SoundPreset.FUN,
       teamMode: 'TEAMS',
       teamCount: 2,
-      theme: AppTheme.PREMIUM_DARK,
+      theme: DEFAULT_APP_THEME,
     },
     mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
   },

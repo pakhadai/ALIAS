@@ -4,9 +4,9 @@ import {
   Language,
   Category,
   SoundPreset,
-  AppTheme,
   GameMode,
   MAX_PLAYERS,
+  DEFAULT_APP_THEME,
   getTeamColor,
   getTeamColorToken,
 } from '@alias/shared';
@@ -78,7 +78,7 @@ const defaultSettings: GameSettings = {
     soundPreset: SoundPreset.FUN,
     teamMode: 'TEAMS',
     teamCount: 2,
-    theme: AppTheme.PREMIUM_DARK,
+    theme: DEFAULT_APP_THEME,
   },
   mode: {
     gameMode: GameMode.CLASSIC,
