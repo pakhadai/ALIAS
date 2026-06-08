@@ -272,7 +272,7 @@ export const LobbySettingsScreen = () => {
                   value={local.general.customWords || ''}
                   onChange={(e) => setGeneral('customWords', e.target.value)}
                   placeholder="Слова через кому…"
-                  className="w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none"
+                  className={`w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none ${typographyClass.bodyInput}`}
                 />
               </div>
             )}

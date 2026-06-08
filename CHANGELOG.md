@@ -49,6 +49,7 @@
 - **ModalSheet Phase 2 presets API:** `ModalSheet.presets.ts` centralizes padding + default `maxWidth` per `size`; `compact` uses `px-5` + auto `max-w-sm`; `tall` scroll on content wrapper; `paddedContent` / `panelClassName` documented as deprecated / escape hatch; `ModalSheetBody` / `ModalSheetFooter` helpers — `ModalSheet.tsx`, `ConfirmationModal.tsx`, docs, unit tests
 
 ### Fixed
+- **TYPO-001 Session A (TMA inputs 16px):** deck editor, word packs, offline add-player, lobby custom-words textareas → `typographyClass.bodyInput` (prevents iOS zoom in Telegram Mini App); `MyDecksScreen`, `MyWordPacksScreen`, `AddOfflinePlayerSheet`, `SettingsScreen`, `LobbySettingsScreen`
 - **Offline add-player sheet:** `AddOfflinePlayerSheet` mounts on demand (like `AssignPlayerSheet`) — fixes `useBottomSheetPresence` stuck `mounted=false` when sheet was always in tree with `open={false}`; E2E `add-player-modal` testid
 - **Offline lobby settings in TMA:** header gear visible for offline host (`lobby-header-settings`) when online chips are absent — offline E2E can open rules/time settings
 - **E2E offline assign:** multilingual `assignPlayerButton()` (UA/DE/EN aria-labels) — `game-ui.ts`

@@ -94,7 +94,7 @@ export function AddOfflinePlayerSheet(props: {
           onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
           onChange={(e) => setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
           placeholder={t.namePlaceholder}
-          className="w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-sans font-bold text-center text-sm"
+          className={`w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-bold text-center ${typographyClass.bodyInput}`}
         />
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
           {AVATARS.map((a) => (

@@ -525,7 +525,7 @@ export const SettingsScreen = () => {
                       value={settings.general.customWords || ''}
                       onChange={(e) => updateGeneral('customWords', e.target.value)}
                       placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
-                      className="w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none"
+                      className={`w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none ${typographyClass.bodyInput}`}
                     />
                   )}
                 </div>

@@ -123,7 +123,7 @@ export const MyDecksScreen = () => {
               value={deckName}
               onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
               placeholder="e.g. Office Party Pack"
-              className={`w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${inputCls}`}
+              className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all ${inputCls}`}
             />
           </div>
           <div className="space-y-2">
@@ -142,7 +142,7 @@ export const MyDecksScreen = () => {
               onChange={(e) => setWordsText(e.target.value)}
               placeholder={'apple\nbanana\ncucumber\n...'}
               rows={10}
-              className={`w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all resize-none ${inputCls}`}
+              className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all resize-none ${inputCls}`}
             />
             <p
               className={`${typographyClass.label} normal-case ${currentTheme.textSecondary} opacity-40`}

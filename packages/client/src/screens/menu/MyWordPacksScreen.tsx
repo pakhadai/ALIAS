@@ -48,7 +48,7 @@ export const MyWordPacksScreen = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cardBg = 'bg-ui-card border border-ui-border';
-  const inputCls = `w-full rounded-2xl px-5 py-4 text-sm font-sans outline-none transition-all ${
+  const inputCls = `w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all ${
     isDark
       ? 'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent'
       : 'bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent'
