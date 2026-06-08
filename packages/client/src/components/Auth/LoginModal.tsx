@@ -112,7 +112,7 @@ export function LoginModal({ open, onDismiss }: LoginModalProps) {
         <button
           type="button"
           onClick={onDismiss}
-          className="mt-4 w-full py-2 text-xs text-ui-fg-muted transition-colors hover:text-ui-fg"
+          className={`mt-4 w-full py-2 ${typographyClass.system} text-ui-fg-muted transition-colors hover:text-ui-fg`}
         >
           {t.loginContinueWithout}
         </button>

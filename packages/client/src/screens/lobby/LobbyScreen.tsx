@@ -364,7 +364,9 @@ export const LobbyScreen = () => {
               onStartTap={handleStartTap}
             />
           ) : (
-            <div className="lobby-start-glass flex items-center justify-center gap-2 rounded-3xl px-4 py-3 text-center text-sm font-sans text-ui-fg-muted">
+            <div
+              className={`lobby-start-glass flex items-center justify-center gap-2 rounded-3xl px-4 py-3 text-center ${typographyClass.body} font-sans text-ui-fg-muted`}
+            >
               <Loader2 size={14} className={`animate-spin shrink-0 ${currentTheme.iconColor}`} />
               <span>{t.lobbyGuestWaitingFooter}</span>
             </div>
@@ -622,7 +624,7 @@ export const LobbyScreen = () => {
                     <button
                       type="button"
                       onClick={() => setGameState(GameState.TEAMS)}
-                      className="px-2.5 py-1.5 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-xs font-sans text-ui-fg-muted transition-all active:scale-[0.98]"
+                      className={`px-2.5 py-1.5 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.label} font-sans normal-case text-ui-fg-muted transition-all active:scale-[0.98]`}
                     >
                       {t.lobbyConfigureTeams} →
                     </button>
@@ -654,7 +656,7 @@ export const LobbyScreen = () => {
                 <button
                   type="button"
                   onClick={() => setTeamsExpanded((v) => !v)}
-                  className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover text-xs font-sans text-ui-fg-muted transition-all active:scale-[0.98]"
+                  className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.label} font-sans normal-case text-ui-fg-muted transition-all active:scale-[0.98]`}
                   data-testid="lobby-teams-toggle"
                 >
                   {teamsExpanded ? (

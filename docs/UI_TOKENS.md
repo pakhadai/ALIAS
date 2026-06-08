@@ -137,18 +137,19 @@
 | **label** | `text-ui-label` | `--ui-text-label` | 0.625rem (10px) | `font-sans` | `font-bold uppercase tracking-ui-label` (0.2em) |
 | **system** | `text-ui-system` | `--ui-text-system` | 0.75rem (12px) | `font-sans` | `font-medium` (не uppercase за замовч.) |
 
-**Precomposed map:** `packages/client/src/constants/typography.ts` → `typographyClass.*` plus helpers: `labelSectionClass`, `formLabelClass`, `systemBannerClass`, `systemStatusClass`.  
+**Precomposed map:** `packages/client/src/constants/typography.ts` → `typographyClass.*` plus helpers: `brandCaptionClass`, `captionMutedClass`, `labelSectionClass`, `formLabelClass`, `systemBannerClass`, `systemStatusClass`.  
 **Components:** `ScreenTitle` / `ModalSheetTitle` — `typographyClass.heading`; `ConnectionStatusBanner` — `systemBannerClass`; toast — `typographyClass.body`.
 
 ### CSS contract (`styles.css`)
 
 | Змінна | Значення | `@theme` utility |
 |--------|----------|------------------|
-| `--ui-text-heading` | `1.5rem` | `--font-size-ui-heading` → `text-ui-heading` |
-| `--ui-text-body` | `0.875rem` | `--font-size-ui-body` → `text-ui-body` |
-| `--ui-text-body-input` | `1rem` | `--font-size-ui-body-input` → `text-ui-body-input` |
-| `--ui-text-label` | `0.625rem` | `--font-size-ui-label` → `text-ui-label` |
-| `--ui-text-system` | `0.75rem` | `--font-size-ui-system` → `text-ui-system` |
+| `--ui-text-heading` | `1.5rem` | `--text-ui-heading` → `text-ui-heading` |
+| `--ui-text-body` | `0.875rem` | `--text-ui-body` → `text-ui-body` |
+| `--ui-text-body-input` | `1rem` | `--text-ui-body-input` → `text-ui-body-input` |
+| `--ui-text-label` | `0.625rem` | `--text-ui-label` → `text-ui-label` |
+| `--ui-text-caption` | `0.625rem` | `--text-ui-caption` → `text-ui-caption` |
+| `--ui-text-system` | `0.75rem` | `--text-ui-system` → `text-ui-system` |
 | `--ui-text-heading-leading` | `1.25` | `--line-height-ui-heading` → `leading-ui-heading` |
 | `--ui-text-body-leading` | `1.5` | `--line-height-ui-body` → `leading-ui-body` |
 | `--ui-text-label-tracking` | `0.2em` | `--letter-spacing-ui-label` → `tracking-ui-label` |
@@ -165,7 +166,9 @@
 
 - **`Logo`** — `text-7xl font-serif tracking-[0.25em]` (game title, frozen).
 - **Game display** — `text-3xl`…`text-8xl`, `clamp()` на екранах гри (Imposter, VS, Countdown, word card).
-- **Legacy arbitrary px** — до завершення TYPO-001 Phase 6; grep governance у epic doc.
+- **Emoji avatars** — `text-sm` на декоративних emoji spans (`TeamCard`, `UnassignedPool`).
+- **Admin tabs** — `font-mono text-xs` у compact admin panel (Phase 8 optional).
+- **Material icon glyphs** — `text-[18px]` на icon font metrics (не semantic copy).
 
 **Примітка:** `font-serif` у TSX = runtime `--font-heading` (`.font-serif` override), не напряму Playfair з `tailwind.config.ts`. Phase 8 (optional): alias `font-heading`.
 

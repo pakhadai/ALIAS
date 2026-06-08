@@ -30,16 +30,17 @@
   --color-ui-surface-hover: var(--ui-surface-hover);
 
   /* Typography scale → utilities: text-ui-heading, leading-ui-heading, tracking-ui-label, … */
-  --font-size-ui-heading: var(--ui-text-heading);
-  --font-size-ui-body: var(--ui-text-body);
-  --font-size-ui-body-input: var(--ui-text-body-input);
-  --font-size-ui-label: var(--ui-text-label);
-  --font-size-ui-caption: var(--ui-text-caption);
-  --font-size-ui-system: var(--ui-text-system);
-  --line-height-ui-heading: var(--ui-text-heading-leading);
-  --line-height-ui-body: var(--ui-text-body-leading);
-  --letter-spacing-ui-label: var(--ui-text-label-tracking);
-  --letter-spacing-ui-caption-wide: var(--ui-text-caption-tracking-wide);
+  /* Tailwind v4: --text-* (not --font-size-*), --leading-*, --tracking-* */
+  --text-ui-heading: var(--ui-text-heading);
+  --text-ui-body: var(--ui-text-body);
+  --text-ui-body-input: var(--ui-text-body-input);
+  --text-ui-label: var(--ui-text-label);
+  --text-ui-caption: var(--ui-text-caption);
+  --text-ui-system: var(--ui-text-system);
+  --leading-ui-heading: var(--ui-text-heading-leading);
+  --leading-ui-body: var(--ui-text-body-leading);
+  --tracking-ui-label: var(--ui-text-label-tracking);
+  --tracking-ui-caption-wide: var(--ui-text-caption-tracking-wide);
 }
 
 /* Keep Material Symbols baseline consistent */

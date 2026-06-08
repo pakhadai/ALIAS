@@ -94,7 +94,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
             onClick={() => setAllModesOpen((o) => !o)}
             className={`mt-3 w-full flex items-center justify-between gap-2 rounded-2xl border border-ui-border bg-ui-bg px-4 py-3 text-left transition-colors hover:bg-ui-surface ${currentTheme.textMain}`}
           >
-            <span className="text-xs font-bold uppercase tracking-widest opacity-50">
+            <span className={`${typographyClass.label} tracking-widest opacity-50`}>
               {allModesOpen ? t.helpRulesHideModes : t.helpRulesShowAllModes}
             </span>
             <ChevronDown
@@ -111,7 +111,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
                     key={m.id}
                     className="rounded-2xl border border-ui-border bg-ui-surface px-4 py-3"
                   >
-                    <p className={`text-xs font-bold ${currentTheme.textMain}`}>{m.title}</p>
+                    <p className={`${typographyClass.label} ${currentTheme.textMain}`}>{m.title}</p>
                     <p
                       className={`${typographyClass.body} mt-1 leading-relaxed ${currentTheme.textSecondary}`}
                     >

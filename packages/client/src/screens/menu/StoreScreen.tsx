@@ -238,7 +238,9 @@ export const StoreScreen = () => {
                 </div>
               ))}
               {visiblePacks.length === 0 ? (
-                <p className={`text-center text-sm pt-12 ${currentTheme.textSecondary} opacity-40`}>
+                <p
+                  className={`text-center ${typographyClass.body} pt-12 ${currentTheme.textSecondary} opacity-40`}
+                >
                   Немає доступних наборів
                 </p>
               ) : (

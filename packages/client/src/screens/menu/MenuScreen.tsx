@@ -229,7 +229,7 @@ export const MenuScreen = () => {
               {createRoomBusy ? (
                 <span className="h-5 w-5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0" />
               ) : null}
-              <span className="font-sans font-bold text-sm uppercase tracking-wide">
+              <span className={`${typographyClass.label} font-sans tracking-wide`}>
                 {t.createGame}
               </span>
             </button>
@@ -239,7 +239,7 @@ export const MenuScreen = () => {
               data-testid="menu-join-game"
               className="w-full h-14 rounded-full flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover"
             >
-              <span className="font-sans font-bold text-sm uppercase tracking-wide">
+              <span className={`${typographyClass.label} font-sans tracking-wide`}>
                 {quickJoinLabel}
               </span>
             </button>
@@ -258,7 +258,7 @@ export const MenuScreen = () => {
               type="button"
               onClick={startOfflineGame}
               data-testid="menu-offline"
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-ui-border bg-transparent text-ui-fg-muted text-xs font-sans font-bold uppercase tracking-wide transition-all duration-200 ease-out active:scale-[0.98] hover:bg-ui-surface/40 hover:text-ui-fg"
+              className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-ui-border bg-transparent text-ui-fg-muted ${typographyClass.label} font-sans tracking-wide transition-all duration-200 ease-out active:scale-[0.98] hover:bg-ui-surface/40 hover:text-ui-fg`}
             >
               <WifiOff size={14} className="opacity-80 shrink-0" strokeWidth={2} />
               <span>{t.playOffline}</span>

@@ -19,7 +19,6 @@ import {
   typographyClass,
   labelSectionClass,
   labelSectionTitleClass,
-  formLabelClass,
 } from '../../constants/typography';
 import { Button } from '../../components/Button';
 import { FixedBottomBar, ScreenShell } from '../../components/layout';
@@ -335,9 +334,7 @@ export const SettingsScreen = () => {
           {activeTab === 'mode' && (
             <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
               <div className="space-y-2">
-                <h3
-                  className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
-                >
+                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
                   {t.gameMode ?? 'Режим гри'}
                 </h3>
                 <div className="h-px w-full bg-ui-border" />
@@ -417,9 +414,7 @@ export const SettingsScreen = () => {
           {activeTab === 'content' && (
             <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
               <div className="space-y-2">
-                <h3
-                  className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
-                >
+                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
                   {t.content ?? 'Словник'}
                 </h3>
                 <div className="h-px w-full bg-ui-border" />
@@ -450,7 +445,7 @@ export const SettingsScreen = () => {
                         key={l}
                         type="button"
                         onClick={() => updateGeneral('targetLanguage', l)}
-                        className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 text-xs font-bold transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
+                        className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 ${typographyClass.label} transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
                           (settings.general.targetLanguage ?? Language.EN) === l
                             ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] text-ui-fg`
                             : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
@@ -636,7 +631,9 @@ export const SettingsScreen = () => {
                       <div className="flex items-start gap-2 min-w-0">
                         <FileText size={14} className="text-ui-accent shrink-0 mt-0.5" />
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-ui-fg leading-tight truncate">
+                          <p
+                            className={`${typographyClass.label} normal-case font-semibold text-ui-fg leading-tight truncate`}
+                          >
                             {settings.general.customDeckName || settings.general.customDeckCode}
                           </p>
                           <p
@@ -664,7 +661,7 @@ export const SettingsScreen = () => {
                       className="w-full p-3 rounded-xl border border-dashed border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
                     >
                       <FileText size={14} />
-                      <span className="text-xs">Вибрати зі своїх словників…</span>
+                      <span className={typographyClass.label}>Вибрати зі своїх словників…</span>
                     </button>
                   ))}
               </div>
@@ -675,14 +672,12 @@ export const SettingsScreen = () => {
           {activeTab === 'rules' && (
             <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
               <div className="space-y-2">
-                <h3
-                  className={`text-xs font-bold tracking-[0.35em] uppercase ${currentTheme.textMain}`}
-                >
+                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
                   {t.rules ?? 'Правила'}
                 </h3>
                 <div className="h-px w-full bg-ui-border" />
               </div>
-              <p className="text-sm leading-relaxed text-ui-fg-muted">{t.lobbyRulesIntro}</p>
+              <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.lobbyRulesIntro}</p>
 
               <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2">
                 {(() => {
@@ -694,7 +689,7 @@ export const SettingsScreen = () => {
                           <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                             {t.imposterDiscussionTime ?? 'Час обговорення'}
                           </p>
-                          <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                          <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
                             {Math.round(mode.imposterDiscussionTime / 60)} хв
                           </span>
                         </div>
@@ -861,7 +856,7 @@ export const SettingsScreen = () => {
                                         : t.lobbyQuizLabelRoundTime}
                                     </p>
                                     <span
-                                      className={`text-xs font-bold ${currentTheme.textAccent}`}
+                                      className={`${typographyClass.label} ${currentTheme.textAccent}`}
                                     >
                                       {timerMode === 'PER_TASK'
                                         ? `${mode.quizQuestionTime}s`
@@ -913,7 +908,7 @@ export const SettingsScreen = () => {
                                         {t.lobbyQuizLabelTotalRound}
                                       </p>
                                       <span
-                                        className={`text-xs font-bold ${currentTheme.textAccent}`}
+                                        className={`${typographyClass.label} ${currentTheme.textAccent}`}
                                       >
                                         {mode.quizRoundTime}s
                                       </span>
@@ -987,7 +982,11 @@ export const SettingsScreen = () => {
                               >
                                 {localRoundTime}
                               </span>
-                              <span className="mt-1 text-xs font-semibold text-ui-fg-muted">s</span>
+                              <span
+                                className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
+                              >
+                                s
+                              </span>
                             </div>
                             <button
                               type="button"
@@ -1013,7 +1012,7 @@ export const SettingsScreen = () => {
                               </p>
                               <span
                                 data-testid="settings-score-to-win"
-                                className={`text-xs font-bold ${currentTheme.textAccent}`}
+                                className={`${typographyClass.label} ${currentTheme.textAccent}`}
                               >
                                 {settings.general.scoreToWin}
                               </span>
@@ -1044,7 +1043,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(next);
                                   updateGeneral('scoreToWin', next);
                                 }}
-                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                               >
                                 −
                               </button>
@@ -1076,7 +1075,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(next);
                                   updateGeneral('scoreToWin', next);
                                 }}
-                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                               >
                                 +
                               </button>
@@ -1127,7 +1126,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(next);
                                   updateGeneral('scoreToWin', next);
                                 }}
-                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                               >
                                 −
                               </button>
@@ -1159,7 +1158,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(next);
                                   updateGeneral('scoreToWin', next);
                                 }}
-                                className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                               >
                                 +
                               </button>
@@ -1183,7 +1182,7 @@ export const SettingsScreen = () => {
                             <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                               {t.teamCount}
                             </p>
-                            <span className={`text-xs font-bold ${currentTheme.textAccent}`}>
+                            <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
                               {settings.general.teamCount}
                             </span>
                           </div>
@@ -1252,7 +1251,7 @@ export const SettingsScreen = () => {
                                 updateGeneral('teamCount', next);
                               }}
                               disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                              className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                             >
                               −
                             </button>
@@ -1286,7 +1285,7 @@ export const SettingsScreen = () => {
                                 updateGeneral('teamCount', next);
                               }}
                               disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                              className="px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover text-xs font-bold"
+                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                             >
                               +
                             </button>

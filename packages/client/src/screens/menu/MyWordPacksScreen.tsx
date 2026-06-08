@@ -166,7 +166,7 @@ export const MyWordPacksScreen = () => {
               <ScreenTitle as="h3" themeClass={currentTheme.textMain} className="mb-2">
                 Функція заблокована
               </ScreenTitle>
-              <p className="text-sm leading-relaxed text-ui-fg-muted opacity-80">
+              <p className={`${typographyClass.body} leading-relaxed text-ui-fg-muted opacity-80`}>
                 Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}Розблокуйте цю
                 функцію в Магазині.
               </p>

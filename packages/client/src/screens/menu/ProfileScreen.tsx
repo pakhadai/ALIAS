@@ -183,7 +183,7 @@ export const ProfileScreen = () => {
             <button
               type="button"
               onClick={requestLogin}
-              className={`w-full max-w-[320px] min-h-[44px] rounded-xl font-sans text-xs font-bold uppercase tracking-[0.2em] ${currentTheme.button}`}
+              className={`w-full max-w-[320px] min-h-[44px] rounded-xl font-sans ${typographyClass.label} tracking-[0.2em] ${currentTheme.button}`}
             >
               {t.loginGoogle}
             </button>

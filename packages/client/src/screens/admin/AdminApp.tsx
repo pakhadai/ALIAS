@@ -74,7 +74,7 @@ function ToastContainer({
           }`}
           style={{ animation: 'toast-in 0.2s ease-out' }}
         >
-          <span className="flex-1 text-sm leading-snug">{t.message}</span>
+          <span className={`flex-1 ${typographyClass.body} leading-snug`}>{t.message}</span>
           <button
             type="button"
             onClick={() => onDismiss(t.id)}
@@ -119,7 +119,10 @@ function ConfirmModal({
         {opts.danger && (
           <AlertCircle size={20} className="text-ui-danger shrink-0 mt-0.5" aria-hidden />
         )}
-        <p id="admin-confirm-desc" className="text-ui-fg-muted text-sm leading-relaxed min-w-0">
+        <p
+          id="admin-confirm-desc"
+          className={`text-ui-fg-muted ${typographyClass.body} leading-relaxed min-w-0`}
+        >
           {opts.message}
         </p>
       </div>
@@ -155,11 +158,11 @@ function NotAuthorizedScreen({ message }: { message: string }) {
           <ScreenTitle as="h1" className="mb-2">
             Доступ закрито
           </ScreenTitle>
-          <p className="text-ui-fg-muted text-sm leading-relaxed">{message}</p>
+          <p className={`text-ui-fg-muted ${typographyClass.body} leading-relaxed`}>{message}</p>
         </div>
         <a
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ui-accent text-ui-accent-contrast font-bold text-sm hover:bg-ui-accent-hover transition-all"
+          className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ui-accent text-ui-accent-contrast font-bold ${typographyClass.label} hover:bg-ui-accent-hover transition-all`}
         >
           <ExternalLink size={16} />
           Перейти в головний додаток
@@ -174,7 +177,7 @@ function LoadingScreen() {
     <div className="min-h-screen flex items-center justify-center bg-ui-bg">
       <div className="flex flex-col items-center gap-4">
         <div className={`w-10 h-10 ${ADMIN_SPINNER_CLASS}`} />
-        <p className="text-ui-fg-muted text-sm">Перевірка авторизації…</p>
+        <p className={`text-ui-fg-muted ${typographyClass.body}`}>Перевірка авторизації…</p>
       </div>
     </div>
   );

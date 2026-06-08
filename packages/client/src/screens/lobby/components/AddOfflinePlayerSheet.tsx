@@ -80,7 +80,7 @@ export function AddOfflinePlayerSheet(props: {
       <div data-testid="add-player-modal" className="space-y-6">
         {atLimit && (
           <div className="mb-6 rounded-2xl border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ui-danger)_10%,transparent)] p-4 text-center">
-            <p className="text-ui-danger text-xs font-bold uppercase tracking-widest">
+            <p className={`${typographyClass.label} text-ui-danger tracking-widest`}>
               {t.playerLimitMaxTitle}
             </p>
             <p className={`${typographyClass.label} text-ui-fg-muted mt-2`}>

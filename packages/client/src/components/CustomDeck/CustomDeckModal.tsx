@@ -20,6 +20,7 @@ import { ModalSheet, ModalSheetBody, ModalSheetFooter } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
 import {
   typographyClass,
+  captionMutedClass,
   labelSectionClass,
   labelSectionTitleClass,
   formLabelClass,
@@ -242,12 +243,12 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
         />
       </div>
 
-      {error && <p className="text-ui-danger text-xs">{error}</p>}
+      {error && <p className={`${typographyClass.system} text-ui-danger`}>{error}</p>}
 
       <button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out"
+        className={`w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out`}
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
         Створити словник
@@ -328,7 +329,7 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
           className="w-full h-24 border-2 border-dashed border-ui-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] hover:bg-ui-surface transition-all duration-200 ease-out"
         >
           <FileText size={20} className="text-ui-fg-muted" />
-          <span className="text-xs text-ui-fg-muted">
+          <span className={`${captionMutedClass} text-ui-fg-muted`}>
             {file ? file.name : 'Натисніть для вибору файлу'}
           </span>
           {file && (
@@ -339,12 +340,12 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
         </button>
       </div>
 
-      {error && <p className="text-ui-danger text-xs">{error}</p>}
+      {error && <p className={`${typographyClass.system} text-ui-danger`}>{error}</p>}
 
       <button
         onClick={handleSubmit}
         disabled={saving || !file}
-        className="w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast text-xs font-bold tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out"
+        className={`w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out`}
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
         Завантажити
@@ -436,7 +437,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                     ? 'Новий словник'
                     : 'Завантажити файл'}
               </ModalSheetTitle>
-              <p className="text-xs text-ui-fg-muted">
+              <p className={`${captionMutedClass} text-ui-fg-muted`}>
                 {view === 'list'
                   ? 'Власні набори слів для гри'
                   : 'Введіть слова для свого словника'}
@@ -455,7 +456,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('create');
                 }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast text-xs font-bold tracking-wider transition-all duration-200 ease-out"
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
               >
                 <Plus size={13} />
                 Створити
@@ -468,7 +469,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('upload');
                 }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-surface hover:bg-ui-surface-hover border border-ui-border text-ui-fg text-xs font-bold tracking-wider transition-all duration-200 ease-out"
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-surface hover:bg-ui-surface-hover border border-ui-border text-ui-fg ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
               >
                 <Upload size={13} />
                 CSV / TXT
@@ -488,7 +489,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   </p>
                   <button
                     onClick={requestLogin}
-                    className="h-9 px-5 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast text-xs font-bold tracking-wider transition-all duration-200 ease-out"
+                    className={`h-9 px-5 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
                   >
                     Увійти
                   </button>
@@ -501,7 +502,7 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                 <div className="flex flex-col items-center justify-center h-40 gap-2">
                   <FileText size={32} className="text-ui-fg-muted opacity-50" />
                   <p className={`text-ui-fg-muted ${typographyClass.body}`}>Ще немає словників</p>
-                  <p className="text-ui-fg-muted opacity-70 text-xs">
+                  <p className={`${captionMutedClass} text-ui-fg-muted`}>
                     Натисніть «Створити» щоб додати перший
                   </p>
                 </div>

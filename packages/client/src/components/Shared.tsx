@@ -49,8 +49,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-ui-bg text-ui-fg px-10 pt-safe-top pb-10 text-center">
-          <h1 className="text-3xl font-serif mb-4 tracking-wide">Unexpected Error</h1>
-          <p className="text-ui-fg-muted mb-10 max-w-xs text-sm font-sans font-light leading-relaxed">
+          <h1 className={`${typographyClass.heading} mb-4`}>Unexpected Error</h1>
+          <p className={`text-ui-fg-muted mb-10 max-w-xs ${typographyClass.body} font-light`}>
             We encountered a slight issue. Please try reloading the app.
           </p>
           <Button onClick={this.handleReload} variant="secondary" size="lg">

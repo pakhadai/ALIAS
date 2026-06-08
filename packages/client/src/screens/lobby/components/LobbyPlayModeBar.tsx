@@ -88,13 +88,13 @@ export function LobbyPlayModeBar(props: {
                 type="button"
                 onClick={() => onTeamCountChange(Math.max(MIN_TEAMS, teamCount - 1))}
                 disabled={teamCount <= MIN_TEAMS}
-                className="min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover text-sm font-bold disabled:opacity-40"
+                className={`min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover ${typographyClass.body} font-bold disabled:opacity-40`}
                 aria-label={t.lobbyRemoveTeam ?? 'Remove team'}
               >
                 −
               </button>
               <span
-                className={`min-w-[2ch] text-center text-sm font-bold tabular-nums ${theme.textMain}`}
+                className={`min-w-[2ch] text-center ${typographyClass.body} font-bold tabular-nums ${theme.textMain}`}
               >
                 {teamCount}
               </span>
@@ -102,7 +102,7 @@ export function LobbyPlayModeBar(props: {
                 type="button"
                 onClick={() => onTeamCountChange(Math.min(MAX_TEAMS, teamCount + 1))}
                 disabled={teamCount >= MAX_TEAMS}
-                className="min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover text-sm font-bold disabled:opacity-40"
+                className={`min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover ${typographyClass.body} font-bold disabled:opacity-40`}
                 aria-label={t.lobbyAddTeam ?? 'Add team'}
               >
                 +

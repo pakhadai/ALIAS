@@ -135,7 +135,9 @@ export const LobbySettingsScreen = () => {
                 <>
                   <div className="flex justify-between items-center">
                     <p className={sectionLabel}>Час обговорення</p>
-                    <span className="text-ui-accent font-bold text-sm">
+                    <span
+                      className={`${typographyClass.body} text-ui-accent font-bold tabular-nums`}
+                    >
                       {'imposterDiscussionTime' in local.mode
                         ? Math.round(local.mode.imposterDiscussionTime / 60)
                         : 3}{' '}
@@ -173,7 +175,9 @@ export const LobbySettingsScreen = () => {
                 <>
                   <div className="flex justify-between items-center">
                     <p className={sectionLabel}>Час раунду</p>
-                    <span className="text-ui-accent font-bold text-sm">
+                    <span
+                      className={`${typographyClass.body} text-ui-accent font-bold tabular-nums`}
+                    >
                       {'classicRoundTime' in local.mode ? local.mode.classicRoundTime : 60}с
                     </span>
                   </div>
@@ -206,7 +210,9 @@ export const LobbySettingsScreen = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <p className={sectionLabel}>Рахунок для перемоги</p>
-                <span className="text-ui-accent font-bold text-sm">{local.general.scoreToWin}</span>
+                <span className={`${typographyClass.body} text-ui-accent font-bold tabular-nums`}>
+                  {local.general.scoreToWin}
+                </span>
               </div>
               <input
                 type="range"

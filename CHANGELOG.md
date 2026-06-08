@@ -37,6 +37,8 @@
 - **TYPO-001 typography epic plan:** `docs/TYPOGRAPHY_UNIFICATION.md` — 7 phases, target token scale (heading/body/label/system + frozen game title), session prompts per phase, grep governance
 
 ### Changed
+- **TYPO-001 Session C (app UI typography sweep):** modals, menu, lobby, shared — remaining `text-xs`/`text-sm` on semantic copy → `typographyClass.*` / `captionMutedClass` / `systemStatusClass`; 17 files; grep app UI (excl. GameFlow, admin/tabs) → 0
+- **TYPO-001 Session B (SettingsScreen labels + body):** lobby `SettingsScreen` — all legacy `text-xs`/`text-sm` on semantic copy → `typographyClass.label` / `body` / `labelSectionTitleClass`; block titles, intro paragraph, accent values, stepper controls; display timer `text-3xl/4xl` unchanged; grep `text-xs|text-sm` → 0
 - **TYPO-001 Phase 6 font + governance:** removed Merriweather from `index.html`; trimmed Playfair weights; `.cursor/rules/08-typography.mdc`; final app UI `text-[Npx]` sweep; epic marked implemented
 - **TYPO-001 Phase 5 system messages:** `systemBannerClass` / `systemStatusClass`; connection/PWA banners, MenuScreen server error, LobbyScreen guest strips, TMA auth boot/error, Sentry fallback, Store purchase banner → `text-ui-system`; toast stays `text-ui-body`
 - **TYPO-001 Phase 4 labels & captions:** micro uppercase text → `text-ui-label` via `typographyClass.label` + label helpers; `Button` base styles use label token; menu, lobby, admin, modals, store (~27 files)
@@ -49,6 +51,7 @@
 - **ModalSheet Phase 2 presets API:** `ModalSheet.presets.ts` centralizes padding + default `maxWidth` per `size`; `compact` uses `px-5` + auto `max-w-sm`; `tall` scroll on content wrapper; `paddedContent` / `panelClassName` documented as deprecated / escape hatch; `ModalSheetBody` / `ModalSheetFooter` helpers — `ModalSheet.tsx`, `ConfirmationModal.tsx`, docs, unit tests
 
 ### Fixed
+- **TYPO-001 Phase 7 (Tailwind v4 @theme typography):** `@theme` used wrong namespaces (`--font-size-ui-*`) so `text-ui-heading|body|label|system` utilities were never generated — semantic copy inherited 16px; fixed to `--text-ui-*`, `--leading-ui-*`, `--tracking-ui-*` in `styles.css`
 - **TYPO-001 Phase 7 prep (Settings number inputs):** score-to-win and team-count stepper fields → `typographyClass.bodyInput` (16px, iOS zoom); `SettingsScreen.tsx`
 - **TYPO-001 Session A (TMA inputs 16px):** deck editor, word packs, offline add-player, lobby custom-words textareas → `typographyClass.bodyInput` (prevents iOS zoom in Telegram Mini App); `MyDecksScreen`, `MyWordPacksScreen`, `AddOfflinePlayerSheet`, `SettingsScreen`, `LobbySettingsScreen`
 - **Offline add-player sheet:** `AddOfflinePlayerSheet` mounts on demand (like `AssignPlayerSheet`) — fixes `useBottomSheetPresence` stuck `mounted=false` when sheet was always in tree with `open={false}`; E2E `add-player-modal` testid

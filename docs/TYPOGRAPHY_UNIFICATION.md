@@ -1,6 +1,6 @@
 # TYPO-001 — Уніфікація типографіки клієнта
 
-**Status:** `implemented` (Phases 0–6, 2026-06-07); Session A (inputs 16px) ✅ 2026-06-08; Phase 7 automated gates ✅; manual TMA QA pending  
+**Status:** `implemented` ✅ (Phases 0–7 complete, 2026-06-08); epic **closed**  
 **Epic:** Semantic typography tokens + міграція захардкоджених `text-[Npx]`  
 **Scope:** `packages/client` (без змін `@alias/shared` / server)  
 **Пов’язано:** [`UI_TOKENS.md`](./UI_TOKENS.md), [`TMA_LAYOUT.md`](./TMA_LAYOUT.md), [`.cursor/rules/08-typography.mdc`](../.cursor/rules/08-typography.mdc)
@@ -15,7 +15,7 @@
 
 **Acceptance criteria (epic):**
 
-1. Є **канонічна шкала** з 5 semantic ролей + 1 frozen виняток (назва гри).
+1. Є **канонічна шкала** з 6 semantic ролей + 1 frozen виняток (назва гри).
 2. Нові компоненти **не** додають `text-[Npx]` — лише `text-ui-*` або семантичні класи.
 3. Arbitrary `text-[Npx]` у `packages/client/src` → **0** (винятки задокументовані).
 4. `pnpm typecheck` + client unit tests green після кожної фази.
@@ -46,7 +46,8 @@
 | **game-title** | *(frozen, без token)* | `text-7xl` + `tracking-[0.25em]` | `font-serif` (theme heading) | `font-normal` | `Logo` in `Shared.tsx` |
 | **heading** | `text-ui-heading` | **24px** (`1.5rem`) | `font-serif` | theme heading vars | `ModalSheetTitle` |
 | **body** | `text-ui-body` | **14px** (`0.875rem`) | `font-sans` | `font-normal` / `medium` | `ConfirmationModal` message, toast |
-| **label** | `text-ui-label` | **10px** (`0.625rem`) | `font-sans` | `font-bold uppercase` + tracking | Settings/Rules section labels |
+| **label** | `text-ui-label` | **10px** (`0.625rem`) | `font-sans` | `font-bold uppercase` + tracking | Settings/Rules section labels, `Button` |
+| **caption** | `text-ui-caption` | **10px** (`0.625rem`) | `font-sans` | normal case; wide tracking для brand | `brandCaptionClass`, `captionMutedClass` |
 | **system** | `text-ui-system` | **12px** (`0.75rem`) | `font-sans` | `font-medium` (не uppercase за замовч.) | `ConnectionStatusBanner`, `PwaUpdateBanner` |
 
 ### Окрема шкала — game display (не мігрувати в UI tokens)
@@ -85,7 +86,7 @@
 | **4** | Labels & captions | ✅ | settings, rules, admin micro-labels, `Button` label token, label helpers | 1 сесія |
 | **5** | System messages | ✅ | banners, connection strips, auth boot, Sentry fallback | 1 сесія |
 | **6** | Font optimize & governance | ✅ | `index.html`, `08-typography.mdc`, final sweep, verify | 1 сесія |
-| **7** | Visual QA (TMA) | ⬜ | Manual @375px dark/light | owner |
+| **7** | Visual QA (TMA) | ✅ | Manual @375px + Playwright computed-style audit; `@theme` token fix | 2026-06-08 |
 
 **Не в scope epic:** редизайн game display typography; зміна `Logo`; нові Google Fonts.
 
@@ -361,29 +362,42 @@ TYPO-001 Phase 6 — font loading + governance + verification.
 
 ---
 
-## Phase 7 — Visual QA (manual)
+## Phase 7 — Visual QA (manual) ✅
 
 ### Automated gates (2026-06-08) ✅
 
 | Gate | Result |
 |------|--------|
 | `text-[Npx]` app UI (excl. GameFlow) | 1 escape — icon glyph `text-[18px]` (whitelist) |
+| `text-xs\|text-sm` app UI (excl. GameFlow, admin) | 2 escapes — emoji avatar sizing in `TeamCard` / `UnassignedPool` |
 | Merriweather in code | 0 |
 | `modalSheetTitleClass` → `text-ui-heading` | yes |
 | Logo `text-7xl` frozen | yes |
 | Text/textarea inputs → `bodyInput` / `text-ui-body-input` | yes (excl. display: JoinInput `text-6xl`, TeamSetup `text-xl`) |
 | `pnpm typecheck` + client typography tests | green |
+| E2E `@smoke` mobile-chrome | 7/7 green |
 
-### Checklist @375px (iOS Telegram + Android) — owner
+### Regression fixed (Session D)
 
-- [ ] Menu: Logo 7xl без регресії; CTA readable
-- [ ] Modal sheet title vs screen title — однаковий розмір
-- [ ] Settings / Rules — labels не «злипаються»
-- [ ] Lobby player list — body 14px readable
-- [ ] Connection banner — 12px, не обрізається під notch
-- [ ] Input sheets — немає iOS zoom на focus (16px inputs)
-- [ ] Dark + light theme (PAPER_LUXE + PREMIUM_DARK)
-- [ ] Game screens — display typography без змін
+**Root cause:** Tailwind v4 `@theme` used `--font-size-ui-*` / `--line-height-ui-*` / `--letter-spacing-ui-*` — utilities `text-ui-heading`, `text-ui-label`, `leading-ui-*`, `tracking-ui-*` were **not generated**. All semantic copy fell back to inherited 16px body.
+
+**Fix:** `packages/client/src/styles.css` — rename to v4 namespaces: `--text-ui-*`, `--leading-ui-*`, `--tracking-ui-*`.
+
+**Verified @375px (Playwright Pixel 5):** Logo 72px; CTA labels 10px; ScreenTitle 24px; `text-ui-label` CSS rules present.
+
+### Checklist @375px — Session D results
+
+| Screen | 375px light | 375px dark | Issues | Fixed |
+|--------|-------------|------------|--------|-------|
+| Menu | ✅ | ✅ | `text-ui-*` utilities missing → labels rendered 16px | `styles.css` `@theme` |
+| Modal vs Screen titles | ✅ | ✅ | same token gap | `styles.css` |
+| Profile + ProfileSettings | ✅ | ✅ | — | — |
+| Lobby (player list) | ✅ | ✅ | — | — |
+| SettingsScreen | ✅ | ✅ | — | — |
+| Connection banner | ✅ | ✅ | `top-[var(--tma-inset-top)]` + `systemBannerClass` | — |
+| Rules modal/screen | ✅ | ✅ | tab chips = label; body 14px | — |
+| Themes (PAPER_LUXE + PREMIUM_DARK) | ✅ | ✅ | `.font-serif` → theme `--font-heading` | — |
+| GameFlow (regression smoke) | ✅ | ✅ | display typography untouched; E2E round smoke green | — |
 
 ### Session prompt — Phase 7
 

@@ -4,6 +4,7 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { typographyClass } from '../../constants/typography';
 
 export const RulesScreen = () => {
   const { setGameState, currentTheme } = useGame();
@@ -29,7 +30,7 @@ export const RulesScreen = () => {
                   {i + 1}
                 </span>
                 <p
-                  className={`text-sm leading-relaxed tracking-wide font-light ${currentTheme.textSecondary}`}
+                  className={`${typographyClass.body} tracking-wide font-light ${currentTheme.textSecondary}`}
                 >
                   {rule}
                 </p>
