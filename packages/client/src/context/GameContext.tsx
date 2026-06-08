@@ -45,6 +45,7 @@ import {
   restoreSession,
 } from './gameReducer';
 import { applyOfflineGameAction } from './offlineGameActions';
+import { canEmitOnlineGameAction, resolveRoomErrorMessage } from '../utils/roomErrorMessage';
 
 const GameStateContext = createContext<GameStateContextValue | undefined>(undefined);
 const GameUIContext = createContext<GameUIContextValue | undefined>(undefined);
@@ -61,6 +62,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const offlineTimeUpFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Set by `startOfflineGame` until first offline join completes — avoids stale `gameMode` races. */
   const offlineJoinPendingRef = useRef(false);
+  /** Last server-confirmed settings — used to rollback optimistic host updates on room:error. */
+  const lastSyncedSettingsRef = useRef<GameSettings | null>(null);
+  const pendingOptimisticSettingsRef = useRef(false);
 
   const showNotification = useCallback(
     (message: string, type: 'info' | 'error' | 'success' = 'info') => {
@@ -318,6 +322,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const keepClientNav =
         CLIENT_NAV_STATES.has(currentClientState) && syncState.gameState === GameState.LOBBY;
 
+      lastSyncedSettingsRef.current = syncState.settings;
+      pendingOptimisticSettingsRef.current = false;
+
       // Game settings sync from server, but keep device-only preferences local.
       // Personal prefs: theme/sound should NOT be controlled by lobby settings.
       const settings = {
@@ -404,11 +411,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [showNotification]),
     onError: useCallback(
       (err: RoomErrorPayload) => {
+        if (
+          pendingOptimisticSettingsRef.current &&
+          lastSyncedSettingsRef.current &&
+          stateRef.current.gameMode === 'ONLINE' &&
+          stateRef.current.isHost
+        ) {
+          const synced = lastSyncedSettingsRef.current;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              settings: {
+                ...synced,
+                general: {
+                  ...synced.general,
+                  theme: stateRef.current.settings.general.theme,
+                  soundEnabled: stateRef.current.settings.general.soundEnabled,
+                  soundPreset: stateRef.current.settings.general.soundPreset,
+                },
+              },
+            },
+          });
+          pendingOptimisticSettingsRef.current = false;
+        }
+        const uiLang = stateRef.current.uiLanguage;
+        const message = resolveRoomErrorMessage(err.code, err.message, uiLang);
         dispatch({
           type: 'SET_STATE',
-          payload: { connectionError: err.message, connectionErrorCode: err.code },
+          payload: { connectionError: message, connectionErrorCode: err.code },
         });
-        showNotification(err.message, 'error');
+        showNotification(message, 'error');
       },
       [showNotification]
     ),
@@ -457,15 +489,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [socketApi]);
 
   const sendGameAction = socketApi.sendGameAction;
+  const notifyRoomNotReady = useCallback(() => {
+    const t = getUiStrings(stateRef.current.uiLanguage);
+    showNotification(t.roomActionNotReady, 'error');
+  }, [showNotification]);
+
+  const isOnlineRoomReady = useCallback((): boolean => {
+    return canEmitOnlineGameAction(stateRef.current.roomCode, {
+      isConnected: socketApi.isConnected,
+      isReconnecting: socketApi.isReconnecting,
+      roomCode: socketApi.roomCode,
+    });
+  }, [socketApi.isConnected, socketApi.isReconnecting, socketApi.roomCode]);
+
   const sendAction = useCallback(
     (action: GameActionPayload) => {
       if (stateRef.current.gameMode === 'ONLINE') {
+        if (!isOnlineRoomReady()) {
+          notifyRoomNotReady();
+          return;
+        }
         sendGameAction(action);
       } else {
         handleGameAction(action);
       }
     },
-    [handleGameAction, sendGameAction]
+    [handleGameAction, isOnlineRoomReady, notifyRoomNotReady, sendGameAction]
   );
 
   const clearOfflineTimeUpFallback = useCallback(() => {
@@ -921,6 +970,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If we're online and host, propagate settings to server so other clients sync
         if (stateRef.current.gameMode === 'ONLINE') {
           if (stateRef.current.isHost) {
+            if (!isOnlineRoomReady()) {
+              notifyRoomNotReady();
+              return;
+            }
+            pendingOptimisticSettingsRef.current = true;
             dispatch({ type: 'SET_STATE', payload: { settings: mergedSettings } });
             sendAction({ action: 'UPDATE_SETTINGS', data: newSettings });
           } else {
@@ -1027,7 +1081,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendAction({ action: 'RESET_GAME' });
       },
       rematch: () => sendAction({ action: 'REMATCH' }),
-      leaveRoom: () => {
+      leaveRoom: (opts?: { resetGameMode?: boolean }) => {
+        const resetGameMode = opts?.resetGameMode ?? true;
+        const nextGameMode = resetGameMode ? 'ONLINE' : stateRef.current.gameMode;
         // Prevent host session restore after refresh (and clear any stale join keys).
         try {
           localStorage.removeItem(SESSION_KEY);
@@ -1042,7 +1098,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           type: 'SET_STATE',
           payload: {
             gameState: GameState.MENU,
-            gameMode: 'ONLINE',
+            gameMode: nextGameMode,
             isHost: false,
             isConnected: false,
             roomCode: '',
@@ -1070,7 +1126,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       removeOfflinePlayer: (id: string) =>
         sendAction({ action: 'REMOVE_OFFLINE_PLAYER', data: id }),
     }),
-    [sendAction, playSound, showNotification, socketApi]
+    [sendAction, playSound, showNotification, socketApi, isOnlineRoomReady, notifyRoomNotReady]
   );
 
   return (

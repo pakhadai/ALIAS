@@ -82,6 +82,7 @@ describe('gameActionPipeline', () => {
     const room = await roomManager.createRoom('socket-host');
     const host = roomManager.addPlayer(room.code, 'socket-host', 'Host', '🎮')!;
     host.isHost = true;
+    const guest = roomManager.addPlayer(room.code, 'socket-guest', 'Guest', '🎲')!;
     room.teams = [
       {
         id: 'team-0',
@@ -90,6 +91,15 @@ describe('gameActionPipeline', () => {
         color: 'team-red',
         colorHex: '#f00',
         players: [host],
+        nextPlayerIndex: 0,
+      },
+      {
+        id: 'team-1',
+        name: 'Ninjas',
+        score: 0,
+        color: 'team-blue',
+        colorHex: '#00f',
+        players: [guest],
         nextPlayerIndex: 0,
       },
     ];

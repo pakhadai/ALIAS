@@ -21,7 +21,12 @@ import {
   labelSectionTitleClass,
 } from '../../constants/typography';
 import { Button } from '../../components/Button';
-import { FixedBottomBar, ScreenShell } from '../../components/layout';
+import {
+  AppHeader,
+  FixedBottomBar,
+  ScreenShell,
+  UI_APP_HEADER_SLOT_CLASS,
+} from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameMode } from '../../types';
 
@@ -255,10 +260,37 @@ export const SettingsScreen = () => {
     });
   };
 
+  const goBackToLobby = () => setGameState(GameState.LOBBY);
+
   return (
     <ScreenShell
-      className={`items-center ${currentTheme.bg} px-6 md:px-8`}
-      contentClassName="items-center overflow-y-auto no-scrollbar"
+      className={`items-center ${currentTheme.bg}`}
+      contentClassName="items-center max-w-2xl w-full mx-auto px-6 md:px-8"
+      header={
+        <AppHeader
+          title={
+            <h2
+              className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
+            >
+              {t.settings}
+            </h2>
+          }
+          onBack={goBackToLobby}
+          backAriaLabel={t.backToLobby}
+          backTestId="settings-close"
+          right={
+            isHost ? (
+              <button
+                type="button"
+                onClick={resetAllRoomSettings}
+                className={`${UI_APP_HEADER_SLOT_CLASS} min-h-11 px-2 ${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg active:scale-95`}
+              >
+                {t.reset ?? 'Скинути'}
+              </button>
+            ) : undefined
+          }
+        />
+      }
       footer={
         <FixedBottomBar contentClassName="max-w-2xl w-full">
           <Button
@@ -272,1019 +304,846 @@ export const SettingsScreen = () => {
         </FixedBottomBar>
       }
     >
-      <div className="max-w-2xl w-full">
-        <header className="flex justify-between items-center py-6 mb-8">
-          <button
-            type="button"
-            data-testid="settings-close"
-            aria-label={t.backToLobby}
-            onClick={() => setGameState(GameState.LOBBY)}
-            className="p-2 opacity-30 hover:opacity-100 transition-opacity"
-          >
-            <X size={20} className={currentTheme.iconColor} />
-          </button>
-          <h2
-            className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
-          >
-            {t.settings}
-          </h2>
-          {isHost ? (
-            <button
-              type="button"
-              onClick={resetAllRoomSettings}
-              className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg`}
-            >
-              {t.reset ?? 'Скинути'}
-            </button>
-          ) : (
-            <div className="w-10"></div>
-          )}
-        </header>
+      <div className="w-full space-y-6 pb-4">
+        <div className="sticky top-0 z-10 -mt-6 pt-2 pb-4 bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] to-transparent">
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                ['mode', t.gameMode ?? 'Режим'] as const,
+                ['content', t.content ?? 'Словник'] as const,
+                ['rules', t.rulesTitle] as const,
+              ] as const
+            ).map(([id, label]) => {
+              const active = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  className={`py-2.5 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
+                    active
+                      ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                      : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-        <div className="w-full space-y-6 pb-32">
-          <div className="sticky top-0 z-10 -mt-6 pt-2 pb-4 bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] to-transparent">
-            <div className="grid grid-cols-3 gap-2">
+        {/* BLOCK 1: Game Mode */}
+        {activeTab === 'mode' && (
+          <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
+            <div className="space-y-2">
+              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+                {t.gameMode ?? 'Режим гри'}
+              </h3>
+              <div className="h-px w-full bg-ui-border" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
               {(
                 [
-                  ['mode', t.gameMode ?? 'Режим'] as const,
-                  ['content', t.content ?? 'Словник'] as const,
-                  ['rules', t.rulesTitle] as const,
+                  [GameMode.CLASSIC, t.gameModeClassic ?? 'Classic', <Sparkles size={16} />],
+                  [
+                    GameMode.TRANSLATION,
+                    t.gameModeTranslation ?? 'Translation',
+                    <Languages size={16} />,
+                  ],
+                  [
+                    GameMode.SYNONYMS,
+                    t.gameModeSynonyms ?? 'Synonyms',
+                    <GraduationCap size={16} />,
+                  ],
+                  [GameMode.QUIZ, t.gameModeQuiz ?? 'Quiz', <Brain size={16} />],
+                  [GameMode.HARDCORE, t.gameModeHardcore ?? 'Hardcore', <Flame size={16} />],
+                  [GameMode.IMPOSTER, t.gameModeImposter ?? 'Imposter', <UserSearch size={16} />],
                 ] as const
-              ).map(([id, label]) => {
-                const active = activeTab === id;
+              ).map(([mode, label, icon]) => {
+                const active = (settings.mode.gameMode ?? GameMode.CLASSIC) === mode;
+                const hint =
+                  mode === GameMode.TRANSLATION
+                    ? t.gameModeHintTranslation
+                    : mode === GameMode.QUIZ
+                      ? t.gameModeHintQuiz
+                      : mode === GameMode.SYNONYMS
+                        ? t.gameModeHintSynonyms
+                        : mode === GameMode.HARDCORE
+                          ? t.gameModeHintHardcore
+                          : mode === GameMode.IMPOSTER
+                            ? t.gameModeHintImposter
+                            : t.gameModeHintClassic;
                 return (
                   <button
-                    key={id}
+                    key={mode}
                     type="button"
-                    onClick={() => setActiveTab(id)}
-                    className={`py-2.5 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
+                    onClick={() => updateMode({ gameMode: mode })}
+                    className={`py-3 px-2 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
                       active
                         ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
                         : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                     }`}
+                    aria-label={`${label}. ${hint}`}
                   >
-                    {label}
+                    <div className="space-y-1">
+                      <div className="inline-flex items-center justify-center gap-2">
+                        <span className={active ? 'opacity-95' : 'opacity-60'} aria-hidden>
+                          {icon}
+                        </span>
+                        <span>{label}</span>
+                      </div>
+                      <div
+                        className={`${typographyClass.label} font-normal normal-case leading-snug ${active ? 'opacity-90' : 'opacity-50'}`}
+                      >
+                        {hint}
+                      </div>
+                    </div>
                   </button>
                 );
               })}
             </div>
           </div>
+        )}
 
-          {/* BLOCK 1: Game Mode */}
-          {activeTab === 'mode' && (
-            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
-              <div className="space-y-2">
-                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
-                  {t.gameMode ?? 'Режим гри'}
-                </h3>
-                <div className="h-px w-full bg-ui-border" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {(
-                  [
-                    [GameMode.CLASSIC, t.gameModeClassic ?? 'Classic', <Sparkles size={16} />],
-                    [
-                      GameMode.TRANSLATION,
-                      t.gameModeTranslation ?? 'Translation',
-                      <Languages size={16} />,
-                    ],
-                    [
-                      GameMode.SYNONYMS,
-                      t.gameModeSynonyms ?? 'Synonyms',
-                      <GraduationCap size={16} />,
-                    ],
-                    [GameMode.QUIZ, t.gameModeQuiz ?? 'Quiz', <Brain size={16} />],
-                    [GameMode.HARDCORE, t.gameModeHardcore ?? 'Hardcore', <Flame size={16} />],
-                    [GameMode.IMPOSTER, t.gameModeImposter ?? 'Imposter', <UserSearch size={16} />],
-                  ] as const
-                ).map(([mode, label, icon]) => {
-                  const active = (settings.mode.gameMode ?? GameMode.CLASSIC) === mode;
-                  const hint =
-                    mode === GameMode.TRANSLATION
-                      ? (t.gameModeHintTranslation ??
-                        'Формат карток: «Слово|Переклад» (кастомні слова або свій словник).')
-                      : mode === GameMode.QUIZ
-                        ? (t.gameModeHintQuiz ??
-                          'Усі обирають варіант на екрані; перша правильна відповідь дає бал.')
-                        : mode === GameMode.SYNONYMS
-                          ? (t.gameModeHintSynonyms ??
-                            "Поки що як класика — окрема колода синонімів з'явиться пізніше.")
-                          : mode === GameMode.HARDCORE
-                            ? ((t.gameModeHintHardcore as string | undefined) ??
-                              'Швидше, без права на помилку.')
-                            : mode === GameMode.IMPOSTER
-                              ? ((t.gameModeHintImposter as string | undefined) ??
-                                'Один гравець — самозванець. Є фаза обговорення.')
-                              : ((t.gameModeHintClassic as string | undefined) ??
-                                'Пояснюй слова — команда вгадує.');
-                  return (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => updateMode({ gameMode: mode })}
-                      className={`py-3 px-2 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
-                        active
-                          ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                          : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                      }`}
-                      aria-label={`${label}. ${hint}`}
-                    >
-                      <div className="space-y-1">
-                        <div className="inline-flex items-center justify-center gap-2">
-                          <span className={active ? 'opacity-95' : 'opacity-60'} aria-hidden>
-                            {icon}
-                          </span>
-                          <span>{label}</span>
-                        </div>
-                        <div
-                          className={`${typographyClass.label} font-normal normal-case leading-snug ${active ? 'opacity-90' : 'opacity-50'}`}
-                        >
-                          {hint}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+        {/* BLOCK 2: Content */}
+        {activeTab === 'content' && (
+          <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
+            <div className="space-y-2">
+              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+                {t.content ?? 'Словник'}
+              </h3>
+              <div className="h-px w-full bg-ui-border" />
             </div>
-          )}
 
-          {/* BLOCK 2: Content */}
-          {activeTab === 'content' && (
-            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
-              <div className="space-y-2">
-                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
-                  {t.content ?? 'Словник'}
-                </h3>
-                <div className="h-px w-full bg-ui-border" />
-              </div>
+            <div className="flex items-center justify-between">
+              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                {t.gameMode ?? 'Режим'}
+              </p>
+              <span
+                className={`inline-flex items-center gap-2 ${typographyClass.label} tracking-widest text-ui-fg-muted`}
+              >
+                {modeIcon}
+                {settings.mode.gameMode ?? GameMode.CLASSIC}
+              </span>
+            </div>
 
-              <div className="flex items-center justify-between">
-                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                  {t.gameMode ?? 'Режим'}
-                </p>
-                <span
-                  className={`inline-flex items-center gap-2 ${typographyClass.label} tracking-widest text-ui-fg-muted`}
+            {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
+              <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_28%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-accent)_10%,var(--ui-surface))] p-4">
+                <p
+                  className={`${typographyClass.label} tracking-widest opacity-60 ${currentTheme.textMain}`}
                 >
-                  {modeIcon}
-                  {settings.mode.gameMode ?? GameMode.CLASSIC}
-                </span>
+                  {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
+                </p>
+                <div className="flex gap-2">
+                  {[Language.UA, Language.DE, Language.EN].map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => updateGeneral('targetLanguage', l)}
+                      className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 ${typographyClass.label} transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
+                        (settings.general.targetLanguage ?? Language.EN) === l
+                          ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] text-ui-fg`
+                          : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
+                      }`}
+                    >
+                      <span className="text-2xl leading-none" aria-hidden>
+                        {LOBBY_LANG_FLAG[l]}
+                      </span>
+                      <span>{l}</span>
+                    </button>
+                  ))}
+                </div>
+                <p
+                  className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}
+                >
+                  {t.translationLobbyFlowHint
+                    .replace('{0}', LOBBY_LANG_FLAG[settings.general.language])
+                    .replace('{1}', settings.general.language)
+                    .replace('{2}', LOBBY_LANG_FLAG[settings.general.targetLanguage ?? Language.EN])
+                    .replace('{3}', settings.general.targetLanguage ?? Language.EN)}
+                </p>
               </div>
+            )}
 
-              {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
-                <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_28%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-accent)_10%,var(--ui-surface))] p-4">
-                  <p
-                    className={`${typographyClass.label} tracking-widest opacity-60 ${currentTheme.textMain}`}
-                  >
-                    {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
-                  </p>
-                  <div className="flex gap-2">
-                    {[Language.UA, Language.DE, Language.EN].map((l) => (
+            <div className="space-y-3">
+              <SectionHeader
+                title={t.categories}
+                open={contentOpen.categories}
+                onToggle={() => setContentOpen((s) => ({ ...s, categories: !s.categories }))}
+              />
+              {contentOpen.categories && (
+                <div className="grid grid-cols-2 gap-3">
+                  {categoriesList.map((cat) => {
+                    const catKey = `cat_${cat.toLowerCase()}` as keyof typeof t;
+                    return (
                       <button
-                        key={l}
+                        key={cat}
                         type="button"
-                        onClick={() => updateGeneral('targetLanguage', l)}
-                        className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 ${typographyClass.label} transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
-                          (settings.general.targetLanguage ?? Language.EN) === l
-                            ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] text-ui-fg`
-                            : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
+                        onClick={() => {
+                          const newCats = settings.general.categories.includes(cat)
+                            ? settings.general.categories.filter((c) => c !== cat)
+                            : [...settings.general.categories, cat];
+                          if (newCats.length > 0) updateGeneral('categories', newCats);
+                        }}
+                        className={`p-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
+                          settings.general.categories.includes(cat)
+                            ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
+                            : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                         }`}
                       >
-                        <span className="text-2xl leading-none" aria-hidden>
-                          {LOBBY_LANG_FLAG[l]}
-                        </span>
-                        <span>{l}</span>
+                        {categoryIcon(cat)}
+                        <span className="leading-tight">{t[catKey] || cat}</span>
                       </button>
-                    ))}
-                  </div>
-                  <p
-                    className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}
-                  >
-                    {t.translationLobbyFlowHint
-                      .replace('{0}', LOBBY_LANG_FLAG[settings.general.language])
-                      .replace('{1}', settings.general.language)
-                      .replace(
-                        '{2}',
-                        LOBBY_LANG_FLAG[settings.general.targetLanguage ?? Language.EN]
-                      )
-                      .replace('{3}', settings.general.targetLanguage ?? Language.EN)}
-                  </p>
+                    );
+                  })}
                 </div>
               )}
+            </div>
 
+            {settings.general.categories.includes(Category.CUSTOM) && (
               <div className="space-y-3">
                 <SectionHeader
-                  title={t.categories}
-                  open={contentOpen.categories}
-                  onToggle={() => setContentOpen((s) => ({ ...s, categories: !s.categories }))}
+                  title={t.customWords}
+                  open={contentOpen.customWords}
+                  onToggle={() => setContentOpen((s) => ({ ...s, customWords: !s.customWords }))}
                 />
-                {contentOpen.categories && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {categoriesList.map((cat) => {
-                      const catKey = `cat_${cat.toLowerCase()}` as keyof typeof t;
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => {
-                            const newCats = settings.general.categories.includes(cat)
-                              ? settings.general.categories.filter((c) => c !== cat)
-                              : [...settings.general.categories, cat];
-                            if (newCats.length > 0) updateGeneral('categories', newCats);
-                          }}
-                          className={`p-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
-                            settings.general.categories.includes(cat)
-                              ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
-                              : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                          }`}
-                        >
-                          {categoryIcon(cat)}
-                          <span className="leading-tight">{t[catKey] || cat}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                {contentOpen.customWords && (
+                  <textarea
+                    value={settings.general.customWords || ''}
+                    onChange={(e) => updateGeneral('customWords', e.target.value)}
+                    placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
+                    className={`w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none ${typographyClass.bodyInput}`}
+                  />
                 )}
               </div>
+            )}
 
-              {settings.general.categories.includes(Category.CUSTOM) && (
-                <div className="space-y-3">
-                  <SectionHeader
-                    title={t.customWords}
-                    open={contentOpen.customWords}
-                    onToggle={() => setContentOpen((s) => ({ ...s, customWords: !s.customWords }))}
-                  />
-                  {contentOpen.customWords && (
-                    <textarea
-                      value={settings.general.customWords || ''}
-                      onChange={(e) => updateGeneral('customWords', e.target.value)}
-                      placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
-                      className={`w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none ${typographyClass.bodyInput}`}
-                    />
-                  )}
-                </div>
-              )}
-
-              {ownedPacks.length > 0 && (
-                <div className="space-y-3">
-                  <SectionHeader
-                    title={isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
-                    open={contentOpen.packs}
-                    onToggle={() => setContentOpen((s) => ({ ...s, packs: !s.packs }))}
-                  />
-                  {contentOpen.packs && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                          {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
-                        </p>
-                        {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
-                          <button
-                            onClick={() => isHost && updateGeneral('selectedPackIds', [])}
-                            className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
-                          >
-                            Скинути
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                          {t.packLanguage ?? 'Pack language'}
-                        </p>
-                        <div className="flex gap-2">
-                          {[Language.UA, Language.DE, Language.EN].map((l) => (
-                            <button
-                              key={l}
-                              type="button"
-                              onClick={() => updateGeneral('targetLanguage', l)}
-                              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                packLanguage === l
-                                  ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent`
-                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted'
-                              }`}
-                            >
-                              <span className="text-lg leading-none" aria-hidden>
-                                {LOBBY_LANG_FLAG[l]}
-                              </span>
-                              <span>{l}</span>
-                            </button>
-                          ))}
-                        </div>
-                        <p
-                          className={`${typographyClass.label} text-ui-fg-muted opacity-70 leading-relaxed`}
+            {ownedPacks.length > 0 && (
+              <div className="space-y-3">
+                <SectionHeader
+                  title={isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
+                  open={contentOpen.packs}
+                  onToggle={() => setContentOpen((s) => ({ ...s, packs: !s.packs }))}
+                />
+                {contentOpen.packs && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                        {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
+                      </p>
+                      {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
+                        <button
+                          onClick={() => isHost && updateGeneral('selectedPackIds', [])}
+                          className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
                         >
-                          {t.packLanguageHint ??
-                            'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
+                          Скинути
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                        {t.packLanguage ?? 'Pack language'}
+                      </p>
+                      <div className="flex gap-2">
+                        {[Language.UA, Language.DE, Language.EN].map((l) => (
+                          <button
+                            key={l}
+                            type="button"
+                            onClick={() => updateGeneral('targetLanguage', l)}
+                            className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                              packLanguage === l
+                                ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent`
+                                : 'bg-ui-surface border-ui-border text-ui-fg-muted'
+                            }`}
+                          >
+                            <span className="text-lg leading-none" aria-hidden>
+                              {LOBBY_LANG_FLAG[l]}
+                            </span>
+                            <span>{l}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p
+                        className={`${typographyClass.label} text-ui-fg-muted opacity-70 leading-relaxed`}
+                      >
+                        {t.packLanguageHint ??
+                          'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
+                      {filteredOwnedPacks.map((pack) => {
+                        const isSelected = (settings.general.selectedPackIds ?? []).includes(
+                          pack.id
+                        );
+                        return (
+                          <button
+                            key={pack.id}
+                            onClick={() => togglePack(pack.id)}
+                            disabled={!isHost}
+                            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
+                              isSelected
+                                ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
+                                : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                            }`}
+                          >
+                            {isSelected && <Check size={10} />}
+                            <span>{pack.name}</span>
+                            <span
+                              className={`font-normal ${isSelected ? 'text-ui-fg-muted' : 'opacity-40'}`}
+                            >
+                              {pack.wordCount}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {filteredOwnedPacks.length === 0 ? (
+                      <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
+                        {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
+                      </p>
+                    ) : (settings.general.selectedPackIds?.length ?? 0) === 0 ? (
+                      <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
+                        Не вибрано — використовуються стандартні слова
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <SectionHeader
+                title={t.customDeckLobbyLabel ?? 'Власний словник'}
+                open={contentOpen.customDeck}
+                onToggle={() => setContentOpen((s) => ({ ...s, customDeck: !s.customDeck }))}
+              />
+              {contentOpen.customDeck &&
+                (settings.general.customDeckCode ? (
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-ui-border bg-ui-surface">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <FileText size={14} className="text-ui-accent shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p
+                          className={`${typographyClass.label} normal-case font-semibold text-ui-fg leading-tight truncate`}
+                        >
+                          {settings.general.customDeckName || settings.general.customDeckCode}
+                        </p>
+                        <p className={`${typographyClass.label} text-ui-fg-muted font-mono mt-0.5`}>
+                          {settings.general.customDeckCode}
                         </p>
                       </div>
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
-                        {filteredOwnedPacks.map((pack) => {
-                          const isSelected = (settings.general.selectedPackIds ?? []).includes(
-                            pack.id
-                          );
+                    </div>
+                    {isHost && (
+                      <button
+                        type="button"
+                        onClick={clearCustomDeck}
+                        className="text-ui-fg-muted hover:text-ui-fg transition-colors p-1 shrink-0"
+                        aria-label={t.close}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => isHost && setShowCustomDeckPicker(true)}
+                    disabled={!isHost}
+                    className="w-full p-3 rounded-xl border border-dashed border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
+                  >
+                    <FileText size={14} />
+                    <span className={typographyClass.label}>Вибрати зі своїх словників…</span>
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* BLOCK 3: Rules (dynamic) */}
+        {activeTab === 'rules' && (
+          <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
+            <div className="space-y-2">
+              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+                {t.rules ?? 'Правила'}
+              </h3>
+              <div className="h-px w-full bg-ui-border" />
+            </div>
+            <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.lobbyRulesIntro}</p>
+
+            <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2">
+              {(() => {
+                const mode = settings.mode;
+                if (mode.gameMode === GameMode.IMPOSTER) {
+                  return (
+                    <div className="space-y-3 py-4 first:pt-0">
+                      <div className="flex justify-between items-center">
+                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                          {t.imposterDiscussionTime ?? 'Час обговорення'}
+                        </p>
+                        <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
+                          {Math.round(mode.imposterDiscussionTime / 60)} хв
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([3, 5, 10] as const).map((min) => {
+                          const active = mode.imposterDiscussionTime === min * 60;
                           return (
                             <button
-                              key={pack.id}
-                              onClick={() => togglePack(pack.id)}
-                              disabled={!isHost}
-                              className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
-                                isSelected
-                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
-                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                              key={min}
+                              type="button"
+                              onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
+                              className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                active
+                                  ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                               }`}
                             >
-                              {isSelected && <Check size={10} />}
-                              <span>{pack.name}</span>
-                              <span
-                                className={`font-normal ${isSelected ? 'text-ui-fg-muted' : 'opacity-40'}`}
-                              >
-                                {pack.wordCount}
-                              </span>
+                              {min} {t.min ?? 'хв'}
                             </button>
                           );
                         })}
                       </div>
-                      {filteredOwnedPacks.length === 0 ? (
-                        <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
-                          {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
-                        </p>
-                      ) : (settings.general.selectedPackIds?.length ?? 0) === 0 ? (
-                        <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
-                          Не вибрано — використовуються стандартні слова
-                        </p>
-                      ) : null}
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <SectionHeader
-                  title={t.customDeckLobbyLabel ?? 'Власний словник'}
-                  open={contentOpen.customDeck}
-                  onToggle={() => setContentOpen((s) => ({ ...s, customDeck: !s.customDeck }))}
-                />
-                {contentOpen.customDeck &&
-                  (settings.general.customDeckCode ? (
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-ui-border bg-ui-surface">
-                      <div className="flex items-start gap-2 min-w-0">
-                        <FileText size={14} className="text-ui-accent shrink-0 mt-0.5" />
-                        <div className="min-w-0">
-                          <p
-                            className={`${typographyClass.label} normal-case font-semibold text-ui-fg leading-tight truncate`}
-                          >
-                            {settings.general.customDeckName || settings.general.customDeckCode}
-                          </p>
-                          <p
-                            className={`${typographyClass.label} text-ui-fg-muted font-mono mt-0.5`}
-                          >
-                            {settings.general.customDeckCode}
-                          </p>
-                        </div>
-                      </div>
-                      {isHost && (
-                        <button
-                          type="button"
-                          onClick={clearCustomDeck}
-                          className="text-ui-fg-muted hover:text-ui-fg transition-colors p-1 shrink-0"
-                          aria-label={t.close}
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => isHost && setShowCustomDeckPicker(true)}
-                      disabled={!isHost}
-                      className="w-full p-3 rounded-xl border border-dashed border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
-                    >
-                      <FileText size={14} />
-                      <span className={typographyClass.label}>Вибрати зі своїх словників…</span>
-                    </button>
-                  ))}
-              </div>
-            </div>
-          )}
+                  );
+                }
 
-          {/* BLOCK 3: Rules (dynamic) */}
-          {activeTab === 'rules' && (
-            <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
-              <div className="space-y-2">
-                <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
-                  {t.rules ?? 'Правила'}
-                </h3>
-                <div className="h-px w-full bg-ui-border" />
-              </div>
-              <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.lobbyRulesIntro}</p>
+                if (mode.gameMode === GameMode.QUIZ) {
+                  const types = mode.quizTypes ?? {
+                    synonyms: true,
+                    antonyms: true,
+                    taboo: true,
+                    translation: false,
+                  };
+                  const timerMode = mode.quizTimerMode ?? 'ROUND';
 
-              <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2">
-                {(() => {
-                  const mode = settings.mode;
-                  if (mode.gameMode === GameMode.IMPOSTER) {
-                    return (
-                      <div className="space-y-3 py-4 first:pt-0">
-                        <div className="flex justify-between items-center">
-                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                            {t.imposterDiscussionTime ?? 'Час обговорення'}
-                          </p>
-                          <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
-                            {Math.round(mode.imposterDiscussionTime / 60)} хв
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          {([3, 5, 10] as const).map((min) => {
-                            const active = mode.imposterDiscussionTime === min * 60;
-                            return (
-                              <button
-                                key={min}
-                                type="button"
-                                onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
-                                className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                  active
-                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                }`}
-                              >
-                                {min} {t.min ?? 'хв'}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  if (mode.gameMode === GameMode.QUIZ) {
-                    const types = mode.quizTypes ?? {
-                      synonyms: true,
-                      antonyms: true,
-                      taboo: true,
-                      translation: false,
-                    };
-                    const timerMode = mode.quizTimerMode ?? 'ROUND';
-
-                    return (
-                      <>
-                        <div className="py-4 first:pt-0">
-                          <SectionHeader
-                            title={
-                              'lobbyRulesSectionQuizTypes' in t
-                                ? t.lobbyRulesSectionQuizTypes
-                                : 'Quiz'
-                            }
-                            open={rulesOpen.quizTypes}
-                            onToggle={() =>
-                              setRulesOpen((s) => ({ ...s, quizTypes: !s.quizTypes }))
-                            }
-                          />
-                          {rulesOpen.quizTypes && (
-                            <div className="grid grid-cols-2 gap-2 pt-1">
-                              {(
-                                [
-                                  ['synonyms', t.lobbyQuizTypeSynonyms],
-                                  ['antonyms', t.lobbyQuizTypeAntonyms],
-                                  ['taboo', t.lobbyQuizTypeTaboo],
-                                  ['translation', t.lobbyQuizTypeTranslation],
-                                ] as const
-                              ).map(([k, label]) => {
-                                const active = types[k];
-                                return (
-                                  <button
-                                    key={k}
-                                    type="button"
-                                    onClick={() =>
-                                      updateMode({ quizTypes: { ...types, [k]: !active } })
-                                    }
-                                    className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                      active
-                                        ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                        : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                    }`}
-                                  >
-                                    {label}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="py-4">
-                          <SectionHeader
-                            title={
-                              'lobbyRulesSectionQuizMore' in t
-                                ? t.lobbyRulesSectionQuizMore
-                                : 'Timer'
-                            }
-                            open={rulesOpen.quizMore}
-                            onToggle={() => setRulesOpen((s) => ({ ...s, quizMore: !s.quizMore }))}
-                          />
-                          {rulesOpen.quizMore && (
-                            <div className="space-y-4 pt-1">
-                              <div className="space-y-4">
-                                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                                  {t.lobbyQuizWrongPenaltyTitle}
-                                </p>
+                  return (
+                    <>
+                      <div className="py-4 first:pt-0">
+                        <SectionHeader
+                          title={
+                            'lobbyRulesSectionQuizTypes' in t
+                              ? t.lobbyRulesSectionQuizTypes
+                              : 'Quiz'
+                          }
+                          open={rulesOpen.quizTypes}
+                          onToggle={() => setRulesOpen((s) => ({ ...s, quizTypes: !s.quizTypes }))}
+                        />
+                        {rulesOpen.quizTypes && (
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            {(
+                              [
+                                ['synonyms', t.lobbyQuizTypeSynonyms],
+                                ['antonyms', t.lobbyQuizTypeAntonyms],
+                                ['taboo', t.lobbyQuizTypeTaboo],
+                                ['translation', t.lobbyQuizTypeTranslation],
+                              ] as const
+                            ).map(([k, label]) => {
+                              const active = types[k];
+                              return (
                                 <button
+                                  key={k}
                                   type="button"
                                   onClick={() =>
-                                    updateMode({
-                                      quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled,
-                                    })
+                                    updateMode({ quizTypes: { ...types, [k]: !active } })
                                   }
-                                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
-                                    mode.quizWrongPenaltyEnabled
-                                      ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                                      : 'border-ui-border bg-ui-surface opacity-70'
+                                  className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                    active
+                                      ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                      : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
                                   }`}
                                 >
-                                  <span className={currentTheme.textMain}>
-                                    {mode.quizWrongPenaltyEnabled
-                                      ? t.lobbyQuizWrongPenaltyOn
-                                      : t.lobbyQuizWrongPenaltyOff}
-                                  </span>
-                                  <div
-                                    className={`w-12 h-6 rounded-full transition-all relative ${
-                                      mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
-                                    }`}
-                                  >
-                                    <div
-                                      className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
-                                        mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
-                                      }`}
-                                    />
-                                  </div>
+                                  {label}
                                 </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="py-4">
+                        <SectionHeader
+                          title={
+                            'lobbyRulesSectionQuizMore' in t ? t.lobbyRulesSectionQuizMore : 'Timer'
+                          }
+                          open={rulesOpen.quizMore}
+                          onToggle={() => setRulesOpen((s) => ({ ...s, quizMore: !s.quizMore }))}
+                        />
+                        {rulesOpen.quizMore && (
+                          <div className="space-y-4 pt-1">
+                            <div className="space-y-4">
+                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                                {t.lobbyQuizWrongPenaltyTitle}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateMode({
+                                    quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled,
+                                  })
+                                }
+                                className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
+                                  mode.quizWrongPenaltyEnabled
+                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                                    : 'border-ui-border bg-ui-surface opacity-70'
+                                }`}
+                              >
+                                <span className={currentTheme.textMain}>
+                                  {mode.quizWrongPenaltyEnabled
+                                    ? t.lobbyQuizWrongPenaltyOn
+                                    : t.lobbyQuizWrongPenaltyOff}
+                                </span>
+                                <div
+                                  className={`w-12 h-6 rounded-full transition-all relative ${
+                                    mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
+                                  }`}
+                                >
+                                  <div
+                                    className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
+                                      mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
+                                    }`}
+                                  />
+                                </div>
+                              </button>
+                            </div>
+
+                            <div className="space-y-4">
+                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                                {t.lobbyQuizTimerModeTitle}
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {(
+                                  [
+                                    ['ROUND', t.lobbyQuizTimerRound],
+                                    ['PER_TASK', t.lobbyQuizTimerPerQuestion],
+                                  ] as const
+                                ).map(([id, label]) => {
+                                  const active = timerMode === id;
+                                  return (
+                                    <button
+                                      key={id}
+                                      type="button"
+                                      onClick={() => updateMode({ quizTimerMode: id })}
+                                      className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
+                                        active
+                                          ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                          : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                                      }`}
+                                    >
+                                      {label}
+                                    </button>
+                                  );
+                                })}
                               </div>
 
-                              <div className="space-y-4">
-                                <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                                  {t.lobbyQuizTimerModeTitle}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {(
-                                    [
-                                      ['ROUND', t.lobbyQuizTimerRound],
-                                      ['PER_TASK', t.lobbyQuizTimerPerQuestion],
-                                    ] as const
-                                  ).map(([id, label]) => {
-                                    const active = timerMode === id;
-                                    return (
-                                      <button
-                                        key={id}
-                                        type="button"
-                                        onClick={() => updateMode({ quizTimerMode: id })}
-                                        className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                          active
-                                            ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                            : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                        }`}
-                                      >
-                                        {label}
-                                      </button>
-                                    );
-                                  })}
+                              <div className="space-y-3">
+                                <div className="flex justify-between">
+                                  <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                                    {timerMode === 'PER_TASK'
+                                      ? t.lobbyQuizLabelQuestionTime
+                                      : t.lobbyQuizLabelRoundTime}
+                                  </p>
+                                  <span
+                                    className={`${typographyClass.label} ${currentTheme.textAccent}`}
+                                  >
+                                    {timerMode === 'PER_TASK'
+                                      ? `${mode.quizQuestionTime}s`
+                                      : `${mode.quizRoundTime}s`}
+                                  </span>
                                 </div>
+                                <input
+                                  type="range"
+                                  min={timerMode === 'PER_TASK' ? 5 : 30}
+                                  max={timerMode === 'PER_TASK' ? 30 : 180}
+                                  step={timerMode === 'PER_TASK' ? 1 : 10}
+                                  value={
+                                    timerMode === 'PER_TASK'
+                                      ? localQuizQuestionTime
+                                      : localQuizRoundTime
+                                  }
+                                  onChange={(e) => {
+                                    const v = parseInt(e.target.value);
+                                    if (timerMode === 'PER_TASK') setLocalQuizQuestionTime(v);
+                                    else setLocalQuizRoundTime(v);
+                                    vibrate(HAPTIC.nav);
+                                  }}
+                                  onMouseUp={() =>
+                                    timerMode === 'PER_TASK'
+                                      ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                      : updateMode({
+                                          quizRoundTime: localQuizRoundTime,
+                                          classicRoundTime: localQuizRoundTime,
+                                        })
+                                  }
+                                  onTouchEnd={() =>
+                                    timerMode === 'PER_TASK'
+                                      ? updateMode({ quizQuestionTime: localQuizQuestionTime })
+                                      : updateMode({
+                                          quizRoundTime: localQuizRoundTime,
+                                          classicRoundTime: localQuizRoundTime,
+                                        })
+                                  }
+                                  className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                                />
+                              </div>
 
+                              {timerMode === 'PER_TASK' && (
                                 <div className="space-y-3">
                                   <div className="flex justify-between">
                                     <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                                      {timerMode === 'PER_TASK'
-                                        ? t.lobbyQuizLabelQuestionTime
-                                        : t.lobbyQuizLabelRoundTime}
+                                      {t.lobbyQuizLabelTotalRound}
                                     </p>
                                     <span
                                       className={`${typographyClass.label} ${currentTheme.textAccent}`}
                                     >
-                                      {timerMode === 'PER_TASK'
-                                        ? `${mode.quizQuestionTime}s`
-                                        : `${mode.quizRoundTime}s`}
+                                      {mode.quizRoundTime}s
                                     </span>
                                   </div>
                                   <input
                                     type="range"
-                                    min={timerMode === 'PER_TASK' ? 5 : 30}
-                                    max={timerMode === 'PER_TASK' ? 30 : 180}
-                                    step={timerMode === 'PER_TASK' ? 1 : 10}
-                                    value={
-                                      timerMode === 'PER_TASK'
-                                        ? localQuizQuestionTime
-                                        : localQuizRoundTime
-                                    }
+                                    min="30"
+                                    max="180"
+                                    step="10"
+                                    value={localQuizRoundTime}
                                     onChange={(e) => {
                                       const v = parseInt(e.target.value);
-                                      if (timerMode === 'PER_TASK') setLocalQuizQuestionTime(v);
-                                      else setLocalQuizRoundTime(v);
+                                      setLocalQuizRoundTime(v);
                                       vibrate(HAPTIC.nav);
                                     }}
                                     onMouseUp={() =>
-                                      timerMode === 'PER_TASK'
-                                        ? updateMode({ quizQuestionTime: localQuizQuestionTime })
-                                        : updateMode({
-                                            quizRoundTime: localQuizRoundTime,
-                                            classicRoundTime: localQuizRoundTime,
-                                          })
+                                      updateMode({
+                                        quizRoundTime: localQuizRoundTime,
+                                        classicRoundTime: localQuizRoundTime,
+                                      })
                                     }
                                     onTouchEnd={() =>
-                                      timerMode === 'PER_TASK'
-                                        ? updateMode({ quizQuestionTime: localQuizQuestionTime })
-                                        : updateMode({
-                                            quizRoundTime: localQuizRoundTime,
-                                            classicRoundTime: localQuizRoundTime,
-                                          })
+                                      updateMode({
+                                        quizRoundTime: localQuizRoundTime,
+                                        classicRoundTime: localQuizRoundTime,
+                                      })
                                     }
                                     className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                                   />
                                 </div>
-
-                                {timerMode === 'PER_TASK' && (
-                                  <div className="space-y-3">
-                                    <div className="flex justify-between">
-                                      <p
-                                        className={`${labelSectionClass} ${currentTheme.textMain}`}
-                                      >
-                                        {t.lobbyQuizLabelTotalRound}
-                                      </p>
-                                      <span
-                                        className={`${typographyClass.label} ${currentTheme.textAccent}`}
-                                      >
-                                        {mode.quizRoundTime}s
-                                      </span>
-                                    </div>
-                                    <input
-                                      type="range"
-                                      min="30"
-                                      max="180"
-                                      step="10"
-                                      value={localQuizRoundTime}
-                                      onChange={(e) => {
-                                        const v = parseInt(e.target.value);
-                                        setLocalQuizRoundTime(v);
-                                        vibrate(HAPTIC.nav);
-                                      }}
-                                      onMouseUp={() =>
-                                        updateMode({
-                                          quizRoundTime: localQuizRoundTime,
-                                          classicRoundTime: localQuizRoundTime,
-                                        })
-                                      }
-                                      onTouchEnd={() =>
-                                        updateMode({
-                                          quizRoundTime: localQuizRoundTime,
-                                          classicRoundTime: localQuizRoundTime,
-                                        })
-                                      }
-                                      className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    );
-                  }
-
-                  return (
-                    <div className="py-4 first:pt-0">
-                      <SectionHeader
-                        title={t.lobbyRulesSectionBasics}
-                        open={rulesOpen.basics}
-                        onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
-                      />
-                      {rulesOpen.basics && (
-                        <div className="space-y-3 pt-1">
-                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                            {t.roundTime}
-                          </p>
-                          <div className="flex items-stretch gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.max(30, localRoundTime - 10);
-                                setLocalRoundTime(next);
-                                lastHapticRoundTime.current = next;
-                                vibrate(HAPTIC.nav);
-                                updateMode({ classicRoundTime: next });
-                              }}
-                              disabled={!isHost}
-                              className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                              aria-label={t.roundTime + ' −10'}
-                            >
-                              −
-                            </button>
-                            <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
-                              <span
-                                className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
-                              >
-                                {localRoundTime}
-                              </span>
-                              <span
-                                className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
-                              >
-                                s
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.min(180, localRoundTime + 10);
-                                setLocalRoundTime(next);
-                                lastHapticRoundTime.current = next;
-                                vibrate(HAPTIC.nav);
-                                updateMode({ classicRoundTime: next });
-                              }}
-                              disabled={!isHost}
-                              className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                              aria-label={t.roundTime + ' +10'}
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <div className="space-y-4 pt-4 border-t border-ui-border">
-                            <div className="flex justify-between">
-                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                                {t.scoreToWin}
-                              </p>
-                              <span
-                                data-testid="settings-score-to-win"
-                                className={`${typographyClass.label} ${currentTheme.textAccent}`}
-                              >
-                                {settings.general.scoreToWin}
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min="10"
-                              max="100"
-                              step="5"
-                              value={localScoreToWin}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value);
-                                setLocalScoreToWin(v);
-                                if (v !== lastHapticScoreToWin.current) {
-                                  lastHapticScoreToWin.current = v;
-                                  vibrate(HAPTIC.nav);
-                                }
-                              }}
-                              onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
-                              onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                            />
-                            <div className="flex items-center justify-between gap-3">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.max(10, localScoreToWin - 5);
-                                  setLocalScoreToWin(next);
-                                  updateGeneral('scoreToWin', next);
-                                }}
-                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min={10}
-                                max={100}
-                                step={5}
-                                value={localScoreToWin}
-                                onChange={(e) => {
-                                  const v = Number(e.target.value);
-                                  if (!Number.isFinite(v)) return;
-                                  setLocalScoreToWin(v);
-                                }}
-                                onBlur={() => {
-                                  const clamped = Math.max(
-                                    10,
-                                    Math.min(100, Math.round(localScoreToWin / 5) * 5)
-                                  );
-                                  setLocalScoreToWin(clamped);
-                                  updateGeneral('scoreToWin', clamped);
-                                }}
-                                className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.min(100, localScoreToWin + 5);
-                                  setLocalScoreToWin(next);
-                                  updateGeneral('scoreToWin', next);
-                                }}
-                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {(settings.mode.gameMode ?? GameMode.CLASSIC) !== GameMode.IMPOSTER && (
-                <>
-                  {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ && (
-                    <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
-                      <div className="py-4">
-                        <SectionHeader
-                          title={t.scoreToWin}
-                          open={rulesOpen.basics}
-                          onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
-                        />
-                        {rulesOpen.basics && (
-                          <div className="space-y-4 pt-1">
-                            <input
-                              type="range"
-                              min="10"
-                              max="100"
-                              step="5"
-                              value={localScoreToWin}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value);
-                                setLocalScoreToWin(v);
-                                if (v !== lastHapticScoreToWin.current) {
-                                  lastHapticScoreToWin.current = v;
-                                  vibrate(HAPTIC.nav);
-                                }
-                              }}
-                              onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
-                              onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                              className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                            />
-                            <div className="flex items-center justify-between gap-3">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.max(10, localScoreToWin - 5);
-                                  setLocalScoreToWin(next);
-                                  updateGeneral('scoreToWin', next);
-                                }}
-                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min={10}
-                                max={100}
-                                step={5}
-                                value={localScoreToWin}
-                                onChange={(e) => {
-                                  const v = Number(e.target.value);
-                                  if (!Number.isFinite(v)) return;
-                                  setLocalScoreToWin(v);
-                                }}
-                                onBlur={() => {
-                                  const clamped = Math.max(
-                                    10,
-                                    Math.min(100, Math.round(localScoreToWin / 5) * 5)
-                                  );
-                                  setLocalScoreToWin(clamped);
-                                  updateGeneral('scoreToWin', clamped);
-                                }}
-                                className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.min(100, localScoreToWin + 5);
-                                  setLocalScoreToWin(next);
-                                  updateGeneral('scoreToWin', next);
-                                }}
-                                className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                              >
-                                +
-                              </button>
+                              )}
                             </div>
                           </div>
                         )}
                       </div>
-                    </div>
-                  )}
+                    </>
+                  );
+                }
 
-                  <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
-                    <div className="py-4">
-                      <SectionHeader
-                        title={t.lobbyRulesSectionTeams}
-                        open={rulesOpen.teams}
-                        onToggle={() => setRulesOpen((s) => ({ ...s, teams: !s.teams }))}
-                      />
-                      {rulesOpen.teams && (
-                        <div className="space-y-4 pt-1">
-                          <div className="flex justify-between">
-                            <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                              {t.teamCount}
-                            </p>
-                            <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
-                              {settings.general.teamCount}
+                return (
+                  <div className="py-4 first:pt-0">
+                    <SectionHeader
+                      title={t.lobbyRulesSectionBasics}
+                      open={rulesOpen.basics}
+                      onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
+                    />
+                    {rulesOpen.basics && (
+                      <div className="space-y-3 pt-1">
+                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                          {t.roundTime}
+                        </p>
+                        <div className="flex items-stretch gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = Math.max(30, localRoundTime - 10);
+                              setLocalRoundTime(next);
+                              lastHapticRoundTime.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateMode({ classicRoundTime: next });
+                            }}
+                            disabled={!isHost}
+                            className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                            aria-label={t.roundTime + ' −10'}
+                          >
+                            −
+                          </button>
+                          <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
+                            <span
+                              className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
+                            >
+                              {localRoundTime}
+                            </span>
+                            <span
+                              className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
+                            >
+                              s
                             </span>
                           </div>
-                          <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
-                            <p className={`${labelSectionClass} text-ui-fg-muted mb-2`}>
-                              {t.teamMode ?? 'Team mode'}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = Math.min(180, localRoundTime + 10);
+                              setLocalRoundTime(next);
+                              lastHapticRoundTime.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateMode({ classicRoundTime: next });
+                            }}
+                            disabled={!isHost}
+                            className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                            aria-label={t.roundTime + ' +10'}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t border-ui-border">
+                          <div className="flex justify-between">
+                            <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                              {t.scoreToWin}
                             </p>
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                type="button"
-                                onClick={() => updateGeneral('teamMode', 'TEAMS')}
-                                className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
-                                  (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
-                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                                    : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                                }`}
-                              >
-                                {t.teamModeTeams ?? 'Teams'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateGeneral('teamMode', 'SOLO')}
-                                className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
-                                  (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
-                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                                    : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                                }`}
-                              >
-                                {t.teamModeSolo ?? 'Solo'}
-                              </button>
-                            </div>
-                            {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
-                              <p
-                                className={`mt-2 ${typographyClass.label} text-ui-fg-muted opacity-80`}
-                              >
-                                {t.teamModeSoloHint ??
-                                  'Teams are disabled — each player plays for themselves.'}
-                              </p>
-                            )}
+                            <span
+                              data-testid="settings-score-to-win"
+                              className={`${typographyClass.label} ${currentTheme.textAccent}`}
+                            >
+                              {settings.general.scoreToWin}
+                            </span>
                           </div>
                           <input
                             type="range"
-                            min="2"
-                            max="10"
-                            step="1"
-                            value={localTeamCount}
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={localScoreToWin}
                             onChange={(e) => {
                               const v = parseInt(e.target.value);
-                              setLocalTeamCount(v);
-                              if (v !== lastHapticTeamCount.current) {
-                                lastHapticTeamCount.current = v;
+                              setLocalScoreToWin(v);
+                              if (v !== lastHapticScoreToWin.current) {
+                                lastHapticScoreToWin.current = v;
                                 vibrate(HAPTIC.nav);
                               }
                             }}
-                            onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
-                            onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
-                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                            onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
+                            onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
                             className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
                           />
                           <div className="flex items-center justify-between gap-3">
                             <button
                               type="button"
                               onClick={() => {
-                                const next = Math.max(2, localTeamCount - 1);
-                                setLocalTeamCount(next);
-                                updateGeneral('teamCount', next);
+                                const next = Math.max(10, localScoreToWin - 5);
+                                setLocalScoreToWin(next);
+                                updateGeneral('scoreToWin', next);
                               }}
-                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                               className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                             >
                               −
                             </button>
                             <input
                               type="number"
-                              min={2}
-                              max={10}
-                              step={1}
-                              value={localTeamCount}
+                              min={10}
+                              max={100}
+                              step={5}
+                              value={localScoreToWin}
                               onChange={(e) => {
                                 const v = Number(e.target.value);
                                 if (!Number.isFinite(v)) return;
-                                setLocalTeamCount(v);
+                                setLocalScoreToWin(v);
                               }}
                               onBlur={() => {
                                 const clamped = Math.max(
-                                  2,
-                                  Math.min(10, Math.round(localTeamCount))
+                                  10,
+                                  Math.min(100, Math.round(localScoreToWin / 5) * 5)
                                 );
-                                setLocalTeamCount(clamped);
-                                updateGeneral('teamCount', clamped);
+                                setLocalScoreToWin(clamped);
+                                updateGeneral('scoreToWin', clamped);
                               }}
-                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
                               className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                const next = Math.min(10, localTeamCount + 1);
-                                setLocalTeamCount(next);
-                                updateGeneral('teamCount', next);
+                                const next = Math.min(100, localScoreToWin + 5);
+                                setLocalScoreToWin(next);
+                                updateGeneral('scoreToWin', next);
                               }}
-                              disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {(settings.mode.gameMode ?? GameMode.CLASSIC) !== GameMode.IMPOSTER && (
+              <>
+                {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.QUIZ && (
+                  <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
+                    <div className="py-4">
+                      <SectionHeader
+                        title={t.scoreToWin}
+                        open={rulesOpen.basics}
+                        onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
+                      />
+                      {rulesOpen.basics && (
+                        <div className="space-y-4 pt-1">
+                          <input
+                            type="range"
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={localScoreToWin}
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value);
+                              setLocalScoreToWin(v);
+                              if (v !== lastHapticScoreToWin.current) {
+                                lastHapticScoreToWin.current = v;
+                                vibrate(HAPTIC.nav);
+                              }
+                            }}
+                            onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
+                            onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
+                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                          />
+                          <div className="flex items-center justify-between gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.max(10, localScoreToWin - 5);
+                                setLocalScoreToWin(next);
+                                updateGeneral('scoreToWin', next);
+                              }}
+                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min={10}
+                              max={100}
+                              step={5}
+                              value={localScoreToWin}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                if (!Number.isFinite(v)) return;
+                                setLocalScoreToWin(v);
+                              }}
+                              onBlur={() => {
+                                const clamped = Math.max(
+                                  10,
+                                  Math.min(100, Math.round(localScoreToWin / 5) * 5)
+                                );
+                                setLocalScoreToWin(clamped);
+                                updateGeneral('scoreToWin', clamped);
+                              }}
+                              className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = Math.min(100, localScoreToWin + 5);
+                                setLocalScoreToWin(next);
+                                updateGeneral('scoreToWin', next);
+                              }}
                               className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
                             >
                               +
@@ -1293,52 +1152,175 @@ export const SettingsScreen = () => {
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
 
-                    <div className="py-4">
-                      <SectionHeader
-                        title={t.lobbyRulesSectionExtras}
-                        open={rulesOpen.extras}
-                        onToggle={() => setRulesOpen((s) => ({ ...s, extras: !s.extras }))}
-                      />
-                      {rulesOpen.extras && (
-                        <div className="space-y-4 pt-1">
-                          <button
-                            type="button"
-                            role="switch"
-                            aria-checked={settings.general.skipPenalty}
-                            onClick={() =>
-                              updateGeneral('skipPenalty', !settings.general.skipPenalty)
-                            }
-                            className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
-                              settings.general.skipPenalty
-                                ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                                : 'border-ui-border bg-ui-surface'
-                            }`}
-                          >
-                            <span className={currentTheme.textMain}>
-                              {settings.general.skipPenalty ? t.enabled : t.disabled}
-                            </span>
-                            <span
-                              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
-                                settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
+                <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
+                  <div className="py-4">
+                    <SectionHeader
+                      title={t.lobbyRulesSectionTeams}
+                      open={rulesOpen.teams}
+                      onToggle={() => setRulesOpen((s) => ({ ...s, teams: !s.teams }))}
+                    />
+                    {rulesOpen.teams && (
+                      <div className="space-y-4 pt-1">
+                        <div className="flex justify-between">
+                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                            {t.teamCount}
+                          </p>
+                          <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
+                            {settings.general.teamCount}
+                          </span>
+                        </div>
+                        <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
+                          <p className={`${labelSectionClass} text-ui-fg-muted mb-2`}>
+                            {t.teamMode ?? 'Team mode'}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateGeneral('teamMode', 'TEAMS')}
+                              className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
+                                (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
+                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
                               }`}
                             >
-                              <span
-                                className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
-                                  settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
-                                }`}
-                              />
-                            </span>
+                              {t.teamModeTeams ?? 'Teams'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateGeneral('teamMode', 'SOLO')}
+                              className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
+                                (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
+                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
+                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
+                              }`}
+                            >
+                              {t.teamModeSolo ?? 'Solo'}
+                            </button>
+                          </div>
+                          {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
+                            <p
+                              className={`mt-2 ${typographyClass.label} text-ui-fg-muted opacity-80`}
+                            >
+                              {t.teamModeSoloHint ??
+                                'Teams are disabled — each player plays for themselves.'}
+                            </p>
+                          )}
+                        </div>
+                        <input
+                          type="range"
+                          min="2"
+                          max="10"
+                          step="1"
+                          value={localTeamCount}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value);
+                            setLocalTeamCount(v);
+                            if (v !== lastHapticTeamCount.current) {
+                              lastHapticTeamCount.current = v;
+                              vibrate(HAPTIC.nav);
+                            }
+                          }}
+                          onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
+                          onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
+                          disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                          className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                        />
+                        <div className="flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = Math.max(2, localTeamCount - 1);
+                              setLocalTeamCount(next);
+                              updateGeneral('teamCount', next);
+                            }}
+                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                            className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min={2}
+                            max={10}
+                            step={1}
+                            value={localTeamCount}
+                            onChange={(e) => {
+                              const v = Number(e.target.value);
+                              if (!Number.isFinite(v)) return;
+                              setLocalTeamCount(v);
+                            }}
+                            onBlur={() => {
+                              const clamped = Math.max(2, Math.min(10, Math.round(localTeamCount)));
+                              setLocalTeamCount(clamped);
+                              updateGeneral('teamCount', clamped);
+                            }}
+                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                            className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = Math.min(10, localTeamCount + 1);
+                              setLocalTeamCount(next);
+                              updateGeneral('teamCount', next);
+                            }}
+                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
+                            className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
+                          >
+                            +
                           </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+
+                  <div className="py-4">
+                    <SectionHeader
+                      title={t.lobbyRulesSectionExtras}
+                      open={rulesOpen.extras}
+                      onToggle={() => setRulesOpen((s) => ({ ...s, extras: !s.extras }))}
+                    />
+                    {rulesOpen.extras && (
+                      <div className="space-y-4 pt-1">
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={settings.general.skipPenalty}
+                          onClick={() =>
+                            updateGeneral('skipPenalty', !settings.general.skipPenalty)
+                          }
+                          className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
+                            settings.general.skipPenalty
+                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
+                              : 'border-ui-border bg-ui-surface'
+                          }`}
+                        >
+                          <span className={currentTheme.textMain}>
+                            {settings.general.skipPenalty ? t.enabled : t.disabled}
+                          </span>
+                          <span
+                            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
+                              settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
+                                settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
+                              }`}
+                            />
+                          </span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {showCustomDeckPicker && (

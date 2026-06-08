@@ -48,7 +48,7 @@ export function EnterNameSheet(): React.ReactNode {
   const autoJoinAttemptedRef = useRef(false);
 
   const finishDismiss = () => {
-    if (gameMode === 'OFFLINE') leaveRoom();
+    if (gameMode === 'OFFLINE') leaveRoom({ resetGameMode: false });
     else setGameState(GameState.MENU);
   };
 

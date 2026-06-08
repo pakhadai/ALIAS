@@ -5,6 +5,7 @@ import {
   useSheetDragToClose,
   SHEET_DRAG_DISMISS_THRESHOLD_PX,
   SHEET_DRAG_DISMISS_MS,
+  SHEET_DRAG_PULL_UP_MAX_PX,
 } from './useSheetDragToClose';
 
 function setupPanel(scrollTop = 0) {
@@ -112,6 +113,40 @@ describe('useSheetDragToClose', () => {
 
     expect(onDismiss).not.toHaveBeenCalled();
     expect(result.current.offsetY).toBe(0);
+  });
+
+  it('should clamp upward pull with bottom-anchored rubber band (no negative translateY)', () => {
+    const panel = setupPanel();
+    const onDismiss = vi.fn();
+
+    const { result } = renderHook(() => {
+      const panelRef = useRef<HTMLElement | null>(panel);
+      return useSheetDragToClose({ enabled: true, onDismiss, panelRef });
+    });
+
+    const target = panel;
+    act(() => {
+      result.current.dragHandlers.onPointerDown({
+        button: 0,
+        clientY: 200,
+        pointerId: 4,
+        target: panel.querySelector('[data-sheet-drag-handle]')!,
+        currentTarget: target,
+        setPointerCapture: vi.fn(),
+      } as unknown as React.PointerEvent<HTMLElement>);
+    });
+
+    act(() => {
+      result.current.dragHandlers.onPointerMove({
+        clientY: 50,
+        pointerId: 4,
+        currentTarget: target,
+      } as unknown as React.PointerEvent<HTMLElement>);
+    });
+
+    expect(result.current.offsetY).toBeGreaterThanOrEqual(-SHEET_DRAG_PULL_UP_MAX_PX);
+    expect(result.current.panelStyle?.transform).toContain('translate3d(0, 0px, 0)');
+    expect(result.current.panelStyle?.transform).toContain('scaleY(');
   });
 
   it('should not start drag when pointer down is on a button (CTA must click)', () => {

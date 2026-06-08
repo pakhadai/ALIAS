@@ -19,6 +19,8 @@ export default {
         'safe-bottom-md': 'max(1.25rem, var(--tma-inset-bottom))',
         /** ModalSheet content / footer — minimal bottom breathing room + device inset */
         'modal-bottom': 'max(1rem, var(--tma-inset-bottom))',
+        /** Physical notch / status bar only — GlassAppHeader top padding (content clearance lives in title row). */
+        'device-top': 'var(--tma-device-inset-top, 0px)',
         /** Raw insets (no minimum) — game screens, fixed TMA headers */
         'env-top': 'var(--tma-inset-top)',
         'env-bottom': 'var(--tma-inset-bottom)',

@@ -25,6 +25,8 @@ import type {
 import { PerRoomQueue } from './services/PerRoomQueue';
 import { authorizeGameAction } from './game/authorizeGameAction';
 import { executeGameActionPipeline, broadcastRoomState } from './game/gameActionPipeline';
+import { GameState } from '@alias/shared';
+import { GameActionRejectedError } from './utils/GameActionRejectedError';
 import { wireGraceAfterMarkDisconnected } from './socket/disconnectFlow';
 import { socketAuthMiddleware } from './middleware/socketAuth';
 import { applyRateLimit } from './middleware/rateLimit';
@@ -217,6 +219,15 @@ async function handleInboundGameAction(msg: GameActionRpcInbound): Promise<void>
         requestId: msg.requestId,
       });
     } catch (err) {
+      if (err instanceof GameActionRejectedError) {
+        await roomActionRelay.publishReply(msg.replyToInstanceId, {
+          v: 1,
+          kind: 'reply',
+          requestId: msg.requestId,
+          error: err.payload,
+        });
+        return;
+      }
       if (Sentry.isInitialized()) {
         Sentry.captureException(err, { tags: { source: 'relay-game-action' } });
       }
@@ -243,6 +254,16 @@ async function handleInboundRoomJoin(msg: RoomJoinRpcInbound): Promise<void> {
         kind: 'reply',
         requestId: msg.requestId,
         error: roomError('ROOM_NOT_FOUND', `Room ${msg.roomCode} not found`),
+      });
+      return;
+    }
+
+    if (room.gameState !== GameState.LOBBY) {
+      await roomActionRelay.publishReply(msg.replyToInstanceId, {
+        v: 1,
+        kind: 'reply',
+        requestId: msg.requestId,
+        error: roomError('GAME_ALREADY_STARTED', 'Game already started — cannot join now'),
       });
       return;
     }

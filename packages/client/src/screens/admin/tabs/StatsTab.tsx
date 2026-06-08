@@ -3,12 +3,7 @@ import { api, type AdminAnalytics, type AdminDailyStats, type AdminLiveStats } f
 import type { ShowToast } from '../AdminApp';
 import { AdminInput } from '../components/AdminInput';
 import { ADMIN_CARD_CLASS, ADMIN_SPINNER_CLASS } from '../components/adminStyles';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;

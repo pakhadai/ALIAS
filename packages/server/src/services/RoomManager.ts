@@ -329,6 +329,7 @@ export class RoomManager {
       imposterPhase: syncState.imposterPhase,
       imposterPlayerId: syncState.imposterPlayerId,
       revealedPlayerIds: syncState.revealedPlayerIds ?? [],
+      teamsLocked: syncState.teamsLocked ?? false,
     };
 
     this.rooms.set(code, room);

@@ -136,7 +136,10 @@ html[data-telegram-app='true'] #root {
     var(--tg-safe-area-inset-right, 0px),
     env(safe-area-inset-right, 0px)
   );
-  --tma-inset-top: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--tma-device-inset-top));
+  /** Baseline content-safe floor when Telegram SDK not ready — SSOT: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX */
+  --tma-content-top-floor: 88px;
+  /** Distance from viewport top to first app content — Telegram content-safe (notch + TG chrome). */
+  --tma-inset-top: var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px));
   --tma-inset-bottom: calc(
     var(--tg-content-safe-area-inset-bottom, 0px) + var(--tma-device-inset-bottom)
   );
@@ -147,10 +150,24 @@ html[data-telegram-app='true'] #root {
     var(--tg-content-safe-area-inset-right, 0px) + var(--tma-device-inset-right)
   );
 
-  /** MenuScreen fixed icon bar below inset — see docs/TMA_LAYOUT.md */
-  --tma-fixed-header-height: 3.5rem;
+  /** Home card top offset — content-safe + gap; SSOT: HOME_CARD_TOP_GAP_PX in tmaLayoutConstants.ts */
+  --app-home-card-top: calc(var(--tg-content-safe-area-inset-top, 88px) + 16px);
+  /** GlassAppHeader bar below safe inset — py-2 + min-h-11 + py-2; SSOT: APP_HEADER_BAR_PX */
+  --tma-app-header-bar-height: 3.75rem;
+  /**
+   * Measured full header height — GlassAppHeader ResizeObserver overrides inline on <html>.
+   * Fallback: title row + device inset + bar (tmaLayoutConstants.ts).
+   */
+  --app-page-header-height: calc(
+    max(
+        calc(var(--tg-content-safe-area-inset-top, 88px) - var(--tma-device-inset-top, 0px)),
+        44px
+      ) +
+      var(--tma-device-inset-top, 0px) + var(--tma-app-header-bar-height)
+  );
   --tma-toast-offset-header: 0px;
   --tma-toast-top: calc(max(0.75rem, var(--tma-inset-top)) + var(--tma-toast-offset-header));
+  --tma-banner-top: var(--tma-inset-top);
 
   /* Overlay stacking — use via `constants/zIndex.ts` + Tailwind `z-[var(--…)]` */
   --z-header: 20;
@@ -197,9 +214,11 @@ html[data-telegram-app='true'] #root {
   --ui-accent-ring: #ee423966;
 }
 
-/** Screens with a fixed top header (MenuScreen) — toast sits below the bar, not over icons */
-html[data-fixed-header] {
-  --tma-toast-offset-header: var(--tma-fixed-header-height);
+/** Screens with in-flow GlassAppHeader — toast sits below measured header, not over controls */
+html[data-app-header] {
+  --tma-toast-offset-header: var(--app-page-header-height);
+  --tma-toast-top: calc(var(--app-page-header-height) + 0.75rem);
+  --tma-banner-top: var(--app-page-header-height);
 }
 
 .font-serif {
@@ -320,8 +339,23 @@ html[data-fixed-header] {
     color-mix(in srgb, var(--ui-sheet-sepia) 58%, var(--ui-fg) 42%) 72%,
     transparent
   );
+  --ui-toast-fg: color-mix(in srgb, var(--ui-sheet-sepia) 62%, var(--ui-fg) 38%);
+  --ui-toast-fg-muted: color-mix(in srgb, var(--ui-sheet-sepia) 48%, var(--ui-fg-muted) 52%);
+  --ui-toast-glass-blur: 24px;
+  /** Opaque toast fill — never mix with transparent (TMA / backdrop-filter bleed-through) */
+  --ui-toast-surface: color-mix(
+    in srgb,
+    var(--ui-elevated, var(--ui-card)) 90%,
+    color-mix(in srgb, var(--ui-sheet-sepia) 34%, var(--ui-fg) 66%) 10%
+  );
   --ui-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --ui-sheet-anim-ms: 400ms;
+  /** Viewport minus Telegram chrome — keeps sheet below TMA header buttons */
+  --ui-sheet-available-height: calc(
+    var(--tg-viewport-stable-height, 100dvh) - var(--tma-inset-top) - 0.5rem
+  );
+  --ui-sheet-max-height-default: min(88dvh, var(--ui-sheet-available-height), 820px);
+  --ui-sheet-max-height-tall: min(92dvh, var(--ui-sheet-available-height), 820px);
   --ui-sheet-radius: 28px;
   --ui-sheet-shadow:
     0 -4px 24px color-mix(in srgb, var(--ui-bg) 35%, transparent),
@@ -331,7 +365,8 @@ html[data-fixed-header] {
   --lobby-play-mode-anim-ms: 520ms;
 }
 
-/* Lobby bottom panel — clear border; blur only on inner inset (not edges) */
+/* Frosted glass panel — lobby start CTA, AppHeader, bottom sheets inset pattern */
+.ui-glass-panel,
 .lobby-start-glass {
   --lobby-glass-inset: 2px;
   position: relative;
@@ -344,6 +379,7 @@ html[data-fixed-header] {
     0 14px 40px color-mix(in srgb, var(--ui-bg) 52%, transparent);
 }
 
+.ui-glass-panel::before,
 .lobby-start-glass::before {
   content: '';
   position: absolute;
@@ -355,6 +391,7 @@ html[data-fixed-header] {
   -webkit-backdrop-filter: blur(24px) saturate(1.75);
 }
 
+.ui-glass-panel::after,
 .lobby-start-glass::after {
   content: '';
   position: absolute;
@@ -371,15 +408,312 @@ html[data-fixed-header] {
   );
 }
 
+.ui-glass-panel > *,
 .lobby-start-glass > * {
   position: relative;
   z-index: 1;
 }
 
-/* Lobby start CTA — clockwise comet ring with blur when host can start */
+/** Full-width app header — sticky glass overlay inside scroll; layout starts below (no overlap) */
+.ui-app-header {
+  --ui-app-header-opacity-top: 28%;
+  --ui-app-header-opacity-bottom: 6%;
+  --ui-app-header-blur: 16px;
+  --ui-app-header-saturate: 1.2;
+  --lobby-glass-inset: 0;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0 solid transparent;
+  box-shadow: none;
+}
+
+.ui-app-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(var(--ui-app-header-blur)) saturate(var(--ui-app-header-saturate));
+  -webkit-backdrop-filter: blur(var(--ui-app-header-blur)) saturate(var(--ui-app-header-saturate));
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 92%) 0%,
+    rgb(0 0 0 / 78%) 45%,
+    rgb(0 0 0 / 42%) 72%,
+    rgb(0 0 0 / 14%) 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 92%) 0%,
+    rgb(0 0 0 / 78%) 45%,
+    rgb(0 0 0 / 42%) 72%,
+    rgb(0 0 0 / 14%) 90%,
+    transparent 100%
+  );
+}
+
+.ui-app-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ui-bg) var(--ui-app-header-opacity-top), transparent) 0%,
+    color-mix(in srgb, var(--ui-bg) var(--ui-app-header-opacity-bottom), transparent) 58%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 100%) 0%,
+    rgb(0 0 0 / 88%) 52%,
+    rgb(0 0 0 / 36%) 82%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 100%) 0%,
+    rgb(0 0 0 / 88%) 52%,
+    rgb(0 0 0 / 36%) 82%,
+    transparent 100%
+  );
+}
+
+.ui-app-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+/** Title row — clearance below device inset for TG native chrome; SSOT: titleRowHeightCss() */
+.ui-app-header__title-row {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: max(
+    calc(
+      var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)) -
+        var(--tma-device-inset-top, 0px)
+    ),
+    44px
+  );
+  padding: 0.5rem;
+}
+
+.ui-app-header[data-tg-gutter='true'] .ui-app-header__title-row {
+  padding-inline: 80px;
+}
+
+.ui-app-header__child-row {
+  flex-shrink: 0;
+  width: 100%;
+  height: var(--ui-app-header-child-row-height, 44px);
+  overflow: hidden;
+}
+
+.ui-app-header__slot {
+  display: flex;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/** Full-width app footer — sticky glass overlay inside scroll; feather at top edge */
+.ui-app-footer {
+  --ui-app-footer-opacity-bottom: 28%;
+  --ui-app-footer-opacity-top: 6%;
+  --ui-app-footer-blur: 16px;
+  --ui-app-footer-saturate: 1.2;
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-header);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0 solid transparent;
+  box-shadow: none;
+}
+
+.ui-app-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(var(--ui-app-footer-blur)) saturate(var(--ui-app-footer-saturate));
+  -webkit-backdrop-filter: blur(var(--ui-app-footer-blur)) saturate(var(--ui-app-footer-saturate));
+  mask-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 92%) 0%,
+    rgb(0 0 0 / 78%) 45%,
+    rgb(0 0 0 / 42%) 72%,
+    rgb(0 0 0 / 14%) 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 92%) 0%,
+    rgb(0 0 0 / 78%) 45%,
+    rgb(0 0 0 / 42%) 72%,
+    rgb(0 0 0 / 14%) 90%,
+    transparent 100%
+  );
+}
+
+.ui-app-footer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--ui-bg) var(--ui-app-footer-opacity-bottom), transparent) 0%,
+    color-mix(in srgb, var(--ui-bg) var(--ui-app-footer-opacity-top), transparent) 58%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 100%) 0%,
+    rgb(0 0 0 / 88%) 52%,
+    rgb(0 0 0 / 36%) 82%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 100%) 0%,
+    rgb(0 0 0 / 88%) 52%,
+    rgb(0 0 0 / 36%) 82%,
+    transparent 100%
+  );
+}
+
+.ui-app-footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* In-app toast — frosted glass (ToastItem, ToastNotification, admin toasts) */
+.ui-toast-glass {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ui-sheet-sepia) 32%, var(--ui-border) 68%);
+  background-color: var(--ui-toast-surface);
+  backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 10%, transparent),
+    inset 0 0 24px color-mix(in srgb, var(--ui-fg) 4%, transparent),
+    0 8px 28px color-mix(in srgb, var(--ui-bg) 50%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ui-fg) 12%, transparent);
+}
+
+.ui-toast-glass--error {
+  border-color: color-mix(in srgb, var(--ui-danger) 42%, var(--ui-border) 58%);
+}
+
+.ui-toast-glass--success {
+  border-color: color-mix(in srgb, var(--ui-success) 42%, var(--ui-border) 58%);
+}
+
+/** Specular sheen on top of opaque surface — not the fill layer */
+.ui-toast-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ui-fg) 7%, transparent) 0%,
+    transparent 46%
+  );
+}
+
+.ui-toast-glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ui-toast-fg {
+  color: var(--ui-toast-fg);
+}
+
+.ui-toast-fg-muted {
+  color: var(--ui-toast-fg-muted);
+}
+
+.ui-toast-dismiss {
+  opacity: 0.72;
+}
+
+.ui-toast-dismiss:hover,
+.ui-toast-dismiss:active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--ui-fg) 8%, transparent);
+}
+
+/* Fixed status banners (reconnect, etc.) — opaque surface, toast family */
+.ui-status-banner {
+  background-color: var(--ui-status-banner-surface, var(--ui-toast-surface));
+  color: var(--ui-status-banner-fg, var(--ui-toast-fg));
+  backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  border-bottom: 1px solid var(--ui-status-banner-border, var(--ui-border));
+  box-shadow:
+    0 4px 16px color-mix(in srgb, var(--ui-bg) 48%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 8%, transparent);
+}
+
+.ui-status-banner--warning {
+  --ui-status-banner-surface: color-mix(
+    in srgb,
+    var(--ui-warning) 14%,
+    var(--ui-toast-surface) 86%
+  );
+  --ui-status-banner-border: color-mix(in srgb, var(--ui-warning) 36%, var(--ui-border) 64%);
+  --ui-status-banner-fg: var(--ui-toast-fg);
+}
+
+/* Lobby start CTA — opaque button; calm neon-red snake along the border when ready */
 .lobby-start-btn-shell {
   position: relative;
   isolation: isolate;
+}
+
+.lobby-start-btn {
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+}
+
+.lobby-start-btn--ready:active {
+  transform: scale(0.97);
+}
+
+.lobby-start-btn--blocked {
+  cursor: default;
+  color: color-mix(in srgb, var(--ui-accent-contrast) 58%, var(--ui-fg-muted) 42%);
+  background-color: color-mix(in srgb, var(--ui-accent) 34%, var(--ui-bg) 66%);
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 22%, var(--ui-border) 78%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ui-accent) 10%, transparent),
+    0 1px 0 color-mix(in srgb, var(--ui-bg) 38%, transparent);
+}
+
+.lobby-start-btn--blocked:active {
+  transform: scale(0.98);
 }
 
 .lobby-start-btn-shell--ready::before,
@@ -390,24 +724,23 @@ html[data-fixed-header] {
   pointer-events: none;
   z-index: 0;
   transform-origin: center center;
-  animation: lobby-start-ring-spin 2.6s linear infinite;
+  animation: lobby-start-snake-spin 4.5s linear infinite;
 }
 
 .lobby-start-btn-shell--ready::before {
-  inset: -4px;
+  inset: -5px;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    transparent 228deg,
-    color-mix(in srgb, var(--ui-accent) 18%, transparent) 258deg,
-    color-mix(in srgb, var(--ui-accent) 48%, transparent) 288deg,
-    var(--ui-accent) 306deg,
-    color-mix(in srgb, var(--ui-accent) 88%, white 12%) 318deg,
-    color-mix(in srgb, var(--ui-accent) 32%, transparent) 336deg,
+    transparent 312deg,
+    color-mix(in srgb, var(--ui-accent) 16%, transparent) 328deg,
+    color-mix(in srgb, var(--ui-accent) 42%, transparent) 344deg,
+    var(--ui-accent) 352deg,
+    color-mix(in srgb, var(--ui-accent) 55%, #ff7a72) 358deg,
     transparent 360deg
   );
-  filter: blur(7px);
-  opacity: 0.8;
+  filter: blur(9px);
+  opacity: 0.52;
 }
 
 .lobby-start-btn-shell--ready::after {
@@ -416,11 +749,10 @@ html[data-fixed-header] {
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    transparent 262deg,
-    color-mix(in srgb, var(--ui-accent) 42%, transparent) 292deg,
-    var(--ui-accent) 308deg,
-    color-mix(in srgb, var(--ui-accent) 78%, white 22%) 320deg,
-    transparent 342deg,
+    transparent 318deg,
+    color-mix(in srgb, var(--ui-accent) 34%, transparent) 334deg,
+    var(--ui-accent) 348deg,
+    color-mix(in srgb, var(--ui-accent) 82%, #ff8a84) 356deg,
     transparent 360deg
   );
   -webkit-mask:
@@ -431,10 +763,17 @@ html[data-fixed-header] {
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  opacity: 0.92;
+  opacity: 0.88;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--ui-accent) 28%, transparent);
 }
 
-@keyframes lobby-start-ring-spin {
+.lobby-start-btn--ready {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+    0 0 20px color-mix(in srgb, var(--ui-accent) 22%, transparent);
+}
+
+@keyframes lobby-start-snake-spin {
   from {
     transform: rotate(0deg);
   }
@@ -448,6 +787,12 @@ html[data-fixed-header] {
   .lobby-start-btn-shell--ready::after {
     animation: none;
   }
+
+  .lobby-start-btn--ready {
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--ui-accent) 35%, transparent);
+  }
 }
 
 .bottom-sheet-backdrop {
@@ -458,9 +803,8 @@ html[data-fixed-header] {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-end;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+  overscroll-behavior: none;
   isolation: isolate;
   pointer-events: auto;
 }
@@ -567,7 +911,8 @@ html[data-fixed-header] {
   border: 1px solid var(--ui-border);
   background: transparent;
   box-shadow: var(--ui-sheet-shadow);
-  transform: translateY(100%);
+  transform: translate3d(0, 100%, 0);
+  transform-origin: bottom center;
   transition: transform var(--ui-sheet-anim-ms) var(--ui-sheet-ease);
   touch-action: pan-y;
 }
@@ -604,11 +949,11 @@ html[data-fixed-header] {
 }
 
 .bottom-sheet-panel[data-open='true'] {
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
 }
 
 .bottom-sheet-panel[data-open='false'] {
-  transform: translateY(100%);
+  transform: translate3d(0, 100%, 0);
   box-shadow: none;
 }
 
@@ -630,11 +975,11 @@ html[data-fixed-header] {
 
 .bottom-sheet-panel--sheet.bottom-sheet-panel--size-compact,
 .bottom-sheet-panel--sheet.bottom-sheet-panel--size-default {
-  max-height: min(88dvh, 820px);
+  max-height: var(--ui-sheet-max-height-default);
 }
 
 .bottom-sheet-panel--sheet.bottom-sheet-panel--size-tall {
-  max-height: min(92dvh, 820px);
+  max-height: var(--ui-sheet-max-height-tall);
 }
 
 .bottom-sheet-panel--sheet.bottom-sheet-panel--size-tall[data-sheet-scroll] {
@@ -712,7 +1057,63 @@ html[data-fixed-header] {
   }
 }
 
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ui-app-header::before,
+  .ui-app-footer::before {
+    display: none;
+  }
+
+  .ui-app-header::after {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ui-bg) 72%, transparent) 0%,
+      color-mix(in srgb, var(--ui-bg) 44%, transparent) 58%,
+      transparent 100%
+    );
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .ui-app-footer::after {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--ui-bg) 72%, transparent) 0%,
+      color-mix(in srgb, var(--ui-bg) 44%, transparent) 58%,
+      transparent 100%
+    );
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
 @media (prefers-reduced-transparency: reduce) {
+  .ui-app-header::before,
+  .ui-app-footer::before {
+    display: none;
+  }
+
+  .ui-app-header::after {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ui-bg) 84%, transparent) 0%,
+      color-mix(in srgb, var(--ui-bg) 58%, transparent) 55%,
+      transparent 100%
+    );
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .ui-app-footer::after {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--ui-bg) 84%, transparent) 0%,
+      color-mix(in srgb, var(--ui-bg) 58%, transparent) 55%,
+      transparent 100%
+    );
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
   .bottom-sheet-backdrop::before {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

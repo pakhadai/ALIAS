@@ -17,6 +17,9 @@ export const ROOM_ERROR_CODES = [
   'RELAY_UNAVAILABLE',
   'RELAY_TIMEOUT',
   'ALREADY_IN_ROOM',
+  'INVALID_STATE',
+  'LOBBY_NOT_READY',
+  'GAME_ALREADY_STARTED',
 ] as const;
 
 export type RoomErrorCode = (typeof ROOM_ERROR_CODES)[number];

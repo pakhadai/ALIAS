@@ -9,12 +9,7 @@ import {
   keyboardAvoidingBottomPadding,
   scrollElementIntoViewCentered,
 } from '../../../hooks/useVisualViewportBottomInset';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 import type { TranslationStrings } from '../../../hooks/useT';
 
 type T = TranslationStrings;

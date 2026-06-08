@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   typographyClass,
@@ -99,5 +101,33 @@ describe('system helpers', () => {
     expect(systemBannerClass).toContain('uppercase');
     expect(systemStatusClass).toContain(typographyClass.system);
     expect(systemStatusClass).toContain('leading-snug');
+  });
+});
+
+describe('styles.css @theme governance (TYPO-001)', () => {
+  const stylesCss = readFileSync(resolve(__dirname, '../styles.css'), 'utf8');
+
+  it('should declare Tailwind v4 --text-ui-* namespaces (not legacy --font-size-ui-*)', () => {
+    const requiredThemeTokens = [
+      '--text-ui-heading',
+      '--text-ui-body',
+      '--text-ui-label',
+      '--text-ui-caption',
+      '--text-ui-system',
+      '--leading-ui-heading',
+      '--leading-ui-body',
+      '--tracking-ui-label',
+    ] as const;
+
+    for (const token of requiredThemeTokens) {
+      expect(stylesCss).toContain(token);
+    }
+
+    expect(stylesCss).not.toMatch(/--font-size-ui-/);
+  });
+
+  it('should wire text-ui-* utilities to --ui-text-* CSS vars', () => {
+    expect(stylesCss).toMatch(/--text-ui-heading:\s*var\(--ui-text-heading\)/);
+    expect(stylesCss).toMatch(/--text-ui-label:\s*var\(--ui-text-label\)/);
   });
 });

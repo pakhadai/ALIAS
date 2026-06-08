@@ -435,6 +435,51 @@ describe('authorizeGameAction', () => {
     });
   });
 
+  describe('game-state guards', () => {
+    it('should reject TEAM_JOIN during PLAYING', () => {
+      runAuthCase({
+        name: 'TEAM_JOIN in PLAYING',
+        room: makeRoom({ gameState: GameState.PLAYING }),
+        payload: { action: 'TEAM_JOIN', data: { teamId: 'team-0' } },
+        ctx: socketCtx('socket-guest'),
+        expectOk: false,
+        errorCode: 'INVALID_STATE',
+      });
+    });
+
+    it('should reject UPDATE_SETTINGS during PLAYING', () => {
+      runAuthCase({
+        name: 'UPDATE_SETTINGS in PLAYING',
+        room: makeRoom({ gameState: GameState.PLAYING }),
+        payload: { action: 'UPDATE_SETTINGS', data: { general: { scoreToWin: 40 } } },
+        ctx: socketCtx('socket-host'),
+        expectOk: false,
+        errorCode: 'INVALID_STATE',
+      });
+    });
+
+    it('should reject START_GAME outside LOBBY', () => {
+      runAuthCase({
+        name: 'START_GAME in PLAYING',
+        room: makeRoom({ gameState: GameState.PLAYING }),
+        payload: { action: 'START_GAME' },
+        ctx: socketCtx('socket-host'),
+        expectOk: false,
+        errorCode: 'INVALID_STATE',
+      });
+    });
+
+    it('should allow TEAM_JOIN in LOBBY', () => {
+      runAuthCase({
+        name: 'TEAM_JOIN in LOBBY',
+        room: makeRoom({ gameState: GameState.LOBBY }),
+        payload: { action: 'TEAM_JOIN', data: { teamId: 'team-0' } },
+        ctx: socketCtx('socket-guest'),
+        expectOk: true,
+      });
+    });
+  });
+
   // ─── socket / relay identity ─────────────────────────────────────────────────
 
   describe('actor identity', () => {

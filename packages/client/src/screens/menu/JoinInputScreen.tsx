@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Logo } from '../../components/Shared';
+import { AppHeader, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { ROOM_CODE_LENGTH } from '../../constants';
@@ -11,12 +12,7 @@ import {
   scrollElementIntoViewCentered,
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../constants/typography';
+import { typographyClass } from '../../constants/typography';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 
 export const JoinInputScreen = () => {
@@ -49,63 +45,66 @@ export const JoinInputScreen = () => {
   };
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-10 md:pb-10 justify-center items-center`}
-      style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
-    >
-      <Logo theme={currentTheme} />
-      <div
-        className={`w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}
+    <div style={keyboardAvoidingBottomPadding(keyboardBottomInset)}>
+      <ScreenShell
+        className={currentTheme.bg}
+        contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"
+        header={<AppHeader onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.cancel} />}
       >
-        <div className="text-center space-y-4">
-          <ScreenTitle themeClass={currentTheme.textMain}>{t.joinTitle}</ScreenTitle>
-          <p
-            className={`${typographyClass.label} opacity-30 tracking-[0.4em] ${currentTheme.textMain}`}
-          >
-            {t.enterCode}
-          </p>
+        <Logo theme={currentTheme} />
+        <div
+          className={`w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}
+        >
+          <div className="text-center space-y-4">
+            <ScreenTitle themeClass={currentTheme.textMain}>{t.joinTitle}</ScreenTitle>
+            <p
+              className={`${typographyClass.label} opacity-30 tracking-[0.4em] ${currentTheme.textMain}`}
+            >
+              {t.enterCode}
+            </p>
+          </div>
+          <div className="relative">
+            <input
+              autoFocus
+              type="text"
+              inputMode="numeric"
+              maxLength={ROOM_CODE_LENGTH}
+              value={code}
+              onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
+              onChange={handleInputChange}
+              data-testid="join-room-code"
+              placeholder="00000"
+              className="w-full bg-transparent border-b border-ui-border text-ui-fg text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-ui-accent transition-all pb-8"
+            />
+          </div>
+          <div className="space-y-8 pt-4">
+            <Button
+              themeClass={currentTheme.button}
+              fullWidth
+              size="xl"
+              onClick={handleJoinRoom}
+              disabled={code.length !== ROOM_CODE_LENGTH || checking}
+              data-testid="join-submit"
+            >
+              {checking ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>{t.connecting}</span>
+                </span>
+              ) : (
+                t.enter
+              )}
+            </Button>
+            <button
+              onClick={() => setGameState(GameState.MENU)}
+              data-testid="join-cancel"
+              className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+            >
+              {t.cancel}
+            </button>
+          </div>
         </div>
-        <div className="relative">
-          <input
-            autoFocus
-            type="text"
-            inputMode="numeric"
-            maxLength={ROOM_CODE_LENGTH}
-            value={code}
-            onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
-            onChange={handleInputChange}
-            data-testid="join-room-code"
-            placeholder="00000"
-            className="w-full bg-transparent border-b border-ui-border text-ui-fg text-center text-6xl font-serif tracking-[0.3em] focus:outline-none focus:border-ui-accent transition-all pb-8"
-          />
-        </div>
-        <div className="space-y-8 pt-4">
-          <Button
-            themeClass={currentTheme.button}
-            fullWidth
-            size="xl"
-            onClick={handleJoinRoom}
-            disabled={code.length !== ROOM_CODE_LENGTH || checking}
-            data-testid="join-submit"
-          >
-            {checking ? (
-              <span className="inline-flex items-center justify-center gap-2">
-                <Loader2 size={18} className="animate-spin" />
-                <span>{t.connecting}</span>
-              </span>
-            ) : (
-              t.enter
-            )}
-          </Button>
-          <button
-            onClick={() => setGameState(GameState.MENU)}
-            data-testid="join-cancel"
-            className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
-          >
-            {t.cancel}
-          </button>
-        </div>
-      </div>
+      </ScreenShell>
     </div>
   );
 };

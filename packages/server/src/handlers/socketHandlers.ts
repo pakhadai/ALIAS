@@ -5,6 +5,7 @@ import type {
   InterServerEvents,
   SocketData,
 } from '@alias/shared';
+import { GameState } from '@alias/shared';
 import type { RoomManager } from '../services/RoomManager';
 import type { GameEngine } from '../services/GameEngine';
 import type { PerRoomQueue } from '../services/PerRoomQueue';
@@ -24,6 +25,7 @@ import { config } from '../config';
 import { authorizeGameAction } from '../game/authorizeGameAction';
 import { broadcastRoomState, executeGameActionPipeline } from '../game/gameActionPipeline';
 import { onSocket } from '../utils/socketSentry';
+import { GameActionRejectedError } from '../utils/GameActionRejectedError';
 type IO = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
@@ -101,12 +103,6 @@ export function registerSocketHandlers(
     const data = validatePayload(roomExistsSchema, rawData);
     if (!data) {
       ack?.({ exists: false });
-      return;
-    }
-
-    const writer = await getRoomWriterId(relayDeps, data.roomCode);
-    if (writer) {
-      ack?.({ exists: true });
       return;
     }
 
@@ -206,6 +202,14 @@ export function registerSocketHandlers(
         }
         if (!room) {
           socket.emit('room:error', roomError('ROOM_NOT_FOUND', `Room ${data.roomCode} not found`));
+          return;
+        }
+
+        if (room.gameState !== GameState.LOBBY) {
+          socket.emit(
+            'room:error',
+            roomError('GAME_ALREADY_STARTED', 'Game already started — cannot join now')
+          );
           return;
         }
 
@@ -427,15 +431,23 @@ export function registerSocketHandlers(
         return;
       }
 
-      await executeGameActionPipeline(
-        io,
-        roomManager,
-        gameEngine,
-        room,
-        roomCode,
-        payload,
-        authLocal.actorPlayerId
-      );
+      try {
+        await executeGameActionPipeline(
+          io,
+          roomManager,
+          gameEngine,
+          room,
+          roomCode,
+          payload,
+          authLocal.actorPlayerId
+        );
+      } catch (err) {
+        if (err instanceof GameActionRejectedError) {
+          socket.emit('room:error', err.payload);
+        } else {
+          throw err;
+        }
+      }
     });
   });
 }

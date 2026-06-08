@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  CSS_VAR_TMA_CONTENT_TOP_FLOOR,
+  TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
+} from '../constants/tmaLayoutConstants';
 
 function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
@@ -104,6 +108,10 @@ export function useTelegramApp(): UseTelegramAppResult {
     if (!webApp || !isTelegram) return;
 
     document.documentElement.setAttribute('data-telegram-app', 'true');
+    document.documentElement.style.setProperty(
+      CSS_VAR_TMA_CONTENT_TOP_FLOOR,
+      `${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`
+    );
 
     try {
       webApp.ready();

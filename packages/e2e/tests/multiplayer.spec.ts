@@ -21,9 +21,11 @@ test.beforeEach(({ page: _page }, testInfo) => {
   );
 });
 
-/** Exact match avoids strict-mode collisions with toasts like «{name} приєднався». */
+/** ONLINE lobby: avatar strip only — avoids unassigned assign-button duplicate names. */
 function expectPlayerVisible(page: Page, name: string) {
-  return expect(page.getByText(name, { exact: true })).toBeVisible();
+  return expect(
+    page.getByTestId('lobby-avatar-strip').getByText(name, { exact: true })
+  ).toBeVisible();
 }
 
 test.describe('Multiplayer (2 players)', () => {
@@ -65,10 +67,14 @@ test.describe('Multiplayer (2 players)', () => {
 
       await guestPage.reload({ waitUntil: 'load' });
 
-      await expect(guestPage.getByText(HOST_NAME, { exact: true })).toBeVisible({
+      await expect(
+        guestPage.getByTestId('lobby-avatar-strip').getByText(HOST_NAME, { exact: true })
+      ).toBeVisible({
         timeout: 45_000,
       });
-      await expect(guestPage.getByText(GUEST_NAME, { exact: true })).toBeVisible({
+      await expect(
+        guestPage.getByTestId('lobby-avatar-strip').getByText(GUEST_NAME, { exact: true })
+      ).toBeVisible({
         timeout: 45_000,
       });
       await expect(guestPage.getByTestId('lobby-room-code')).toHaveText(roomCode, {

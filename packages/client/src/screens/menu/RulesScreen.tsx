@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '../../components/Button';
+import { AppHeader, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
@@ -10,8 +11,10 @@ export const RulesScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const t = useT();
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-6 md:px-10 md:pb-10 justify-center items-center`}
+    <ScreenShell
+      className={currentTheme.bg}
+      contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"
+      header={<AppHeader onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.close} />}
     >
       <div
         className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`}
@@ -47,6 +50,6 @@ export const RulesScreen = () => {
           {t.close}
         </Button>
       </div>
-    </div>
+    </ScreenShell>
   );
 };

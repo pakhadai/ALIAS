@@ -37,6 +37,7 @@ packages/server/prisma/*.db
 # Playwright (E2E artifacts)
 packages/e2e/playwright-report/
 packages/e2e/test-results/
+packages/e2e/debug-*.png
 
 # Vitest coverage artifacts
 packages/server/coverage/

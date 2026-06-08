@@ -35,6 +35,7 @@ Import map: `packages/client/src/constants/typography.ts`.
 | **Logo** | `text-7xl` in `Shared.tsx` | Frozen game title |
 | **Game display** | `packages/client/src/screens/GameFlow/**` | Display scale, clamp, milestones |
 | **Icon glyph size** | Material Symbols `text-[18px]`, pause icon `text-[80px]` | Icon font metrics, not text roles |
+| **Emoji avatar sizing** | `text-sm` on `<span>{p.avatar}</span>` in `TeamCard`, `UnassignedPool` | Emoji glyph scale in avatar circle, not semantic copy |
 | **Admin monospace** | `font-mono text-xs` in `admin/tabs/*` | Compact admin panel (optional Phase 8) |
 | **CSS clamp()** | word card responsive sizes | Fluid game typography |
 

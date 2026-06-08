@@ -1,0 +1,71 @@
+/**
+ * TMA layout dimensions SSOT — Phase 1 header unification.
+ * Canon: docs/TMA_HEADER_UNIFICATION.md, docs/TMA_LAYOUT.md#constants
+ */
+export const HEADER_ROW_MIN_PX = 44;
+export const TG_CHROME_GUTTER_PX = 80;
+export const APP_HEADER_BAR_PX = 60;
+export const TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX = 88;
+export const HOME_CARD_TOP_GAP_PX = 16;
+
+/** Written by {@link GlassAppHeader} ResizeObserver; CSS fallback in `styles.css` */
+export const CSS_VAR_APP_PAGE_HEADER_HEIGHT = '--app-page-header-height';
+
+/** Home card offset from viewport top — content-safe + gap; see `--app-home-card-top` in styles.css */
+export const CSS_VAR_APP_HOME_CARD_TOP = '--app-home-card-top';
+
+const PX_PER_REM = 16;
+
+/** `60px` → `3.75rem` at 16px root */
+export function pxToRem(px: number): string {
+  return `${px / PX_PER_REM}rem`;
+}
+
+export const APP_HEADER_BAR_REM = pxToRem(APP_HEADER_BAR_PX);
+
+/**
+ * Title row clearance below device inset (CSS calc fragment).
+ * `max(contentSafeTop − deviceInset, HEADER_ROW_MIN_PX)`
+ */
+export function titleRowHeightCss(
+  contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
+): string {
+  return `max(calc(var(--tg-content-safe-area-inset-top, ${contentFloorPx}px) - var(--tma-device-inset-top, 0px)), ${HEADER_ROW_MIN_PX}px)`;
+}
+
+/**
+ * Fallback `--app-page-header-height` before ResizeObserver measures the live header.
+ * `titleRow + deviceInset + appBar [+ optional child row]`
+ */
+export function appPageHeaderHeightFallbackCss(extraChildRowPx = 0): string {
+  const childSuffix = extraChildRowPx > 0 ? ` + ${extraChildRowPx}px` : '';
+  return `calc(${titleRowHeightCss()} + var(--tma-device-inset-top, 0px) + ${APP_HEADER_BAR_PX}px${childSuffix})`;
+}
+
+/** Aligns with `--tma-inset-top` + bar — current `GlassAppHeader` chrome before Phase 2 API */
+export function appPageHeaderHeightInsetFallbackCss(
+  insetFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
+): string {
+  return `calc(var(--tma-inset-top, ${insetFloorPx}px) + ${APP_HEADER_BAR_REM})`;
+}
+
+/** `--app-home-card-top` — content-safe top + home card gap (MenuScreen body padding). */
+export function appHomeCardTopCss(
+  contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
+  gapPx: number = HOME_CARD_TOP_GAP_PX
+): string {
+  return `calc(var(--tg-content-safe-area-inset-top, ${contentFloorPx}px) + ${gapPx}px)`;
+}
+
+/** CSS var name — synced from `useTelegramApp` on TMA bootstrap (Phase 5 floor). */
+export const CSS_VAR_TMA_CONTENT_TOP_FLOOR = '--tma-content-top-floor';
+
+/**
+ * `--tma-inset-top` — Telegram content-safe from viewport top (notch + native TG chrome).
+ * TMA uses {@link CSS_VAR_TMA_CONTENT_TOP_FLOOR} fallback when SDK inset is absent (never write 0px inline).
+ */
+export function tmaInsetTopCss(
+  contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
+): string {
+  return `var(--tg-content-safe-area-inset-top, var(${CSS_VAR_TMA_CONTENT_TOP_FLOOR}, ${contentFloorPx}px))`;
+}

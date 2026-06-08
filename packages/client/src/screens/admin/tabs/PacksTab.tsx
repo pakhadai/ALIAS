@@ -9,12 +9,7 @@ import {
   ADMIN_SPINNER_CLASS,
   adminStatusBtn,
 } from '../components/adminStyles';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;

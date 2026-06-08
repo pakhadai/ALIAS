@@ -181,6 +181,41 @@ describe('applyOfflineGameAction', () => {
     expect(getState().players[1]?.name).toBe('Bob');
   });
 
+  it('should remove offline player from teams when REMOVE_OFFLINE_PLAYER', () => {
+    const extra = makePlayer('extra', 'Extra');
+    const { deps, getState } = createOfflineDeps({
+      players: [makePlayer('host', 'Host'), extra],
+      teams: [
+        {
+          id: 'team-0',
+          name: 'A',
+          score: 0,
+          color: 'c1',
+          colorHex: '#111',
+          players: [makePlayer('host', 'Host')],
+          nextPlayerIndex: 0,
+        },
+        {
+          id: 'team-1',
+          name: 'B',
+          score: 0,
+          color: 'c2',
+          colorHex: '#222',
+          players: [extra],
+          nextPlayerIndex: 0,
+        },
+      ],
+      settings: {
+        ...initialState.settings,
+        general: { ...initialState.settings.general, teamCount: 2 },
+      },
+    });
+    applyOfflineGameAction(deps, { action: 'REMOVE_OFFLINE_PLAYER', data: 'extra' });
+    expect(getState().players.map((p) => p.id)).toEqual(['host']);
+    expect(getState().teams[1]?.players).toHaveLength(0);
+    expect(getState().teams[0]?.players.map((p) => p.id)).toEqual(['host']);
+  });
+
   it('should reset team scores on REMATCH while preserving teams', () => {
     const { deps, getState } = createOfflineDeps({
       teams: [

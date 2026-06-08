@@ -252,13 +252,23 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 const AppContent = () => {
   const { isTelegram, startParam } = useTelegramApp();
   const { isAuthenticated } = useAuthContext();
-  const { gameState, setGameState, setRoomCode, checkRoomExists, showNotification, leaveRoom } =
-    useGame();
+  const {
+    gameState,
+    gameMode,
+    uiLanguage,
+    setGameState,
+    setRoomCode,
+    roomCode,
+    checkRoomExists,
+    showNotification,
+    leaveRoom,
+  } = useGame();
 
   useTelegramLobbyDeepLink({
     isAuthenticated,
     startParam,
     gameState,
+    uiLanguage,
     setGameState,
     setRoomCode,
     checkRoomExists,
@@ -269,13 +279,15 @@ const AppContent = () => {
     isTelegram,
     isAuthenticated,
     gameState,
+    gameMode,
+    roomCode,
     setGameState,
     leaveRoom,
   });
 
   return (
     <AppLoginProvider>
-      <div className="min-h-0 h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
+      <div className="min-h-0 h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full overflow-x-hidden bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
         <ConnectionStatusBanner />
         <PwaUpdateBanner />
         <GameRouter />

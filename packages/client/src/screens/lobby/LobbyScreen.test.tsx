@@ -200,9 +200,16 @@ vi.mock('../../hooks/useHapticFeedback', () => ({
   }),
 }));
 
+const isTelegramMiniApp = vi.fn(() => false);
+
+vi.mock('../../hooks/useTelegramApp', () => ({
+  isTelegramMiniApp: () => isTelegramMiniApp(),
+}));
+
 describe('LobbyScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isTelegramMiniApp.mockReturnValue(false);
     mockGameMode = 'ONLINE';
     mockIsHost = true;
     mockTeams = [
@@ -240,16 +247,18 @@ describe('LobbyScreen', () => {
     expect(screen.queryByTestId('lobby-avatar-strip')).toBeNull();
   });
 
-  it('should show start validation reason for host when teams incomplete', () => {
+  it('should hide start validation line above button when teams incomplete', () => {
     render(<LobbyScreen />);
-    expect(screen.getByTestId('lobby-start-validation')).toHaveTextContent('Assign all');
+    expect(screen.queryByTestId('lobby-start-validation')).toBeNull();
+    expect(screen.queryByTestId('lobby-readiness-bar')).toBeNull();
   });
 
-  it('should mark start as unavailable when validation fails', () => {
+  it('should mark start as unavailable but still tappable for hint toast', () => {
     render(<LobbyScreen />);
-    const startBtn = screen.getByRole('button', { name: 'Start' });
+    const startBtn = screen.getByTestId('lobby-start-btn');
     expect(startBtn).toHaveAttribute('aria-disabled', 'true');
     expect(startBtn).not.toBeDisabled();
+    expect(startBtn).toHaveClass('lobby-start-btn--blocked');
   });
 
   it('should show guest waiting card for online guests', () => {
@@ -295,6 +304,19 @@ describe('LobbyScreen', () => {
     ];
     render(<LobbyScreen />);
     expect(screen.queryByTestId('lobby-play-mode-bar-slot')).toBeNull();
+  });
+
+  it('should show browser back and settings in header for online host outside TMA', () => {
+    render(<LobbyScreen />);
+    expect(screen.getByTestId('app-header-back')).toBeTruthy();
+    expect(screen.getByTestId('lobby-header-settings')).toBeTruthy();
+  });
+
+  it('should hide header settings in TMA online mode', () => {
+    isTelegramMiniApp.mockReturnValue(true);
+    render(<LobbyScreen />);
+    expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
+    expect(screen.queryByTestId('app-header-back')).toBeNull();
   });
 
   it('should open invite sheet when invite button is tapped', async () => {

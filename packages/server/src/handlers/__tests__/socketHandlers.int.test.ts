@@ -7,7 +7,66 @@ import { RoomManager } from '../../services/RoomManager';
 import { GameEngine } from '../../services/GameEngine';
 import { WordService } from '../../services/WordService';
 import { PerRoomQueue } from '../../services/PerRoomQueue';
+import { RedisRoomStore } from '../../services/RedisRoomStore';
 import { wireGraceAfterMarkDisconnected } from '../../socket/disconnectFlow';
+
+vi.mock('ioredis', () => {
+  const store: Map<string, string> = ((
+    globalThis as unknown as { __redisMockStore?: Map<string, string> }
+  ).__redisMockStore ??= new Map<string, string>());
+
+  class MockRedis {
+    status = 'ready';
+    on() {
+      return this;
+    }
+    async ping() {
+      return 'PONG';
+    }
+    async set(key: string, value: string, ..._rest: unknown[]) {
+      store.set(key, value);
+      return 'OK';
+    }
+    async get(key: string) {
+      return store.get(key) ?? null;
+    }
+    async del(...keys: string[]) {
+      keys.forEach((k) => store.delete(k));
+      return keys.length;
+    }
+    async exists(key: string) {
+      return store.has(key) ? 1 : 0;
+    }
+    async scan(
+      cursor: string,
+      _match: 'MATCH',
+      pattern: string,
+      _count: 'COUNT',
+      _n: number
+    ): Promise<[string, string[]]> {
+      const prefix = pattern.endsWith('*') ? pattern.slice(0, -1) : pattern;
+      const keys = Array.from(store.keys()).filter((k) => k.startsWith(prefix));
+      return [cursor === '0' ? '0' : '0', keys];
+    }
+    pipeline() {
+      const ops: Array<() => void> = [];
+      const pipe = {
+        set: (key: string, value: string, ..._rest: unknown[]) => {
+          ops.push(() => store.set(key, value));
+          return pipe;
+        },
+        async exec() {
+          ops.forEach((fn) => fn());
+          return [];
+        },
+      };
+      return pipe;
+    }
+    async quit() {}
+  }
+
+  return { default: MockRedis };
+});
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -15,6 +74,7 @@ import type {
   SocketData,
   GameSyncState,
 } from '@alias/shared';
+import { GameState } from '@alias/shared';
 
 type AppServer = IOServer<
   ClientToServerEvents,
@@ -109,6 +169,63 @@ async function startTestIo(): Promise<{
     SocketData
   >(httpServer, { cors: { origin: '*' } });
   const roomManager = new RoomManager();
+  const engine = new GameEngine(roomManager, new WordService());
+  const queue = new PerRoomQueue();
+
+  io.on('connection', (socket) => {
+    registerSocketHandlers(
+      io as unknown as AppServer,
+      socket as unknown as AppServerSocket,
+      roomManager,
+      engine,
+      queue,
+      null
+    );
+
+    socket.on('disconnect', () => {
+      const { roomCode } = socket.data;
+      if (!roomCode) return;
+      void queue.run(roomCode, async () => {
+        const graceInfo = roomManager.markSocketDisconnected(socket.id);
+        if (!graceInfo) return;
+        wireGraceAfterMarkDisconnected(io, roomManager, queue, graceInfo, RECONNECT_GRACE_MS);
+      });
+    });
+  });
+
+  await new Promise<void>((resolve) => httpServer.listen(0, resolve));
+  const addr = httpServer.address();
+  const port = typeof addr === 'object' && addr ? addr.port : 0;
+  return {
+    httpServer,
+    io,
+    baseUrl: `http://127.0.0.1:${port}`,
+    roomManager,
+    roomQueue: queue,
+  };
+}
+
+async function startTestIoWithRedis(): Promise<{
+  httpServer: HttpServer;
+  io: AppServer;
+  baseUrl: string;
+  roomManager: RoomManager;
+  roomQueue: PerRoomQueue;
+}> {
+  (globalThis as unknown as { __redisMockStore?: Map<string, string> }).__redisMockStore?.clear();
+
+  const redisStore = new RedisRoomStore();
+  await redisStore.connect('redis://mock');
+
+  const httpServer = createServer();
+  const io: AppServer = new IOServer<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >(httpServer, { cors: { origin: '*' } });
+  const roomManager = new RoomManager();
+  roomManager.setRedisStore(redisStore);
   const engine = new GameEngine(roomManager, new WordService());
   const queue = new PerRoomQueue();
 
@@ -333,6 +450,28 @@ describe('Socket handlers (integration)', () => {
     expect(host.connected).toBe(true);
   }, 20_000);
 
+  it('room:exists returns false when only stale writer key exists in Redis', async () => {
+    const redisClients: AppClientSocket[] = [];
+    const { httpServer: redisHttp, io: redisIo, baseUrl: redisUrl } = await startTestIoWithRedis();
+
+    try {
+      const mockStore = (globalThis as unknown as { __redisMockStore?: Map<string, string> })
+        .__redisMockStore;
+      mockStore?.set('alias:room:writer:54321', 'stale-writer-instance');
+
+      const probe = createClient(redisUrl);
+      redisClients.push(probe);
+      await waitForEvent(probe, 'connect');
+
+      const existsRes = await emitRoomExistsAck(probe, '54321');
+      expect(existsRes.exists).toBe(false);
+    } finally {
+      redisClients.forEach((c) => c.disconnect());
+      await new Promise<void>((resolve) => redisIo.close(() => resolve()));
+      await new Promise<void>((resolve) => redisHttp.close(() => resolve()));
+    }
+  }, 20_000);
+
   it('room:rejoin within grace period restores session before removal', async () => {
     const { host, created } = await createHostRoom(baseUrl, clients);
     const { guest, joined } = await joinGuest(baseUrl, clients, created.roomCode, host);
@@ -398,4 +537,71 @@ describe('Socket handlers (integration)', () => {
     const err = await waitForEvent<{ code?: string }>(guest, 'room:error');
     expect(err?.code).toBe('NOT_EXPLAINER');
   }, 30_000);
+
+  it('game:action rejects START_GAME when lobby is not ready', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+
+    host.emit('game:action', { action: 'START_GAME' });
+    const err = await waitForEvent<{ code?: string }>(host, 'room:error');
+    expect(err?.code).toBe('LOBBY_NOT_READY');
+    expect(roomManager.getRoom(created.roomCode)?.gameState).toBe(GameState.LOBBY);
+  }, 20_000);
+
+  it('room:join rejects when game is not in LOBBY', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+    const { guest } = await joinGuest(baseUrl, clients, created.roomCode, host);
+
+    const syncHostTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+    await syncHostTeamP;
+
+    const syncGuestTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    guest.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-1' } });
+    await syncGuestTeamP;
+
+    const syncAfterStartP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'START_GAME' });
+    await syncAfterStartP;
+
+    const lateJoiner = createClient(baseUrl);
+    clients.push(lateJoiner);
+    await waitForEvent(lateJoiner, 'connect');
+
+    lateJoiner.emit('room:join', {
+      roomCode: created.roomCode,
+      playerName: 'Late',
+      avatar: '🦊',
+    });
+    const err = await waitForEvent<{ code?: string }>(lateJoiner, 'room:error');
+    expect(err?.code).toBe('GAME_ALREADY_STARTED');
+  }, 30_000);
+
+  it('game:action rejects TEAM_JOIN during PLAYING', async () => {
+    const { host, created } = await createHostRoom(baseUrl, clients);
+    const { guest } = await joinGuest(baseUrl, clients, created.roomCode, host);
+
+    const syncHostTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+    await syncHostTeamP;
+
+    const syncGuestTeamP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    guest.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-1' } });
+    await syncGuestTeamP;
+
+    const syncAfterStartP = waitForEvent<GameSyncState>(host, 'game:state-sync');
+    host.emit('game:action', { action: 'START_GAME' });
+    await syncAfterStartP;
+
+    const roundSyncP = waitForSyncMatching(host, (s) => s.gameState === 'COUNTDOWN');
+    host.emit('game:action', { action: 'START_ROUND' });
+    await roundSyncP;
+
+    const playingSyncP = waitForSyncMatching(host, (s) => s.gameState === 'PLAYING');
+    host.emit('game:action', { action: 'START_PLAYING' });
+    await playingSyncP;
+
+    guest.emit('game:action', { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });
+    const err = await waitForEvent<{ code?: string }>(guest, 'room:error');
+    expect(err?.code).toBe('INVALID_STATE');
+  }, 35_000);
 });

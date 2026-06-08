@@ -1,10 +1,19 @@
-import { GameMode, GameState, getTeamColor, getTeamColorToken, shuffleArray } from '@alias/shared';
+import {
+  GameMode,
+  GameState,
+  deriveLobbyReadinessServer,
+  getTeamColor,
+  getTeamColorToken,
+  shuffleArray,
+} from '@alias/shared';
 import type { GameActionPayload, ModeSettings, ModeSettingsUpdate, Team } from '@alias/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
 import type { WordService } from './WordService';
 import { getHandler } from '../modes';
 import type { IGameModeHandler } from '../modes';
+import { GameActionRejectedError } from '../utils/GameActionRejectedError';
+import { roomError } from '../utils/roomError';
 
 export class GameEngine {
   private prisma: PrismaClient | null = null;
@@ -464,7 +473,34 @@ export class GameEngine {
       }
 
       case 'START_GAME': {
-        if ((room.settings.general.teamMode ?? 'TEAMS') === 'SOLO') {
+        const teamMode = room.settings.general.teamMode ?? 'TEAMS';
+        const prevTeams = room.teams;
+
+        if (teamMode !== 'SOLO') {
+          this.ensureTeamShells(room);
+        }
+
+        const readiness = deriveLobbyReadinessServer({
+          teamMode,
+          playersCount: room.players.length,
+          teams: teamMode === 'SOLO' ? [] : room.teams,
+          playerIds: room.players.map((p) => p.id),
+        });
+
+        if (!readiness.ok) {
+          if (teamMode !== 'SOLO') {
+            room.teams = prevTeams;
+          }
+          const message =
+            readiness.reason === 'MIN_PLAYERS'
+              ? 'At least 2 players required to start'
+              : readiness.reason === 'UNASSIGNED'
+                ? 'All players must be assigned to teams'
+                : 'Each team must have at least one player';
+          throw new GameActionRejectedError(roomError('LOBBY_NOT_READY', message));
+        }
+
+        if (teamMode === 'SOLO') {
           room.teams = room.players.map((p, i) => ({
             id: `team-${i}`,
             name: p.name,

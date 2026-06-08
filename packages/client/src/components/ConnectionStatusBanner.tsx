@@ -1,6 +1,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { systemBannerClass } from '../constants/typography';
+import { zIndex } from '../constants/zIndex';
 import { useGame } from '../context/GameContext';
 import { useT } from '../hooks/useT';
 
@@ -13,11 +14,11 @@ export function ConnectionStatusBanner() {
 
   return (
     <div
-      className={`fixed left-0 right-0 z-[var(--z-banner)] flex items-center justify-center gap-2 py-2.5 px-4 ${systemBannerClass} bg-[color-mix(in_srgb,var(--ui-warning)_85%,transparent)] text-ui-accent-contrast shadow-lg border-b border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] top-[var(--tma-inset-top)]`}
+      className={`ui-status-banner ui-status-banner--warning fixed left-0 right-0 ${zIndex.banner} flex items-center justify-center gap-2 py-2.5 px-4 ${systemBannerClass} top-[var(--tma-banner-top)]`}
       role="status"
       aria-live="polite"
     >
-      <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+      <Loader2 className="w-4 h-4 animate-spin shrink-0 opacity-90" aria-hidden />
       {t.restoringConnection ?? 'Restoring connection...'}
     </div>
   );

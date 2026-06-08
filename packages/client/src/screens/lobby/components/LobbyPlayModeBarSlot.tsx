@@ -15,6 +15,10 @@ type ShellState = {
   opacity: number;
 };
 
+function idleShell(heightPx: number): ShellState {
+  return { mounted: true, phase: 'idle', heightPx, liftPx: 0, opacity: 1 };
+}
+
 export function LobbyPlayModeBarSlot(props: {
   open: boolean;
   children: React.ReactNode;
@@ -23,12 +27,14 @@ export function LobbyPlayModeBarSlot(props: {
   const innerRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
   const prevOpenRef = useRef<boolean | null>(null);
+  /** Skip enter animation on first paint — avoids invisible reserved gap in lobby. */
+  const skipEnterAnimRef = useRef(true);
 
   openRef.current = open;
 
   const [shell, setShell] = useState<ShellState>(() =>
     open
-      ? { mounted: true, phase: 'enter', heightPx: 0, liftPx: -12, opacity: 0 }
+      ? { mounted: true, phase: 'enter', heightPx: 0, liftPx: 0, opacity: 1 }
       : { mounted: false, phase: 'exit', heightPx: 0, liftPx: 0, opacity: 0 }
   );
 
@@ -38,11 +44,17 @@ export function LobbyPlayModeBarSlot(props: {
     return el.scrollHeight;
   }, []);
 
+  const syncHeight = useCallback(() => {
+    const h = measureHeight();
+    if (h <= 0) return;
+    setShell((s) => (s.mounted && s.heightPx === h ? s : { ...s, heightPx: h }));
+  }, [measureHeight]);
+
   useEffect(() => {
     if (!open) return;
     setShell((s) => {
       if (s.mounted) return s;
-      return { mounted: true, phase: 'enter', heightPx: 0, liftPx: -12, opacity: 0 };
+      return { mounted: true, phase: 'enter', heightPx: 0, liftPx: 0, opacity: 1 };
     });
   }, [open]);
 
@@ -54,6 +66,13 @@ export function LobbyPlayModeBarSlot(props: {
 
     if (open && wasOpen !== true) {
       const h = measureHeight();
+
+      if (skipEnterAnimRef.current) {
+        skipEnterAnimRef.current = false;
+        setShell(idleShell(h));
+        return undefined;
+      }
+
       setShell((s) => ({ ...s, heightPx: h, phase: 'enter', liftPx: -12, opacity: 0 }));
 
       let enterRaf = 0;
@@ -88,8 +107,21 @@ export function LobbyPlayModeBarSlot(props: {
       };
     }
 
+    syncHeight();
     return undefined;
-  }, [open, shell.mounted, measureHeight]);
+  }, [open, shell.mounted, measureHeight, syncHeight]);
+
+  useEffect(() => {
+    if (!shell.mounted || !open) return undefined;
+    const el = innerRef.current;
+    if (!el) return undefined;
+
+    const ro = new ResizeObserver(() => {
+      syncHeight();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [shell.mounted, open, syncHeight]);
 
   if (!shell.mounted) return null;
 
@@ -97,6 +129,7 @@ export function LobbyPlayModeBarSlot(props: {
     shell.phase === 'idle' ? 'idle' : shell.phase === 'enter' ? 'enter' : 'exit';
 
   const animMs = `${LOBBY_PLAY_MODE_BAR_ANIM_MS}ms`;
+  const animate = shell.phase !== 'idle';
 
   return (
     <div
@@ -106,7 +139,7 @@ export function LobbyPlayModeBarSlot(props: {
       style={{
         height: shell.heightPx,
         opacity: shell.opacity,
-        transition: `height ${animMs} ${EASE}, opacity ${animMs} ${EASE}`,
+        transition: animate ? `height ${animMs} ${EASE}, opacity ${animMs} ${EASE}` : undefined,
       }}
     >
       <div
@@ -114,7 +147,7 @@ export function LobbyPlayModeBarSlot(props: {
         className="lobby-play-mode-slot__inner"
         style={{
           transform: `translateY(${shell.liftPx}px)`,
-          transition: `transform ${animMs} ${EASE}`,
+          transition: animate ? `transform ${animMs} ${EASE}` : undefined,
         }}
       >
         {children}

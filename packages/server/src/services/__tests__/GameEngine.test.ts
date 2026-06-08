@@ -13,6 +13,7 @@ import {
 } from '@alias/shared';
 import type { Room } from '../RoomManager';
 import type { Player, Team, GameSettings } from '@alias/shared';
+import { GameActionRejectedError } from '../../utils/GameActionRejectedError';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -82,6 +83,16 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
   };
 }
 
+function makeReadyTeamsLobby(overrides: Partial<Room> = {}): Room {
+  const p1 = makePlayer({ id: 'p1', name: 'Alice' });
+  const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+  return makeRoom({
+    players: [p1, p2],
+    teams: [makeTeam({ id: 'team-0', players: [p1] }), makeTeam({ id: 'team-1', players: [p2] })],
+    ...overrides,
+  });
+}
+
 // ─── setup ──────────────────────────────────────────────────────────────────
 
 let wordService: WordService;
@@ -144,11 +155,58 @@ describe('GENERATE_TEAMS', () => {
 
 describe('START_GAME', () => {
   it('sets gameState to PRE_ROUND and resets currentTeamIndex', async () => {
-    const room = makeRoom({ currentTeamIndex: 2 });
+    const room = makeReadyTeamsLobby({ currentTeamIndex: 2 });
     await engine.handleAction(room, { action: 'START_GAME' });
     expect(room.gameState).toBe(GameState.PRE_ROUND);
     expect(room.currentTeamIndex).toBe(0);
     expect(room.roundsPlayed).toBe(0);
+  });
+
+  it('should reject START_GAME with fewer than 2 players', async () => {
+    const room = makeRoom();
+    await expect(engine.handleAction(room, { action: 'START_GAME' })).rejects.toBeInstanceOf(
+      GameActionRejectedError
+    );
+    await expect(engine.handleAction(room, { action: 'START_GAME' })).rejects.toMatchObject({
+      payload: { code: 'LOBBY_NOT_READY' },
+    });
+    expect(room.gameState).toBe(GameState.LOBBY);
+  });
+
+  it('should reject START_GAME when players are unassigned in TEAMS mode', async () => {
+    const p1 = makePlayer({ id: 'p1' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [makeTeam({ id: 'team-0', players: [p1] }), makeTeam({ id: 'team-1', players: [] })],
+    });
+    await expect(engine.handleAction(room, { action: 'START_GAME' })).rejects.toMatchObject({
+      payload: { code: 'LOBBY_NOT_READY' },
+    });
+    expect(room.gameState).toBe(GameState.LOBBY);
+  });
+
+  it('should reject START_GAME when a team shell is empty', async () => {
+    const p1 = makePlayer({ id: 'p1' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const room = makeRoom({
+      players: [p1, p2],
+      teams: [
+        makeTeam({ id: 'team-0', players: [p1, p2] }),
+        makeTeam({ id: 'team-1', players: [] }),
+      ],
+    });
+    await expect(engine.handleAction(room, { action: 'START_GAME' })).rejects.toMatchObject({
+      payload: { code: 'LOBBY_NOT_READY' },
+    });
+    expect(room.gameState).toBe(GameState.LOBBY);
+  });
+
+  it('should accept valid TEAMS lobby', async () => {
+    const room = makeReadyTeamsLobby();
+    await engine.handleAction(room, { action: 'START_GAME' });
+    expect(room.gameState).toBe(GameState.PRE_ROUND);
+    expect(room.teamsLocked).toBe(true);
   });
 
   it('SOLO mode builds one team per player with player name as team name', async () => {
@@ -180,8 +238,9 @@ describe('START_GAME', () => {
     });
     const p1 = makePlayer({ id: 'p1', name: 'Ann' });
     const p2 = makePlayer({ id: 'p2', name: 'Ben' });
-    const room = makeRoom({
+    const room = makeReadyTeamsLobby({
       players: [p1, p2],
+      teams: [makeTeam({ id: 'team-0', players: [p1] }), makeTeam({ id: 'team-1', players: [p2] })],
       settings: {
         general: defaultSettings.general,
         mode: { gameMode: GameMode.IMPOSTER, imposterDiscussionTime: 120 },
@@ -1367,7 +1426,7 @@ describe('QUIZ lifecycle', () => {
   };
 
   it('should jump to COUNTDOWN on START_GAME (no PRE_ROUND)', async () => {
-    const room = makeRoom({ settings: quizSettings });
+    const room = makeReadyTeamsLobby({ settings: quizSettings });
     await engine.handleAction(room, { action: 'START_GAME' });
     expect(room.gameState).toBe(GameState.COUNTDOWN);
     expect(room.currentRoundStats.explainerId).toBeUndefined();

@@ -369,7 +369,7 @@ TYPO-001 Phase 6 — font loading + governance + verification.
 | Gate | Result |
 |------|--------|
 | `text-[Npx]` app UI (excl. GameFlow) | 1 escape — icon glyph `text-[18px]` (whitelist) |
-| `text-xs\|text-sm` app UI (excl. GameFlow, admin) | 2 escapes — emoji avatar sizing in `TeamCard` / `UnassignedPool` |
+| `text-xs\|text-sm` app UI (excl. GameFlow, admin) | 2 escapes — emoji avatar `text-sm` in `TeamCard` / `UnassignedPool` (whitelist `08-typography.mdc`) |
 | Merriweather in code | 0 |
 | `modalSheetTitleClass` → `text-ui-heading` | yes |
 | Logo `text-7xl` frozen | yes |
@@ -418,6 +418,7 @@ TYPO-001 Phase 7 — manual TMA visual QA typography.
 | `text-[Npx]` у app UI (`src`, без `GameFlow/`) | **0** |
 | `text-[Npx]` у `GameFlow/**` | дозволено (game display — див. whitelist у `08-typography.mdc`) |
 | Icon glyph sizing (`text-[18px]`, `text-[80px]` на Material Symbols) | дозволено |
+| Emoji avatar sizing (`text-sm` на `{p.avatar}` у `TeamCard`, `UnassignedPool`) | дозволено — glyph scale, не semantic copy |
 | `modalSheetTitleClass` містить `text-ui-heading` | так |
 | `Logo` містить `text-7xl` | так (frozen) |
 | `UI_TOKENS.md` секція Typography | заповнена |

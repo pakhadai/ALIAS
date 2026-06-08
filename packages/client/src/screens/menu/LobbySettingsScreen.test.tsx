@@ -20,6 +20,7 @@ vi.mock('../../services/api', async () => {
 vi.mock('../../context/GameContext', () => ({
   useGame: () => ({
     setGameState,
+    roomCode: null,
     currentTheme: {
       bg: '',
       card: '',

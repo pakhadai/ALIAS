@@ -9,12 +9,7 @@ import { useGame } from '../../context/GameContext';
 import { setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
 import { playSoundEffect } from '../../utils/audio';
-import {
-  typographyClass,
-  labelSectionClass,
-  formLabelClass,
-  captionMutedClass,
-} from '../../constants/typography';
+import { typographyClass, labelSectionClass, captionMutedClass } from '../../constants/typography';
 
 type Props = {
   onClose: () => void;

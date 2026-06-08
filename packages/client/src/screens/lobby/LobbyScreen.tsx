@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  X,
   Settings as SettingsIcon,
   Loader2,
   Lock,
@@ -8,9 +7,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { Button } from '../../components/Button';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
-import { FixedBottomBar, ScreenShell } from '../../components/layout';
+import { FixedBottomBar, ScreenShell, AppHeader } from '../../components/layout';
 import { ModalSheet } from '../../components/ModalSheet';
 import { ModalSheetTitle } from '../../components/Shared';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
@@ -21,15 +19,9 @@ import { useT } from '../../hooks/useT';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 import { HAPTIC, vibrate } from '../../utils/haptics';
 import { useVisualViewportBottomInset } from '../../hooks/useVisualViewportBottomInset';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-  systemBannerClass,
-} from '../../constants/typography';
-import { getTeamColor, getTeamColorToken } from '@alias/shared';
-import { MAX_PLAYERS, TEAM_NAMES } from '../../constants';
+import { typographyClass, systemBannerClass } from '../../constants/typography';
+import { buildTeamShells } from '../../utils/buildTeamShells';
+import { MAX_PLAYERS } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
 import { AssignPlayerSheet } from './components/AssignPlayerSheet';
@@ -112,6 +104,7 @@ export const LobbyScreen = () => {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [teamNameDraft, setTeamNameDraft] = useState('');
   const [teamsExpanded, setTeamsExpanded] = useState(true);
+  const userToggledTeamsRef = useRef(false);
 
   const joinUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?room=${roomCode}`;
   const prevPlayerIdsRef = useRef<string[]>([]);
@@ -123,9 +116,10 @@ export const LobbyScreen = () => {
         .then(setQrCodeData)
         .catch(() => {
           setQrCodeData('');
+          showNotification(t.lobbyQrGenerateFailed, 'error');
         });
     }
-  }, [joinUrl, gameMode, roomCode]);
+  }, [joinUrl, gameMode, roomCode, showNotification, t.lobbyQrGenerateFailed]);
 
   useEffect(() => {
     const prev = new Set(prevPlayerIdsRef.current);
@@ -256,19 +250,20 @@ export const LobbyScreen = () => {
 
   const teamShells = useMemo(() => {
     if (isSolo) return [];
-    const desiredCount = Math.max(2, Math.min(settings.general.teamCount, MAX_LOBBY_TEAMS));
-    if (teams.length === desiredCount) return teams;
-    const names = TEAM_NAMES[settings.general.language] ?? TEAM_NAMES.EN;
-    return Array.from({ length: desiredCount }, (_, i) => ({
-      id: `team-${i}`,
-      name: names[i % names.length] ?? `Team ${i + 1}`,
-      score: 0,
-      color: getTeamColorToken(i),
-      colorHex: getTeamColor(i).hex,
-      players: teams[i]?.players ?? [],
-      nextPlayerIndex: 0,
-    }));
-  }, [isSolo, settings.general.language, settings.general.teamCount, teams]);
+    return buildTeamShells({
+      teams,
+      teamCount: settings.general.teamCount,
+      teamMode: settings.general.teamMode ?? 'TEAMS',
+      language: settings.general.language,
+      maxTeams: MAX_LOBBY_TEAMS,
+    });
+  }, [
+    isSolo,
+    settings.general.language,
+    settings.general.teamCount,
+    settings.general.teamMode,
+    teams,
+  ]);
 
   const assignedPlayerIds = useMemo(() => {
     const s = new Set<string>();
@@ -326,6 +321,7 @@ export const LobbyScreen = () => {
   const shouldCollapseTeams = !isSolo && teamShells.length >= 3 && players.length >= 6;
 
   useEffect(() => {
+    if (userToggledTeamsRef.current) return;
     setTeamsExpanded(!shouldCollapseTeams);
   }, [shouldCollapseTeams]);
 
@@ -352,10 +348,37 @@ export const LobbyScreen = () => {
 
   return (
     <ScreenShell
-      className={`items-center ${currentTheme.bg} px-6 md:px-8`}
-      contentClassName="items-center no-scrollbar"
+      className={currentTheme.bg}
+      contentClassName="w-full items-center no-scrollbar px-4"
+      header={
+        <AppHeader
+          data-testid="lobby-app-header"
+          title={
+            <h2
+              className={`${typographyClass.label} font-sans tracking-[0.2em] text-ui-fg-muted ${currentTheme.textSecondary}`}
+            >
+              {t.lobby}
+            </h2>
+          }
+          onBack={() => setShowExitConfirm(true)}
+          backAriaLabel={t.confirmExit ?? 'Exit'}
+          right={
+            isTelegram && gameMode === 'ONLINE' ? undefined : isHost ? (
+              <button
+                type="button"
+                data-testid="lobby-header-settings"
+                onClick={() => setGameState(GameState.SETTINGS)}
+                className="min-h-11 min-w-11 flex items-center justify-center text-ui-fg-muted hover:text-ui-fg transition-colors active:scale-90"
+                aria-label={t.settings ?? 'Settings'}
+              >
+                <SettingsIcon size={20} className={currentTheme.iconColor} />
+              </button>
+            ) : undefined
+          }
+        />
+      }
       footer={
-        <FixedBottomBar gradient={false} contentClassName="max-w-sm mx-auto w-full">
+        <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
           {isHost ? (
             <LobbyStartPanel
               readiness={lobbyReadiness}
@@ -365,7 +388,7 @@ export const LobbyScreen = () => {
             />
           ) : (
             <div
-              className={`lobby-start-glass flex items-center justify-center gap-2 rounded-3xl px-4 py-3 text-center ${typographyClass.body} font-sans text-ui-fg-muted`}
+              className={`flex items-center justify-center gap-2 px-4 py-3 text-center ${typographyClass.body} font-sans text-ui-fg-muted`}
             >
               <Loader2 size={14} className={`animate-spin shrink-0 ${currentTheme.iconColor}`} />
               <span>{t.lobbyGuestWaitingFooter}</span>
@@ -374,7 +397,7 @@ export const LobbyScreen = () => {
         </FixedBottomBar>
       }
     >
-      <div className="max-w-2xl w-full flex flex-col pb-32">
+      <div className="max-w-2xl w-full flex flex-col">
         <ConfirmationModal
           isOpen={showExitConfirm}
           title={t.leaveLobbyConfirm}
@@ -383,7 +406,7 @@ export const LobbyScreen = () => {
           theme={currentTheme}
           onCancel={() => setShowExitConfirm(false)}
           onConfirm={() => {
-            leaveRoom();
+            leaveRoom(gameMode === 'OFFLINE' ? { resetGameMode: false } : undefined);
           }}
           confirmText={t.confirmExit}
           cancelText={t.goBack}
@@ -439,41 +462,6 @@ export const LobbyScreen = () => {
             )}
           </div>
         </ModalSheet>
-
-        <header className="flex justify-between items-center py-4 mb-2 shrink-0">
-          {isTelegram ? (
-            <div className="w-11" aria-hidden />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowExitConfirm(true)}
-              className="min-h-11 min-w-11 flex items-center justify-center text-ui-fg-muted hover:text-ui-fg transition-colors active:scale-90"
-              aria-label={t.confirmExit ?? 'Exit'}
-            >
-              <X size={20} className={currentTheme.iconColor} />
-            </button>
-          )}
-          <h2
-            className={`${typographyClass.label} font-sans tracking-[0.2em] text-ui-fg-muted ${currentTheme.textSecondary}`}
-          >
-            {t.lobby}
-          </h2>
-          {isTelegram && gameMode === 'ONLINE' ? (
-            <div className="w-11" aria-hidden />
-          ) : isHost ? (
-            <button
-              type="button"
-              data-testid="lobby-header-settings"
-              onClick={() => setGameState(GameState.SETTINGS)}
-              className="min-h-11 min-w-11 flex items-center justify-center text-ui-fg-muted hover:text-ui-fg transition-colors active:scale-90"
-              aria-label={t.settings ?? 'Settings'}
-            >
-              <SettingsIcon size={20} className={currentTheme.iconColor} />
-            </button>
-          ) : (
-            <div className="w-11" />
-          )}
-        </header>
 
         {/* Guest online: room gone vs relay/other errors vs plain disconnect */}
         {!isHost && gameMode === 'ONLINE' && !isConnected && !isReconnecting && (
@@ -655,7 +643,10 @@ export const LobbyScreen = () => {
               {shouldCollapseTeams && (
                 <button
                   type="button"
-                  onClick={() => setTeamsExpanded((v) => !v)}
+                  onClick={() => {
+                    userToggledTeamsRef.current = true;
+                    setTeamsExpanded((v) => !v);
+                  }}
                   className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.label} font-sans normal-case text-ui-fg-muted transition-all active:scale-[0.98]`}
                   data-testid="lobby-teams-toggle"
                 >

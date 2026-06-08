@@ -1,6 +1,19 @@
-import type { GameActionPayload, RoomErrorPayload } from '@alias/shared';
+import { GameState, type GameActionPayload, type RoomErrorPayload } from '@alias/shared';
 import type { Room } from '../services/RoomManager';
 import { roomError } from '../utils/roomError';
+
+const LOBBY_STATES = new Set<GameState>([GameState.LOBBY, GameState.TEAMS]);
+
+const LOBBY_ONLY_ACTIONS = new Set<GameActionPayload['action']>([
+  'GENERATE_TEAMS',
+  'TEAM_JOIN',
+  'TEAM_LEAVE',
+  'TEAM_LOCK',
+  'TEAM_RENAME',
+  'TEAM_SHUFFLE_UNASSIGNED',
+  'TEAM_SHUFFLE_ALL',
+  'UPDATE_SETTINGS',
+]);
 
 export type GameActionAuthContext =
   | { mode: 'socket'; socketId: string }
@@ -71,6 +84,20 @@ export function authorizeGameAction(
   ]);
   if (hostOnlyActions.has(payload.action) && !isHost) {
     return { ok: false, error: roomError('NOT_HOST', 'Only the host can perform this action') };
+  }
+
+  if (payload.action === 'START_GAME' && room.gameState !== GameState.LOBBY) {
+    return {
+      ok: false,
+      error: roomError('INVALID_STATE', 'Game can only be started from the lobby'),
+    };
+  }
+
+  if (LOBBY_ONLY_ACTIONS.has(payload.action) && !LOBBY_STATES.has(room.gameState)) {
+    return {
+      ok: false,
+      error: roomError('INVALID_STATE', 'Action not allowed in current game state'),
+    };
   }
 
   // Team builder: if locked, non-hosts cannot join/leave.

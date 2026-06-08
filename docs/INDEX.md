@@ -31,10 +31,12 @@
 |------|-------------|
 | [`PRISMA_WORD_DATA.md`](./PRISMA_WORD_DATA.md) | Seed, JSON, `WordConcept` / `WordTranslation` |
 | [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md) | Лобі, команди, Solo, `LobbyScreen` vs `TeamSetupScreen` |
+| [`LOBBY_FIX_PROMPTS.md`](./LOBBY_FIX_PROMPTS.md) | Промти по фазах для виправлення багів лоббі (після аудиту) |
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
 | [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
 | [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
-| [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, `FixedBottomBar`, safe-area audit |
+| [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, glass header/footer, `FixedBottomBar`, Lobby start CTA, safe-area |
+| [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md) | План фаз уніфікації хедерів (OMR → Alias), session prompts 0–6 |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |
@@ -58,8 +60,10 @@
 | Нова Socket.IO подія | `events.ts` → README → handlers + client hook |
 | Міграція БД | `schema.prisma` → `PRISMA_WORD_DATA.md` → `PROJECT_STATE` |
 | Лобі / команди | `LOBBY_TEAM_BUILDER.md` |
+| Фікси лоббі (AI-фази) | `LOBBY_FIX_PROMPTS.md` |
 | TMA / Stars | `TELEGRAM_SKILL.md` |
-| TMA safe area / layout primitives | `TMA_LAYOUT.md` |
+| TMA safe area / layout / glass chrome | `TMA_LAYOUT.md` |
+| Уніфікація хедерів (фази + промти) | `TMA_HEADER_UNIFICATION.md` |
 | UI-токени / теми в компонентах | `UI_TOKENS.md` |
 | Уніфікація шрифтів / розмірів | `TYPOGRAPHY_UNIFICATION.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |

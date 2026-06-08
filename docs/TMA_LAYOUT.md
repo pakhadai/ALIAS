@@ -6,21 +6,112 @@
 
 | Компонент | Шлях | Призначення |
 |-----------|------|-------------|
-| `ScreenShell` | `packages/client/src/components/layout/ScreenShell.tsx` | Повноекранна оболонка: **фіксована** `h/max-h-[var(--tg-viewport-height,100dvh)]`, scroll-колонка `flex-1 min-h-0 overflow-y-auto` + `pt-safe-top` / `pb-safe-bottom` |
-| `FixedBottomBar` | `packages/client/src/components/layout/FixedBottomBar.tsx` | Fixed footer з `pb-safe-bottom*` і `pointer-events-none` / `pointer-events-auto` (як PreRoundScreen) |
+| `ScreenShell` | `packages/client/src/components/layout/ScreenShell.tsx` | Повноекранна оболонка: scroll-колонка `flex-1 min-h-0 overflow-y-auto`; `header` і `footer` — **sticky всередині scroll** (glass бачить контент при скролі); `contentClassName` лише на body wrapper |
+| `AppHeader` / `GlassAppHeader` | `packages/client/src/components/layout/GlassAppHeader.tsx` | Повноширинний flat bar зверху: `pt-safe-top`, `.ui-app-header` |
+| `FixedBottomBar` | `packages/client/src/components/layout/FixedBottomBar.tsx` | In-flow footer: `pb-safe-bottom*`; prop `glass` → `.ui-app-footer` (дзеркало header); без `glass` — gradient wash (PreRoundScreen) |
 | `ModalSheet` | `packages/client/src/components/ModalSheet.tsx` | Edge-to-edge bottom sheet: панель від фізичного низу екрана; safe area **лише всередині** контенту (`pb-modal-bottom`) |
 
-**Canonical приклад (2026-06-07):** `LobbyScreen` — `ScreenShell` + scroll main + `FixedBottomBar` (Start CTA / guest waiting), invite/add-player sheets з `useVisualViewportBottomInset`, nested QR через `ModalSheet` (`zLayer="modalNested"`).
+**Canonical приклад (2026-06-08):** `LobbyScreen` — glass header + scroll + glass footer з `LobbyStartPanel`, invite/add-player sheets, nested QR.
 
 ```tsx
-import { ScreenShell, FixedBottomBar } from '../components/layout';
+import { ScreenShell, FixedBottomBar, AppHeader } from '../components/layout';
+import { LobbyStartPanel } from './components/LobbyStartPanel';
 
-<ScreenShell className={currentTheme.bg} footer={<FixedBottomBar>{/* CTA */}</FixedBottomBar>}>
-  {/* scrollable content */}
+<ScreenShell
+  className={currentTheme.bg}
+  header={<AppHeader left={...} center={...} right={...} />}
+  contentClassName="px-4"
+  footer={
+    <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
+      <LobbyStartPanel readiness={...} t={...} theme={...} onStartTap={handleStartTap} />
+    </FixedBottomBar>
+  }
+>
+  {/* scrollable content — at scroll=0 starts below header, ends above footer */}
 </ScreenShell>
 ```
 
-## Bottom sheets (`ModalSheet`)
+## Glass app chrome (header + footer)
+
+> **Статус:** ✅ канон з 2026-06-08 (Lobby host). Токени: [`UI_TOKENS.md` — App chrome](./UI_TOKENS.md#app-chrome-glass-header--footer).
+
+### Чому sticky всередині scroll
+
+`backdrop-filter` бачить лише пікселі **в тому ж scroll-контейнері**. Якщо header/footer — сиблінги scroll-колонки, під blur лише `--ui-bg` shell → «суцільна плита» без frosted glass.
+
+**Канон:**
+
+```
+ScreenShell (flex col, fixed h)
+└── scroll column (overflow-y-auto, flex flex-col)
+    ├── header     → position: sticky; top: 0     (.ui-app-header)
+    ├── content    → flex-1 wrapper + contentClassName
+    └── footer     → position: sticky; bottom: 0  (.ui-app-footer, FixedBottomBar glass)
+```
+
+| Інваріант | Правило |
+|-----------|---------|
+| scroll=0 | Контент **під** заголовком і **над** footer — без negative margin overlap |
+| При скролі | Контент проходить під sticky glass → blur + tint |
+| Full-width chrome | `contentClassName` (напр. `px-4`) **не** на header/footer — лише на body wrapper |
+| Safe area | Header: `pt-safe-top` на `GlassAppHeader`; footer: `pb-safe-bottom` на `FixedBottomBar`; scroll **без** `pt/pb-safe-*` коли є header/footer |
+| Rounded capsule | **Не** для app chrome — flat edge-to-edge. Окремо лишається `.ui-glass-panel` (bottom sheets, nested panels) |
+
+### CSS-класи (`styles.css`)
+
+| Клас | Роль |
+|------|------|
+| `.ui-app-header` | Sticky top; `::before` blur + mask feather вниз; `::after` tint `--ui-bg` |
+| `.ui-app-footer` | Sticky bottom; дзеркальні gradient/mask (feather **зверху**) |
+| `.ui-glass-panel` | **Окремий** патерн — rounded inset panel (ModalSheet-adjacent, **не** app header/footer) |
+
+**Tuning vars:** `--ui-app-header-opacity-top/bottom`, `--ui-app-header-blur`, `--ui-app-footer-*` (footer — ті самі імена з префіксом `footer`).
+
+**Fallback:** `@supports not (backdrop-filter)` і `prefers-reduced-transparency: reduce` → gradient-only wash без blur.
+
+**Toasts:** `GlassAppHeader` виставляє `data-app-header` на `<html>` → `--app-page-header-height` (measured) → `--tma-toast-top` нижче хедера.
+
+### Lobby start CTA (`LobbyStartPanel`)
+
+Еталон host footer у `LobbyScreen`. Не дублює `ui-glass-panel` capsule — кнопка сидить у glass footer bar.
+
+| Стан | UI | Поведінка |
+|------|-----|-----------|
+| **Blocked** (`!readiness.ok`) | Приглушений червоний фон (`.lobby-start-btn--blocked`, mix `--ui-accent` + `--ui-bg`); текст «Почати гру» + іконка **Lock** | **Без** `disabled` — tap → `handleStartTap` → toast з `firstBlockingReason`. **Без** рядка валідації над кнопкою (toast достатньо) |
+| **Ready** | Повний accent CTA + `.lobby-start-btn-shell--ready` | Neon-red **snake** по краю (conic-gradient, ~4.5s); `prefers-reduced-motion` → статичне кільце |
+| **Ready + overfill** | Зелений `LobbyReadinessBar` «Готово до старту» + warning `teamTooMany` | Warn-only, не блокує start |
+
+```tsx
+// LobbyScreen — handleStartTap
+if (!lobbyReadiness.ok) {
+  haptic.impactOccurred('light');
+  if (lobbyReadiness.firstBlockingReason) showNotification(..., 'error');
+  return;
+}
+sendAction({ action: 'START_GAME' });
+```
+
+**Guest footer:** той самий `FixedBottomBar glass`, текст очікування без окремої capsule.
+
+### Заборони (glass chrome)
+
+| Заборонено | Чому |
+|------------|------|
+| Header/footer **над/під** scroll як flex-sibling | Blur не бачить контент |
+| Negative margin overlap для «штучного» glass | Ламає layout at scroll=0 |
+| `--ui-overlay-tint-base` sepia на app header/footer | Занадто «матова підкладка» |
+| `disabled` на start CTA | Блокує tap → toast hint |
+| Дубль `firstBlockingReason` над кнопкою + toast | Шум; канон — лише toast |
+
+### Manual QA (TMA @375px)
+
+- [ ] Lobby host: scroll teams — контент просвічує крізь header **і** footer
+- [ ] scroll=0: «ЛОБІ» відокремлено; room code нижче header; CTA не перекриває перший блок
+- [ ] 1 гравець: tap start → toast «мінімум 2 гравці»; lock icon на кнопці
+- [ ] Ready: спокійна червона змійка по краю кнопки
+- [ ] `prefers-reduced-transparency` / без backdrop-filter: gradient fallback, CTA читабельний
+
+---
 
 Панель **прилипає до низу viewport** (`justify-content: flex-end`, backdrop **без** `padding-bottom`). Мінімальний відступ контенту / кнопок від низу екрана — **внутрішній** `pb-modal-bottom` (`max(1rem, var(--tma-inset-bottom))`):
 
@@ -93,25 +184,27 @@ import { ScreenShell, FixedBottomBar } from '../components/layout';
 
 ## Коли `pt-safe-top` vs `pt-env-top`
 
-Inset формула (канон): **`--tma-inset-*` = content (Telegram UI) + device (notch / `env()`)** — не `max()`.  
-Визначення: `packages/client/src/styles.css` (`--tma-inset-top` …); Tailwind `env-*` / `safe-*` посилаються на ці змінні.
+Inset формула (канон): **`--tma-inset-top` = `--tg-content-safe-area-inset-top`** (відступ від верху viewport до контенту; notch + TG chrome вже всередині). **`--tma-device-inset-top`** — лише фізичний notch/`env()`.  
+**`GlassAppHeader`:** `pt-device-top` + title row `min-height: max(content − device, 44px)` — не `pt-safe-top` на весь header (OMR formula, `TMA_HEADER_UNIFICATION.md` Phase 1).  
+Визначення: `packages/client/src/styles.css`; Tailwind `safe-*` / `env-*` / `device-top`.
 
 | Utility | Мінімум | Коли |
 |---------|---------|------|
 | `pt-safe-top` / `pb-safe-bottom` | 1.5rem | Лобі, меню, налаштування, fixed footer — «звичайні» екрани |
 | `pt-env-top` / `pb-env-bottom` | немає | **PlayingScreen**, fixed TMA headers — raw inset без `max(1.5rem, …)` |
 | `pb-modal-bottom` | 1rem | **ModalSheet** контент і footer з кнопками |
-| `pl-env-left` / `pr-env-right` | немає | Fixed header з іконками справа (MenuScreen) — уникати колізії з Telegram «⋯» |
+| `pl-env-left` / `pr-env-right` | deprecated | Раніше fixed MenuScreen — замінено на `AppHeader` TG gutter (фаза 4) |
 
 PlayingScreen навмисно використовує `pt-env-top pb-env-bottom`, щоб не додавати зайвий 1.5rem поверх Telegram UI.
 
-**MenuScreen fixed header:** `pt-env-top pl-env-left pr-env-right`; spacer `calc(var(--tma-inset-top) + 3.5rem)`.
+**MenuScreen (Phase 4 ✅):** `ScreenShell` + sticky `AppHeader` (icons right); `--app-home-card-top` = content-safe + 16px; toast via `data-app-header`.
 
 ## Fixed footer
 
-- Завжди `pb-safe-bottom` або `pb-safe-bottom-8` на **fixed** bottom bar — ніколи лише `p-6` / `pb-8`.
-- Патерн кліків: зовнішній `pointer-events-none`, внутрішній контент `pointer-events-auto` (`FixedBottomBar` робить це за замовчуванням).
-- Опційний gradient — `FixedBottomBar` prop `gradient`.
+- Завжди `pb-safe-bottom` або `pb-safe-bottom-8` на bottom bar — ніколи лише `p-6` / `pb-8`.
+- Патерн кліків: зовнішній `pointer-events-none`, внутрішній контент `pointer-events-auto` (`FixedBottomBar` за замовчуванням).
+- **Gradient wash:** `FixedBottomBar` prop `gradient={true}` (default) — PreRoundScreen, Settings.
+- **Glass footer:** `FixedBottomBar glass` — sticky `.ui-app-footer` всередині scroll; еталон — Lobby `LobbyStartPanel`. Див. [Glass app chrome](#glass-app-chrome-header--footer).
 
 ## Клавіатура
 
@@ -133,6 +226,134 @@ PlayingScreen навмисно використовує `pt-env-top pb-env-botto
 | `pb-env-bottom` на fixed game footer без мінімуму | `pb-safe-bottom` (або свідомий виняток з коментарем) |
 
 Bootstrap viewport/safe-area: `useTelegramApp.ts` (`expand`, `safeAreaChanged`, `contentSafeAreaChanged`).
+
+---
+
+## Header matrix (GameState)
+
+> **Статус:** ✅ Phase 0 audit — 2026-06-08 (doc only). План міграції: [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md).
+
+### Патерни (класифікація)
+
+| Код | Патерн | Опис |
+|-----|--------|------|
+| **A** | `ScreenShell` + `AppHeader` | Канон sticky glass; safe area на `GlassAppHeader` (`pt-safe-top`); toast offset через `data-app-header` |
+| **B** | Fixed header | `fixed left-0 right-0 top-0` поза scroll; ручний spacer (`--tma-fixed-header-height`) |
+| **C** | Ad-hoc `<header>` у scroll body | Ручний title row + back у контенті; часто `pt-safe-top` на `<header>` |
+| **C′** | `ScreenShell` + ad-hoc header у body | `ScreenShell` без `header` slot → `pt-safe-top` на scroll-колонці; nav row у `children` |
+| **D** | Без nav header | Лише `pt-safe-top` / `pt-safe-bottom` на shell або `ScreenShell` без title row |
+| **E** | Game exception | `PlayingScreen`: `pt-env-top pb-env-bottom`; game-specific chrome (progress bar, imposter mini-header) |
+
+**Еталон A:** `LobbyScreen` — єдиний екран на каноні `ScreenShell` + `AppHeader` (станом на 2026-06-08).
+
+### Матриця екранів
+
+| GameState / Screen | Pattern | Header | BackButton (TMA) | Footer | Notes |
+|------------------|---------|--------|------------------|--------|-------|
+| `MENU` | **A** ✅ | `AppHeader` sticky: icons у `right`; empty center; `data-app-header` toast | **hide** | — | Фаза 4 ✅; logo + CTA у scroll; `HOME_CARD_TOP_GAP_PX` body padding |
+| `ENTER_NAME` | **A** ✅ | Той самий `MenuScreen`; `AppHeader` + main `aria-hidden` + `pointer-events-none` | **hide** | — | `EnterNameSheet` overlay; не окремий route component |
+| `PROFILE` | **A** ✅ | `AppHeader` (browser back → MENU); hero title у scroll | **show** → MENU | — | Фаза 3a ✅ |
+| `PROFILE_SETTINGS` | **A** ✅ | `AppHeader` + title | **show** → PROFILE | `FixedBottomBar` Save | Фаза 3a ✅ |
+| `LOBBY_SETTINGS` | **A** ✅ | `AppHeader` + title; reset у `right` slot | **show** → LOBBY або MENU | `FixedBottomBar` Save | Фаза 3a ✅; browser `onBack` = TMA matrix |
+| `MY_WORD_PACKS` | **A** ✅ | `AppHeader` (list / locked / create variants) | **show** → MENU | `FixedBottomBar glass` create CTA | Фаза 3a ✅ |
+| `PLAYER_STATS` | **A** ✅ | `AppHeader` + title | **show** → PROFILE або MENU | — | Фаза 3a ✅ |
+| `STORE` | **C** | Toolbar `<div>` (не `<header>`): drag pill + title + X → PROFILE; **без** `pt-safe-top` на shell | **show** → MENU | inline scroll | **Gap:** missing top safe inset; фаза 4 |
+| `MY_DECKS` | **A** ✅ | `AppHeader` (list / create) | **show** → MENU | `FixedBottomBar glass` create CTA | Фаза 3a ✅ |
+| `RULES` | **A** ✅ | `AppHeader` (browser back → MENU); title у card | **show** → MENU | — | Фаза 3b ✅ |
+| `JOIN_INPUT` | **A** ✅ | `AppHeader` + join form у scroll | **show** → MENU | keyboard lift wrapper | Фаза 3b ✅ |
+| `LOBBY` | **A** ✅ | `AppHeader` glass: TG spacers / browser X / settings | **show** → `leaveRoom` | `FixedBottomBar glass` + `LobbyStartPanel` | Еталон; фаза 2 — API hardening |
+| `SETTINGS` | **A** ✅ | `AppHeader` + title; reset у `right`; `settings-close` test id у browser | **show** → LOBBY | `FixedBottomBar` gradient + Save | Фаза 3b ✅ |
+| `TEAMS` | **A** ✅ | `AppHeader` + title | **show** → LOBBY | `FixedBottomBar` shuffle + start | Фаза 3b ✅ |
+| `VS_SCREEN` | **D** ✅ | `ScreenShell`; анімація VS; без nav chrome | **show** → `leaveRoom` | `FixedBottomBar` start CTA | Фаза 3b ✅ |
+| `PRE_ROUND` | **D** ✅ | `ScreenShell` без header slot; контент only | **show** → `leaveRoom` | `FixedBottomBar` + exit CTA | Фаза 3b ✅ (вже був ScreenShell) |
+| `PRE_ROUND` (IMPOSTER) | **E** | `ImposterScreen` + `ImposterMiniHeader`; shell `pt-safe-top` | **show** → `leaveRoom` | phase-specific | Не чіпати layout Playing-like |
+| `COUNTDOWN` | **D** ✅ | `ScreenShell`; число по центру; IMPOSTER → `ImposterScreen` | **show** → `leaveRoom` | — | Фаза 3b ✅ (classic only) |
+| `PLAYING` | **E** | `pt-env-top pb-env-bottom`; progress `<header>` без safe utility | **show** → `leaveRoom` | mode UI footer | **Свідомий виняток** — не мігрувати |
+| `PLAYING` (IMPOSTER) | **E** | `ImposterScreen` phases | **show** → `leaveRoom` | — | Mini-header без `pt-safe-top` |
+| `ROUND_SUMMARY` | **D** ✅ | `ScreenShell`; decorative `<header>` (title «Час вийшов») у body | **show** → `leaveRoom` | `FixedBottomBar` continue | Фаза 3b ✅ |
+| `SCOREBOARD` | **A** ✅ | `AppHeader` + title | **show** → `leaveRoom` | `FixedBottomBar` next round | Фаза 3b ✅ |
+| `GAME_OVER` | **D** ✅ | `ScreenShell`; trophy banner; без nav row | **show** → `leaveRoom` | inline share / menu CTA | Фаза 3b ✅ |
+
+### Поза `GameState` (defer)
+
+| Surface | Pattern | Header | Notes |
+|---------|---------|--------|-------|
+| `AdminApp` | ad-hoc | `border-b` sticky bar | Defer або trivial glass bar (фаза 3b) |
+| `TelegramAuthLoadingScreen` | **D** | Немає chrome | Bootstrap only |
+| `LazyRouteFallback` | **D** | Немає chrome | Loading copy |
+
+### Grep audit (2026-06-08)
+
+| Метрика | Результат | Файли |
+|---------|-----------|-------|
+| `ScreenShell` + `AppHeader` | **7** screens | `LobbyScreen.tsx`, `ProfileScreen`, `ProfileSettingsScreen`, `PlayerStatsScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `LobbySettingsScreen` |
+| `ScreenShell` без `AppHeader` | **2** screens | `SettingsScreen.tsx`, `PreRoundScreen.tsx` |
+| `fixed left-0 right-0 top-0` | **0** | — (MenuScreen migrated Phase 4) |
+| `<header … pt-safe-top>` (ad-hoc) | **0** on nav chrome | Scoreboard migrated 3b |
+| `pt-env-top` на screen shell | **1** | `PlayingScreen.tsx` |
+| `--tma-fixed-header-height` consumers | **0** | removed Phase 4 |
+| `data-app-header` (toast offset) | **13+** | `GlassAppHeader` on all `AppHeader` screens incl. Menu |
+
+### Gaps (пріоритет міграції)
+
+1. **StoreScreen** — toolbar без top safe inset (потенційна колізія з TG chrome).
+2. **Game flow E** — `PlayingScreen` / `ImposterScreen` залишаються винятками.
+3. **`useTelegramBackButton`** — ✅ Phase 5 — `resolveTelegramBackAction()` aligned with Header matrix + browser `onBack`; `TELEGRAM_BACK_HIDDEN_STATES` = MENU, ENTER_NAME.
+
+## Constants (TMA header SSOT)
+
+Джерело: `packages/client/src/constants/tmaLayoutConstants.ts`. План: [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md).
+
+| Константа | Значення | Призначення |
+|-----------|----------|-------------|
+| `HEADER_ROW_MIN_PX` | 44 | Мін. висота title row |
+| `TG_CHROME_GUTTER_PX` | 80 | L/R clearance під нативні TG кнопки (Phase 2) |
+| `APP_HEADER_BAR_PX` | 60 (`3.75rem`) | Bar нижче safe inset — `py-2` + `min-h-11` + `py-2` |
+| `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | 88 | Fallback `--tg-content-safe-area-inset-top` / `--tma-content-top-floor` коли SDK не ready |
+| `HOME_CARD_TOP_GAP_PX` | 16 | Зазор home card body padding (`MenuScreen` Phase 4 ✅) |
+
+### `--app-home-card-top`
+
+| Джерело | Значення |
+|---------|----------|
+| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, 88px) + 16px)` |
+| **Runtime usage** | `MenuScreen` main `paddingTop: HOME_CARD_TOP_GAP_PX` below sticky `AppHeader` |
+
+Helper: `appHomeCardTopCss()`.
+
+### `--tma-inset-top` (Phase 5)
+
+| Джерело | Значення |
+|---------|----------|
+| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)) + device-inset)` |
+| **Runtime** | `useTelegramApp` writes `--tma-content-top-floor` from SSOT; SDK insets when >0 (never 0px inline) |
+| **Tailwind** | `pt-safe-top` → `max(1.5rem, var(--tma-inset-top))` |
+
+Helper: `tmaInsetTopCss()`.
+
+### `--app-page-header-height`
+
+| Джерело | Значення |
+|---------|----------|
+| **CSS fallback** (`styles.css`) | `max(contentSafe − deviceInset, 44px) + deviceInset + 3.75rem` |
+| **Runtime** | `GlassAppHeader` → `ResizeObserver` → inline px на `<html>` |
+| **Toast** (`data-app-header`) | `--tma-toast-offset-header` і `--tma-toast-top` від measured height |
+| **Banner** (`data-app-header`) | `--tma-banner-top` = `--app-page-header-height` (reconnect banner below header) |
+
+Helpers: `titleRowHeightCss()`, `appPageHeaderHeightFallbackCss()`, `appPageHeaderHeightInsetFallbackCss()`.
+
+### Roadmap (TMA header unification)
+
+| Фаза | Статус | Scope |
+|------|--------|-------|
+| **0 — Audit + matrix** | ✅ 2026-06-08 | Ця секція; без TSX |
+| **1 — Constants + `--app-page-header-height`** | ✅ 2026-06-08 | `tmaLayoutConstants.ts`, ResizeObserver, toast sync |
+| **2 — AppHeader API** | ✅ 2026-06-08 | TG gutter, `onBack`, child row; Lobby 1:1 |
+| **3a — Menu / profile** | ✅ 2026-06-08 | Profile*, MyDecks, MyWordPacks, PlayerStats, LobbySettings |
+| **3b — Lobby-adjacent + game non-playing** | ✅ 2026-06-08 | Settings, TeamSetup, JoinInput, PreRound, summaries… |
+| **4 — MenuScreen home** | ✅ 2026-06-08 | fixed → `ScreenShell` + sticky `AppHeader`; `--app-home-card-top` |
+| **5 — TMA hardening** | ✅ 2026-06-08 | 88px floor, back matrix, toast/banner offset |
+| **6 — Verification** | pending | grep gates, tests, manual @375px |
 
 ---
 

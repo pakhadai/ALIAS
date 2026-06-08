@@ -4,12 +4,7 @@ import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import type { GameSettings, ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { LobbyInviteSheet } from './LobbyInviteSheet';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 type T = TranslationStrings;
 

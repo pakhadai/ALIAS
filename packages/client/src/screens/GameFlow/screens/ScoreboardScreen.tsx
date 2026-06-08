@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
+import { AppHeader, FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
 const LADDER_TRACK_PX = 280;
 
 export const ScoreboardScreen = () => {
-  const { teams, settings, currentTheme, handleNextRound, isHost } = useGame();
+  const { teams, settings, currentTheme, handleNextRound, isHost, leaveRoom } = useGame();
   const t = useT();
 
   const bgColor = currentTheme.bg;
@@ -16,18 +17,38 @@ export const ScoreboardScreen = () => {
   const goal = settings.general.scoreToWin;
 
   return (
-    <div
-      className={`flex flex-col h-screen w-full ${bgColor} ${textColor} font-sans antialiased overflow-hidden transition-colors`}
+    <ScreenShell
+      className={`${bgColor} ${textColor} font-sans antialiased transition-colors`}
+      contentClassName="pb-4"
+      header={
+        <AppHeader
+          title={<h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>}
+          onBack={() => leaveRoom()}
+          backAriaLabel={t.toMainMenu}
+        />
+      }
+      footer={
+        <FixedBottomBar padding="lg" gradient contentClassName="w-full px-6">
+          {isHost ? (
+            <button
+              onClick={handleNextRound}
+              className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed"
+            >
+              <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
+                {t.nextRound}
+              </span>
+            </button>
+          ) : (
+            <p
+              className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${subTextColor}`}
+            >
+              {t.waitAdmin}
+            </p>
+          )}
+        </FixedBottomBar>
+      }
     >
-      {/* Header */}
-      <header className="relative z-20 w-full px-6 pb-2 pt-safe-top flex justify-center items-center bg-transparent backdrop-blur-lg">
-        <div className="text-center">
-          <h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>
-        </div>
-      </header>
-
-      <main className="flex-1 flex flex-col w-full relative overflow-y-auto no-scrollbar pb-32">
-        {/* Visual Ladder/Path */}
+      <main className="flex flex-col w-full relative">
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[350px] relative py-8">
           <div className="absolute top-4 flex flex-col items-center z-0 text-ui-fg-muted">
             <span className="material-symbols-outlined mb-1 text-ui-accent">emoji_events</span>
@@ -81,7 +102,6 @@ export const ScoreboardScreen = () => {
           </div>
         </div>
 
-        {/* Detailed Team Cards */}
         <div className="w-full px-6 space-y-3 z-10">
           {sortedTeams.map((team, idx) => {
             const teamIndex = teams.findIndex((t) => t.id === team.id) + 1;
@@ -136,26 +156,6 @@ export const ScoreboardScreen = () => {
           })}
         </div>
       </main>
-
-      {/* Footer Button */}
-      <footer className="fixed bottom-0 w-full pt-8 px-6 z-30 pointer-events-auto pb-safe-bottom-8 bg-linear-to-t from-[color-mix(in_srgb,var(--ui-bg)_90%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_65%,transparent)] to-transparent">
-        {isHost ? (
-          <button
-            onClick={handleNextRound}
-            className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed"
-          >
-            <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
-              {t.nextRound}
-            </span>
-          </button>
-        ) : (
-          <p
-            className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${subTextColor}`}
-          >
-            {t.waitAdmin}
-          </p>
-        )}
-      </footer>
-    </div>
+    </ScreenShell>
   );
 };

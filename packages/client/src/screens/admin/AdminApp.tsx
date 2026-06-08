@@ -7,14 +7,8 @@ import {
   LogOut,
   ExternalLink,
   AlertCircle,
-  X,
 } from 'lucide-react';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../constants/typography';
+import { typographyClass } from '../../constants/typography';
 import { api, AdminAuthError, type AdminUser } from './adminApi';
 import { Button } from '../../components/Button';
 import { ModalSheet } from '../../components/ModalSheet';
@@ -25,6 +19,7 @@ import { StatsTab } from './tabs/StatsTab';
 import { DecksTab } from './tabs/DecksTab';
 import { PacksTab } from './tabs/PacksTab';
 import { ThemesTab } from './tabs/ThemesTab';
+import { ToastItem } from '../../components/ToastItem';
 import { ADMIN_SPINNER_CLASS } from './components/adminStyles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -60,29 +55,16 @@ function ToastContainer({
 }) {
   return (
     <div
-      className={`fixed top-4 right-4 ${zIndex.toast} flex flex-col gap-2 pointer-events-none max-w-sm w-full`}
+      className={`fixed top-4 right-4 ${zIndex.toast} flex flex-col items-end gap-2 pointer-events-none px-4`}
     >
       {toasts.map((t) => (
-        <div
+        <ToastItem
           key={t.id}
-          className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-xl pointer-events-auto animate-slide-in ${
-            t.type === 'success'
-              ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,var(--ui-bg))] border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success'
-              : t.type === 'error'
-                ? 'bg-[color-mix(in_srgb,var(--ui-danger)_12%,var(--ui-bg))] border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-ui-danger'
-                : 'bg-ui-surface border-ui-border text-ui-fg'
-          }`}
-          style={{ animation: 'toast-in 0.2s ease-out' }}
-        >
-          <span className={`flex-1 ${typographyClass.body} leading-snug`}>{t.message}</span>
-          <button
-            type="button"
-            onClick={() => onDismiss(t.id)}
-            className="opacity-50 hover:opacity-100 transition-opacity shrink-0 mt-0.5"
-          >
-            <X size={14} />
-          </button>
-        </div>
+          message={t.message}
+          type={t.type}
+          onDismiss={() => onDismiss(t.id)}
+          className="pointer-events-auto animate-slide-up"
+        />
       ))}
     </div>
   );
@@ -363,13 +345,6 @@ export function AdminApp() {
       {confirmState && (
         <ConfirmModal opts={confirmState.opts} onConfirm={handleConfirm} onCancel={handleCancel} />
       )}
-
-      <style>{`
-        @keyframes toast-in {
-          from { opacity: 0; transform: translateX(20px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
     </div>
   );
 }

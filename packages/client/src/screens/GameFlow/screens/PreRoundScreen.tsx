@@ -65,7 +65,7 @@ export const PreRoundScreen = () => {
             variant="outline"
             fullWidth
             icon={<X size={18} />}
-            onClick={leaveRoom}
+            onClick={() => leaveRoom()}
           >
             {t.toMainMenu}
           </Button>

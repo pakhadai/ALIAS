@@ -105,16 +105,7 @@ export function LobbyPlayModeBar(props: {
                 className={`min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover ${typographyClass.body} font-bold disabled:opacity-40`}
                 aria-label={t.lobbyAddTeam ?? 'Add team'}
               >
-                +
-              </button>
-              <button
-                type="button"
-                onClick={() => onTeamCountChange(Math.min(MAX_TEAMS, teamCount + 1))}
-                disabled={teamCount >= MAX_TEAMS}
-                className={`inline-flex min-h-9 items-center gap-1.5 px-3 rounded-xl border border-[color-mix(in_srgb,var(--ui-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] ${typographyClass.label} normal-case text-ui-fg transition-all active:scale-[0.98] disabled:opacity-40`}
-              >
                 <Plus size={14} className={theme.iconColor} aria-hidden />
-                {t.lobbyAddTeam ?? 'Add team'}
               </button>
             </div>
           </div>

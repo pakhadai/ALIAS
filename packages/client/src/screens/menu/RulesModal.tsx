@@ -5,12 +5,7 @@ import { ModalSheetTitle } from '../../components/Shared';
 import { GameMode } from '../../types';
 import type { GameSettings, ThemeConfig } from '../../types';
 import { useT } from '../../hooks/useT';
-import {
-  typographyClass,
-  labelSectionTitleClass,
-  labelSectionClass,
-  formLabelClass,
-} from '../../constants/typography';
+import { typographyClass, labelSectionTitleClass } from '../../constants/typography';
 
 const TABS = ['rules', 'faq', 'privacy', 'impressum', 'agb'] as const;
 type TabId = (typeof TABS)[number];

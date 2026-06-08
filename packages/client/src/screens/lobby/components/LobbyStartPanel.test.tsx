@@ -38,38 +38,54 @@ const blocked: LobbyReadiness = {
 };
 
 describe('LobbyStartPanel', () => {
-  it('should render glass panel with validation message and start button', () => {
+  it('should render opaque blocked button with lock and no validation line above', () => {
     render(<LobbyStartPanel readiness={blocked} t={t} theme={theme} onStartTap={vi.fn()} />);
 
     expect(screen.getByTestId('lobby-start-panel')).toBeTruthy();
-    expect(screen.getByTestId('lobby-start-validation')).toHaveTextContent('Need 2 players');
-    expect(screen.getByRole('button', { name: 'Start game' })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    );
+    expect(screen.queryByTestId('lobby-readiness-bar')).toBeNull();
+    const startBtn = screen.getByTestId('lobby-start-btn');
+    expect(startBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(startBtn).not.toBeDisabled();
+    expect(startBtn).toHaveClass('lobby-start-btn--blocked');
+    expect(startBtn.querySelector('svg')).toBeTruthy();
   });
 
-  it('should add comet ring shell when lobby is ready', () => {
+  it('should add neon snake shell when lobby is ready', () => {
     render(<LobbyStartPanel readiness={ready} t={t} theme={theme} onStartTap={vi.fn()} />);
 
     expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass('lobby-start-btn-shell--ready');
+    expect(screen.getByTestId('lobby-start-btn')).toHaveClass('lobby-start-btn--ready');
+    expect(screen.getByTestId('lobby-start-btn').querySelector('svg')).toBeNull();
   });
 
-  it('should not add comet ring shell when lobby is blocked', () => {
+  it('should mark shell as blocked when lobby is not ready', () => {
     render(<LobbyStartPanel readiness={blocked} t={t} theme={theme} onStartTap={vi.fn()} />);
 
+    expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass(
+      'lobby-start-btn-shell--blocked'
+    );
     expect(screen.getByTestId('lobby-start-btn-shell')).not.toHaveClass(
       'lobby-start-btn-shell--ready'
     );
   });
 
-  it('should call onStartTap when host taps start', async () => {
+  it('should call onStartTap when host taps ready start button', async () => {
     const user = userEvent.setup();
     const onStartTap = vi.fn();
 
     render(<LobbyStartPanel readiness={ready} t={t} theme={theme} onStartTap={onStartTap} />);
 
-    await user.click(screen.getByRole('button', { name: 'Start game' }));
+    await user.click(screen.getByTestId('lobby-start-btn'));
+    expect(onStartTap).toHaveBeenCalledOnce();
+  });
+
+  it('should call onStartTap when host taps blocked button for hint toast', async () => {
+    const user = userEvent.setup();
+    const onStartTap = vi.fn();
+
+    render(<LobbyStartPanel readiness={blocked} t={t} theme={theme} onStartTap={onStartTap} />);
+
+    await user.click(screen.getByTestId('lobby-start-btn'));
     expect(onStartTap).toHaveBeenCalledOnce();
   });
 });

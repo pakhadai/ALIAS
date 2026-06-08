@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Confetti, MilestoneNotification } from '../../../components/Shared';
+import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
@@ -31,7 +32,6 @@ export const RoundSummaryScreen = () => {
     processingRef.current = true;
     setIsSubmitting(true);
 
-    // Check for milestone before confirming
     const oldScore = scoringTeam?.score || 0;
     const newScore = Math.max(0, oldScore + points);
     const oldTens = Math.floor(oldScore / 10);
@@ -45,7 +45,6 @@ export const RoundSummaryScreen = () => {
     }
 
     setTimeout(() => {
-      // Use sendAction so it goes through handleGameAction and broadcasts
       sendAction({ action: 'CONFIRM_ROUND' });
       processingRef.current = false;
       setIsSubmitting(false);
@@ -53,10 +52,7 @@ export const RoundSummaryScreen = () => {
   };
 
   return (
-    <div
-      data-testid="round-summary"
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-safe-bottom relative`}
-    >
+    <div data-testid="round-summary" className="relative">
       {milestone && (
         <MilestoneNotification
           points={milestone.points}
@@ -68,74 +64,80 @@ export const RoundSummaryScreen = () => {
       )}
       {points > 0 && <Confetti />}
 
-      <header className="py-12 text-center space-y-4">
-        <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
-          {t.timeIsUp}
-        </h2>
-        <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
-          <span
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
-          >
-            {t.playedTeam.replace('{0}', scoringTeam?.name || '')}
-          </span>
-        </div>
-      </header>
-
-      <div className="flex-1 flex flex-col items-center justify-center space-y-12">
-        <div className="text-center space-y-2">
-          <span className={`text-8xl font-serif font-black ${currentTheme.textAccent}`}>
-            {points}
-          </span>
-          <p
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] ${currentTheme.textSecondary}`}
-          >
-            {t.roundPoints}
-          </p>
-        </div>
-
-        <div className="w-full max-w-xs space-y-3">
-          <div className="flex justify-between items-center px-4">
+      <ScreenShell
+        className={currentTheme.bg}
+        contentClassName="px-8"
+        footer={
+          <FixedBottomBar contentClassName="w-full">
+            {isHost ? (
+              <Button
+                themeClass={currentTheme.button}
+                fullWidth
+                size="xl"
+                onClick={confirmRoundResults}
+                disabled={!!milestone || isSubmitting}
+              >
+                {t.continue}
+              </Button>
+            ) : (
+              <div
+                className={`text-center font-black uppercase tracking-widest text-xs animate-pulse ${currentTheme.textSecondary}`}
+              >
+                {t.waitAdmin}
+              </div>
+            )}
+          </FixedBottomBar>
+        }
+      >
+        <header className="py-12 text-center space-y-4">
+          <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
+            {t.timeIsUp}
+          </h2>
+          <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
             <span
-              className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+              className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
             >
-              {t.guessed}
-            </span>
-            <span className={`font-serif text-xl ${currentTheme.textMain}`}>
-              {currentRoundStats.correct}
+              {t.playedTeam.replace('{0}', scoringTeam?.name || '')}
             </span>
           </div>
-          <div className="flex justify-between items-center px-4">
-            <span
-              className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+        </header>
+
+        <div className="flex flex-1 flex-col items-center justify-center space-y-12 min-h-[40vh]">
+          <div className="text-center space-y-2">
+            <span className={`text-8xl font-serif font-black ${currentTheme.textAccent}`}>
+              {points}
+            </span>
+            <p
+              className={`text-[10px] font-sans font-bold uppercase tracking-[0.5em] ${currentTheme.textSecondary}`}
             >
-              {t.skippedWord}
-            </span>
-            <span className={`font-serif text-xl ${currentTheme.textMain}`}>
-              {currentRoundStats.skipped}
-            </span>
+              {t.roundPoints}
+            </p>
+          </div>
+
+          <div className="w-full max-w-xs space-y-3">
+            <div className="flex justify-between items-center px-4">
+              <span
+                className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+              >
+                {t.guessed}
+              </span>
+              <span className={`font-serif text-xl ${currentTheme.textMain}`}>
+                {currentRoundStats.correct}
+              </span>
+            </div>
+            <div className="flex justify-between items-center px-4">
+              <span
+                className={`text-[10px] font-bold uppercase tracking-widest ${currentTheme.textSecondary}`}
+              >
+                {t.skippedWord}
+              </span>
+              <span className={`font-serif text-xl ${currentTheme.textMain}`}>
+                {currentRoundStats.skipped}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="py-8">
-        {isHost ? (
-          <Button
-            themeClass={currentTheme.button}
-            fullWidth
-            size="xl"
-            onClick={confirmRoundResults}
-            disabled={!!milestone || isSubmitting}
-          >
-            {t.continue}
-          </Button>
-        ) : (
-          <div
-            className={`text-center font-black uppercase tracking-widest text-xs animate-pulse ${currentTheme.textSecondary}`}
-          >
-            {t.waitAdmin}
-          </div>
-        )}
-      </div>
+      </ScreenShell>
     </div>
   );
 };

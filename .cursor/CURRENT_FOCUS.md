@@ -1,35 +1,39 @@
 # Current Focus — Alias Master
 
-**Last updated:** 2026-06-08 (session: TYPO-001 Session D — Phase 7 QA)  
-**Active branch:** `main` (uncommitted: TYPO-001 Session D fix + docs)
+**Last updated:** 2026-06-08 (session: lobby play-mode bar visibility fix)  
+**Active branch:** `main`
 
 ## What's in progress
 
-- _(none — TYPO-001 epic closed)_
+- *(none)*
 
 ## What was just completed
 
-- **TYPO-001 Session D (Phase 7 visual QA):** Playwright @375px audit found critical `@theme` namespace bug (`--font-size-ui-*` → no `text-ui-*` utilities); fixed in `styles.css`; post-fix: Logo 72px, labels 10px, headings 24px; E2E smoke mobile-chrome 7/7; `pnpm verify` green; epic **closed**
-- **TYPO-001 Session C (app UI sweep):** 17 files — modals, menu, lobby, shared; grep app UI `text-xs|text-sm` → 0 (escapes: emoji avatars, admin, GameFlow)
-- **TYPO-001 Session B (SettingsScreen):** ~19 legacy sizes → semantic tokens; client **126/126**
-- **TYPO-001 Phase 7 automated:** governance grep green; Settings number inputs → `bodyInput`
-- **TYPO-001 Session A (TMA inputs 16px):** commit `a355f09` — 5 screens → `bodyInput`
-- **TYPO-001 Phases 0–6:** token foundation through font optimize + governance — see `docs/TYPOGRAPHY_UNIFICATION.md`
-- **ModalSheet Phases 0–5:** consumer migration, tall escape hatches, verification — see `docs/TMA_LAYOUT.md`
+- **Lobby play-mode bar:** reverted erroneous ONLINE hide; `LobbyPlayModeBarSlot` instant show on mount + `ResizeObserver` height sync (fixes empty gap where Solo/Teams bar should appear)
+- **TMA header unification Phase 5:** 88px content-safe floor (`--tma-content-top-floor`, `useTelegramApp` sync, `--tma-inset-top` CSS); `resolveTelegramBackAction()` aligned with Header matrix (`MENU`/`ENTER_NAME` hide); `--tma-banner-top` for `ConnectionStatusBanner`; Vitest (`useTelegramApp`, `useTelegramBackButton`, toast/banner)
+- **TMA header unification Phase 4:** `MenuScreen` home — fixed header → `ScreenShell` + sticky `AppHeader` (variant A); removed `--tma-fixed-header-height` / `data-fixed-header`; `--app-home-card-top`; `EnterNameSheet` overlay verified (`aria-hidden`, modals suppressed); Vitest
+- **TMA header unification Phase 3b:** lobby-adjacent + game non-playing → `ScreenShell` + `AppHeader` / `FixedBottomBar` — `SettingsScreen`, `TeamSetupScreen`, `JoinInputScreen`, `RulesScreen`, `VSScreen`, `CountdownScreen`, `RoundSummaryScreen`, `ScoreboardScreen`, `GameOverScreen`; `ImposterScreen` / `PlayingScreen` untouched; Header matrix updated
+- **TMA header unification Phase 3a:** menu/profile screens → `ScreenShell` + `AppHeader` — `ProfileScreen`, `ProfileSettingsScreen`, `PlayerStatsScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `LobbySettingsScreen`; `FixedBottomBar` for save/create footers; grep gate 0 ad-hoc `pt-safe-top` on migrated files
+- **TMA header unification Phase 2:** `AppHeader` API (`title`, `onBack`, `showBackInBrowser`, `children`/`childRowHeightPx`, `tgChromeGutter`); CSS `.ui-app-header__title-row` / `__child-row`; `LobbyScreen` refactor 1:1; Vitest (TMA gutter vs browser back, child row height)
+- **TMA header unification Phase 1:** `tmaLayoutConstants.ts` + tests; `--app-page-header-height` у `styles.css`; `GlassAppHeader` ResizeObserver; toast offset via measured height; docs `UI_TOKENS` + `TMA_LAYOUT` Constants section
+- **TMA header unification Phase 0:** grep audit усіх `GameState` screens; класифікація патернів A–E; **Header matrix** у `docs/TMA_LAYOUT.md#header-matrix-gamestate`; gaps report
+- **Lobby glass chrome (canonical):** sticky header/footer inside scroll; documented in `TMA_LAYOUT.md`, `LOBBY_TEAM_BUILDER.md`, `UI_TOKENS.md`
 
 ## Next steps
 
-1. [ ] Push — лише на явний запит власника
-2. [ ] Manual TMA device pass (optional) — Telegram iOS/Android @375px for haptics + notch feel (computed-style audit done in Session D)
-3. [ ] Optional Phase 8: rename `font-serif` → `font-heading` class alias (post-epic)
+1. [ ] **StoreScreen** — missing top safe inset (gap in matrix)
+2. [ ] Manual TMA @375px on owner device (Phase 6 checklist — deferred)
+3. [ ] Push — лише на явний запит власника
 
 ## Known issues / blockers
 
+- **Header gaps (post-6):** `StoreScreen` без `pt-safe-top`; `ImposterScreen` / `PlayingScreen` game exception (pattern E); `AdminApp` defer
 - `EnterNameScreen` — `scrollElementIntoViewCentered` on input (keyboard policy debt)
 - No focus trap / Esc on ModalSheet (deferred)
-- Play format bar exit — device TMA not confirmed
-- ESLint: unused typography helper imports in Session C files (warnings only, cleanup optional)
+- Manual TMA glass QA not run on physical device (I-13 / J-2 deferred)
 
 ## Context for next session
 
-Typography epic closed → `docs/TYPOGRAPHY_UNIFICATION.md` ✅. Modal unification → `docs/TMA_LAYOUT.md`. Overlay tokens → `docs/UI_TOKENS.md#modalsheet-overlay--panel-tokens`. Rules → `.cursor/rules/07-modals.mdc`, `.cursor/rules/08-typography.mdc`.
+- **TMA header unification:** phases 0–6 ✅ — canon `ScreenShell` + `AppHeader`; see `docs/TMA_HEADER_UNIFICATION.md`
+- **Header matrix:** `docs/TMA_LAYOUT.md#header-matrix-gamestate`
+- **Glass lobby etalon:** `docs/TMA_LAYOUT.md#glass-app-chrome-header--footer`

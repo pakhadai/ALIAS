@@ -18,13 +18,7 @@ import { useT } from '../../hooks/useT';
 import { buildDeckShareUrl } from '../../utils/deckShare';
 import { ModalSheet, ModalSheetBody, ModalSheetFooter } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
-import {
-  typographyClass,
-  captionMutedClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../constants/typography';
+import { typographyClass, captionMutedClass, formLabelClass } from '../../constants/typography';
 import {
   fetchMyDecks,
   createCustomDeck,

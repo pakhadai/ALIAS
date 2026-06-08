@@ -20,6 +20,13 @@ let socketHandlers: SocketHandlers | null = null;
 const sendGameAction = vi.fn();
 const createRoom = vi.fn();
 
+const mockSocketApi = {
+  isConnected: false,
+  isReconnecting: false,
+  roomCode: '12345',
+  myPlayerId: 'p-host',
+};
+
 vi.mock('../hooks/useSocketConnection', () => ({
   useSocketConnection: (handlers: SocketHandlers) => {
     socketHandlers = handlers;
@@ -30,10 +37,18 @@ vi.mock('../hooks/useSocketConnection', () => ({
       leaveRoom: vi.fn(),
       sendGameAction,
       checkRoomExists: vi.fn(),
-      roomCode: '12345',
-      myPlayerId: 'p-host',
-      isConnected: false,
-      isReconnecting: false,
+      get isConnected() {
+        return mockSocketApi.isConnected;
+      },
+      get isReconnecting() {
+        return mockSocketApi.isReconnecting;
+      },
+      get roomCode() {
+        return mockSocketApi.roomCode;
+      },
+      get myPlayerId() {
+        return mockSocketApi.myPlayerId;
+      },
     };
   },
 }));
@@ -69,6 +84,22 @@ function Probe() {
       </button>
       <button type="button" onClick={() => game.handleCorrect()}>
         correct
+      </button>
+      <span data-testid="score-to-win">{game.settings.general.scoreToWin}</span>
+      <span data-testid="game-mode">{game.gameMode}</span>
+      <button
+        type="button"
+        onClick={() =>
+          game.setSettings((prev) => ({
+            ...prev,
+            general: { ...prev.general, scoreToWin: 99 },
+          }))
+        }
+      >
+        bump-score
+      </button>
+      <button type="button" onClick={() => game.leaveRoom({ resetGameMode: false })}>
+        leave-offline
       </button>
       <button
         type="button"
@@ -147,6 +178,10 @@ describe('GameProvider', () => {
     socketHandlers = null;
     sendGameAction.mockReset();
     createRoom.mockReset();
+    mockSocketApi.isConnected = false;
+    mockSocketApi.isReconnecting = false;
+    mockSocketApi.roomCode = '12345';
+    mockSocketApi.myPlayerId = 'p-host';
     localStorage.clear();
   });
 
@@ -299,6 +334,91 @@ describe('GameProvider', () => {
     expect(createRoom).not.toHaveBeenCalled();
     expect(screen.getByTestId('game-state').textContent).toBe(GameState.LOBBY);
     expect(screen.getByTestId('player-count').textContent).toBe('1');
+  });
+
+  it('should not send UPDATE_SETTINGS when online room socket is not ready', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      socketHandlers?.onStateSync(baseSync());
+    });
+    expect(screen.getByTestId('score-to-win').textContent).toBe('30');
+
+    mockSocketApi.isConnected = false;
+
+    await act(async () => {
+      screen.getByText('bump-score').click();
+    });
+
+    expect(sendGameAction).not.toHaveBeenCalled();
+    expect(screen.getByTestId('score-to-win').textContent).toBe('30');
+  });
+
+  it('should rollback settings on room:error after host optimistic setSettings', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      socketHandlers?.onStateSync(baseSync());
+    });
+    expect(screen.getByTestId('score-to-win').textContent).toBe('30');
+
+    mockSocketApi.isConnected = true;
+
+    await act(async () => {
+      screen.getByText('bump-score').click();
+    });
+    expect(screen.getByTestId('score-to-win').textContent).toBe('99');
+    expect(sendGameAction).toHaveBeenCalled();
+
+    await act(async () => {
+      socketHandlers?.onError({ code: 'NOT_ALLOWED', message: 'denied' });
+    });
+    expect(screen.getByTestId('score-to-win').textContent).toBe('30');
+  });
+
+  it('should show localized message for PLAYER_NOT_IN_ROOM room:error', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      socketHandlers?.onError({ code: 'PLAYER_NOT_IN_ROOM', message: 'Join a room first' });
+    });
+
+    expect(screen.getByText(/кімнат/i)).toBeTruthy();
+  });
+
+  it('should preserve OFFLINE gameMode when leaveRoom resetGameMode is false', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      screen.getByText('start-offline').click();
+    });
+    await act(async () => {
+      screen.getByText('offline-join').click();
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('game-mode').textContent).toBe('OFFLINE');
+
+    await act(async () => {
+      screen.getByText('leave-offline').click();
+    });
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.MENU);
+    expect(screen.getByTestId('game-mode').textContent).toBe('OFFLINE');
   });
 
   it('should auto-finish offline overtime via TIME_UP after 5s idle', async () => {

@@ -36,14 +36,5 @@ export function LobbyReadinessBar(props: { readiness: LobbyReadiness; t: T }): R
     );
   }
 
-  return (
-    <p
-      role="status"
-      aria-live="polite"
-      className={`text-center ${typographyClass.body} font-sans text-ui-fg-muted`}
-      data-testid="lobby-readiness-bar"
-    >
-      <span data-testid="lobby-start-validation">{readiness.firstBlockingReason}</span>
-    </p>
-  );
+  return null;
 }

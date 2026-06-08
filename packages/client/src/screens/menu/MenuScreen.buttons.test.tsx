@@ -11,10 +11,14 @@ const startOfflineGame = vi.fn();
 const setRoomCode = vi.fn();
 const checkRoomExists = vi.fn().mockResolvedValue(true);
 const showNotification = vi.fn();
+const handleJoin = vi.fn().mockResolvedValue(false);
+const leaveRoom = vi.fn();
+
+let mockGameState = GameState.MENU;
 
 vi.mock('../../context/GameContext', () => ({
   useGame: () => ({
-    gameState: GameState.MENU,
+    gameState: mockGameState,
     setGameState,
     settings: { general: {}, mode: { gameMode: 'CLASSIC' } },
     setSettings: vi.fn(),
@@ -33,11 +37,18 @@ vi.mock('../../context/GameContext', () => ({
     setRoomCode,
     checkRoomExists,
     showNotification,
+    handleJoin,
+    gameMode: 'ONLINE',
+    leaveRoom,
   }),
 }));
 
 vi.mock('../../context/AuthContext', () => ({
-  useAuthContext: () => ({ isAuthenticated: false }),
+  useAuthContext: () => ({
+    isAuthenticated: false,
+    authState: { status: 'anonymous', userId: '', profile: null },
+    profile: null,
+  }),
 }));
 
 vi.mock('../../hooks/useT', () => ({
@@ -54,6 +65,11 @@ vi.mock('../../hooks/useT', () => ({
     fullscreenUnavailableTitle: 'Fullscreen',
     fullscreenUnavailableBody: 'Unavailable',
     settings: 'Налаштування',
+    whoAreYou: 'Хто ви?',
+    namePlaceholder: "Ім'я",
+    next: 'Далі',
+    cancel: 'Скасувати',
+    enteringRoom: 'Входимо…',
     helpSectionRules: 'Правила',
     helpSectionFaq: 'FAQ',
     helpSectionPrivacy: 'Privacy',
@@ -91,6 +107,7 @@ vi.mock('../../utils/fullscreen', () => ({
 
 describe('MenuScreen buttons', () => {
   beforeEach(() => {
+    mockGameState = GameState.MENU;
     vi.clearAllMocks();
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -177,5 +194,40 @@ describe('MenuScreen buttons', () => {
       expect(setRoomCode).toHaveBeenCalledWith('12345');
       expect(setGameState).toHaveBeenCalledWith(GameState.ENTER_NAME);
     });
+  });
+});
+
+describe('MenuScreen EnterName overlay', () => {
+  beforeEach(() => {
+    mockGameState = GameState.ENTER_NAME;
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    });
+  });
+
+  it('should show EnterName sheet and freeze menu chrome from assistive tech', async () => {
+    render(<MenuScreen />);
+
+    expect(screen.getByTestId('enter-name-screen')).toBeTruthy();
+    expect(screen.getByTestId('enter-name')).toBeTruthy();
+
+    const menuHeader = screen.getByTestId('menu-app-header').closest('header');
+    expect(menuHeader?.getAttribute('aria-hidden')).toBe('true');
+
+    const main = screen.getByTestId('menu-create-game').closest('main');
+    expect(main?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('should not render menu modals while EnterName is open', () => {
+    render(<MenuScreen />);
+
+    expect(screen.queryByTestId('menu-quick-join-code')).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Правила' })).toBeNull();
   });
 });

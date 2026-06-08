@@ -62,6 +62,24 @@ describe('LobbyPlayModeBar', () => {
     expect(onTeamModeChange).toHaveBeenCalledWith('SOLO');
   });
 
+  it('should expose a single increment control for team count', () => {
+    render(
+      <LobbyPlayModeBar
+        theme={theme}
+        t={t}
+        isHost
+        isSolo={false}
+        teamCount={2}
+        onTeamModeChange={onTeamModeChange}
+        onTeamCountChange={onTeamCountChange}
+        onShuffleUnassigned={onShuffleUnassigned}
+        shuffleDisabled={false}
+      />
+    );
+
+    expect(screen.getAllByRole('button', { name: 'Add team' })).toHaveLength(1);
+  });
+
   it('should hide team controls when solo is active', () => {
     render(
       <LobbyPlayModeBar

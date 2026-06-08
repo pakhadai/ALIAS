@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useResourceLoad } from '../../hooks/useResourceLoad';
-import { X, ArrowLeft, Plus, Trash2, BookOpen, Copy, Loader2 } from 'lucide-react';
+import { Plus, Trash2, BookOpen, Copy, Loader2 } from 'lucide-react';
+import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
-import { useTelegramApp } from '../../hooks/useTelegramApp';
 import {
   fetchMyDecks,
   createCustomDeck,
@@ -17,7 +17,6 @@ type CreateDeckView = 'list' | 'create';
 
 export const MyDecksScreen = () => {
   const { setGameState, currentTheme } = useGame();
-  const { isTelegram } = useTelegramApp();
 
   const [view, setView] = useState<CreateDeckView>('list');
   const {
@@ -92,169 +91,164 @@ export const MyDecksScreen = () => {
     rejected: 'text-ui-danger',
   };
 
+  const exitCreateView = () => {
+    setView('list');
+    setCreateError('');
+  };
+
   if (view === 'create') {
     return (
-      <div className="flex flex-col h-screen bg-ui-bg">
-        <header className="flex items-center px-6 pb-4 pt-safe-top gap-3">
-          {!isTelegram && (
+      <ScreenShell
+        className="bg-ui-bg"
+        contentClassName="px-6 py-4 space-y-5"
+        header={
+          <AppHeader
+            title={<ScreenTitle themeClass={currentTheme.textMain}>New Deck</ScreenTitle>}
+            onBack={exitCreateView}
+          />
+        }
+        footer={
+          <FixedBottomBar contentClassName="w-full px-6">
             <button
-              onClick={() => {
-                setView('list');
-                setCreateError('');
-              }}
-              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
+              type="button"
+              onClick={handleCreate}
+              disabled={creating}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
             >
-              <ArrowLeft size={22} />
+              {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Deck'}
             </button>
-          )}
-          <ScreenTitle themeClass={currentTheme.textMain}>New Deck</ScreenTitle>
-        </header>
-        <div
-          className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          <div className="space-y-2">
-            <label
-              className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
-            >
-              Deck Name
-            </label>
-            <input
-              value={deckName}
-              onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
-              placeholder="e.g. Office Party Pack"
-              className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all ${inputCls}`}
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
-            >
-              Words
-              <span
-                className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} ${currentTheme.textSecondary} opacity-50`}
-              >
-                (one per line or comma-separated)
-              </span>
-            </label>
-            <textarea
-              value={wordsText}
-              onChange={(e) => setWordsText(e.target.value)}
-              placeholder={'apple\nbanana\ncucumber\n...'}
-              rows={10}
-              className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all resize-none ${inputCls}`}
-            />
-            <p
-              className={`${typographyClass.label} normal-case ${currentTheme.textSecondary} opacity-40`}
-            >
-              {wordsText.split(/[\n,]+/).filter((w) => w.trim()).length} words
-            </p>
-          </div>
-          {createError && (
-            <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
-          )}
-        </div>
-        <div className="px-6 pt-4 pb-safe-bottom">
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+          </FixedBottomBar>
+        }
+      >
+        <div className="space-y-2">
+          <label
+            className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
           >
-            {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Deck'}
-          </button>
+            Deck Name
+          </label>
+          <input
+            value={deckName}
+            onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
+            placeholder="e.g. Office Party Pack"
+            className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all ${inputCls}`}
+          />
         </div>
-      </div>
+        <div className="space-y-2">
+          <label
+            className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
+          >
+            Words
+            <span
+              className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} ${currentTheme.textSecondary} opacity-50`}
+            >
+              (one per line or comma-separated)
+            </span>
+          </label>
+          <textarea
+            value={wordsText}
+            onChange={(e) => setWordsText(e.target.value)}
+            placeholder={'apple\nbanana\ncucumber\n...'}
+            rows={10}
+            className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all resize-none ${inputCls}`}
+          />
+          <p
+            className={`${typographyClass.label} normal-case ${currentTheme.textSecondary} opacity-40`}
+          >
+            {wordsText.split(/[\n,]+/).filter((w) => w.trim()).length} words
+          </p>
+        </div>
+        {createError && (
+          <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
+        )}
+      </ScreenShell>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-ui-bg">
-      <div className="flex justify-center pt-4 pb-2">
-        <div className="w-12 h-1 bg-ui-border rounded-full" />
-      </div>
-      <div className="px-6 pb-5 pt-2 flex justify-between items-center">
-        <ScreenTitle themeClass={currentTheme.textMain}>My Decks</ScreenTitle>
-        <button
-          onClick={() => setGameState(GameState.PROFILE)}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
-        >
-          <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
-        </button>
-      </div>
-      <div
-        className="flex-1 overflow-y-auto px-6 space-y-4 pb-28"
-        style={{ scrollbarWidth: 'none' }}
-      >
-        {loading ? (
-          <div className="flex justify-center pt-16">
-            <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
-          </div>
-        ) : decks.length === 0 ? (
-          <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
-            <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
-            <p
-              className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
-            >
-              No custom decks yet
-            </p>
-          </div>
-        ) : (
-          decks.map((deck) => (
-            <div key={deck.id} className={`${cardBg} rounded-2xl p-5 space-y-3`}>
-              <div className="flex justify-between items-start">
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
-                  >
-                    {deck.name}
-                  </h3>
-                  <p
-                    className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
-                  >
-                    {deck.wordCount} words
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDelete(deck.id)}
-                  disabled={deleting === deck.id}
-                  className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+    <ScreenShell
+      className="bg-ui-bg"
+      contentClassName="px-6 space-y-4"
+      header={
+        <AppHeader
+          title={<ScreenTitle themeClass={currentTheme.textMain}>My Decks</ScreenTitle>}
+          onBack={() => setGameState(GameState.MENU)}
+        />
+      }
+      footer={
+        <FixedBottomBar glass contentClassName="w-full px-6">
+          <button
+            type="button"
+            onClick={() => setView('create')}
+            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+          >
+            <Plus size={16} />
+            Create New Deck
+          </button>
+        </FixedBottomBar>
+      }
+    >
+      {loading ? (
+        <div className="flex justify-center pt-16">
+          <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
+        </div>
+      ) : decks.length === 0 ? (
+        <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
+          <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
+          <p
+            className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+          >
+            No custom decks yet
+          </p>
+        </div>
+      ) : (
+        decks.map((deck) => (
+          <div key={deck.id} className={`${cardBg} rounded-2xl p-5 space-y-3`}>
+            <div className="flex justify-between items-start">
+              <div className="flex-1 min-w-0">
+                <h3
+                  className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
                 >
-                  {deleting === deck.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Trash2 size={16} />
-                  )}
-                </button>
+                  {deck.name}
+                </h3>
+                <p
+                  className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                >
+                  {deck.wordCount} words
+                </p>
               </div>
-              <div className="flex items-center justify-between pt-1">
-                <span
-                  className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
-                >
-                  {deck.status}
-                </span>
-                {deck.accessCode && (
-                  <button
-                    onClick={() => handleCopyCode(deck.accessCode!)}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
-                  >
-                    <Copy size={11} />
-                    {copied === deck.accessCode ? 'Copied!' : deck.accessCode}
-                  </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(deck.id)}
+                disabled={deleting === deck.id}
+                className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+              >
+                {deleting === deck.id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Trash2 size={16} />
                 )}
-              </div>
+              </button>
             </div>
-          ))
-        )}
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-safe-bottom pointer-events-none">
-        <button
-          onClick={() => setView('create')}
-          className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
-        >
-          <Plus size={16} />
-          Create New Deck
-        </button>
-      </div>
-    </div>
+            <div className="flex items-center justify-between pt-1">
+              <span
+                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+              >
+                {deck.status}
+              </span>
+              {deck.accessCode && (
+                <button
+                  type="button"
+                  onClick={() => handleCopyCode(deck.accessCode!)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
+                >
+                  <Copy size={11} />
+                  {copied === deck.accessCode ? 'Copied!' : deck.accessCode}
+                </button>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </ScreenShell>
   );
 };

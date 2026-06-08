@@ -4,13 +4,8 @@ import { X, Star } from 'lucide-react';
 import { Button } from './Button';
 import { ThemeConfig } from '../types';
 import { zIndex } from '../constants/zIndex';
-import {
-  typographyClass,
-  brandCaptionClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../constants/typography';
+import { typographyClass, brandCaptionClass } from '../constants/typography';
+import { ToastItem } from './ToastItem';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -257,55 +252,13 @@ export const ToastNotification: React.FC<{
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  /** Opaque, theme-aware shells (no mix with transparent — works on light & OLED dark). */
-  const shell: Record<'info' | 'error' | 'success', string> = {
-    info: [
-      'border-[color:color-mix(in_srgb,var(--ui-border)_85%,var(--ui-fg)_15%)]',
-      'bg-[color:var(--ui-elevated)]',
-      'shadow-[0_12px_40px_color-mix(in_srgb,var(--ui-fg)_12%,transparent)]',
-    ].join(' '),
-    error: [
-      'border-[color:color-mix(in_srgb,var(--ui-danger)_55%,var(--ui-border)_45%)]',
-      'bg-[color:color-mix(in_srgb,var(--ui-danger)_20%,var(--ui-elevated)_80%)]',
-      'shadow-[0_12px_36px_color-mix(in_srgb,var(--ui-danger)_22%,transparent)]',
-    ].join(' '),
-    success: [
-      'border-[color:color-mix(in_srgb,var(--ui-success)_55%,var(--ui-border)_45%)]',
-      'bg-[color:color-mix(in_srgb,var(--ui-success)_20%,var(--ui-elevated)_80%)]',
-      'shadow-[0_12px_36px_color-mix(in_srgb,var(--ui-success)_22%,transparent)]',
-    ].join(' '),
-  };
-
-  const messageClass =
-    type === 'error'
-      ? 'text-[color:color-mix(in_srgb,var(--ui-danger)_25%,var(--ui-fg)_75%)]'
-      : type === 'success'
-        ? 'text-[color:color-mix(in_srgb,var(--ui-success)_18%,var(--ui-fg)_82%)]'
-        : 'text-ui-fg';
-
   return (
     <ModalPortal>
       <div
         className={`fixed left-0 right-0 top-[var(--tma-toast-top)] ${zIndex.toast} flex justify-center px-4 pointer-events-none`}
       >
-        <div className="pointer-events-auto w-full max-w-md animate-slide-up">
-          <div
-            className={`${shell[type]} relative rounded-2xl border px-4 py-3.5 pr-11 ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_06%,transparent)]`}
-          >
-            <p
-              className={`min-w-0 text-left ${typographyClass.body} font-medium leading-relaxed ${messageClass}`}
-            >
-              {message}
-            </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ui-fg-muted opacity-80 hover:bg-[color-mix(in_srgb,var(--ui-fg)_08%,transparent)] hover:opacity-100 transition-colors"
-              aria-label="Close"
-            >
-              <X size={18} strokeWidth={2.25} />
-            </button>
-          </div>
+        <div className="pointer-events-auto animate-slide-up">
+          <ToastItem message={message} type={type} onDismiss={onClose} />
         </div>
       </div>
     </ModalPortal>

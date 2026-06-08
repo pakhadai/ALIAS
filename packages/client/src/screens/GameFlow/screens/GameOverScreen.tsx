@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, Trophy } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Confetti } from '../../../components/Shared';
+import { ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
@@ -255,9 +256,7 @@ export const GameOverScreen = () => {
   const cardBg = 'bg-ui-card border-ui-border';
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-6 pt-safe-top pb-safe-bottom items-center overflow-y-auto no-scrollbar`}
-    >
+    <ScreenShell className={currentTheme.bg} contentClassName="px-6 items-center pb-4">
       <Confetti />
 
       {/* Winner banner */}
@@ -381,7 +380,7 @@ export const GameOverScreen = () => {
             </Button>
             <button
               type="button"
-              onClick={leaveRoom}
+              onClick={() => leaveRoom()}
               className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} hover:text-ui-fg transition-colors`}
             >
               {t.toMainMenu}
@@ -399,13 +398,13 @@ export const GameOverScreen = () => {
               variant="ghost"
               fullWidth
               size="lg"
-              onClick={leaveRoom}
+              onClick={() => leaveRoom()}
             >
               {t.toMainMenu}
             </Button>
           </div>
         )}
       </div>
-    </div>
+    </ScreenShell>
   );
 };

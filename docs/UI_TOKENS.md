@@ -232,6 +232,47 @@
 
 **Reduced transparency:** backdrop — tint gradient без blur; panel — opaque `color-mix(card 94%, elevated 6%)`, pseudo layers hidden.
 
+## App chrome (glass header + footer)
+
+Джерело: `packages/client/src/styles.css` (`.ui-app-header`, `.ui-app-footer`, `.lobby-start-btn-*`). Layout policy: [`TMA_LAYOUT.md` — Glass app chrome](./TMA_LAYOUT.md#glass-app-chrome-header--footer).
+
+### Header (`.ui-app-header`)
+
+| Змінна | Типове | Призначення |
+|--------|--------|-------------|
+| `--app-page-header-height` | measured + CSS fallback | Повна висота sticky header (inset + bar); `GlassAppHeader` пише measured px через `ResizeObserver`; fallback — формула з `tmaLayoutConstants.ts` |
+| `--tma-app-header-bar-height` | `3.75rem` (60px) | Висота bar **нижче** safe inset (`APP_HEADER_BAR_PX`) |
+| `--tma-content-top-floor` | `88px` | Baseline content-safe when SDK not ready; synced by `useTelegramApp` |
+| `--tma-banner-top` | inset or header height | `ConnectionStatusBanner` top offset; mirrors toast header rule |
+| `--tma-toast-top` | inset + offset or header + gap | Portal toast position (`ToastNotification`) |
+| `--ui-app-header-opacity-top` | `28%` | Tint `--ui-bg` біля верху bar |
+| `--ui-app-header-opacity-bottom` | `6%` | Tint біля нижнього feather |
+| `--ui-app-header-blur` | `16px` | `backdrop-filter` на `::before` |
+| `--ui-app-header-saturate` | `1.2` | Saturation разом із blur |
+
+Mask на `::before` / `::after`: gradient feather **вниз** (м’який перехід до контенту).
+
+### Footer (`.ui-app-footer`)
+
+| Змінна | Типове | Призначення |
+|--------|--------|-------------|
+| `--ui-app-footer-opacity-bottom` | `28%` | Tint біля низу (safe area) |
+| `--ui-app-footer-opacity-top` | `6%` | Tint біля верхнього feather |
+| `--ui-app-footer-blur` | `16px` | Blur на `::before` |
+| `--ui-app-footer-saturate` | `1.2` | Saturation |
+
+Mask — дзеркально header (feather **вгору**).
+
+### Lobby start CTA
+
+| Клас | Стан | Опис |
+|------|------|------|
+| `.lobby-start-btn--blocked` | `!readiness.ok` | Opaque «вигорілий» червоний (`color-mix` `--ui-accent` + `--ui-bg`) |
+| `.lobby-start-btn--ready` | `readiness.ok` | Повний theme accent + легкий glow |
+| `.lobby-start-btn-shell--ready` | ready | Neon snake: conic-gradient на `::before`/`::after`, `lobby-start-snake-spin` 4.5s |
+
+**Не плутати:** `.ui-glass-panel` — rounded inset panel для sheet-adjacent блоків; app chrome — flat full-width.
+
 ### Panel & chrome
 
 | Змінна / клас | Значення | Призначення |
@@ -270,5 +311,6 @@
 | `packages/client/src/constants/themes.ts` | `THEME_CONFIG` — 5 базових кольорів + optional `elevated` / premium `accentAlt` / `accentWarm` |
 | `packages/client/src/components/typography/ScreenTitle.tsx` | Screen / section heading primitive (TYPO-001 Phase 2) |
 | `packages/client/src/constants/typography.ts` | `typographyClass`, `typographyTokens` (TYPO-001) |
+| `packages/client/src/constants/tmaLayoutConstants.ts` | TMA header/footer SSOT: `HEADER_ROW_MIN_PX`, `TG_CHROME_GUTTER_PX`, `APP_HEADER_BAR_PX`, `--app-page-header-height` helpers |
 | `packages/client/src/types.ts` | `ThemeConfig.tokens` |
 | `.cursor/rules/02-react.mdc` | React + Tailwind стандарти |

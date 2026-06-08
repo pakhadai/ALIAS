@@ -3,6 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 export const SHEET_DRAG_DISMISS_THRESHOLD_PX = 96;
 export const SHEET_DRAG_DISMISS_MS = 240;
 export const SHEET_DRAG_SNAP_MS = 380;
+/** Max upward pull (px) before rubber-band resistance — panel stays bottom-anchored */
+export const SHEET_DRAG_PULL_UP_MAX_PX = 48;
+export const SHEET_DRAG_PULL_UP_DAMPING = 0.22;
+export const SHEET_DRAG_PULL_UP_SCALE_MAX = 0.035;
 
 const NO_DRAG_HANDLERS = {
   onPointerDown: () => undefined,
@@ -122,7 +126,12 @@ export function useSheetDragToClose({
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
     if (!activeRef.current || pointerIdRef.current !== e.pointerId) return;
     const delta = e.clientY - startYRef.current;
-    setOffsetY(delta < 0 ? delta * 0.15 : delta);
+    if (delta < 0) {
+      const damped = delta * SHEET_DRAG_PULL_UP_DAMPING;
+      setOffsetY(Math.max(-SHEET_DRAG_PULL_UP_MAX_PX, damped));
+      return;
+    }
+    setOffsetY(delta);
   }, []);
 
   const finishDrag = useCallback(
@@ -140,10 +149,12 @@ export function useSheetDragToClose({
       if (currentOffset >= SHEET_DRAG_DISMISS_THRESHOLD_PX) {
         setIsDragging(false);
         setIsDismissing(true);
-        const panelH = panelRef.current?.offsetHeight ?? 480;
-        setOffsetY(panelH);
+        const dismissDistance =
+          typeof window !== 'undefined'
+            ? window.innerHeight
+            : (panelRef.current?.offsetHeight ?? 480);
+        setOffsetY(dismissDistance);
         window.setTimeout(() => {
-          resetDrag();
           onDismissRef.current();
         }, SHEET_DRAG_DISMISS_MS);
         return;
@@ -160,8 +171,21 @@ export function useSheetDragToClose({
   const panelStyle = useMemo((): React.CSSProperties | undefined => {
     const hasDragTransform = isDragging || isSnapping || isDismissing || offsetY !== 0;
     if (!hasDragTransform) return undefined;
+
+    const pullUpPx = Math.min(0, offsetY);
+    const pullUpScale =
+      pullUpPx < 0
+        ? 1 +
+          Math.min(
+            SHEET_DRAG_PULL_UP_SCALE_MAX,
+            (-pullUpPx / SHEET_DRAG_PULL_UP_MAX_PX) * SHEET_DRAG_PULL_UP_SCALE_MAX
+          )
+        : 1;
+    const translateY = Math.max(0, offsetY);
+
     return {
-      transform: `translateY(${Math.max(0, offsetY)}px)`,
+      transformOrigin: 'bottom center',
+      transform: `translate3d(0, ${translateY}px, 0) scaleY(${pullUpScale})`,
       transition: isDragging
         ? 'none'
         : isDismissing

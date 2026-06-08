@@ -1,15 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import {
-  ArrowLeft,
-  Settings,
-  ShoppingBag,
-  ChevronRight,
-  BookOpen,
-  Lock,
-  Shield,
-  Loader2,
-} from 'lucide-react';
+import { Settings, ShoppingBag, ChevronRight, BookOpen, Lock, Shield, Loader2 } from 'lucide-react';
 import { AvatarDisplay } from '../../components/AvatarDisplay';
+import { AppHeader, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
@@ -139,24 +131,14 @@ export const ProfileScreen = () => {
   );
 
   return (
-    <div
-      className={`flex flex-col min-h-screen items-center ${currentTheme.bg} transition-colors duration-500`}
-    >
-      <div className="max-w-2xl w-full flex-1 flex flex-col">
-        <header className="flex items-center px-6 pb-4 pt-safe-top md:px-8">
-          {!isTelegram && (
-            <button
-              type="button"
-              onClick={() => setGameState(GameState.MENU)}
-              className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-            >
-              <ArrowLeft size={22} />
-            </button>
-          )}
-        </header>
-
+    <>
+      <ScreenShell
+        className={`${currentTheme.bg} transition-colors duration-500`}
+        contentClassName="max-w-2xl w-full mx-auto items-center px-6 md:px-8"
+        header={<AppHeader onBack={() => setGameState(GameState.MENU)} />}
+      >
         {/* HERO */}
-        <section className="flex flex-col items-center px-6 md:px-8 pt-2 pb-6">
+        <section className="flex flex-col items-center pt-2 pb-6">
           <AvatarDisplay
             avatarId={profile?.avatarId}
             imageUrl={profile?.avatarId ? null : profile?.avatarUrl}
@@ -179,7 +161,7 @@ export const ProfileScreen = () => {
         </section>
 
         {isGuest && !isTelegram && (
-          <div className="px-6 md:px-8 pb-6 flex flex-col items-center">
+          <div className="pb-6 flex flex-col items-center">
             <button
               type="button"
               onClick={requestLogin}
@@ -193,7 +175,7 @@ export const ProfileScreen = () => {
         {isGuest && (
           <>
             <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
-            <div className="px-6 md:px-8 py-5">
+            <div className="py-5">
               <p className={`${sectionTitle} mb-3`}>{t.profileBenefitsTitle}</p>
               <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
                 {guestBenefits.slice(0, 4).map((item, i) => (
@@ -247,7 +229,7 @@ export const ProfileScreen = () => {
         <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
 
         {/* STATS → details */}
-        <section className="px-6 md:px-8 pt-6 pb-2">
+        <section className="pt-6 pb-2">
           <button
             type="button"
             onClick={() => setGameState(GameState.PLAYER_STATS)}
@@ -293,7 +275,7 @@ export const ProfileScreen = () => {
 
         <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border mt-4" />
 
-        <div className="flex-1 px-6 md:px-8 space-y-6 pt-6">
+        <div className="flex-1 space-y-6 pt-6">
           <div>
             <p className={sectionTitle}>{t.profileSectionGame ?? t.game ?? 'GAME'}</p>
             <div className="mt-3 space-y-3">
@@ -398,7 +380,7 @@ export const ProfileScreen = () => {
           )}
         </div>
 
-        <div className="px-6 md:px-8 pt-6 pb-safe-bottom">
+        <div className="pt-6">
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
@@ -412,7 +394,7 @@ export const ProfileScreen = () => {
             )}
           </button>
         </div>
-      </div>
+      </ScreenShell>
 
       {showLogoutConfirm && (
         <LogoutConfirmBottomSheet
@@ -426,6 +408,6 @@ export const ProfileScreen = () => {
           loadingLabel={t.profileLogoutLoading ?? 'Logging out...'}
         />
       )}
-    </div>
+    </>
   );
 };

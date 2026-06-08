@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { GameMode as ModeEnum } from '@alias/shared';
 
@@ -40,9 +41,7 @@ export const CountdownScreen = () => {
   }, [count, startGameplay, playSound, isActualExplainer, isQuiz]);
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} pt-safe-top justify-center items-center`}
-    >
+    <ScreenShell className={currentTheme.bg} contentClassName="justify-center items-center">
       {count > 0 ? (
         <span
           key={count}
@@ -64,6 +63,6 @@ export const CountdownScreen = () => {
           </span>
         </div>
       )}
-    </div>
+    </ScreenShell>
   );
 };

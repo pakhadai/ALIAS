@@ -166,7 +166,7 @@ export interface GameContextType extends AppState {
   setTeams: (teams: Team[]) => void;
   resetGame: () => void;
   rematch: () => void;
-  leaveRoom: () => void;
+  leaveRoom: (opts?: { resetGameMode?: boolean }) => void;
   setRoomCode: (code: string) => void;
   addOfflinePlayer: (name?: string, avatar?: string) => void;
   removeOfflinePlayer: (id: string) => void;

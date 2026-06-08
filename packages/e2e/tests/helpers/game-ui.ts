@@ -58,6 +58,42 @@ export type TwoPlayerSession = {
 const dismissLoginRe =
   /Продовжити без входу|Continue without signing in|Ohne Anmeldung fortfahren/i;
 
+/**
+ * Telegram Web App SDK loads in `index.html` for all browsers — strip detection fields so
+ * E2E sees browser chrome (`settings-close` / `app-header-back`) instead of TMA spacers.
+ */
+export async function neuterTelegramMiniAppDetection(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const strip = (): void => {
+      const wa = window.Telegram?.WebApp;
+      if (!wa) return;
+      try {
+        Object.defineProperty(wa, 'initData', { get: () => '', configurable: true });
+        Object.defineProperty(wa, 'platform', { get: () => '', configurable: true });
+        Object.defineProperty(wa, 'initDataUnsafe', { get: () => undefined, configurable: true });
+      } catch {
+        /* noop — best effort for E2E */
+      }
+    };
+    strip();
+    window.addEventListener('load', strip, { once: true });
+    const poll = window.setInterval(() => {
+      if (window.Telegram?.WebApp) {
+        strip();
+        window.clearInterval(poll);
+      }
+    }, 25);
+    window.setTimeout(() => window.clearInterval(poll), 5_000);
+  });
+}
+
+/** Force browser header chrome before navigating to settings (SDK may load after init script). */
+export async function forceBrowserChromeMode(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    delete (window as { Telegram?: unknown }).Telegram;
+  });
+}
+
 /** Anonymous web app shows a login sheet on the menu — dismiss before game flows. */
 export async function dismissLoginModalIfOpen(page: Page): Promise<void> {
   const btn = page.getByRole('button', { name: dismissLoginRe });
@@ -100,13 +136,29 @@ export async function guestJoinByCode(
 }
 
 /** Host → team 0, guest → team 1. */
+/** Join a team card by index (0-based). */
+export async function joinTeam(page: Page, teamIndex: number): Promise<void> {
+  await page.getByRole('button', { name: joinTeamRe }).nth(teamIndex).click();
+}
+
 export async function assignDistinctTeams(host: Page, guest: Page): Promise<void> {
-  await host.getByRole('button', { name: joinTeamRe }).first().click();
-  await guest.getByRole('button', { name: joinTeamRe }).nth(1).click();
+  await joinTeam(host, 0);
+  await joinTeam(guest, 1);
+}
+
+export async function expectLobbyReadiness(page: Page, opts: { ready: boolean }): Promise<void> {
+  const startBtn = page.getByRole('button', { name: startGameRe });
+  if (opts.ready) {
+    await expect(startBtn).toBeEnabled({ timeout: 15_000 });
+    await expect(page.getByTestId('lobby-readiness-bar')).toBeVisible({ timeout: 15_000 });
+  } else {
+    await expect(startBtn).toBeDisabled({ timeout: 15_000 });
+    await expect(page.getByTestId('lobby-start-validation')).toBeVisible({ timeout: 15_000 });
+  }
 }
 
 export async function expectLobbyReadyToStart(page: Page): Promise<void> {
-  await expect(page.getByRole('button', { name: startGameRe })).toBeEnabled({ timeout: 15_000 });
+  await expectLobbyReadiness(page, { ready: true });
 }
 
 export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerSession> {
@@ -114,6 +166,9 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
   const guestContext = await browser.newContext();
   const host = await hostContext.newPage();
   const guest = await guestContext.newPage();
+
+  await neuterTelegramMiniAppDetection(host);
+  await neuterTelegramMiniAppDetection(guest);
 
   await host.goto('/');
   await host.getByTestId('menu-create-game').click();
@@ -173,6 +228,7 @@ export async function confirmRoundSummary(host: Page): Promise<void> {
 }
 
 export async function openLobbySettings(page: Page): Promise<void> {
+  await forceBrowserChromeMode(page);
   const chips = page.getByTestId('lobby-settings-chips');
   if (await chips.isVisible().catch(() => false)) {
     await chips.scrollIntoViewIfNeeded();
@@ -203,9 +259,19 @@ export async function openLobbySettingsRulesTab(page: Page): Promise<void> {
 }
 
 export async function closeLobbySettings(page: Page): Promise<void> {
+  await forceBrowserChromeMode(page);
   const closeBtn = page.getByTestId('settings-close');
-  await closeBtn.scrollIntoViewIfNeeded();
-  await closeBtn.click();
+  const appBack = page.getByTestId('app-header-back');
+  if (await closeBtn.isVisible().catch(() => false)) {
+    await closeBtn.scrollIntoViewIfNeeded();
+    await closeBtn.click();
+  } else if (await appBack.isVisible().catch(() => false)) {
+    await appBack.scrollIntoViewIfNeeded();
+    await appBack.click();
+  } else {
+    throw new Error('closeLobbySettings: no browser back control visible');
+  }
+  await expect(page.getByTestId('lobby-room-code')).toBeVisible({ timeout: 15_000 });
 }
 
 export async function setLobbyGameModeImposter(host: Page): Promise<void> {
@@ -260,6 +326,7 @@ export async function assignOfflinePlayerToTeam(
 }
 
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
+  await neuterTelegramMiniAppDetection(page);
   await page.goto('/');
   await dismissLoginModalIfOpen(page);
   await page.getByTestId('menu-offline').click();

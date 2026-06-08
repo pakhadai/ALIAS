@@ -652,4 +652,18 @@ describe('Redis persistence & restore', () => {
     const room = await redisRm.createRoom('s1');
     expect(await redisRm.restoreRoomFromRedis(room.code)).toBe(room);
   });
+
+  it('restores teamsLocked from Redis snapshot', async () => {
+    const { rm: rm1, redisStore } = await withRedis();
+    const room = await rm1.createRoom('s1');
+    room.teamsLocked = true;
+    rm1.persistRoom(room);
+    await flushMicrotasks();
+
+    const rm2 = new RoomManager();
+    rm2.setRedisStore(redisStore);
+    const restored = await rm2.restoreRoomFromRedis(room.code);
+
+    expect(restored?.teamsLocked).toBe(true);
+  });
 });

@@ -68,11 +68,71 @@
 | G-6 | 🟡 | ✅ RESOLVED | Client unit — GameContext sync, offlineGameActions, gameReducer edge cases, QuickBuyModal TMA Stars (44 tests, 2026-06-07 Phase 5) |
 | G-7 | 🟡 | ✅ RESOLVED | `@alias/shared` pure utils — `utils.test.ts` (shuffleArray, getTeamColor, constants); vitest script added (2026-06-07 Phase 6) |
 | G-8 | 🟠 | ✅ RESOLVED | E2E `@smoke` + `@core` specs added — `smoke-round.spec.ts`, `core-acceptance.spec.ts`, `helpers/game-ui.ts` (2026-06-07 Phase 7). Local run blocked without Postgres (`docker compose up -d postgres`); CI runs `@smoke` / `@core` on chromium + mobile-chrome. |
+| G-9 | 🟡 | ✅ RESOLVED | Lobby Fix Phase 4 tests — `buildTeamShells`, `TeamSetupScreen`, `room:exists` writer-only int, `lobby-team-builder.spec.ts`; client **142/142**, server **356/356** (2026-06-08) |
 
 ---
 
-**Last updated:** 2026-06-07 (test-gap session — Phase 8 coverage + verify)
+**Last updated:** 2026-06-08 (TMA Header Unification Phase 6)
 
-**Open issues:** 0
+**Open issues:** 0 🔴; 3 🟡 deferred (manual TMA device pass, LobbyScreen `act()` warnings, StoreScreen safe inset)
+
+## Блок H: Lobby Fix (2026-06-08 audit)
+
+| ID | Sev | Status | Опис |
+|----|-----|--------|------|
+| H-1 | 🟠 | ✅ RESOLVED | TMA back SETTINGS/TEAMS called `leaveRoom` — now → LOBBY (Phase 1, `useTelegramBackButton.ts`) |
+| H-2 | 🟠 | ✅ RESOLVED | TMA back LOBBY → MENU left zombie session keys — now `leaveRoom()` (Phase 1) |
+| H-3 | 🟠 | ✅ RESOLVED | `restoreRoomFromRedis` missing `teamsLocked` — fixed (Phase 1, `RoomManager.ts`) |
+| H-4 | 🟠 | ✅ RESOLVED | `REMOVE_OFFLINE_PLAYER` ghost in teams — team cleanup like KICK_PLAYER (Phase 1) |
+| H-5 | 🟡 | ✅ RESOLVED | `TeamSetupScreen` empty when `teams[]=[]` — `buildTeamShells` (Phase 1) |
+| H-6 | 🟠 | ✅ RESOLVED | Server START_GAME lobby readiness validation — Phase 2 (`deriveLobbyReadinessServer`, `LOBBY_NOT_READY`) |
+| H-7 | 🟠 | ✅ RESOLVED | TEAM_JOIN mid-game blocked — Phase 2 (`authorizeGameAction` `INVALID_STATE`) |
+| H-8 | 🟡 | ✅ RESOLVED | `room:exists` false positive on writer-only key — Phase 2 |
+| H-9 | 🟡 | ✅ RESOLVED | Join during PLAYING — Phase 2 (`GAME_ALREADY_STARTED`) |
+| H-10 | 🟡 | ✅ RESOLVED | Optimistic settings rollback on `room:error` — Phase 3 (`GameContext.tsx`) |
+| H-11 | 🟡 | ✅ RESOLVED | `leaveRoom({ resetGameMode: false })` preserves OFFLINE — Phase 3 |
+| H-12 | 🟢 | ✅ RESOLVED | Duplicate "+" in LobbyPlayModeBar — Phase 3 |
+
+## Блок I: Lobby Fix Final Audit (2026-06-08)
+
+**Verifier:** `pnpm build:shared && typecheck && shared 17/17 && server 356/356 && client 142/142 && verify green`; E2E `lobby|@core|@smoke` **33 passed / 3 skipped** (lobby-team-builder skips mobile-chrome by design).
+
+| ID | B# | Status | Evidence |
+|----|-----|--------|----------|
+| I-1 | B1 | ✅ VERIFIED | `useTelegramBackButton.ts:45-48` SETTINGS/TEAMS → LOBBY; test L62–74 |
+| I-2 | B2 | ✅ VERIFIED | `useTelegramBackButton.ts:49-51` LOBBY → `leaveRoom`; `GameContext.tsx:1065-1067` LS keys cleared |
+| I-3 | B3 | ✅ VERIFIED | `RoomManager.test.ts` restores `teamsLocked` from Redis |
+| I-4 | B4 | ✅ VERIFIED | `offlineGameActions.test.ts` REMOVE_OFFLINE_PLAYER team cleanup |
+| I-5 | B5 | ✅ VERIFIED | `TeamSetupScreen.test.tsx` virtual shells; `buildTeamShells.ts` |
+| I-6 | B6 | ✅ VERIFIED | `GameEngine.test.ts` START_GAME reject/accept + `LOBBY_NOT_READY` |
+| I-7 | B7 | ✅ VERIFIED | `authorizeGameAction.test.ts` + `socketHandlers.int.test.ts` INVALID_STATE mid-game |
+| I-8 | B8 | ✅ VERIFIED | `socketHandlers.int.test.ts` writer-only `room:exists` → false |
+| I-9 | B9 | ✅ VERIFIED | `socketHandlers.int.test.ts` join PLAYING → `GAME_ALREADY_STARTED` |
+| I-10 | B10 | ✅ VERIFIED | `GameContext.test.ts` settings rollback on `room:error` |
+| I-11 | B11 | ✅ VERIFIED | `GameContext.test.ts` + `useTelegramBackButton.test.ts` offline `resetGameMode: false` |
+| I-12 | B12 | ✅ VERIFIED | `LobbyPlayModeBar.tsx` single `+`; test `getAllByRole('Add team').length === 1` |
+
+| ID | Sev | Status | Опис |
+|----|-----|--------|------|
+| I-13 | 🟡 | ⏳ DEFERRED | Manual TMA @375px checklist (Part F) — no device in CI; owner pass pending |
+| I-14 | 🟢 | ⏳ DEFERRED | `LobbyScreen.test.tsx` React `act(...)` warnings — test hygiene only, no prod regression |
+
+**Architecture invariants (Part B):** `teamsLocked` sync ✅; theme/sound local merge ✅ (`GameContext.tsx:327-337`); `CLIENT_NAV_STATES` SETTINGS overlay ✅; offline `sendAction` → `handleGameAction` ✅; online `ADD_OFFLINE_PLAYER` server no-op ✅ (`socketHandlers.ts:381-383`). No circular imports (`buildTeamShells` in `utils/`). No new 🔴 regressions.
+
+## Блок J: TMA Header Unification (2026-06-08 Phase 6)
+
+**Verifier:** `pnpm build:shared && typecheck` green; client **202/202**; grep gates 0; E2E `@smoke` **15 passed / 1 skipped**.
+
+| ID | Sev | Status | Опис |
+|----|-----|--------|------|
+| J-1 | 🟢 | ✅ VERIFIED | Grep gates — no `fixed left-0 right-0 top-0`, no ad-hoc `pt-safe-top` (except documented E), no `tma-fixed-header-height` |
+| J-2 | 🟡 | ⏳ DEFERRED | Manual TMA @375px checklist (Menu, Profile→Settings, Lobby, Settings footer, EnterName keyboard) — owner device |
+| J-3 | 🟢 | ✅ VERIFIED | `--app-page-header-height` ResizeObserver + toast/banner offset (`GlassAppHeader.test.tsx`, `ToastNotification.test.tsx`) |
+| J-4 | 🟢 | ✅ VERIFIED | `prefers-reduced-transparency` gradient fallback (`styles.css` L1084+) |
+| J-5 | 🟢 | ✅ VERIFIED | Lobby 1:1 — TMA spacer, browser X, settings (`LobbyScreen.test.tsx`) |
+| J-6 | 🟡 | ⏳ DEFERRED | `StoreScreen` missing top safe inset (documented gap in Header matrix) |
+| J-7 | 🟢 | ✅ RESOLVED | E2E `smoke-round` settings-close — `backTestId` + `forceBrowserChromeMode` (`game-ui.ts`) |
+
+**Phases 0–6:** ✅ complete. Canon: `ScreenShell` + sticky `AppHeader` in scroll; exceptions: `PlayingScreen`, `ImposterScreen`, `AdminApp`, `StoreScreen`.
 
 **Bootstrap note:** детальні знімки stack/docs/arch audit консолідовано тут; окремі `.cursor/*_AUDIT.md` видалено як дублікати.

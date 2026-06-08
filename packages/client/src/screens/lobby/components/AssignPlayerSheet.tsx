@@ -5,12 +5,7 @@ import { ModalSheet } from '../../../components/ModalSheet';
 import { ModalSheetTitle } from '../../../components/Shared';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import type { TranslationStrings } from '../../../hooks/useT';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 type T = TranslationStrings;
 

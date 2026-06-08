@@ -7,6 +7,7 @@ import { GameState, GameMode } from '../types';
 import type { GameSoundId } from '../types';
 import { getTeamColor, getTeamColorToken, shuffleArray } from '@alias/shared';
 import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
+import { buildTeamShells } from '../utils/buildTeamShells';
 import { AVATARS } from '../utils/avatars';
 import { getUiStrings } from '../hooks/useT';
 
@@ -21,25 +22,11 @@ export type OfflineGameActionDeps = {
 
 /** Mirror LobbyScreen teamShells — persist shells before TEAM_* mutates state.teams. */
 function materializeOfflineTeamsIfNeeded(state: AppState): Team[] {
-  if ((state.settings.general.teamMode ?? 'TEAMS') === 'SOLO') {
-    return state.teams.map((t) => ({ ...t, players: [...t.players] }));
-  }
-  const desiredCount = Math.max(2, Math.min(state.settings.general.teamCount ?? 2, 10));
-  if (state.teams.length === desiredCount) {
-    return state.teams.map((t) => ({ ...t, players: [...t.players] }));
-  }
-  const names = TEAM_NAMES[state.settings.general.language] ?? TEAM_NAMES.EN;
-  return Array.from({ length: desiredCount }, (_, i) => {
-    const existing = state.teams[i];
-    return {
-      id: `team-${i}`,
-      name: names[i % names.length] ?? `Team ${i + 1}`,
-      score: existing?.score ?? 0,
-      color: getTeamColorToken(i),
-      colorHex: getTeamColor(i).hex,
-      players: existing?.players ? [...existing.players] : [],
-      nextPlayerIndex: existing?.nextPlayerIndex ?? 0,
-    };
+  return buildTeamShells({
+    teams: state.teams,
+    teamCount: state.settings.general.teamCount ?? 2,
+    teamMode: state.settings.general.teamMode ?? 'TEAMS',
+    language: state.settings.general.language,
   });
 }
 
@@ -718,8 +705,23 @@ export function applyOfflineGameAction(
     }
     case 'REMOVE_OFFLINE_PLAYER': {
       const removeId = payload.data;
-      const filteredPlayers = stateRef.current.players.filter((p) => p.id !== removeId);
-      dispatch({ type: 'UPDATE_PLAYERS', payload: filteredPlayers });
+      const updatedPlayers = stateRef.current.players.filter((p) => p.id !== removeId);
+      const baseTeams = materializeOfflineTeamsIfNeeded(stateRef.current);
+      const updatedTeams = baseTeams.map((team) => {
+        const newPlayers = team.players.filter((p) => p.id !== removeId);
+        return {
+          ...team,
+          players: newPlayers,
+          nextPlayerIndex:
+            team.nextPlayerIndex >= newPlayers.length
+              ? Math.max(0, newPlayers.length - 1)
+              : team.nextPlayerIndex,
+        };
+      });
+      dispatch({
+        type: 'SET_STATE',
+        payload: { players: updatedPlayers, teams: updatedTeams },
+      });
       break;
     }
   }

@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react';
+import type { Language } from '@alias/shared';
 import { GameState } from '../types';
 import { ROOM_CODE_LENGTH } from '../constants';
+import { getUiStrings } from './useT';
 
 type UseTelegramLobbyDeepLinkArgs = {
   isAuthenticated: boolean;
   startParam: string | null;
   gameState: GameState;
+  uiLanguage: Language;
   setGameState: (state: GameState) => void;
   setRoomCode: (code: string) => void;
   checkRoomExists: (code: string) => Promise<boolean>;
@@ -17,6 +20,7 @@ export function useTelegramLobbyDeepLink({
   isAuthenticated,
   startParam,
   gameState,
+  uiLanguage,
   setGameState,
   setRoomCode,
   checkRoomExists,
@@ -34,8 +38,10 @@ export function useTelegramLobbyDeepLink({
     const roomCode = startParam.slice('lobby_'.length).trim();
     consumedStartParamRef.current = startParam;
 
+    const t = getUiStrings(uiLanguage);
+
     if (roomCode.length !== ROOM_CODE_LENGTH || !/^\d+$/.test(roomCode)) {
-      showNotification('Некоректний код кімнати в запрошенні', 'error');
+      showNotification(t.tgDeepLinkInvalidCode, 'error');
       return;
     }
 
@@ -43,19 +49,20 @@ export function useTelegramLobbyDeepLink({
       try {
         const exists = await checkRoomExists(roomCode);
         if (!exists) {
-          showNotification(`Кімната ${roomCode} не знайдена`, 'error');
+          showNotification(t.tgDeepLinkRoomNotFound.replace('{0}', roomCode), 'error');
           return;
         }
         setRoomCode(roomCode);
         setGameState(GameState.ENTER_NAME);
       } catch {
-        showNotification('Не вдалося приєднатись за запрошенням', 'error');
+        showNotification(t.tgDeepLinkJoinFailed, 'error');
       }
     })();
   }, [
     checkRoomExists,
     gameState,
     isAuthenticated,
+    uiLanguage,
     setGameState,
     setRoomCode,
     showNotification,

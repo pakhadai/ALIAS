@@ -5,12 +5,7 @@ import { AvatarDisplay } from '../../../components/AvatarDisplay';
 import { MAX_PLAYERS } from '../../../constants';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 type T = TranslationStrings;
 

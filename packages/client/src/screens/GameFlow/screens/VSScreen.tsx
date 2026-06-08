@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 import type { Player, Team } from '../../../types';
@@ -29,8 +30,33 @@ export const VSScreen = () => {
   });
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${currentTheme.bg} px-8 pt-safe-top pb-safe-bottom justify-center items-center overflow-hidden`}
+    <ScreenShell
+      className={currentTheme.bg}
+      contentClassName="px-8 justify-center items-center overflow-hidden"
+      footer={
+        <FixedBottomBar contentClassName="w-full max-w-sm">
+          <div
+            className={`transition-all duration-500 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          >
+            {isHost ? (
+              <Button
+                themeClass={currentTheme.button}
+                fullWidth
+                size="xl"
+                onClick={() => sendAction({ action: 'START_GAME' })}
+              >
+                {t.startGame}
+              </Button>
+            ) : (
+              <p
+                className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}
+              >
+                {t.waitHost}
+              </p>
+            )}
+          </div>
+        </FixedBottomBar>
+      }
     >
       <div className="flex flex-col items-center gap-6 w-full max-w-sm">
         {elements.map((el, i) => {
@@ -107,27 +133,6 @@ export const VSScreen = () => {
           );
         })}
       </div>
-
-      <div
-        className={`w-full max-w-sm mt-16 transition-all duration-500 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-      >
-        {isHost ? (
-          <Button
-            themeClass={currentTheme.button}
-            fullWidth
-            size="xl"
-            onClick={() => sendAction({ action: 'START_GAME' })}
-          >
-            {t.startGame}
-          </Button>
-        ) : (
-          <p
-            className={`text-center text-[10px] uppercase tracking-widest opacity-40 animate-pulse ${currentTheme.textSecondary}`}
-          >
-            {t.waitHost}
-          </p>
-        )}
-      </div>
-    </div>
+    </ScreenShell>
   );
 };

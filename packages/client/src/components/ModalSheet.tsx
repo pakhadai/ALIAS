@@ -190,7 +190,7 @@ export function ModalSheet({
       data-bottom-sheet-backdrop=""
       data-open={visible ? 'true' : 'false'}
       className={bottomSheetBackdropClass(zClass, backdropPosition, mergedBackdropClass)}
-      style={keyboardAvoiding ? { ...backdropStyle, overflow: 'hidden' } : backdropStyle}
+      style={{ overflow: 'hidden', ...backdropStyle }}
       onClick={visible ? handleBackdropClick : undefined}
       role="presentation"
     >

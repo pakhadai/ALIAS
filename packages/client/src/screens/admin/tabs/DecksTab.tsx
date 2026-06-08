@@ -3,12 +3,7 @@ import { Check, X, Trash2, RefreshCw } from 'lucide-react';
 import { api, type CustomDeckRow } from '../adminApi';
 import type { ShowToast, ConfirmFn } from '../AdminApp';
 import { ADMIN_CARD_CLASS, ADMIN_SPINNER_CLASS, adminStatusBtn } from '../components/adminStyles';
-import {
-  typographyClass,
-  labelSectionClass,
-  labelSectionTitleClass,
-  formLabelClass,
-} from '../../../constants/typography';
+import { typographyClass } from '../../../constants/typography';
 
 interface Props {
   showToast: ShowToast;

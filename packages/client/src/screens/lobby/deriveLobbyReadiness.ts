@@ -25,6 +25,7 @@ export type LobbyReadiness = {
   hasOverfilledTeams: boolean;
 };
 
+/** Warn-only: overfilled teams do not block `ok` — host may still start (see LOBBY_TEAM_BUILDER.md). */
 export function hasOverfilledTeam(
   teamShells: Pick<Team, 'players'>[],
   playersTotal: number

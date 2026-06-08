@@ -1,7 +1,7 @@
 # Lobby Team Builder
 
 > Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — **UX лобі та команд** (team builder, Solo).  
-> **Оновлено:** 2026-06-07 (Phase 3 + play format bar animation).
+> **Оновлено:** 2026-06-08 (glass lobby chrome + start CTA UX).
 
 ## UI: два екрани, одна логіка
 
@@ -20,7 +20,8 @@
 - **Self-select teams** (ONLINE): **Join/Leave** на картці команди (якщо не `teamsLocked`).
 - **Host controls**: shuffle, lock/unlock, rename teams.
 - **OFFLINE host assignment**: tap player chip → bottom sheet → assign/unassign (`TeamSetupScreen` або sheet у лобі).
-- **Start validation**: host стартує лише коли всі розподілені і кожна команда має ≥1 гравця.
+- **Start validation:** host стартує лише коли `deriveLobbyReadiness.ok`. Кнопка **не** `disabled` — `aria-disabled` + tap → toast (`firstBlockingReason`); іконка lock на CTA. Текст валідації **над** кнопкою прибрано (2026-06-08); зелений «Готово до старту» лишається лише коли `ok`.
+- **Overfill policy (warn-only):** `hasOverfilledTeams` у `deriveLobbyReadiness` — лише попередження в UI; **не блокує** `ok` і не дублюється в `deriveLobbyReadinessServer` (Phase 2). Хост може стартувати навіть при переповнених командах.
 - **Play format (Teams/Solo):** `LobbyPlayModeBar` — host керує форматом; **online guest** бачить блок до вибору команди, потім `LobbyPlayModeBarSlot` ховає його з анімацією (host завжди бачить).
 
 ### Team mode: **Solo** (`general.teamMode === 'SOLO'`)
@@ -76,7 +77,9 @@
 ## Server-side validation & auth
 
 - **Validation:** `packages/server/src/validation/schemas.ts`
-- **Authorization:** `packages/server/src/game/authorizeGameAction.ts` — host-only shuffle/lock/rename; `teamsLocked` блокує self-switch.
+- **Authorization:** `packages/server/src/game/authorizeGameAction.ts` — host-only shuffle/lock/rename; `teamsLocked` блокує self-switch; lobby actions лише в `LOBBY`/`TEAMS`; `START_GAME` лише з `LOBBY`.
+- **Readiness (shared):** `packages/shared/src/lobbyReadiness.ts` — `deriveLobbyReadinessServer` (min 2 players, all assigned, each team non-empty); `GameEngine` відхиляє `START_GAME` з `LOBBY_NOT_READY`.
+- **Join policy:** `room:join` дозволений лише коли `gameState === LOBBY`. Після старту гри — `GAME_ALREADY_STARTED`. **`room:rejoin`** для disconnect/grace не блокується.
 - **Engine:** `packages/server/src/services/GameEngine.ts` — `ensureTeamShells`, Solo layout на `START_GAME`, обробка team actions.
 
 ---
@@ -91,8 +94,12 @@
 | `components/LobbyInviteSheet.tsx` | Telegram-native invite options (copy code/link, TG share, nested QR) |
 | `components/LobbyPlayModeBar.tsx`, `LobbyPlayModeBarSlot.tsx` | Solo/Teams + team count; animated collapse for guests after team pick |
 | `components/UnassignedPool.tsx`, `TeamCard.tsx`, `AssignPlayerSheet.tsx` | Subcomponents |
-| `components/LobbyReadinessBar.tsx`, `deriveLobbyReadiness.ts` | Host start checklist above CTA (Phase 2) |
+| `LobbyScreen.tsx` | ONLINE inline builder + `ScreenShell` glass header/footer |
+| `components/LobbyStartPanel.tsx` | Host start CTA: faded-red blocked / neon snake ready; див. [`TMA_LAYOUT.md` — Lobby start CTA](./TMA_LAYOUT.md#lobby-start-cta-lobbystartpanel) |
+| `components/LobbyReadinessBar.tsx` | «Готово до старту» + overfill warn **лише коли** `readiness.ok` |
+| `deriveLobbyReadiness.ts` | Client readiness + `firstBlockingReason` для toast |
 | `components/LobbyGuestWaitingCard.tsx` | Online guest next-step card (Phase 2) |
+| `utils/buildTeamShells.ts` | Virtual team shells (TEAMS mode) — shared by `LobbyScreen`, `TeamSetupScreen`, offline `TEAM_*` |
 
 ---
 
@@ -102,3 +109,7 @@
 - **OFFLINE:** chip → assign sheet, rename, `GENERATE_TEAMS` → `TEAMS`, start when valid.
 
 Детальні критерії — [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md).
+
+**Automated E2E (Phase 4):** `packages/e2e/tests/lobby-team-builder.spec.ts` — `@core` (assign → lock → start validation → PRE_ROUND), `@smoke` (create → join → assign → start). Helpers: `joinTeam`, `expectLobbyReadiness` in `tests/helpers/game-ui.ts`.
+
+План виправлення відомих проблем лоббі (фази для AI) — [`LOBBY_FIX_PROMPTS.md`](./LOBBY_FIX_PROMPTS.md).

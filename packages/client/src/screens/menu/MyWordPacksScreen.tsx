@@ -1,21 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  X,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  BookOpen,
-  Copy,
-  Loader2,
-  Upload,
-  ShoppingBag,
-  Lock,
-} from 'lucide-react';
+import { Plus, Trash2, BookOpen, Copy, Loader2, Upload, ShoppingBag, Lock } from 'lucide-react';
 import { typographyClass, formLabelClass } from '../../constants/typography';
+import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
-import { useTelegramApp } from '../../hooks/useTelegramApp';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import {
   fetchMyDecks,
@@ -29,7 +18,6 @@ const MAX_USER_PACKS = 5;
 export const MyWordPacksScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const { authState, profile } = useAuthContext();
-  const { isTelegram } = useTelegramApp();
   const isDark = currentTheme.isDark;
 
   const isUnlocked =
@@ -136,242 +124,232 @@ export const MyWordPacksScreen = () => {
     rejected: 'text-ui-danger',
   };
 
-  if (checkingAccess)
+  const exitCreateView = () => {
+    setView('list');
+    setCreateError('');
+  };
+
+  const goBack = () => setGameState(GameState.MENU);
+
+  if (checkingAccess) {
     return (
-      <div className="flex flex-col h-screen bg-ui-bg items-center justify-center">
+      <ScreenShell className="bg-ui-bg items-center justify-center">
         <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
-      </div>
+      </ScreenShell>
     );
+  }
 
-  if (!isUnlocked)
+  if (!isUnlocked) {
     return (
-      <div className="flex flex-col h-screen items-center bg-ui-bg">
-        <div className="max-w-2xl w-full flex-1 flex flex-col">
-          <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-            {!isTelegram && (
-              <button
-                onClick={() => setGameState(GameState.PROFILE)}
-                className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-              >
-                <ArrowLeft size={22} />
-              </button>
-            )}
-            <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
-          </header>
-          <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
-            <div className="w-20 h-20 rounded-full bg-ui-surface flex items-center justify-center border border-ui-border">
-              <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
-            </div>
-            <div>
-              <ScreenTitle as="h3" themeClass={currentTheme.textMain} className="mb-2">
-                Функція заблокована
-              </ScreenTitle>
-              <p className={`${typographyClass.body} leading-relaxed text-ui-fg-muted opacity-80`}>
-                Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}Розблокуйте цю
-                функцію в Магазині.
-              </p>
-            </div>
-            <button
-              onClick={() => setGameState(GameState.STORE)}
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98]`}
-            >
-              <ShoppingBag size={16} />
-              Відкрити магазин
-            </button>
-          </div>
+      <ScreenShell
+        className="bg-ui-bg"
+        contentClassName="max-w-2xl w-full mx-auto flex flex-col items-center justify-center px-8 gap-6 text-center"
+        header={
+          <AppHeader
+            title={<ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>}
+            onBack={goBack}
+          />
+        }
+      >
+        <div className="w-20 h-20 rounded-full bg-ui-surface flex items-center justify-center border border-ui-border">
+          <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
         </div>
-      </div>
+        <div>
+          <ScreenTitle as="h3" themeClass={currentTheme.textMain} className="mb-2">
+            Функція заблокована
+          </ScreenTitle>
+          <p className={`${typographyClass.body} leading-relaxed text-ui-fg-muted opacity-80`}>
+            Створюйте власні паки слів для корпоративів, вечірок або класів.{'\n'}Розблокуйте цю
+            функцію в Магазині.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setGameState(GameState.STORE)}
+          className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98]`}
+        >
+          <ShoppingBag size={16} />
+          Відкрити магазин
+        </button>
+      </ScreenShell>
     );
+  }
 
-  if (view === 'create')
+  if (view === 'create') {
     return (
-      <div className="flex flex-col h-screen items-center bg-ui-bg">
-        <div className="max-w-2xl w-full flex-1 flex flex-col">
-          <header className="flex items-center px-6 md:px-8 pb-4 pt-safe-top gap-3">
-            {!isTelegram && (
-              <button
-                onClick={() => {
-                  setView('list');
-                  setCreateError('');
-                }}
-                className={`p-2 transition-all active:scale-90 ${currentTheme.iconColor} opacity-50 hover:opacity-100`}
-              >
-                <ArrowLeft size={22} />
-              </button>
-            )}
-            <ScreenTitle themeClass={currentTheme.textMain}>Новий пак</ScreenTitle>
-          </header>
-          <div
-            className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-5"
-            style={{ scrollbarWidth: 'none' }}
-          >
-            <div className="space-y-2">
-              <label className={`${formLabelClass} opacity-80`}>Назва паку</label>
-              <input
-                value={deckName}
-                onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
-                placeholder="наприклад: Офісна вечірка"
-                className={inputCls}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className={`${formLabelClass} opacity-80`}>
-                  Слова
-                  <span
-                    className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} opacity-60`}
-                  >
-                    (кожне з нового рядка або через кому)
-                  </span>
-                </label>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider text-ui-fg-muted hover:text-ui-fg transition-colors`}
-                >
-                  <Upload size={12} />
-                  Завантажити .txt/.csv
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.csv"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-              </div>
-              <textarea
-                value={wordsText}
-                onChange={(e) => setWordsText(e.target.value)}
-                placeholder={'яблуко\nбанан\nогірок\n...'}
-                rows={10}
-                className={`${inputCls} resize-none`}
-              />
-              <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
-                {wordsText.split(/[\n,;]+/).filter((w) => w.trim()).length} слів
-              </p>
-            </div>
-            {createError && (
-              <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
-            )}
-          </div>
-          <div className="px-6 md:px-8 pt-4 pb-safe-bottom">
+      <ScreenShell
+        className="bg-ui-bg"
+        contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 py-4 space-y-5"
+        header={
+          <AppHeader
+            title={<ScreenTitle themeClass={currentTheme.textMain}>Новий пак</ScreenTitle>}
+            onBack={exitCreateView}
+          />
+        }
+        footer={
+          <FixedBottomBar contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
             <button
+              type="button"
               onClick={handleCreate}
               disabled={creating}
               className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
             >
               {creating ? <Loader2 size={16} className="animate-spin" /> : 'Створити пак'}
             </button>
-          </div>
+          </FixedBottomBar>
+        }
+      >
+        <div className="space-y-2">
+          <label className={`${formLabelClass} opacity-80`}>Назва паку</label>
+          <input
+            value={deckName}
+            onChange={(e) => setDeckName(e.target.value.slice(0, 60))}
+            placeholder="наприклад: Офісна вечірка"
+            className={inputCls}
+          />
         </div>
-      </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className={`${formLabelClass} opacity-80`}>
+              Слова
+              <span
+                className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} opacity-60`}
+              >
+                (кожне з нового рядка або через кому)
+              </span>
+            </label>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`flex items-center gap-1.5 ${typographyClass.label} tracking-wider text-ui-fg-muted hover:text-ui-fg transition-colors`}
+            >
+              <Upload size={12} />
+              Завантажити .txt/.csv
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.csv"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+          </div>
+          <textarea
+            value={wordsText}
+            onChange={(e) => setWordsText(e.target.value)}
+            placeholder={'яблуко\nбанан\nогірок\n...'}
+            rows={10}
+            className={`${inputCls} resize-none`}
+          />
+          <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
+            {wordsText.split(/[\n,;]+/).filter((w) => w.trim()).length} слів
+          </p>
+        </div>
+        {createError && (
+          <p className={`text-ui-danger ${typographyClass.system} font-sans`}>{createError}</p>
+        )}
+      </ScreenShell>
     );
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-ui-bg">
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col overflow-hidden">
-        <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-ui-border rounded-full" />
-        </div>
-        <div className="px-6 md:px-8 pb-5 pt-2 flex justify-between items-center">
-          <div>
-            <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
-            <p className={`${typographyClass.label} mt-1 text-ui-fg-muted opacity-70`}>
-              {decks.length} / {MAX_USER_PACKS}
-            </p>
-          </div>
-          <button
-            onClick={() => setGameState(GameState.PROFILE)}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-ui-surface hover:bg-ui-surface-hover border border-ui-border"
-          >
-            <X size={16} className={`${currentTheme.iconColor} opacity-70`} />
-          </button>
-        </div>
-        <div
-          className="flex-1 overflow-y-auto px-6 space-y-4 pb-28"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {loading ? (
-            <div className="flex justify-center pt-16">
-              <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
-            </div>
-          ) : decks.length === 0 ? (
-            <div
-              className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}
-            >
-              <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
-              <p
-                className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
-              >
-                Немає паків
+    <ScreenShell
+      className="bg-ui-bg"
+      contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 space-y-4"
+      header={
+        <AppHeader
+          title={
+            <div className="text-center">
+              <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
+              <p className={`${typographyClass.label} mt-1 text-ui-fg-muted opacity-70`}>
+                {decks.length} / {MAX_USER_PACKS}
               </p>
             </div>
-          ) : (
-            decks.map((deck) => (
-              <div key={deck.id} className={`${cardBg} rounded-2xl p-5 space-y-3`}>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
-                    >
-                      {deck.name}
-                    </h3>
-                    <p
-                      className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
-                    >
-                      {deck.wordCount} слів
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(deck.id)}
-                    disabled={deleting === deck.id}
-                    className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
-                  >
-                    {deleting === deck.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Trash2 size={16} />
-                    )}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span
-                    className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
-                  >
-                    {deck.status === 'approved'
-                      ? 'Активний'
-                      : deck.status === 'pending'
-                        ? 'На розгляді'
-                        : 'Відхилено'}
-                  </span>
-                  {deck.accessCode && (
-                    <button
-                      onClick={() => handleCopyCode(deck.accessCode!)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
-                    >
-                      <Copy size={11} />
-                      {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
+          }
+          onBack={goBack}
+        />
+      }
+      footer={
+        decks.length < MAX_USER_PACKS ? (
+          <FixedBottomBar glass contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
+            <button
+              type="button"
+              onClick={() => setView('create')}
+              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+            >
+              <Plus size={16} />
+              Створити пак
+            </button>
+          </FixedBottomBar>
+        ) : undefined
+      }
+    >
+      {loading ? (
+        <div className="flex justify-center pt-16">
+          <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
         </div>
-        {decks.length < MAX_USER_PACKS && (
-          <div className="absolute bottom-0 left-0 right-0 px-6 md:px-8 pt-4 pb-safe-bottom pointer-events-none flex justify-center">
-            <div className="w-full max-w-2xl pointer-events-auto">
+      ) : decks.length === 0 ? (
+        <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
+          <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
+          <p
+            className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+          >
+            Немає паків
+          </p>
+        </div>
+      ) : (
+        decks.map((deck) => (
+          <div key={deck.id} className={`${cardBg} rounded-2xl p-5 space-y-3`}>
+            <div className="flex justify-between items-start">
+              <div className="flex-1 min-w-0">
+                <h3
+                  className={`font-serif text-lg leading-tight ${currentTheme.textMain} truncate`}
+                >
+                  {deck.name}
+                </h3>
+                <p
+                  className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                >
+                  {deck.wordCount} слів
+                </p>
+              </div>
               <button
-                onClick={() => setView('create')}
-                className={`pointer-events-auto w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+                type="button"
+                onClick={() => handleDelete(deck.id)}
+                disabled={deleting === deck.id}
+                className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
               >
-                <Plus size={16} />
-                Створити пак
+                {deleting === deck.id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
               </button>
             </div>
+            <div className="flex items-center justify-between pt-1">
+              <span
+                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+              >
+                {deck.status === 'approved'
+                  ? 'Активний'
+                  : deck.status === 'pending'
+                    ? 'На розгляді'
+                    : 'Відхилено'}
+              </span>
+              {deck.accessCode && (
+                <button
+                  type="button"
+                  onClick={() => handleCopyCode(deck.accessCode!)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
+                >
+                  <Copy size={11} />
+                  {copied === deck.accessCode ? 'Скопійовано!' : deck.accessCode}
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+        ))
+      )}
+    </ScreenShell>
   );
 };

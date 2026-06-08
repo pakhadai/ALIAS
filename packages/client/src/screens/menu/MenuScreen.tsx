@@ -1,7 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize } from 'lucide-react';
 import { Logo, ModalSheetTitle } from '../../components/Shared';
 import { ModalSheet } from '../../components/ModalSheet';
+import { AppHeader, ScreenShell } from '../../components/layout';
 import { QuickJoinSheet } from './QuickJoinSheet';
 import { EnterNameSheet } from './EnterNameSheet';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
@@ -13,6 +14,7 @@ import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../util
 import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
 import { ROOM_CODE_LENGTH } from '../../constants';
+import { HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
 import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
 
 export const MenuScreen = () => {
@@ -42,13 +44,6 @@ export const MenuScreen = () => {
   const isTelegram = isTelegramMiniApp();
 
   void setSettings;
-
-  useEffect(() => {
-    document.documentElement.dataset.fixedHeader = 'true';
-    return () => {
-      delete document.documentElement.dataset.fixedHeader;
-    };
-  }, []);
 
   const handleProfileClick = () => {
     setGameState(GameState.PROFILE);
@@ -103,6 +98,55 @@ export const MenuScreen = () => {
     }
   };
 
+  const menuHeaderIcons = (
+    <div className="flex items-center gap-2 sm:gap-3">
+      <button
+        type="button"
+        onClick={handleProfileClick}
+        className={menuHeaderIconBtn}
+        aria-label="Profile"
+      >
+        <span className="relative inline-flex">
+          <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+          {showProfileBadge && (
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ui-danger ring-2 ring-ui-bg"
+              aria-hidden
+            />
+          )}
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowAppSettings(true)}
+        className={menuHeaderIconBtn}
+        aria-label="Settings"
+      >
+        <Settings size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowRules(true)}
+        className={menuHeaderIconBtn}
+        aria-label={t.rulesTitle}
+      >
+        <BookOpen size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+      </button>
+      {!isStandaloneDisplay() && !isTelegram && (
+        <button
+          type="button"
+          onClick={() => void handleFullscreenClick()}
+          className={menuHeaderIconBtn}
+          aria-label="Fullscreen"
+        >
+          <Maximize size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+        </button>
+      )}
+    </div>
+  );
+
+  const frozenChromeClass = isEnterName ? 'pointer-events-none select-none' : undefined;
+
   return (
     <div
       className={`relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
@@ -123,79 +167,29 @@ export const MenuScreen = () => {
           backgroundSize: '18px 18px',
         }}
       />
-      <header
-        aria-hidden={isEnterName ? true : undefined}
-        className={[
-          'fixed left-0 right-0 top-0 z-20',
-          isEnterName ? 'pointer-events-none select-none' : '',
-          'flex justify-end items-center gap-2 sm:gap-3',
-          'px-4 pb-3 pl-env-left pr-env-right',
-          /* --tma-inset-top = content (Telegram chrome) + device (status bar) */
-          'pt-env-top',
-          'backdrop-blur-xl',
-          'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--ui-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--ui-bg)_65%,transparent)_60%,transparent_100%)]',
-        ].join(' ')}
-      >
-        <button
-          type="button"
-          onClick={handleProfileClick}
-          className={menuHeaderIconBtn}
-          aria-label="Profile"
-        >
-          <span className="relative inline-flex">
-            <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
-            {showProfileBadge && (
-              <span
-                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ui-danger ring-2 ring-ui-bg"
-                aria-hidden
-              />
-            )}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowAppSettings(true)}
-          className={menuHeaderIconBtn}
-          aria-label="Settings"
-        >
-          <Settings size={22} className={menuHeaderIcon} strokeWidth={1.75} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowRules(true)}
-          className={menuHeaderIconBtn}
-          aria-label={t.rulesTitle}
-        >
-          <BookOpen size={22} className={menuHeaderIcon} strokeWidth={1.75} />
-        </button>
-        {!isStandaloneDisplay() && !isTelegram && (
-          <button
-            type="button"
-            onClick={() => void handleFullscreenClick()}
-            className={menuHeaderIconBtn}
-            aria-label="Fullscreen"
-          >
-            <Maximize size={22} className={menuHeaderIcon} strokeWidth={1.75} />
-          </button>
-        )}
-      </header>
 
-      <div className="max-w-2xl w-full flex-1 flex flex-col items-center mx-auto">
-        <div
-          className="w-full shrink-0"
-          style={{
-            height: 'calc(var(--tma-inset-top) + var(--tma-fixed-header-height))',
-          }}
-          aria-hidden
-        />
+      <ScreenShell
+        className={`relative z-10 ${currentTheme.bg}`}
+        header={
+          <AppHeader
+            data-testid="menu-app-header"
+            gradient
+            right={menuHeaderIcons}
+            ariaHidden={isEnterName}
+            className={frozenChromeClass}
+          />
+        }
+        contentClassName="max-w-2xl mx-auto w-full flex-1 min-h-0"
+      >
         <main
           aria-hidden={isEnterName ? true : undefined}
           className={[
-            'relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-xs px-6 md:px-8 pb-20',
-            isEnterName ? 'pointer-events-none select-none' : '',
+            'relative flex flex-1 flex-col items-center justify-center w-full max-w-xs mx-auto px-6 md:px-8 pb-20 min-h-0',
+            frozenChromeClass,
           ]
             .filter(Boolean)
             .join(' ')}
+          style={{ paddingTop: HOME_CARD_TOP_GAP_PX }}
         >
           <div className="scale-[0.85] origin-top">
             <Logo theme={currentTheme} />
@@ -273,7 +267,7 @@ export const MenuScreen = () => {
             </div>
           </div>
         </main>
-      </div>
+      </ScreenShell>
 
       {!isEnterName ? (
         <RulesModal
