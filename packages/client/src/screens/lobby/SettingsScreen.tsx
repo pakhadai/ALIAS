@@ -1067,7 +1067,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(clamped);
                                   updateGeneral('scoreToWin', clamped);
                                 }}
-                                className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                                className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
                               />
                               <button
                                 type="button"
@@ -1150,7 +1150,7 @@ export const SettingsScreen = () => {
                                   setLocalScoreToWin(clamped);
                                   updateGeneral('scoreToWin', clamped);
                                 }}
-                                className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                                className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
                               />
                               <button
                                 type="button"
@@ -1276,7 +1276,7 @@ export const SettingsScreen = () => {
                                 updateGeneral('teamCount', clamped);
                               }}
                               disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                              className="w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent"
+                              className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
                             />
                             <button
                               type="button"

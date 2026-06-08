@@ -5,12 +5,13 @@
 
 ## What's in progress
 
-- **TYPO-001** typography — Phases 0–6 ✅ epic **implemented**; **Session A** (TMA inputs 16px) ✅; **Phase 7 manual QA** pending (owner @375px)
+- **TYPO-001** typography — Phases 0–6 ✅; **Session A** ✅; **Phase 7 automated gates** ✅; **Phase 7 manual TMA QA** pending (owner @375px)
 - Manual TMA smoke @375px — ModalSheet Phase 5B checklist (device pending owner)
 
 ## What was just completed
 
-- **TYPO-001 Session A (TMA inputs 16px):** `MyDecksScreen`, `MyWordPacksScreen`, `AddOfflinePlayerSheet`, `SettingsScreen`, `LobbySettingsScreen` — `text-sm`/`inherit` → `typographyClass.bodyInput`; grep: 0 `text-sm` on input/textarea; typecheck + typography tests green
+- **TYPO-001 Phase 7 automated:** governance grep green; `SettingsScreen` number inputs → `bodyInput`; client tests green
+- **TYPO-001 Session A (TMA inputs 16px):** commit `a355f09` — 5 screens `text-sm`/`inherit` → `typographyClass.bodyInput`
 - **TYPO-001 Phase 6 (font + governance):** Merriweather removed from `index.html`; Playfair weights trimmed; `.cursor/rules/08-typography.mdc`; app UI `text-[Npx]` → 0 outside GameFlow; `pnpm verify` green
 - **TYPO-001 Phase 5 (system messages):** `systemBannerClass`, `systemStatusClass`; ConnectionStatusBanner, PwaUpdateBanner, MenuScreen error, LobbyScreen guest strips, TelegramAuthLoadingScreen, App TMA auth error, SentryErrorFallback, StoreScreen purchase banner; toast unchanged (`text-ui-body`); client **125/125**
 - **TYPO-001 Phase 4 (labels & captions):** `labelSectionClass`, `labelSectionTitleClass`, `formLabelClass`; ~27 files → `text-ui-label`; `Button` → label token; client **123/123**
@@ -45,8 +46,9 @@
 13. [x] **TYPO-001 Phase 5** — system messages (banners, connection strips; toast stays body)
 14. [x] **TYPO-001 Phase 6** — font optimize + `08-typography.mdc` + verify
 15. [x] **TYPO-001 Session A** — TMA inputs 16px (5 screens)
-16. [ ] **TYPO-001 Phase 7** — manual TMA visual QA @375px (owner)
-16. [ ] Push — лише на явний запит власника
+16. [x] **TYPO-001 Phase 7** — automated governance gates + Settings number inputs
+17. [ ] **TYPO-001 Phase 7** — manual TMA visual QA @375px (owner)
+18. [ ] Push — лише на явний запит власника
 
 ## Known issues / blockers
 

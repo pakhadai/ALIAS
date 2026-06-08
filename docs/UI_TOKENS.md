@@ -124,7 +124,7 @@
 
 ## Typography tokens
 
-**Status:** Phases 1–6 complete (TYPO-001 implemented); Phase 7 manual QA pending.  
+**Status:** Phases 1–6 complete (TYPO-001 implemented); Session A inputs 16px ✅; Phase 7 automated gates ✅; manual TMA QA pending.  
 **Epic:** [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md)
 
 ### Semantic roles

@@ -1,6 +1,6 @@
 # TYPO-001 — Уніфікація типографіки клієнта
 
-**Status:** `implemented` (Phases 0–6, 2026-06-07) — Phase 7 manual QA pending  
+**Status:** `implemented` (Phases 0–6, 2026-06-07); Session A (inputs 16px) ✅ 2026-06-08; Phase 7 automated gates ✅; manual TMA QA pending  
 **Epic:** Semantic typography tokens + міграція захардкоджених `text-[Npx]`  
 **Scope:** `packages/client` (без змін `@alias/shared` / server)  
 **Пов’язано:** [`UI_TOKENS.md`](./UI_TOKENS.md), [`TMA_LAYOUT.md`](./TMA_LAYOUT.md), [`.cursor/rules/08-typography.mdc`](../.cursor/rules/08-typography.mdc)
@@ -363,7 +363,18 @@ TYPO-001 Phase 6 — font loading + governance + verification.
 
 ## Phase 7 — Visual QA (manual)
 
-### Checklist @375px (iOS Telegram + Android)
+### Automated gates (2026-06-08) ✅
+
+| Gate | Result |
+|------|--------|
+| `text-[Npx]` app UI (excl. GameFlow) | 1 escape — icon glyph `text-[18px]` (whitelist) |
+| Merriweather in code | 0 |
+| `modalSheetTitleClass` → `text-ui-heading` | yes |
+| Logo `text-7xl` frozen | yes |
+| Text/textarea inputs → `bodyInput` / `text-ui-body-input` | yes (excl. display: JoinInput `text-6xl`, TeamSetup `text-xl`) |
+| `pnpm typecheck` + client typography tests | green |
+
+### Checklist @375px (iOS Telegram + Android) — owner
 
 - [ ] Menu: Logo 7xl без регресії; CTA readable
 - [ ] Modal sheet title vs screen title — однаковий розмір
