@@ -146,14 +146,31 @@ export async function assignDistinctTeams(host: Page, guest: Page): Promise<void
   await joinTeam(guest, 1);
 }
 
+/** Host lobby visible (online or offline) — not on Settings or in-game screens. */
+export async function expectLobbyScreen(page: Page): Promise<void> {
+  await expect(page.getByTestId('settings-close')).toHaveCount(0, { timeout: 15_000 });
+  await expect(page.getByTestId('lobby-start-panel')).toBeVisible({ timeout: 15_000 });
+}
+
 export async function expectLobbyReadiness(page: Page, opts: { ready: boolean }): Promise<void> {
-  const startBtn = page.getByRole('button', { name: startGameRe });
   if (opts.ready) {
+    const startBtn = page.getByRole('button', { name: startGameRe });
     await expect(startBtn).toBeEnabled({ timeout: 15_000 });
     await expect(page.getByTestId('lobby-readiness-bar')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('lobby-start-btn-shell')).toHaveClass(
+      /lobby-start-btn-shell--ready/,
+      {
+        timeout: 15_000,
+      }
+    );
   } else {
-    await expect(startBtn).toBeDisabled({ timeout: 15_000 });
-    await expect(page.getByTestId('lobby-start-validation')).toBeVisible({ timeout: 15_000 });
+    const startBtn = page.getByTestId('lobby-start-btn');
+    await expect(startBtn).toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
+    await expect(page.getByTestId('lobby-start-btn-shell')).toHaveClass(
+      /lobby-start-btn-shell--blocked/,
+      { timeout: 15_000 }
+    );
+    await expect(page.getByTestId('lobby-readiness-bar')).toHaveCount(0);
   }
 }
 
@@ -271,7 +288,7 @@ export async function closeLobbySettings(page: Page): Promise<void> {
   } else {
     throw new Error('closeLobbySettings: no browser back control visible');
   }
-  await expect(page.getByTestId('lobby-room-code')).toBeVisible({ timeout: 15_000 });
+  await expectLobbyScreen(page);
 }
 
 export async function setLobbyGameModeImposter(host: Page): Promise<void> {

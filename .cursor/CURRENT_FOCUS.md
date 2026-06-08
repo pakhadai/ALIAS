@@ -1,6 +1,6 @@
 # Current Focus — Alias Master
 
-**Last updated:** 2026-06-08 (session: lobby play-mode bar visibility fix)  
+**Last updated:** 2026-06-08 (session: E2E lobby helper sync)  
 **Active branch:** `main`
 
 ## What's in progress
@@ -9,6 +9,7 @@
 
 ## What was just completed
 
+- **E2E lobby helpers:** `expectLobbyReadiness` / `closeLobbySettings` synced with lobby redesign (no `lobby-start-validation`; offline-safe lobby return marker via `lobby-start-panel`)
 - **Lobby play-mode bar:** reverted erroneous ONLINE hide; `LobbyPlayModeBarSlot` instant show on mount + `ResizeObserver` height sync (fixes empty gap where Solo/Teams bar should appear)
 - **TMA header unification Phase 5:** 88px content-safe floor (`--tma-content-top-floor`, `useTelegramApp` sync, `--tma-inset-top` CSS); `resolveTelegramBackAction()` aligned with Header matrix (`MENU`/`ENTER_NAME` hide); `--tma-banner-top` for `ConnectionStatusBanner`; Vitest (`useTelegramApp`, `useTelegramBackButton`, toast/banner)
 - **TMA header unification Phase 4:** `MenuScreen` home — fixed header → `ScreenShell` + sticky `AppHeader` (variant A); removed `--tma-fixed-header-height` / `data-fixed-header`; `--app-home-card-top`; `EnterNameSheet` overlay verified (`aria-hidden`, modals suppressed); Vitest

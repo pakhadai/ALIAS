@@ -44,6 +44,7 @@
 - **Lobby glass chrome docs:** `docs/TMA_LAYOUT.md` (Glass app chrome, Lobby start CTA, manual QA checklist), `docs/LOBBY_TEAM_BUILDER.md`, `docs/UI_TOKENS.md` — app header/footer tokens
 
 ### Fixed
+- E2E `@core` lobby helpers aligned with lobby redesign — `expectLobbyReadiness` checks blocked start shell (`aria-disabled`, `--blocked`) instead of removed `lobby-start-validation`; `closeLobbySettings` waits on `lobby-start-panel` (works for offline + online)
 - TMA lobby header excessive top gap — `GlassAppHeader` used `pt-safe-top` (full content-safe + device) plus fixed 44px title row; now `pt-device-top` + OMR title-row `max(content − device, 44px)`; `--tma-inset-top` = content-safe only
 - Lobby settings/mode changes no longer emit `UPDATE_SETTINGS` while the online socket is disconnected or reconnecting; shows localized `roomActionNotReady` instead of raw English `Join a room first`
 
