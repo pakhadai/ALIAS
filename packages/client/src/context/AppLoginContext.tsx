@@ -1,9 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { LoginModal } from '../components/Auth/LoginModal';
 import { useTelegramApp } from '../hooks/useTelegramApp';
-import { GameState } from '../types';
 import { useAuthContext } from './AuthContext';
 import { useGame } from './GameContext';
+import { shouldShowLoginModal } from './loginModalVisibility';
 
 const SESSION_DISMISSED_KEY = 'alias_login_dismissed';
 
@@ -41,12 +41,20 @@ export function AppLoginProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Gate login to the main menu only — overlay blocks offline / join flows on other screens.
-  const showLogin =
-    gameState === GameState.MENU &&
-    !isTelegram &&
-    authState.status === 'anonymous' &&
-    (!dismissed || forced);
+  useEffect(() => {
+    if (authState.status === 'authenticated') {
+      setForced(false);
+    }
+  }, [authState.status]);
+
+  // Auto-prompt on menu only; explicit requestLogin() may open from any screen.
+  const showLogin = shouldShowLoginModal({
+    isTelegram,
+    authStatus: authState.status,
+    gameState,
+    dismissed,
+    forced,
+  });
 
   const value = useMemo(() => ({ requestLogin }), [requestLogin]);
 

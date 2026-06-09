@@ -158,7 +158,7 @@ export async function expectLobbyReadiness(page: Page, opts: { ready: boolean })
     await expect(startBtn).toBeEnabled({ timeout: 15_000 });
     await expect(page.getByTestId('lobby-readiness-bar')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('lobby-start-btn-shell')).toHaveClass(
-      /lobby-start-btn-shell--ready/,
+      /accent-footer-cta-shell--ready/,
       {
         timeout: 15_000,
       }
@@ -167,7 +167,7 @@ export async function expectLobbyReadiness(page: Page, opts: { ready: boolean })
     const startBtn = page.getByTestId('lobby-start-btn');
     await expect(startBtn).toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
     await expect(page.getByTestId('lobby-start-btn-shell')).toHaveClass(
-      /lobby-start-btn-shell--blocked/,
+      /accent-footer-cta-shell--blocked/,
       { timeout: 15_000 }
     );
     await expect(page.getByTestId('lobby-readiness-bar')).toHaveCount(0);

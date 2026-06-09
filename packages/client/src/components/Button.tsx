@@ -9,7 +9,7 @@ import { PREFS_KEY } from '../context/gameReducer';
 const PREFS_PARSE_COOLDOWN_MS = 800;
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'dangerSolid' | 'success' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   icon?: React.ReactNode;
@@ -71,6 +71,8 @@ export const Button: React.FC<ButtonProps> = ({
         return 'bg-transparent border border-ui-border text-ui-fg hover:bg-ui-surface-hover';
       case 'danger':
         return 'bg-[color-mix(in_srgb,var(--ui-danger)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] text-ui-danger hover:bg-[color-mix(in_srgb,var(--ui-danger)_22%,transparent)]';
+      case 'dangerSolid':
+        return 'bg-[var(--ui-danger)] border border-[var(--ui-danger)] text-white hover:bg-[color-mix(in_srgb,var(--ui-danger)_88%,black)] active:bg-[color-mix(in_srgb,var(--ui-danger)_78%,black)] focus-visible:ring-[color-mix(in_srgb,var(--ui-danger)_55%,transparent)]';
       case 'success':
         return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':

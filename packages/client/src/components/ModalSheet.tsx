@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { Children, isValidElement, useCallback, useEffect, useRef } from 'react';
 import {
   ModalPortal,
   BottomSheetTopBar,
   bottomSheetBackdropClass,
   bottomSheetCloseButtonClass,
   bottomSheetPanelClass,
+  modalSheetScrollClass,
   type ModalSheetSize,
 } from './Shared';
 import { zIndex } from '../constants/zIndex';
@@ -76,7 +77,23 @@ const maxWidthClass: Record<NonNullable<ModalSheetProps['maxWidth']>, string> = 
 
 export { BOTTOM_SHEET_ANIM_MS };
 
-/** Scrollable body for `size="tall"` when `paddedContent={false}`. */
+function partitionTallSheetChildren(children: React.ReactNode): {
+  scrollChildren: React.ReactNode[];
+  footerChildren: React.ReactNode[];
+} {
+  const scrollChildren: React.ReactNode[] = [];
+  const footerChildren: React.ReactNode[] = [];
+  Children.forEach(children, (child) => {
+    if (isValidElement(child) && child.type === ModalSheetFooter) {
+      footerChildren.push(child);
+    } else {
+      scrollChildren.push(child);
+    }
+  });
+  return { scrollChildren, footerChildren };
+}
+
+/** Body block for `size="tall"` when `paddedContent={false}` — scroll is on `.modal-sheet-scroll`. */
 export function ModalSheetBody({
   className = '',
   children,
@@ -84,19 +101,7 @@ export function ModalSheetBody({
   className?: string;
   children: React.ReactNode;
 }) {
-  return (
-    <div
-      data-sheet-scroll=""
-      className={[
-        'min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    >
-      {children}
-    </div>
-  );
+  return <div className={['min-h-0', className].filter(Boolean).join(' ')}>{children}</div>;
 }
 
 /** Fixed footer block with canonical bottom inset (use with `paddedContent={false}` tall sheets). */
@@ -169,6 +174,7 @@ export function ModalSheet({
   const openedAtRef = useRef(0);
   const wasKeyboardOpenRef = useRef(false);
   const isTallSheet = size === 'tall';
+  const hasHeaderRow = header != null || showClose;
 
   const { mounted, visible } = useBottomSheetPresence(open, { onExited });
 
@@ -202,7 +208,7 @@ export function ModalSheet({
     if (!backdrop) return;
     backdrop.scrollTop = 0;
     if (panel) panel.scrollTop = 0;
-    const scrollBody = panel?.querySelector<HTMLElement>('[data-sheet-scroll]');
+    const scrollBody = panel?.querySelector<HTMLElement>('[data-modal-sheet-scroll]');
     if (scrollBody) scrollBody.scrollTop = 0;
   }, [isKeyboardOpen]);
 
@@ -211,6 +217,52 @@ export function ModalSheet({
   }
 
   const contentPadding = modalSheetContentPadding(size);
+
+  const topBar = (
+    <BottomSheetTopBar
+      title={header}
+      headerClassName={headerClassName}
+      showClose={showClose}
+      onClose={onClose}
+      closeAriaLabel={closeAriaLabel}
+      closeIconSize={closeIconSize}
+      closeDisabled={closeDisabled}
+      closeButtonClassName={closeButtonClassName}
+    />
+  );
+
+  const paddedContentNode = (
+    <div className={[contentPadding, contentClassName].filter(Boolean).join(' ')}>{children}</div>
+  );
+
+  let panelChildren: React.ReactNode;
+  if (isTallSheet) {
+    const { scrollChildren, footerChildren } = paddedContent
+      ? { scrollChildren: children, footerChildren: [] as React.ReactNode[] }
+      : partitionTallSheetChildren(children);
+    panelChildren = (
+      <>
+        <div data-modal-sheet-scroll="" className={modalSheetScrollClass}>
+          {topBar}
+          {paddedContent ? (
+            <div className={[contentPadding, contentClassName].filter(Boolean).join(' ')}>
+              {scrollChildren}
+            </div>
+          ) : (
+            scrollChildren
+          )}
+        </div>
+        {footerChildren.length > 0 ? footerChildren : null}
+      </>
+    );
+  } else {
+    panelChildren = (
+      <>
+        {topBar}
+        {paddedContent ? paddedContentNode : children}
+      </>
+    );
+  }
 
   const inner = (
     <div
@@ -228,6 +280,7 @@ export function ModalSheet({
         data-open={visible ? 'true' : 'false'}
         data-dragging={drag.isDragging ? 'true' : 'false'}
         data-sheet-scroll={isTallSheet ? '' : undefined}
+        data-modal-header={hasHeaderRow ? 'true' : 'false'}
         className={bottomSheetPanelClass(panelExtras, size)}
         style={drag.panelStyle}
         onClick={(e) => {
@@ -241,23 +294,7 @@ export function ModalSheet({
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
       >
-        <BottomSheetTopBar
-          title={header}
-          headerClassName={headerClassName}
-          showClose={showClose}
-          onClose={onClose}
-          closeAriaLabel={closeAriaLabel}
-          closeIconSize={closeIconSize}
-          closeDisabled={closeDisabled}
-          closeButtonClassName={closeButtonClassName}
-        />
-        {paddedContent ? (
-          <div className={[contentPadding, contentClassName].filter(Boolean).join(' ')}>
-            {children}
-          </div>
-        ) : (
-          children
-        )}
+        {panelChildren}
       </div>
     </div>
   );

@@ -53,7 +53,9 @@ describe('LobbyStartPanel', () => {
   it('should add neon snake shell when lobby is ready', () => {
     render(<LobbyStartPanel readiness={ready} t={t} theme={theme} onStartTap={vi.fn()} />);
 
-    expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass('lobby-start-btn-shell--ready');
+    expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass(
+      'accent-footer-cta-shell--ready'
+    );
     expect(screen.getByTestId('lobby-start-btn')).toHaveClass('lobby-start-btn--ready');
     expect(screen.getByTestId('lobby-start-btn').querySelector('svg')).toBeNull();
   });
@@ -62,10 +64,10 @@ describe('LobbyStartPanel', () => {
     render(<LobbyStartPanel readiness={blocked} t={t} theme={theme} onStartTap={vi.fn()} />);
 
     expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass(
-      'lobby-start-btn-shell--blocked'
+      'accent-footer-cta-shell--blocked'
     );
     expect(screen.getByTestId('lobby-start-btn-shell')).not.toHaveClass(
-      'lobby-start-btn-shell--ready'
+      'accent-footer-cta-shell--ready'
     );
   });
 

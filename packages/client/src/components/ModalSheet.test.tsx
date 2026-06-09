@@ -31,7 +31,7 @@ describe('ModalSheet.presets', () => {
     expect(modalSheetContentPaddingBySize.compact).toContain('px-5');
     expect(modalSheetContentPaddingBySize.compact).toContain('text-center');
     expect(modalSheetContentPaddingBySize.default).toContain('px-5');
-    expect(modalSheetContentPaddingBySize.tall).toContain('overflow-y-auto');
+    expect(modalSheetContentPaddingBySize.tall).not.toContain('overflow-y-auto');
   });
 
   it('should resolve maxWidth from size when prop omitted', () => {
@@ -101,9 +101,13 @@ describe('ModalSheet', () => {
     expect(panel.hasAttribute('data-sheet-scroll')).toBe(true);
     expect(panel.className).toContain('bottom-sheet-panel--size-tall');
 
+    const scrollColumn = document.querySelector('[data-modal-sheet-scroll]');
+    expect(scrollColumn).not.toBeNull();
+    expect(scrollColumn?.className).toContain('modal-sheet-scroll');
+
     const content = screen.getByText('Rules').parentElement;
-    expect(content?.className).toContain('overflow-y-auto');
     expect(content?.className).toContain('pb-modal-bottom');
+    expect(content?.className).not.toContain('overflow-y-auto');
   });
 
   it('should lift via --sheet-keyboard-lift and keep pb-modal-bottom when keyboard is open', () => {

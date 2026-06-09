@@ -48,7 +48,7 @@ export function ScreenShell({
   if (scroll) {
     return (
       <div className={shellClass}>
-        <div className={scrollColumnClass(hasHeader, hasFooter)}>
+        <div className={scrollColumnClass(hasHeader, hasFooter)} data-screen-shell-scroll="">
           {header}
           <div className={joinClasses(CONTENT_WRAP_BASE, contentClassName)}>{children}</div>
           {footer}

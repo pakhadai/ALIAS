@@ -30,22 +30,20 @@ describe('tmaLayoutConstants', () => {
     expect(APP_HEADER_BAR_REM).toBe('3.75rem');
   });
 
-  it('should build title row height CSS with content-safe floor', () => {
-    expect(titleRowHeightCss()).toBe(
-      'max(calc(var(--tma-content-safe-top, 88px) - var(--tma-device-inset-top, 0px)), 44px)'
-    );
+  it('should build title row height CSS from content-safe top only', () => {
+    expect(titleRowHeightCss()).toBe('max(var(--tma-content-safe-top, 88px), 44px)');
   });
 
   it('should build total header fallback with optional child row', () => {
     expect(appPageHeaderHeightFallbackCss()).toBe(
-      'calc(max(calc(var(--tma-content-safe-top, 88px) - var(--tma-device-inset-top, 0px)), 44px) + var(--tma-device-inset-top, 0px) + 60px)'
+      'calc(max(var(--tma-content-safe-top, 88px), 44px))'
     );
     expect(appPageHeaderHeightFallbackCss(44)).toContain('+ 44px)');
   });
 
-  it('should build inset-aligned fallback for current GlassAppHeader', () => {
+  it('should build inset-aligned fallback matching title row height', () => {
     expect(appPageHeaderHeightInsetFallbackCss()).toBe(
-      'calc(var(--tma-inset-top, 88px) + 3.75rem)'
+      'max(var(--tma-content-safe-top, 88px), 44px)'
     );
   });
 

@@ -74,7 +74,7 @@
 
 **Last updated:** 2026-06-08 (TMA Header Unification Phase 6)
 
-**Open issues:** 0 🔴; 3 🟡 deferred (manual TMA device pass, LobbyScreen `act()` warnings, StoreScreen safe inset)
+**Open issues:** 0 🔴; 2 🟡 deferred (manual TMA device pass, LobbyScreen `act()` warnings)
 
 ## Блок H: Lobby Fix (2026-06-08 audit)
 
@@ -130,9 +130,9 @@
 | J-3 | 🟢 | ✅ VERIFIED | `--app-page-header-height` ResizeObserver + toast/banner offset (`GlassAppHeader.test.tsx`, `ToastNotification.test.tsx`) |
 | J-4 | 🟢 | ✅ VERIFIED | `prefers-reduced-transparency` gradient fallback (`styles.css` L1084+) |
 | J-5 | 🟢 | ✅ VERIFIED | Lobby 1:1 — TMA spacer, browser X, settings (`LobbyScreen.test.tsx`) |
-| J-6 | 🟡 | ⏳ DEFERRED | `StoreScreen` missing top safe inset (documented gap in Header matrix) |
+| J-6 | 🟢 | ✅ RESOLVED | `StoreScreen` → `ScreenShell` + `AppHeader` (safe inset, TMA viewport, back → MENU) |
 | J-7 | 🟢 | ✅ RESOLVED | E2E `smoke-round` settings-close — `backTestId` + `forceBrowserChromeMode` (`game-ui.ts`) |
 
-**Phases 0–6:** ✅ complete. Canon: `ScreenShell` + sticky `AppHeader` in scroll; exceptions: `PlayingScreen`, `ImposterScreen`, `AdminApp`, `StoreScreen`.
+**Phases 0–6:** ✅ complete. Canon: `ScreenShell` + sticky `AppHeader` in scroll; exceptions: `PlayingScreen`, `ImposterScreen`, `AdminApp`.
 
 **Bootstrap note:** детальні знімки stack/docs/arch audit консолідовано тут; окремі `.cursor/*_AUDIT.md` видалено як дублікати.

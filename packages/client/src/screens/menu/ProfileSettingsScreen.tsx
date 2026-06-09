@@ -8,7 +8,7 @@ import { useAuthContext } from '../../context/AuthContext';
 import { updateProfile } from '../../services/api';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
-import { ProviderBadge } from './ProfileScreen';
+import { ProviderBadge } from '../../components/Auth/AccountBadge';
 import { isOAuthAuthProvider, resolvePlayerNameFromProfile } from '../../utils/profilePlayerName';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { typographyClass, formLabelClass } from '../../constants/typography';

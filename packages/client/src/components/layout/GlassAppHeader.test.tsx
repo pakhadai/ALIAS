@@ -89,7 +89,7 @@ describe('GlassAppHeader', () => {
     expect(document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG]).toBeUndefined();
   });
 
-  it('should be a full-width glass bar with Telegram top safe area', () => {
+  it('should be a full-width glass bar with content-safe title row (no device-only top pad)', () => {
     const { container } = render(
       <GlassAppHeader>
         <span data-testid="inner">Title</span>
@@ -98,7 +98,7 @@ describe('GlassAppHeader', () => {
 
     const header = container.querySelector('header');
     expect(header?.className).toContain(UI_APP_HEADER_CLASS);
-    expect(header?.className).toContain('pt-device-top');
+    expect(header?.className).not.toContain('pt-device-top');
     expect(header?.className).toContain('flex-col');
     expect(header?.className).not.toContain('rounded-3xl');
     expect(screen.getByTestId('inner')).toBeTruthy();

@@ -79,10 +79,12 @@ export function BottomSheetHandleRow({ className = '' }: { className?: string })
 }
 
 export const bottomSheetTopBarClass = 'bottom-sheet-top-bar';
+/** Tall sheet scroll column — sticky header must live inside this (iOS glass; see TMA_LAYOUT.md). */
+export const modalSheetScrollClass = 'modal-sheet-scroll';
 export const bottomSheetHeaderRowClass = 'bottom-sheet-header-row';
 export const bottomSheetHeaderTitleClass = 'bottom-sheet-header-row__title';
 export const bottomSheetCloseButtonClass =
-  'bottom-sheet-top-bar__close min-h-10 min-w-10 -mr-1 flex shrink-0 items-center justify-center rounded-full transition-colors text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface active:bg-ui-surface-hover disabled:opacity-20 disabled:pointer-events-none';
+  'bottom-sheet-top-bar__close min-h-10 min-w-10 -mr-1 flex shrink-0 items-center justify-center rounded-full transition-colors hover:bg-ui-surface active:bg-ui-surface-hover disabled:opacity-20 disabled:pointer-events-none';
 
 type BottomSheetTopBarProps = {
   title?: React.ReactNode;
@@ -179,7 +181,7 @@ type ModalSheetTitleProps = {
 export function ModalSheetTitle({
   id,
   children,
-  themeClass = 'text-ui-fg',
+  themeClass = '',
   className = '',
   as: Tag = 'h2',
 }: ModalSheetTitleProps) {

@@ -8,9 +8,10 @@ globs: packages/client/**/*.{ts,tsx}
 
 ## Viewport
 - Завжди `tg.expand()` при монтуванні TMA
-- Height: `100dvh` або `env(--tg-viewport-height)`, не `100vh`
-- Safe areas: `padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)`
-- Bottom navigation: `padding-bottom: calc(env(safe-area-inset-bottom) + 56px)`
+- Height: `100dvh` або `var(--tg-viewport-height)` / `var(--tg-viewport-stable-height)`, не `100vh`
+- Safe area (Bot API 8.0+): два inset-и з SDK — `safeAreaInset` → `--tg-safe-area-inset-*` (notch); `contentSafeAreaInset` → `--tg-content-safe-area-inset-*` (TG back / menu). Слухай `safeAreaChanged` і `contentSafeAreaChanged` (`useTelegramApp`)
+- Header title: центруй у зоні `--tg-content-safe-area-inset-top` (`GlassAppHeader` title row) — не дублюй `safe-area-inset-top` окремим `padding-top`
+- Bottom / sides: `var(--tma-inset-bottom)` = content-safe + device; Tailwind `pb-safe-bottom` тощо
 
 ## Scroll
 - Overflow на body: hidden (Telegram керує scroll)

@@ -83,20 +83,19 @@
 |-----------|----------|-------------|
 | `HEADER_ROW_MIN_PX` | 44 | мін. висота title row |
 | `TG_CHROME_GUTTER_PX` | 80 | L/R clearance під нативні TG кнопки |
-| `APP_HEADER_BAR_PX` | 60 | ≈ `3.75rem` (bar below inset) |
+| `APP_HEADER_BAR_PX` | 60 | Legacy constant; header height = title row (`content-safe-top`) |
 | `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | 88 | fallback content-safe |
 | `HOME_CARD_TOP_GAP_PX` | 16 | зазор home card (фаза 4) |
 
-### Формула title row
+### Формула title row (оновлено 2026-06-09 — Bot API 8.0+)
 
 ```text
-headerRowH = max(
-  calc(var(--tg-content-safe-area-inset-top, 88px) - var(--tma-device-inset-top, 0px)),
-  44px
-)
-totalHeaderHeight = headerRowH + var(--tma-device-inset-top, 0px) + [childRowPx?]
+headerRowH = max(var(--tg-content-safe-area-inset-top, 88px), 44px)
+totalHeaderHeight = headerRowH + [childRowPx?]
 → --app-page-header-height
 ```
+
+Title центрується у повній content-safe зоні (без окремого `pt-device-top` — device вже в SDK inset).
 
 ### Задачі
 

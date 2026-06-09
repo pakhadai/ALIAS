@@ -1,6 +1,6 @@
 # Current Focus — Alias Master
 
-**Last updated:** 2026-06-09 (session: ModalSheet keyboard animation polish)  
+**Last updated:** 2026-06-09 (session: chrome glass legibility)  
 **Active branch:** `main`
 
 ## What's in progress
@@ -9,6 +9,8 @@
 
 ## What was just completed
 
+- **Chrome glass legibility:** SSOT `--ui-chrome-glass-*` (62% tint, 22px blur); `.ui-app-header` + `.bottom-sheet-top-bar` shared masks; modal top bar no longer 10%/3% override
+- **StoreScreen header migration:** `ScreenShell` + `AppHeader` (tabs child row) + `FixedBottomBar`; back → MENU; J-6 resolved; Header matrix updated
 - **ModalSheet keyboard animation:** CSS `--sheet-keyboard-lift` + 280ms transition; `useDeferredSheetInputFocus`; `pb-modal-bottom` CSS transition; EnterName/QuickJoin/AddOffline deferred focus; `docs/TMA_LAYOUT.md` keyboard section
 - **Doc hygiene:** `LOBBY_FIX_PROMPTS` → `docs/archive/`; consolidated `CHANGELOG` `[Unreleased]`; `AGENT_BRIEF` governance in `CONTRIBUTING` + steward; `docs/archive/README.md`
 - **E2E lobby helpers:** `expectLobbyReadiness` / `closeLobbySettings` synced with lobby redesign (no `lobby-start-validation`; offline-safe lobby return marker via `lobby-start-panel`)
@@ -25,12 +27,11 @@
 ## Next steps
 
 1. [ ] **Manual TMA @375px** — keyboard lift QA matrix (flows 1–15, owner device)
-2. [ ] **StoreScreen** — missing top safe inset (gap in matrix)
-3. [ ] Push — лише на явний запит власника
+2. [ ] Push — лише на явний запит власника
 
 ## Known issues / blockers
 
-- **Header gaps (post-6):** `StoreScreen` без `pt-safe-top`; `ImposterScreen` / `PlayingScreen` game exception (pattern E); `AdminApp` defer
+- **Header gaps (post-6):** `ImposterScreen` / `PlayingScreen` game exception (pattern E); `AdminApp` defer
 - `EnterNameScreen` — `scrollElementIntoViewCentered` on input (keyboard policy debt)
 - No focus trap / Esc on ModalSheet (deferred)
 - Manual TMA glass QA not run on physical device (I-13 / J-2 deferred)

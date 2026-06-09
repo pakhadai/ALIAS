@@ -1,7 +1,11 @@
+export { ScreenAccentGlow, SCREEN_ACCENT_GLOW_FOCAL } from './ScreenAccentGlow';
+export type { ScreenAccentGlowFocal, ScreenAccentGlowProps } from './ScreenAccentGlow';
 export { ScreenShell } from './ScreenShell';
 export type { ScreenShellProps } from './ScreenShell';
 export { FixedBottomBar, UI_APP_FOOTER_CLASS } from './FixedBottomBar';
 export type { FixedBottomBarProps } from './FixedBottomBar';
+export { AccentFooterCta } from './AccentFooterCta';
+export type { AccentFooterCtaProps, AccentFooterCtaVariant } from './AccentFooterCta';
 export {
   AppHeader,
   GlassAppHeader,

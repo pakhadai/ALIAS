@@ -1,53 +1,42 @@
-import React, { useMemo, useState } from 'react';
-import { Settings, ShoppingBag, ChevronRight, BookOpen, Lock, Shield, Loader2 } from 'lucide-react';
-import { AvatarDisplay } from '../../components/AvatarDisplay';
-import { AppHeader, ScreenShell } from '../../components/layout';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { ShoppingBag, ChevronRight } from 'lucide-react';
+import { AccountBadge, ProviderBadge } from '../../components/Auth/AccountBadge';
+import {
+  AccentFooterCta,
+  AppHeader,
+  FixedBottomBar,
+  SCREEN_ACCENT_GLOW_FOCAL,
+  ScreenAccentGlow,
+  ScreenShell,
+} from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useAppLogin } from '../../context/AppLoginContext';
-import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { useT } from '../../hooks/useT';
 import { useTelegramApp } from '../../hooks/useTelegramApp';
+import { useCollapsingHeaderTitle } from '../../hooks/useCollapsingHeaderTitle';
+import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { LogoutConfirmBottomSheet } from '../../components/Auth/LogoutConfirmBottomSheet';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
-import { typographyClass, labelSectionTitleClass } from '../../constants/typography';
-
-export function ProviderBadge({ provider }: { provider: string }) {
-  const label =
-    provider === 'google' ? 'GOOGLE' : provider === 'apple' ? 'APPLE' : provider.toUpperCase();
-  return (
-    <span
-      className={`bg-ui-accent text-ui-accent-contrast ${typographyClass.label} tracking-[0.18em] px-3 py-[3px] rounded-full shadow-md`}
-    >
-      {label}
-    </span>
-  );
-}
-
-function GuestAccountBadge({ label }: { label: string }) {
-  return (
-    <span
-      className={`bg-ui-accent text-ui-accent-contrast ${typographyClass.label} tracking-[0.18em] px-3 py-[3px] rounded-full shadow-md`}
-    >
-      {label}
-    </span>
-  );
-}
-
-const statCardInteractive = `rounded-2xl px-4 py-4 text-left border border-ui-border transition-all duration-200
-  group-hover:border-ui-accent/50 group-hover:bg-[color-mix(in_srgb,var(--ui-accent)_6%,var(--ui-surface))]
-  group-active:scale-[0.98]`;
+import { typographyClass } from '../../constants/typography';
+import { ProfileHero } from './profile/ProfileHero';
+import { ProfileGuestBenefits } from './profile/ProfileGuestBenefits';
+import { ProfileBenefitsList } from './profile/ProfileBenefitsList';
+import { ProfileStatsCards } from './profile/ProfileStatsCards';
+import { ProfileNavList } from './profile/ProfileNavList';
+import { countProfilePurchases } from './profile/profilePurchaseCounts';
 
 export const ProfileScreen = () => {
   const { setGameState, currentTheme } = useGame();
   const { authState, profile, logout } = useAuthContext();
   const { requestLogin } = useAppLogin();
   const { isTelegram } = useTelegramApp();
+  const { get: getStats } = usePlayerStats();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const heroTitleRef = useRef<HTMLDivElement>(null);
   const isDark = currentTheme.isDark;
-  const { get: getStats } = usePlayerStats();
   const t = useT();
 
   const loadingAuth = authState.status === 'loading';
@@ -70,36 +59,83 @@ export const ProfileScreen = () => {
       : isGuest
         ? t.profileAnonymous
         : authState.status === 'authenticated'
-          ? authState.email?.split('@')[0]
+          ? (authState.email?.split('@')[0] ?? t.profileAnonymous)
           : '');
-  const guestSub = loadingAuth ? '' : isGuest ? t.profileGuestUser : email;
 
-  const hasCustomPacks =
-    profile?.purchases?.some((p) => p.wordPack?.slug === 'feature-custom-packs') ?? false;
+  const heroSubtitle = loadingAuth || isGuest ? undefined : email || undefined;
+  const showHeaderTitle = useCollapsingHeaderTitle(heroTitleRef, !loadingAuth);
 
-  const stats = getStats();
-  const accuracy =
-    stats.wordsGuessed + stats.wordsSkipped > 0
-      ? Math.round((stats.wordsGuessed / (stats.wordsGuessed + stats.wordsSkipped)) * 100)
+  const purchaseCounts = useMemo(
+    () => countProfilePurchases(profile?.purchases),
+    [profile?.purchases]
+  );
+  const hasCustomPacks = purchaseCounts.hasCustomPacks;
+
+  const playerStats = getStats();
+  const statsAccuracy =
+    playerStats.wordsGuessed + playerStats.wordsSkipped > 0
+      ? Math.round(
+          (playerStats.wordsGuessed / (playerStats.wordsGuessed + playerStats.wordsSkipped)) * 100
+        )
       : 0;
 
-  const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-    isDark
-      ? 'bg-ui-surface border border-ui-border hover:bg-ui-surface-hover'
-      : 'bg-ui-card border border-ui-border hover:bg-ui-surface-hover shadow-sm'
-  }`;
-  const navLabel = `${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`;
-  const sectionTitle = labelSectionTitleClass;
+  const purchasesSummary =
+    purchaseCounts.wordPacks > 0 || purchaseCounts.themes > 0
+      ? t.profilePurchasesSummary
+          .replace('{0}', String(purchaseCounts.wordPacks))
+          .replace('{1}', String(purchaseCounts.themes))
+      : undefined;
+
+  const goToPlayerStats = useCallback(() => setGameState(GameState.PLAYER_STATS), [setGameState]);
+
+  const authBenefits = useMemo(
+    () => [
+      {
+        emoji: '📦',
+        label:
+          purchaseCounts.wordPacks > 0
+            ? t.profileBenefitWordPacksLabel.replace('{0}', String(purchaseCounts.wordPacks))
+            : t.profileBenefitWordPacksLabelZero,
+        sub: t.profileBenefitWordPacksSub,
+      },
+      {
+        emoji: '🎨',
+        label:
+          purchaseCounts.themes > 0
+            ? t.profileBenefitVisualThemesLabel.replace('{0}', String(purchaseCounts.themes))
+            : t.profileBenefitVisualThemesLabelZero,
+        sub: t.profileBenefitVisualThemesSub,
+      },
+      {
+        emoji: '📝',
+        label: t.profileBenefitCustomListsLabel,
+        sub: purchaseCounts.hasCustomPacks
+          ? t.profileBenefitAuthCustomListsActiveSub
+          : (t.profileNavUnlockPacksSub ?? 'Available in the store'),
+      },
+      {
+        emoji: '📊',
+        label: t.profileStatsSummary
+          .replace('{0}', String(playerStats.gamesPlayed))
+          .replace('{1}', String(playerStats.wordsGuessed))
+          .replace('{2}', String(playerStats.wordsSkipped))
+          .replace('{3}', String(statsAccuracy)),
+        sub: t.profileStatsDetailLink,
+        onPress: goToPlayerStats,
+      },
+      {
+        emoji: '☁️',
+        label: t.profileBenefitSyncLabel,
+        sub: t.profileBenefitAuthSyncSub,
+      },
+    ],
+    [t, purchaseCounts, playerStats, statsAccuracy, goToPlayerStats]
+  );
 
   const showAdminEntry =
     authState.status === 'authenticated' && (authState.isAdmin || (profile?.isAdmin ?? false));
 
-  const openAdminPanel = () => {
-    window.location.href = '/admin.html';
-  };
-
-  /** Marketing bullets for guests — static copy (no store fetch, avoids “0 packs” flash). */
-  const guestBenefits: { emoji: string; label: string; sub: string }[] = useMemo(
+  const guestBenefits = useMemo(
     () => [
       {
         emoji: '📝',
@@ -117,9 +153,15 @@ export const ProfileScreen = () => {
         sub: t.profileBenefitVisualThemesSub,
       },
       {
+        emoji: '🛍️',
+        label: t.profileBenefitStoreLabel,
+        sub: t.profileBenefitStoreSub,
+      },
+      {
         emoji: '📊',
         label: t.profileBenefitGameStatsLabel,
         sub: t.profileBenefitGameStatsSub,
+        onPress: goToPlayerStats,
       },
       {
         emoji: '☁️',
@@ -127,273 +169,199 @@ export const ProfileScreen = () => {
         sub: t.profileBenefitSyncSub,
       },
     ],
-    [t]
+    [t, goToPlayerStats]
   );
+
+  const heroBadge = loadingAuth ? null : isGuest ? (
+    <AccountBadge label={t.profileFreeAccount} />
+  ) : provider ? (
+    <ProviderBadge provider={provider} />
+  ) : null;
+
+  const storeNavBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-[0.98] ${
+    isDark
+      ? 'bg-ui-surface border border-ui-border active:bg-ui-surface-hover'
+      : 'bg-ui-card border border-ui-border active:bg-ui-surface-hover shadow-sm'
+  }`;
+
+  const sessionEndFooter = !loadingAuth ? (
+    <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
+      <AccentFooterCta
+        variant="plain"
+        buttonTestId={isGuest ? 'profile-guest-reset-btn' : 'profile-logout-btn'}
+        themeButtonClass={currentTheme.button}
+        onClick={() => setShowLogoutConfirm(true)}
+        disabled={loggingOut}
+        loading={loggingOut}
+      >
+        {isGuest ? t.profileGuestReset : (t.profileLogout ?? 'LOG OUT')}
+      </AccentFooterCta>
+    </FixedBottomBar>
+  ) : undefined;
 
   return (
     <>
       <ScreenShell
-        className={`${currentTheme.bg} transition-colors duration-500`}
-        contentClassName="max-w-2xl w-full mx-auto items-center px-6 md:px-8"
-        header={<AppHeader onBack={() => setGameState(GameState.MENU)} />}
-      >
-        {/* HERO */}
-        <section className="flex flex-col items-center pt-2 pb-6">
-          <AvatarDisplay
-            avatarId={profile?.avatarId}
-            imageUrl={profile?.avatarId ? null : profile?.avatarUrl}
-            name={displayName}
-            size={96}
+        className={`relative ${currentTheme.bg} transition-colors duration-500`}
+        contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 flex flex-col flex-1"
+        header={
+          <AppHeader
+            onBack={() => setGameState(GameState.MENU)}
+            title={
+              <ScreenTitle
+                as="p"
+                themeClass={currentTheme.textMain}
+                className={`truncate max-w-full transition-opacity duration-200 ${
+                  showHeaderTitle ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                {displayName}
+              </ScreenTitle>
+            }
           />
-          <ScreenTitle as="h1" themeClass={currentTheme.textMain} className="mt-5">
-            {displayName}
-          </ScreenTitle>
-          {guestSub && (
-            <p className={`${typographyClass.body} mt-1 mb-2 ${currentTheme.textSecondary}`}>
-              {guestSub}
-            </p>
-          )}
-          {!loadingAuth && isGuest ? (
-            <GuestAccountBadge label={t.profileFreeAccount} />
-          ) : provider ? (
-            <ProviderBadge provider={provider} />
-          ) : null}
-        </section>
+        }
+        footer={sessionEndFooter}
+      >
+        <ScreenAccentGlow focalY={SCREEN_ACCENT_GLOW_FOCAL.profileHero} />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
+          aria-hidden
+          style={{
+            backgroundImage: 'radial-gradient(var(--ui-fg) 0.5px, transparent 0.5px)',
+            backgroundSize: '20px 20px',
+          }}
+        />
 
-        {isGuest && !isTelegram && (
-          <div className="pb-6 flex flex-col items-center">
+        <ProfileHero
+          displayName={displayName}
+          subtitle={heroSubtitle}
+          badge={heroBadge}
+          avatarId={profile?.avatarId}
+          avatarUrl={profile?.avatarId ? null : profile?.avatarUrl}
+          titleRef={heroTitleRef}
+          themeTextMain={currentTheme.textMain}
+          themeTextSecondary={currentTheme.textSecondary}
+        />
+
+        {isGuest ? (
+          <div className="relative flex flex-1 flex-col w-full max-w-md mx-auto gap-6 pb-4">
+            {!isTelegram && (
+              <div className="flex flex-col items-stretch gap-3">
+                <button
+                  type="button"
+                  onClick={requestLogin}
+                  className={`relative w-full min-h-[52px] overflow-hidden rounded-full flex items-center justify-center gap-2 transition-all duration-200 ease-out active:scale-[0.98] shadow-lg ${currentTheme.button}`}
+                >
+                  <span
+                    className="absolute inset-0 opacity-60"
+                    style={{
+                      background:
+                        'radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, var(--ui-accent) 28%, transparent) 0%, transparent 60%)',
+                    }}
+                    aria-hidden
+                  />
+                  <span className={`relative ${typographyClass.label} font-sans tracking-[0.2em]`}>
+                    {t.loginGoogle}
+                  </span>
+                </button>
+                <p className={`${typographyClass.body} text-center ${currentTheme.textSecondary}`}>
+                  {t.profileLoginAnchor}
+                </p>
+              </div>
+            )}
+
+            {isTelegram && !loadingAuth && (
+              <p
+                className={`${typographyClass.body} text-center leading-relaxed ${currentTheme.textSecondary}`}
+              >
+                {t.profileLoginAnchor}
+              </p>
+            )}
+
+            <ProfileGuestBenefits
+              title={t.profileBenefitsTitle}
+              items={guestBenefits}
+              isDark={isDark}
+              themeTextSecondary={currentTheme.textSecondary}
+            />
+
             <button
               type="button"
-              onClick={requestLogin}
-              className={`w-full max-w-[320px] min-h-[44px] rounded-xl font-sans ${typographyClass.label} tracking-[0.2em] ${currentTheme.button}`}
+              onClick={() => setGameState(GameState.STORE)}
+              className={storeNavBtn}
             >
-              {t.loginGoogle}
-            </button>
-          </div>
-        )}
-
-        {isGuest && (
-          <>
-            <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
-            <div className="py-5">
-              <p className={`${sectionTitle} mb-3`}>{t.profileBenefitsTitle}</p>
-              <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-                {guestBenefits.slice(0, 4).map((item, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-2xl border border-ui-border p-4 ${
-                      isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg leading-none">{item.emoji}</span>
-                      <p
-                        className={`${typographyClass.label} font-sans tracking-[0.18em] text-ui-fg line-clamp-2`}
-                      >
-                        {item.label}
-                      </p>
-                    </div>
-                    <p
-                      className={`${typographyClass.label} font-sans mt-2 leading-snug text-ui-fg-muted normal-case line-clamp-3`}
-                    >
-                      {item.sub}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              {guestBenefits[4] && (
-                <div
-                  className={`mt-3 max-w-md mx-auto rounded-2xl border border-ui-border p-4 ${
-                    isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg leading-none">{guestBenefits[4].emoji}</span>
-                    <p
-                      className={`${typographyClass.label} font-sans tracking-[0.18em] text-ui-fg line-clamp-2`}
-                    >
-                      {guestBenefits[4].label}
-                    </p>
-                  </div>
-                  <p
-                    className={`${typographyClass.label} font-sans mt-2 leading-snug text-ui-fg-muted normal-case line-clamp-3`}
-                  >
-                    {guestBenefits[4].sub}
-                  </p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border" />
-
-        {/* STATS → details */}
-        <section className="pt-6 pb-2">
-          <button
-            type="button"
-            onClick={() => setGameState(GameState.PLAYER_STATS)}
-            className="group w-full max-w-md mx-auto block text-left rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-(--ui-bg)"
-          >
-            <div className="grid grid-cols-3 gap-3">
-              <div
-                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
-              >
-                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
-                  {t.profileStatsCardGames ?? t.statsRowGamesPlayed ?? 'Played'}
-                </p>
-                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>
-                  {stats.gamesPlayed}
-                </p>
-              </div>
-              <div
-                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
-              >
-                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
-                  {t.profileStatsCardGuessed ?? t.statsRowWordsGuessed ?? 'Guessed'}
-                </p>
-                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>
-                  {stats.wordsGuessed}
-                </p>
-              </div>
-              <div
-                className={`${statCardInteractive} ${isDark ? 'bg-ui-surface' : 'bg-ui-card shadow-sm'}`}
-              >
-                <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>
-                  {t.profileStatsCardAccuracy ?? t.statsRowAccuracy ?? 'Accuracy'}
-                </p>
-                <p className={`mt-1 font-serif text-xl ${currentTheme.textMain}`}>{accuracy}%</p>
-              </div>
-            </div>
-            <p
-              className={`mt-3 text-center ${typographyClass.label} tracking-[0.35em] text-ui-fg-muted group-hover:text-ui-accent transition-colors`}
-            >
-              {t.profileTapForDetails ?? 'Tap for details'}
-            </p>
-          </button>
-        </section>
-
-        <div className="h-px w-[calc(100%-3rem)] max-w-md mx-auto bg-ui-border mt-4" />
-
-        <div className="flex-1 space-y-6 pt-6">
-          <div>
-            <p className={sectionTitle}>{t.profileSectionGame ?? t.game ?? 'GAME'}</p>
-            <div className="mt-3 space-y-3">
-              <button
-                type="button"
-                onClick={() =>
-                  hasCustomPacks
-                    ? setGameState(GameState.MY_WORD_PACKS)
-                    : setGameState(GameState.STORE)
-                }
-                className={navBtn}
-              >
-                <div className="flex items-center gap-3">
-                  <BookOpen
-                    size={16}
-                    className={
-                      hasCustomPacks
-                        ? currentTheme.iconColor
-                        : 'text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]'
-                    }
-                  />
-                  <div className="text-left">
-                    <span className={navLabel}>
-                      {hasCustomPacks
-                        ? (t.profileNavMyPacks ?? 'My word packs')
-                        : (t.profileNavUnlockPacks ?? 'Unlock custom packs')}
-                    </span>
-                    {!hasCustomPacks && (
-                      <p
-                        className={`${typographyClass.label} mt-0.5 tracking-widest text-ui-fg-muted`}
-                      >
-                        {t.profileNavUnlockPacksSub ?? 'Available in the store'}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {hasCustomPacks ? (
-                  <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
-                ) : (
-                  <Lock
-                    size={14}
-                    className="text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]"
-                  />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <p className={sectionTitle}>{t.profileSectionSettings ?? t.settings ?? 'SETTINGS'}</p>
-            <div className="mt-3 space-y-3">
-              <button
-                type="button"
-                onClick={() => setGameState(GameState.PROFILE_SETTINGS)}
-                className={navBtn}
-              >
-                <div className="flex items-center gap-3">
-                  <Settings size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>
-                    {t.profileNavProfileSettings ?? 'Profile settings'}
-                  </span>
-                </div>
-                <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGameState(GameState.LOBBY_SETTINGS)}
-                className={navBtn}
-              >
-                <div className="flex items-center gap-3">
-                  <Settings size={16} className={currentTheme.iconColor} />
-                  <span className={navLabel}>{t.profileNavLobbySettings ?? 'Lobby settings'}</span>
-                </div>
-                <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGameState(GameState.STORE)}
-                className={`${navBtn} ${currentTheme.button}`}
-              >
-                <div className="flex items-center gap-3">
-                  <ShoppingBag size={16} />
-                  <span className={`${typographyClass.label} font-sans tracking-[0.25em]`}>
-                    {t.profileNavStore ?? t.store ?? 'Store'}
-                  </span>
-                </div>
-                <ChevronRight size={16} className="opacity-60" />
-              </button>
-            </div>
-          </div>
-
-          {showAdminEntry && (
-            <button type="button" onClick={openAdminPanel} className={navBtn}>
               <div className="flex items-center gap-3">
-                <Shield size={16} className="text-ui-accent" strokeWidth={2.25} aria-hidden />
-                <span className={navLabel}>{t.profileAdminPanel}</span>
+                <ShoppingBag size={16} className={currentTheme.iconColor} />
+                <span
+                  className={`${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`}
+                >
+                  {t.profileGuestBrowseStore}
+                </span>
               </div>
               <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30`} />
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="relative flex flex-1 flex-col w-full max-w-md mx-auto gap-6 pb-4">
+            <ProfileStatsCards
+              gamesPlayed={playerStats.gamesPlayed}
+              wordsGuessed={playerStats.wordsGuessed}
+              accuracy={statsAccuracy}
+              labels={{
+                games: t.profileStatsCardGames,
+                guessed: t.profileStatsCardGuessed,
+                accuracy: t.profileStatsCardAccuracy,
+                tapForDetails: t.profileTapForDetails,
+              }}
+              isDark={isDark}
+              themeTextMain={currentTheme.textMain}
+              themeTextSecondary={currentTheme.textSecondary}
+              onPress={goToPlayerStats}
+            />
 
-        <div className="pt-6">
-          <button
-            type="button"
-            onClick={() => setShowLogoutConfirm(true)}
-            disabled={loggingOut}
-            className={`w-full text-center text-ui-danger font-sans ${typographyClass.label} tracking-[0.3em] py-3 hover:opacity-70 active:scale-[0.98] transition-all disabled:opacity-30`}
-          >
-            {loggingOut ? (
-              <Loader2 size={14} className="animate-spin inline" />
-            ) : (
-              (t.profileLogout ?? 'LOG OUT')
-            )}
-          </button>
-        </div>
+            <ProfileBenefitsList
+              title={t.profilePurchasesTitle}
+              subtitle={purchasesSummary}
+              items={authBenefits}
+              isDark={isDark}
+              themeTextSecondary={currentTheme.textSecondary}
+            />
+
+            <div className="h-px w-full bg-ui-border" />
+
+            <ProfileNavList
+              isDark={isDark}
+              themeTextMain={currentTheme.textMain}
+              themeIconColor={currentTheme.iconColor}
+              themeButtonClass={currentTheme.button}
+              hasCustomPacks={hasCustomPacks}
+              showAdminEntry={showAdminEntry}
+              labels={{
+                sectionGame: t.profileSectionGame,
+                sectionSettings: t.profileSectionSettings,
+                sectionExtra: t.profileSectionExtra,
+                myStats: t.profileNavMyStats,
+                myPacks: t.profileNavMyPacks ?? 'My word packs',
+                unlockPacks: t.profileNavUnlockPacks ?? 'Unlock custom packs',
+                unlockPacksSub: t.profileNavUnlockPacksSub ?? 'Available in the store',
+                profileSettings: t.profileNavProfileSettings ?? 'Profile settings',
+                lobbySettings: t.profileNavLobbySettings ?? 'Lobby settings',
+                store: t.profileNavStore ?? t.store ?? 'Store',
+                adminPanel: t.profileAdminPanel,
+              }}
+              onMyStats={goToPlayerStats}
+              onMyPacks={() =>
+                setGameState(hasCustomPacks ? GameState.MY_WORD_PACKS : GameState.STORE)
+              }
+              onProfileSettings={() => setGameState(GameState.PROFILE_SETTINGS)}
+              onLobbySettings={() => setGameState(GameState.LOBBY_SETTINGS)}
+              onStore={() => setGameState(GameState.STORE)}
+              onAdminPanel={() => {
+                window.location.href = '/admin.html';
+              }}
+            />
+          </div>
+        )}
       </ScreenShell>
 
       {showLogoutConfirm && (
@@ -402,10 +370,23 @@ export const ProfileScreen = () => {
           onDismiss={() => setShowLogoutConfirm(false)}
           onConfirm={handleLogout}
           loggingOut={loggingOut}
-          title={t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?'}
+          title={
+            isGuest
+              ? (t.profileGuestResetConfirmTitle ?? t.profileLogoutConfirmTitle)
+              : (t.profileLogoutConfirmTitle ?? 'Are you sure you want to log out?')
+          }
           cancelLabel={t.profileLogoutCancel ?? t.cancel ?? 'Cancel'}
-          confirmLabel={t.profileLogoutConfirm ?? 'Log out'}
-          loadingLabel={t.profileLogoutLoading ?? 'Logging out...'}
+          confirmLabel={
+            isGuest
+              ? (t.profileGuestResetConfirm ?? t.profileLogoutConfirm)
+              : (t.profileLogoutConfirm ?? 'Log out')
+          }
+          loadingLabel={
+            isGuest
+              ? (t.profileGuestResetLoading ?? t.profileLogoutLoading)
+              : (t.profileLogoutLoading ?? 'Logging out...')
+          }
+          solidDanger={isGuest}
         />
       )}
     </>

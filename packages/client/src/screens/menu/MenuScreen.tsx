@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize } from 'lucide-react';
 import { Logo, ModalSheetTitle } from '../../components/Shared';
 import { ModalSheet } from '../../components/ModalSheet';
-import { AppHeader, ScreenShell } from '../../components/layout';
+import { AppHeader, ScreenAccentGlow, ScreenShell } from '../../components/layout';
 import { QuickJoinSheet } from './QuickJoinSheet';
 import { EnterNameSheet } from './EnterNameSheet';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
@@ -11,10 +11,10 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
-import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
+import { hasTelegramInitData, isTelegramMiniApp } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
 import { ROOM_CODE_LENGTH } from '../../constants';
-import { HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
+import { HEADER_ROW_MIN_PX, HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
 import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
 
 export const MenuScreen = () => {
@@ -99,7 +99,7 @@ export const MenuScreen = () => {
   };
 
   const menuActionIcons = (
-    <div className="flex items-center justify-end gap-2 sm:gap-3" data-testid="menu-action-icons">
+    <>
       <button
         type="button"
         onClick={handleProfileClick}
@@ -142,23 +142,22 @@ export const MenuScreen = () => {
           <Maximize size={22} className={menuActionIcon} strokeWidth={1.75} />
         </button>
       )}
-    </div>
+    </>
   );
 
   const frozenChromeClass = isEnterName ? 'pointer-events-none select-none' : undefined;
+  const menuHeaderClass = [
+    frozenChromeClass,
+    !hasTelegramInitData() ? 'ui-app-header--menu-compact' : undefined,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
       className={`relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        aria-hidden
-        style={{
-          background:
-            'radial-gradient(ellipse 70% 45% at 50% 15%, var(--ui-accent) 0%, transparent 70%)',
-        }}
-      />
+      <ScreenAccentGlow />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
         aria-hidden
@@ -174,10 +173,18 @@ export const MenuScreen = () => {
           <AppHeader
             data-testid="menu-app-header"
             gradient
-            right={menuActionIcons}
+            tgChromeGutter={hasTelegramInitData()}
+            childRowHeightPx={HEADER_ROW_MIN_PX}
             ariaHidden={isEnterName}
-            className={frozenChromeClass}
-          />
+            className={menuHeaderClass}
+          >
+            <div
+              className="flex shrink-0 items-center gap-2 sm:gap-3"
+              data-testid="menu-action-icons"
+            >
+              {menuActionIcons}
+            </div>
+          </AppHeader>
         }
         contentClassName="max-w-2xl mx-auto w-full flex-1 min-h-0"
       >

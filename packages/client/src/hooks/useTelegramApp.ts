@@ -14,6 +14,15 @@ export function isTelegramMiniApp(): boolean {
   return Boolean(webApp && (webApp.initData || webApp.platform || webApp.initDataUnsafe));
 }
 
+/**
+ * True only inside a real Telegram session (signed initData).
+ * Plain browser loads `telegram-web-app.js` with `platform` stub but empty initData — no TG chrome gutter.
+ */
+export function hasTelegramInitData(): boolean {
+  const initData = getTelegramWebApp()?.initData;
+  return typeof initData === 'string' && initData.length > 0;
+}
+
 function applyTelegramThemeCssVars(theme: TelegramWebAppThemeParams | null): void {
   if (!theme) return;
   const root = document.documentElement;

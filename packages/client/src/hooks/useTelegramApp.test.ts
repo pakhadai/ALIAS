@@ -4,7 +4,7 @@ import {
   CSS_VAR_TMA_CONTENT_TOP_FLOOR,
   TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
 } from '../constants/tmaLayoutConstants';
-import { useTelegramApp } from './useTelegramApp';
+import { hasTelegramInitData, useTelegramApp } from './useTelegramApp';
 
 describe('useTelegramApp', () => {
   const mockWebApp = {
@@ -76,6 +76,17 @@ describe('useTelegramApp', () => {
     expect(
       document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
     ).toBe('96px');
+  });
+
+  it('should return true from hasTelegramInitData only when initData is non-empty', () => {
+    expect(hasTelegramInitData()).toBe(true);
+
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: '' } },
+    });
+    expect(hasTelegramInitData()).toBe(false);
   });
 
   it('should floor undersized SDK content-safe top inset to SSOT minimum', () => {

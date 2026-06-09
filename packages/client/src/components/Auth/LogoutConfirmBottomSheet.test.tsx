@@ -41,4 +41,26 @@ describe('LogoutConfirmBottomSheet', () => {
     await user.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(onConfirm).toHaveBeenCalledOnce();
   });
+
+  it('should render solid danger title and confirm for guest session reset', () => {
+    render(
+      <LogoutConfirmBottomSheet
+        onDismiss={vi.fn()}
+        onConfirm={vi.fn()}
+        loggingOut={false}
+        title="Reset guest session?"
+        cancelLabel="Cancel"
+        confirmLabel="Reset"
+        loadingLabel="Resetting…"
+        solidDanger
+      />
+    );
+
+    const title = screen.getByRole('heading', { name: 'Reset guest session?' });
+    expect(title.className).toContain('text-[var(--ui-danger)]');
+
+    const confirm = screen.getByRole('button', { name: 'Reset' });
+    expect(confirm.className).toContain('bg-[var(--ui-danger)]');
+    expect(confirm.className).toContain('text-white');
+  });
 });

@@ -97,6 +97,7 @@ vi.mock('../../hooks/useT', () => ({
 
 vi.mock('../../hooks/useTelegramApp', () => ({
   isTelegramMiniApp: () => false,
+  hasTelegramInitData: () => false,
 }));
 
 vi.mock('../../utils/fullscreen', () => ({

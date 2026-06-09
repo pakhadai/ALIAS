@@ -176,7 +176,7 @@
 
 Визначення padding-ключів: [`packages/client/tailwind.config.ts`](../packages/client/tailwind.config.ts) (`theme.extend.padding`).
 
-Порядок fallback: **`--tma-inset-*`** у `styles.css` = `content-safe-area` + `max(safe-area, env())`. Ключі з мінімумом (`safe-*`) додають `max(…, 1rem–2rem)`; `env-*` — без мінімуму.
+Порядок fallback: **`--tma-inset-top`** = `--tg-content-safe-area-inset-top` (notch + TG chrome в одному SDK value). **`--tma-inset-bottom/left/right`** = content-safe + `max(safe-area, env())`. Ключі з мінімумом (`safe-*`) додають `max(…, 1rem–2rem)`; `env-*` — без мінімуму.
 
 | Utility | CSS padding | Мінімум | Типове використання |
 |---------|-------------|---------|---------------------|
@@ -241,14 +241,18 @@
 | Змінна | Типове | Призначення |
 |--------|--------|-------------|
 | `--app-page-header-height` | measured + CSS fallback | Повна висота sticky header (inset + bar); `GlassAppHeader` пише measured px через `ResizeObserver`; fallback — формула з `tmaLayoutConstants.ts` |
-| `--tma-app-header-bar-height` | `3.75rem` (60px) | Висота bar **нижче** safe inset (`APP_HEADER_BAR_PX`) |
+| `--tma-content-safe-top` | SDK + floor on TMA | Title row min-height; вирівнювання з TG chrome |
 | `--tma-content-top-floor` | `88px` | Baseline content-safe when SDK not ready; synced by `useTelegramApp` |
 | `--tma-banner-top` | inset or header height | `ConnectionStatusBanner` top offset; mirrors toast header rule |
 | `--tma-toast-top` | inset + offset or header + gap | Portal toast position (`ToastNotification`) |
-| `--ui-app-header-opacity-top` | `28%` | Tint `--ui-bg` біля верху bar |
-| `--ui-app-header-opacity-bottom` | `6%` | Tint біля нижнього feather |
-| `--ui-app-header-blur` | `16px` | `backdrop-filter` на `::before` |
-| `--ui-app-header-saturate` | `1.2` | Saturation разом із blur |
+| `--ui-chrome-glass-opacity-top` | `62%` | SSOT tint біля верху sticky chrome (header + modal top bar) |
+| `--ui-chrome-glass-opacity-bottom` | `12%` | SSOT tint біля feather |
+| `--ui-chrome-glass-blur` | `22px` | SSOT `backdrop-filter` blur |
+| `--ui-chrome-glass-saturate` | `1.5` | SSOT saturation разом із blur |
+| `--ui-app-header-opacity-top` | `var(--ui-chrome-glass-opacity-top)` | Tint `--ui-bg` біля верху bar |
+| `--ui-app-header-opacity-bottom` | `var(--ui-chrome-glass-opacity-bottom)` | Tint біля нижнього feather |
+| `--ui-app-header-blur` | `var(--ui-chrome-glass-blur)` | `backdrop-filter` на `::before` |
+| `--ui-app-header-saturate` | `var(--ui-chrome-glass-saturate)` | Saturation разом із blur |
 
 Mask на `::before` / `::after`: gradient feather **вниз** (м’який перехід до контенту).
 
@@ -263,13 +267,19 @@ Mask на `::before` / `::after`: gradient feather **вниз** (м’який �
 
 Mask — дзеркально header (feather **вгору**).
 
-### Lobby start CTA
+### Accent footer CTA (`AccentFooterCta`)
+
+| Variant | Shell | Кнопка | Анімація |
+|---------|-------|--------|----------|
+| `animated` | `.accent-footer-cta-shell--ready` | `.lobby-start-btn--ready` + theme | Perimeter snake: `radial-gradient` на `::before`/`::after`, `accent-cta-snake` 3s (`@property --snake-x/y`) |
+| `blocked` | `.accent-footer-cta-shell--blocked` | `.lobby-start-btn--blocked` | `blocked-pulse` 3s |
+| `plain` | `.accent-footer-cta-shell--plain` | `.lobby-start-btn--plain` + theme | немає (повний accent без glow/snake) |
 
 | Клас | Стан | Опис |
 |------|------|------|
-| `.lobby-start-btn--blocked` | `!readiness.ok` | Opaque «вигорілий» червоний (`color-mix` `--ui-accent` + `--ui-bg`) |
-| `.lobby-start-btn--ready` | `readiness.ok` | Повний theme accent + легкий glow |
-| `.lobby-start-btn-shell--ready` | ready | Neon snake: conic-gradient на `::before`/`::after`, `lobby-start-snake-spin` 4.5s |
+| `.lobby-start-btn--blocked` | `variant="blocked"` | Opaque «вигорілий» червоний (`color-mix` `--ui-accent` + `--ui-bg`) |
+| `.lobby-start-btn--ready` | `variant="animated"` | Повний theme accent + легкий glow |
+| `.lobby-start-btn--plain` | `variant="plain"` | Повний theme accent, tap scale — без glow box-shadow |
 
 **Не плутати:** `.ui-glass-panel` — rounded inset panel для sheet-adjacent блоків; app chrome — flat full-width.
 

@@ -24,29 +24,29 @@ export function pxToRem(px: number): string {
 export const APP_HEADER_BAR_REM = pxToRem(APP_HEADER_BAR_PX);
 
 /**
- * Title row clearance below device inset (CSS calc fragment).
- * `max(contentSafeTop − deviceInset, HEADER_ROW_MIN_PX)`
+ * Title row height (CSS calc fragment) — full `--tg-content-safe-area-inset-top` band.
+ * Telegram centers native header controls in this zone; do not subtract device inset.
  */
 export function titleRowHeightCss(
   contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
 ): string {
-  return `max(calc(var(${CSS_VAR_TMA_CONTENT_SAFE_TOP}, ${contentFloorPx}px) - var(--tma-device-inset-top, 0px)), ${HEADER_ROW_MIN_PX}px)`;
+  return `max(var(${CSS_VAR_TMA_CONTENT_SAFE_TOP}, ${contentFloorPx}px), ${HEADER_ROW_MIN_PX}px)`;
 }
 
 /**
  * Fallback `--app-page-header-height` before ResizeObserver measures the live header.
- * `titleRow + deviceInset + appBar [+ optional child row]`
+ * `titleRow [+ optional child row]`
  */
 export function appPageHeaderHeightFallbackCss(extraChildRowPx = 0): string {
   const childSuffix = extraChildRowPx > 0 ? ` + ${extraChildRowPx}px` : '';
-  return `calc(${titleRowHeightCss()} + var(--tma-device-inset-top, 0px) + ${APP_HEADER_BAR_PX}px${childSuffix})`;
+  return `calc(${titleRowHeightCss()}${childSuffix})`;
 }
 
-/** Aligns with `--tma-inset-top` + bar — current `GlassAppHeader` chrome before Phase 2 API */
+/** Legacy alias — same as {@link titleRowHeightCss} for inset-aligned spacers. */
 export function appPageHeaderHeightInsetFallbackCss(
-  insetFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
+  contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
 ): string {
-  return `calc(var(--tma-inset-top, ${insetFloorPx}px) + ${APP_HEADER_BAR_REM})`;
+  return titleRowHeightCss(contentFloorPx);
 }
 
 /** `--app-home-card-top` — content-safe top + home card gap (MenuScreen body padding). */

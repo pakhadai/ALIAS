@@ -4,7 +4,7 @@ import type { ModalSheetSize } from './Shared';
 export const modalSheetContentPaddingBySize: Record<ModalSheetSize, string> = {
   compact: 'px-5 pt-0 pb-modal-bottom text-center',
   default: 'px-5 pt-0 pb-modal-bottom',
-  tall: 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pt-0 pb-modal-bottom [-webkit-overflow-scrolling:touch]',
+  tall: 'px-5 pt-0 pb-modal-bottom',
 };
 
 /** Default panel width when `maxWidth` prop is omitted. */

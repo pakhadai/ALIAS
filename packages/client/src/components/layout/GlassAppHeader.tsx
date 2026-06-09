@@ -34,8 +34,8 @@ export const UI_APP_HEADER_SLOT_CLASS = 'ui-app-header__slot';
 const GRADIENT_CLASS =
   'bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_72%,transparent)] to-[color-mix(in_srgb,var(--ui-bg)_25%,transparent)]';
 
-/** Device inset only — title row min-height absorbs TG chrome clearance (OMR formula). */
-const HEADER_BASE = 'pointer-events-auto flex w-full shrink-0 flex-col pt-device-top';
+/** Title row min-height = content-safe-top — TG centers native chrome in that band (Bot API 8.0+). */
+const HEADER_BASE = 'pointer-events-auto flex w-full shrink-0 flex-col';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');

@@ -31,6 +31,20 @@
 ## [Unreleased]
 
 ### Fixed
+- Sticky chrome glass legibility: stronger frost on `.ui-app-header` and `.bottom-sheet-top-bar` via SSOT `--ui-chrome-glass-*` tokens (62% tint, 22px blur) so scroll content under title row stays unreadable (`styles.css`, `docs/UI_TOKENS.md`)
+
+### Changed
+- `PlayerStatsScreen` aligned with profile stats UX: read-only `ProfileStatsCards` hero, `PlayerStatsDetailPanel` (Lucide icons), empty-state CTA, sync badge, theme-aware layout; profile benefits stats row tappable for guest and auth (`PlayerStatsScreen.tsx`, `ProfileStatsCards.tsx`, `ProfileBenefitsList.tsx`, `ProfileScreen.tsx`, translations)
+- `StoreScreen` migrated to canonical `ScreenShell` + `AppHeader` (tabs in child row) + `FixedBottomBar`; TMA safe inset, viewport height, back → MENU aligned with `useTelegramBackButton`; removed ad-hoc drag pill and duplicate close button (`StoreScreen.tsx`, `docs/TMA_LAYOUT.md`)
+- `AccentFooterCta` variants: `animated` | `plain` | `blocked`; profile guest + auth share plain footer CTA (no snake); lobby uses explicit `variant`; deprecated `ready`/`blocked` shims (`AccentFooterCta.tsx`, `ProfileScreen.tsx`, `LobbyStartPanel.tsx`, `styles.css`, `docs/TMA_LAYOUT.md`, `docs/UI_TOKENS.md`)
+- Authenticated profile screen: stats cards (tap → `PlayerStatsScreen`), owned-benefits panel with purchase summary, grouped nav sections (`ProfileStatsCards`, `ProfileBenefitsList`, `profilePurchaseCounts`, `ProfileScreen`, `ProfileNavList`, translations)
+- Profile screen redesign: shared hero (avatar ring, name, badge) for guest and auth; guest benefits in grouped card; Menu-style login CTA; compound components under `screens/menu/profile/` (`ProfileScreen.tsx`, `ProfileHero.tsx`, `ProfileGuestBenefits.tsx`, `ProfileNavList.tsx`, `AccountBadge.tsx`)
+- Guest profile footer reset CTA unified with lobby `AccentFooterCta` (accent red + snake border; `AccentFooterCta.tsx`, `ProfileScreen.tsx`, `LobbyStartPanel.tsx`)
+- Accent footer CTA snake animation: perimeter crawl via `@property --snake-x/y` + `radial-gradient` (replaces conic spin; `styles.css`)
+
+### Fixed
+- Profile hero accent glow sharp horizontal cutoff — moved to full-viewport `ScreenAccentGlow` (same pattern as menu home); removed fixed `h-40` radial clip in `ProfileHero` (`ScreenAccentGlow.tsx`, `ProfileScreen.tsx`, `ProfileHero.tsx`, `MenuScreen.tsx`)
+- TMA `AppHeader` title sat below native Telegram back/menu buttons — title row now spans full `--tg-content-safe-area-inset-top` (no separate `pt-device-top`); aligns with Bot API 8.0+ content safe area (`GlassAppHeader.tsx`, `styles.css`, `tmaLayoutConstants.ts`)
 - ModalSheet keyboard lift jitter — CSS-animated `--sheet-keyboard-lift` (280ms) instead of instant `paddingBottom`; deferred input focus after enter animation; `pb-modal-bottom` padding transition via `data-keyboard-open`; single settle timer on dismiss (`ModalSheet.tsx`, `useVisualViewportBottomInset.ts`, `styles.css`)
 - TMA ModalSheet overlap with Telegram header buttons when SDK reports undersized `contentSafeAreaInset.top` — enforce 88px floor via `--tma-content-safe-top` and backdrop `padding-top` (`styles.css`, `useTelegramApp.ts`)
 

@@ -15,6 +15,8 @@ export type LogoutConfirmBottomSheetProps = {
   cancelLabel: string;
   confirmLabel: string;
   loadingLabel: string;
+  /** Solid red title + confirm (e.g. guest session reset) */
+  solidDanger?: boolean;
 };
 
 /** Shared logout confirmation — same layout and stacking as other nested sheets */
@@ -27,6 +29,7 @@ export function LogoutConfirmBottomSheet({
   cancelLabel,
   confirmLabel,
   loadingLabel,
+  solidDanger = false,
 }: LogoutConfirmBottomSheetProps) {
   const [open, setOpen] = useState(true);
   const requestClose = () => setOpen(false);
@@ -40,11 +43,18 @@ export function LogoutConfirmBottomSheet({
       zLayer="modalNested"
       size="compact"
       ariaLabelledBy={titleId}
-      header={<ModalSheetTitle id={titleId}>{title}</ModalSheetTitle>}
+      header={
+        <ModalSheetTitle
+          id={titleId}
+          themeClass={solidDanger ? '!text-[var(--ui-danger)]' : undefined}
+        >
+          {title}
+        </ModalSheetTitle>
+      }
     >
       <div className="flex flex-col gap-4">
         <Button
-          variant="danger"
+          variant={solidDanger ? 'dangerSolid' : 'danger'}
           fullWidth
           size="xl"
           disabled={loggingOut}
