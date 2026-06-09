@@ -58,6 +58,7 @@ vi.mock('../../hooks/useT', () => ({
 
 vi.mock('../../hooks/useTelegramApp', () => ({
   isTelegramMiniApp: () => false,
+  hasTelegramInitData: () => false,
 }));
 
 describe('MenuScreen quick join', () => {
