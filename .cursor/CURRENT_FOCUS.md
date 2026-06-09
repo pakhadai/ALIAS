@@ -1,6 +1,6 @@
 # Current Focus — Alias Master
 
-**Last updated:** 2026-06-08 (session: E2E lobby helper sync)  
+**Last updated:** 2026-06-09 (session: ModalSheet keyboard animation polish)  
 **Active branch:** `main`
 
 ## What's in progress
@@ -9,6 +9,8 @@
 
 ## What was just completed
 
+- **ModalSheet keyboard animation:** CSS `--sheet-keyboard-lift` + 280ms transition; `useDeferredSheetInputFocus`; `pb-modal-bottom` CSS transition; EnterName/QuickJoin/AddOffline deferred focus; `docs/TMA_LAYOUT.md` keyboard section
+- **Doc hygiene:** `LOBBY_FIX_PROMPTS` → `docs/archive/`; consolidated `CHANGELOG` `[Unreleased]`; `AGENT_BRIEF` governance in `CONTRIBUTING` + steward; `docs/archive/README.md`
 - **E2E lobby helpers:** `expectLobbyReadiness` / `closeLobbySettings` synced with lobby redesign (no `lobby-start-validation`; offline-safe lobby return marker via `lobby-start-panel`)
 - **Lobby play-mode bar:** reverted erroneous ONLINE hide; `LobbyPlayModeBarSlot` instant show on mount + `ResizeObserver` height sync (fixes empty gap where Solo/Teams bar should appear)
 - **TMA header unification Phase 5:** 88px content-safe floor (`--tma-content-top-floor`, `useTelegramApp` sync, `--tma-inset-top` CSS); `resolveTelegramBackAction()` aligned with Header matrix (`MENU`/`ENTER_NAME` hide); `--tma-banner-top` for `ConnectionStatusBanner`; Vitest (`useTelegramApp`, `useTelegramBackButton`, toast/banner)
@@ -22,8 +24,8 @@
 
 ## Next steps
 
-1. [ ] **StoreScreen** — missing top safe inset (gap in matrix)
-2. [ ] Manual TMA @375px on owner device (Phase 6 checklist — deferred)
+1. [ ] **Manual TMA @375px** — keyboard lift QA matrix (flows 1–15, owner device)
+2. [ ] **StoreScreen** — missing top safe inset (gap in matrix)
 3. [ ] Push — лише на явний запит власника
 
 ## Known issues / blockers

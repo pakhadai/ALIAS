@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useDeferredSheetInputFocus } from '../../hooks/useBottomSheetPresence';
 import { ArrowRight } from 'lucide-react';
 import { ModalSheet } from '../../components/ModalSheet';
 import { ModalSheetTitle } from '../../components/Shared';
 import { ROOM_CODE_LENGTH } from '../../constants';
-import {
-  keyboardAvoidingBottomPadding,
-  scrollElementIntoViewCentered,
-  useVisualViewportBottomInset,
-} from '../../hooks/useVisualViewportBottomInset';
 import type { ThemeConfig } from '../../types';
 import type { TranslationStrings } from '../../hooks/useT';
 import { typographyClass } from '../../constants/typography';
@@ -27,7 +23,8 @@ export function QuickJoinSheet(props: {
 }): React.ReactNode {
   const { onDismiss, theme, t, canSubmit, checking, code, onCodeChange, onSubmit } = props;
   const [open, setOpen] = useState(true);
-  const keyboardBottomInset = useVisualViewportBottomInset();
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  useDeferredSheetInputFocus(codeInputRef, open);
   const requestClose = () => setOpen(false);
 
   return (
@@ -38,7 +35,6 @@ export function QuickJoinSheet(props: {
       size="compact"
       showClose
       closeAriaLabel={t.close}
-      backdropStyle={keyboardAvoidingBottomPadding(keyboardBottomInset)}
       ariaLabelledBy="quick-join-title"
       header={
         <ModalSheetTitle id="quick-join-title" themeClass={theme.textMain}>
@@ -53,7 +49,6 @@ export function QuickJoinSheet(props: {
               type="text"
               inputMode="numeric"
               value={code}
-              onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^0-9]/g, '');
                 if (val.length <= ROOM_CODE_LENGTH) onCodeChange(val);
@@ -64,8 +59,8 @@ export function QuickJoinSheet(props: {
               placeholder="00000"
               data-testid="menu-quick-join-code"
               className={`flex-1 bg-transparent text-ui-fg font-sans font-bold tracking-[0.25em] ${typographyClass.bodyInput} px-2 py-2 outline-none placeholder:text-ui-fg-muted`}
+              ref={codeInputRef}
               aria-label={t.enterCode}
-              autoFocus
             />
             <button
               type="button"

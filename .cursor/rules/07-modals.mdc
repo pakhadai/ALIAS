@@ -38,7 +38,7 @@ globs: packages/client/src/**/*Modal*.tsx, packages/client/src/**/*Sheet*.tsx, p
    - власний `backdrop-blur` / `fixed` overlay (окрім `ModalPortal` + `ModalSheet`)
    - `pb-safe-bottom` / `pb-env-bottom` на краї panel/backdrop
 4. Кнопки дій — `Button` **primary** + **ghost** cancel (як `ConfirmationModal`).
-5. Input sheets — `keyboardAvoidingBottomPadding` на backdrop, `pb-modal-bottom` всередині.
+5. Keyboard — вбудовано в `ModalSheet` (`keyboardAvoiding` default `true`); `pb-modal-bottom` всередині (CSS transition до `1rem` при `data-keyboard-open`); `useDeferredSheetInputFocus` замість `autoFocus`.
 6. Nested modals — `zLayer="modalNested"`; confirm поверх — `zLayer="modalConfirm"`.
 7. Після зміни **однієї** модалки — grep, що патерн не роз’їхався у **всіх** інших `ModalSheet` consumers.
 8. Додай/онови тест якщо змінився публічний API `ModalSheet` або критичний flow.
@@ -92,17 +92,15 @@ Danger confirm: `variant="danger"` замість `primary`.
 
 - Панель **edge-to-edge** — **без** `pb-safe-bottom*` / `pb-env-bottom` на backdrop або нижньому краї панелі.
 - Відступ контенту: **`pb-modal-bottom`** (wrapper або footer).
-- Інпути: `useVisualViewportBottomInset()` → `keyboardAvoidingBottomPadding(inset)` на `backdropStyle`.
-- **Не** викликай `scrollIntoView` на інпутах у sheet.
+- Keyboard lift — **вбудовано** в `ModalSheet` (default `keyboardAvoiding={true}`). Не дублюй `useVisualViewportBottomInset` на consumers.
+- **Не** викликай `scrollIntoView` на інпутах у sheet — `ModalSheet` піднімає панель сам.
+- Escape: `keyboardAvoiding={false}` лише з `// escape: причина`.
 
 ```tsx
-const keyboardInset = useVisualViewportBottomInset();
-
 <ModalSheet
   size="default"
   open={open}
   onClose={onClose}
-  backdropStyle={keyboardAvoidingBottomPadding(keyboardInset)}
   header={<ModalSheetTitle id="…">Title</ModalSheetTitle>}
 >
   …

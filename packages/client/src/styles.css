@@ -138,8 +138,13 @@ html[data-telegram-app='true'] #root {
   );
   /** Baseline content-safe floor when Telegram SDK not ready — SSOT: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX */
   --tma-content-top-floor: 88px;
+  /**
+   * Content-safe top (TG chrome + notch clearance). On TMA, `html[data-telegram-app]` applies max(floor).
+   * Use this instead of raw `--tg-content-safe-area-inset-top` — SDK may report a too-small positive value.
+   */
+  --tma-content-safe-top: var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px));
   /** Distance from viewport top to first app content — Telegram content-safe (notch + TG chrome). */
-  --tma-inset-top: var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px));
+  --tma-inset-top: var(--tma-content-safe-top);
   --tma-inset-bottom: calc(
     var(--tg-content-safe-area-inset-bottom, 0px) + var(--tma-device-inset-bottom)
   );
@@ -151,7 +156,7 @@ html[data-telegram-app='true'] #root {
   );
 
   /** Home card top offset — content-safe + gap; SSOT: HOME_CARD_TOP_GAP_PX in tmaLayoutConstants.ts */
-  --app-home-card-top: calc(var(--tg-content-safe-area-inset-top, 88px) + 16px);
+  --app-home-card-top: calc(var(--tma-content-safe-top, 88px) + 16px);
   /** GlassAppHeader bar below safe inset — py-2 + min-h-11 + py-2; SSOT: APP_HEADER_BAR_PX */
   --tma-app-header-bar-height: 3.75rem;
   /**
@@ -159,10 +164,7 @@ html[data-telegram-app='true'] #root {
    * Fallback: title row + device inset + bar (tmaLayoutConstants.ts).
    */
   --app-page-header-height: calc(
-    max(
-        calc(var(--tg-content-safe-area-inset-top, 88px) - var(--tma-device-inset-top, 0px)),
-        44px
-      ) +
+    max(calc(var(--tma-content-safe-top, 88px) - var(--tma-device-inset-top, 0px)), 44px) +
       var(--tma-device-inset-top, 0px) + var(--tma-app-header-bar-height)
   );
   --tma-toast-offset-header: 0px;
@@ -350,6 +352,9 @@ html[data-app-header] {
   );
   --ui-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --ui-sheet-anim-ms: 400ms;
+  /** iOS virtual keyboard slide — sync lift with system keyboard (~250–300ms) */
+  --ui-keyboard-anim-ms: 280ms;
+  --ui-keyboard-ease: cubic-bezier(0.32, 0.72, 0, 1);
   /** Viewport minus Telegram chrome — keeps sheet below TMA header buttons */
   --ui-sheet-available-height: calc(
     var(--tg-viewport-stable-height, 100dvh) - var(--tma-inset-top) - 0.5rem
@@ -363,6 +368,17 @@ html[data-app-header] {
     inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 7%, transparent),
     inset 0 14px 18px -16px color-mix(in srgb, var(--ui-fg) 11%, transparent);
   --lobby-play-mode-anim-ms: 520ms;
+}
+
+/**
+ * TMA: enforce content-safe floor — SDK may report a too-small positive inset before fullscreen settles.
+ * SSOT floor: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX (88px) via --tma-content-top-floor.
+ */
+html[data-telegram-app='true'] {
+  --tma-content-safe-top: max(
+    var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)),
+    var(--tma-content-top-floor, 88px)
+  );
 }
 
 /* Frosted glass panel — lobby start CTA, AppHeader, bottom sheets inset pattern */
@@ -502,7 +518,7 @@ html[data-app-header] {
   gap: 0.5rem;
   min-height: max(
     calc(
-      var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)) -
+      var(--tma-content-safe-top, var(--tma-content-top-floor, 88px)) -
         var(--tma-device-inset-top, 0px)
     ),
     44px
@@ -796,6 +812,7 @@ html[data-app-header] {
 }
 
 .bottom-sheet-backdrop {
+  --sheet-keyboard-lift: 0px;
   position: fixed;
   inset: 0;
   display: flex;
@@ -807,6 +824,21 @@ html[data-app-header] {
   overscroll-behavior: none;
   isolation: isolate;
   pointer-events: auto;
+  box-sizing: border-box;
+  padding-bottom: var(--sheet-keyboard-lift);
+  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
+}
+
+/** Full-page screens that lift content above the virtual keyboard (JoinInputScreen, etc.) */
+.keyboard-avoiding-lift {
+  --sheet-keyboard-lift: 0px;
+  padding-bottom: var(--sheet-keyboard-lift);
+  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
+}
+
+/** Keep sheet top below Telegram native header — flex content box ends above TG chrome */
+html[data-telegram-app='true'] .bottom-sheet-backdrop {
+  padding-top: var(--tma-inset-top);
 }
 
 .bottom-sheet-backdrop--absolute {
@@ -989,6 +1021,12 @@ html[data-app-header] {
   overflow: hidden;
 }
 
+/** Device safe-area is covered by the keyboard — tighten footer/body inset inside lifted sheets. */
+.bottom-sheet-backdrop[data-keyboard-open='true'] .pb-modal-bottom {
+  padding-bottom: 1rem;
+  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
+}
+
 .bottom-sheet-top-bar {
   position: relative;
   display: flex;
@@ -1142,7 +1180,10 @@ html[data-app-header] {
 
 @media (prefers-reduced-motion: reduce) {
   .bottom-sheet-backdrop::before,
-  .bottom-sheet-panel {
+  .bottom-sheet-backdrop,
+  .bottom-sheet-panel,
+  .keyboard-avoiding-lift,
+  .bottom-sheet-backdrop[data-keyboard-open='true'] .pb-modal-bottom {
     transition: none !important;
   }
 }

@@ -1,7 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 /** Panel slide + backdrop fade duration (ms) */
 export const BOTTOM_SHEET_ANIM_MS = 400;
+
+/**
+ * Focus a sheet input after enter animation — avoids keyboard lift fighting slide-up.
+ * Use instead of `autoFocus` on inputs inside {@link ModalSheet}.
+ */
+export function useDeferredSheetInputFocus(
+  inputRef: RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
+  open: boolean,
+  enabled = true
+) {
+  useEffect(() => {
+    if (!open || !enabled) return;
+    const timer = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, BOTTOM_SHEET_ANIM_MS);
+    return () => clearTimeout(timer);
+  }, [open, enabled, inputRef]);
+}
 
 type Options = {
   onExited?: () => void;

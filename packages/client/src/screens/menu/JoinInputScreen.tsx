@@ -45,7 +45,10 @@ export const JoinInputScreen = () => {
   };
 
   return (
-    <div style={keyboardAvoidingBottomPadding(keyboardBottomInset)}>
+    <div
+      className="keyboard-avoiding-lift"
+      style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
+    >
       <ScreenShell
         className={currentTheme.bg}
         contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"

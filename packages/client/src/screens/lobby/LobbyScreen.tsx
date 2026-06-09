@@ -18,7 +18,6 @@ import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 import { HAPTIC, vibrate } from '../../utils/haptics';
-import { useVisualViewportBottomInset } from '../../hooks/useVisualViewportBottomInset';
 import { typographyClass, systemBannerClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
 import { MAX_PLAYERS } from '../../constants';
@@ -91,7 +90,6 @@ export const LobbyScreen = () => {
     if (teams.length <= desired) return;
     setTeams(teams.slice(0, desired).map((t) => ({ ...t, players: [...t.players] })));
   }, [gameMode, isHost, isSolo, general.teamCount, teams, setTeams]);
-  const keyboardBottomInset = useVisualViewportBottomInset();
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -727,7 +725,6 @@ export const LobbyScreen = () => {
           playersCount={players.length}
           theme={currentTheme}
           t={t}
-          keyboardBottomInset={keyboardBottomInset}
           onClose={() => setShowAddPlayer(false)}
           addOfflinePlayer={addOfflinePlayer}
           showNotification={showNotification}

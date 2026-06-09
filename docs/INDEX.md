@@ -31,7 +31,6 @@
 |------|-------------|
 | [`PRISMA_WORD_DATA.md`](./PRISMA_WORD_DATA.md) | Seed, JSON, `WordConcept` / `WordTranslation` |
 | [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md) | Лобі, команди, Solo, `LobbyScreen` vs `TeamSetupScreen` |
-| [`LOBBY_FIX_PROMPTS.md`](./LOBBY_FIX_PROMPTS.md) | Промти по фазах для виправлення багів лоббі (після аудиту) |
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
 | [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
 | [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
@@ -42,6 +41,13 @@
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |
 | [`ROOM_MANAGEMENT_FIXES.md`](./ROOM_MANAGEMENT_FIXES.md) | **Історичний** журнал фіксів 2026-04-07 |
 | [`VPS-INFRASTRUCTURE.md.example`](./VPS-INFRASTRUCTURE.md.example) | Шаблон локальних VPS-нотаток → `VPS-INFRASTRUCTURE.md` (gitignore) |
+
+## Архів (`docs/archive/`)
+
+| Файл | Коли |
+|------|------|
+| [`archive/README.md`](./archive/README.md) | Індекс завершених harness / історичних doc |
+| [`archive/LOBBY_FIX_PROMPTS.md`](./archive/LOBBY_FIX_PROMPTS.md) | **COMPLETED 2026-06-08** — AI-промти Lobby Fix; канон — `LOBBY_TEAM_BUILDER.md` |
 
 ## Код — єдине джерело правди
 
@@ -60,7 +66,6 @@
 | Нова Socket.IO подія | `events.ts` → README → handlers + client hook |
 | Міграція БД | `schema.prisma` → `PRISMA_WORD_DATA.md` → `PROJECT_STATE` |
 | Лобі / команди | `LOBBY_TEAM_BUILDER.md` |
-| Фікси лоббі (AI-фази) | `LOBBY_FIX_PROMPTS.md` |
 | TMA / Stars | `TELEGRAM_SKILL.md` |
 | TMA safe area / layout / glass chrome | `TMA_LAYOUT.md` |
 | Уніфікація хедерів (фази + промти) | `TMA_HEADER_UNIFICATION.md` |

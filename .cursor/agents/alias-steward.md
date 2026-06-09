@@ -30,6 +30,7 @@ Do **not** replace `tdd-guide`, `code-reviewer`, or `architect` for implementati
 |-------|----------------|
 | Architecture, protocols, game rules | `README.md` |
 | Versions, CI, workspace facts | `PROJECT_STATE.md` |
+| AI session TL;DR, landmines, test baseline | `AGENT_BRIEF.md` |
 | All docs navigation | `docs/INDEX.md` |
 | How to work (human + AI) | `docs/CONTRIBUTING.md` |
 | Alias-specific dev checklists | `.cursor/skills/alias-master/SKILL.md` |
@@ -44,10 +45,12 @@ Do **not** replace `tdd-guide`, `code-reviewer`, or `architect` for implementati
 ## Post-change checklist
 
 1. Add or extend **`docs/daily/YYYY-MM-DD.md`** (today in Europe/Kyiv; new day → new file).
-2. If release-worthy: line under **`CHANGELOG.md`** → `[Unreleased]`.
-3. If packages/scripts/CI/Prisma models changed: update **`PROJECT_STATE.md`** header date.
-4. Touch only doc sections that changed; verify paths/events exist via `grep`.
-5. Suggest `pnpm verify` (or `pnpm typecheck` minimum).
+2. If release-worthy (user-facing): line under **`CHANGELOG.md`** → `[Unreleased]` — no CSS micro-details.
+3. After a code session: sync **`AGENT_BRIEF.md`** (bundle, test counts, backlog, landmines) — not package versions.
+4. If packages/scripts/CI/Prisma models changed: update **`PROJECT_STATE.md`** header date.
+5. Completed AI harness → **`docs/archive/`** + `docs/INDEX.md` archive row.
+6. Touch only doc sections that changed; verify paths/events exist via `grep`.
+7. Suggest `pnpm verify` (or `pnpm typecheck` minimum).
 
 ## Escalation (stop and ask the human)
 

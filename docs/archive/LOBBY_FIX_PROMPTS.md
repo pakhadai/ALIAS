@@ -1,7 +1,9 @@
 # Lobby Fix — промти по фазах
 
-> **Призначення:** покрокові промти для AI-агента (Cursor) після [аудиту лоббі 2026-06-08](../.cursor/CURRENT_FOCUS.md).  
-> **Канон UX лобі:** [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md).  
+> **Status: COMPLETED 2026-06-08** — не використовувати для нових сесій. Архів harness; канон лобі — [`LOBBY_TEAM_BUILDER.md`](../LOBBY_TEAM_BUILDER.md), аудит — [`AUDIT_RESULTS.md`](../../AUDIT_RESULTS.md) Block I.
+
+> **Призначення (історично):** покрокові промти для AI-агента (Cursor) після аудиту лоббі 2026-06-08.  
+> **Канон UX лобі:** [`LOBBY_TEAM_BUILDER.md`](../LOBBY_TEAM_BUILDER.md).  
 > **Не дублюй** тут архітектуру — лише інструкції для виправлень.
 
 ---
@@ -25,9 +27,9 @@
 ```
 @alias-steward Pre-flight для Lobby Fix Phase 1.
 
-Прочитай: .cursor/CURRENT_FOCUS.md, AUDIT_RESULTS.md, docs/LOBBY_TEAM_BUILDER.md, docs/LOBBY_FIX_PROMPTS.md (Phase 1).
+Прочитай: .cursor/CURRENT_FOCUS.md, AUDIT_RESULTS.md, docs/LOBBY_TEAM_BUILDER.md, docs/archive/LOBBY_FIX_PROMPTS.md (Phase 1).
 
-Виконай Phase 1 з docs/LOBBY_FIX_PROMPTS.md повністю. Мінімальний diff. Після — verify + онови docs.
+Виконай Phase 1 з docs/archive/LOBBY_FIX_PROMPTS.md повністю. Мінімальний diff. Після — verify + онови docs.
 ```
 
 Заміни `Phase 1` на `Phase 2`, `Phase 3`, `Phase 4` або `Final Audit` для наступних сесій.
@@ -70,7 +72,7 @@
 - `.cursor/CURRENT_FOCUS.md`
 - `AUDIT_RESULTS.md`
 - `docs/LOBBY_TEAM_BUILDER.md`
-- `docs/LOBBY_FIX_PROMPTS.md` (секція Phase N)
+- `docs/archive/LOBBY_FIX_PROMPTS.md` (секція Phase N)
 - `AGENTS.md` + `.cursor/skills/alias-master/SKILL.md`
 
 Інваріанти (НЕ порушувати):
@@ -506,7 +508,7 @@ Senior reviewer + QA. Не пиши новий код окрім критичн�
 1. .cursor/CURRENT_FOCUS.md
 2. CHANGELOG.md [Unreleased]
 3. docs/LOBBY_TEAM_BUILDER.md
-4. docs/LOBBY_FIX_PROMPTS.md
+4. docs/archive/LOBBY_FIX_PROMPTS.md
 5. git diff (повний scope lobby changes)
 6. AUDIT_RESULTS.md
 

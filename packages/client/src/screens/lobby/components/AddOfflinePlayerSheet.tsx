@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDeferredSheetInputFocus } from '../../../hooks/useBottomSheetPresence';
 import { Button } from '../../../components/Button';
 import { ModalSheet } from '../../../components/ModalSheet';
 import { ModalSheetTitle } from '../../../components/Shared';
 import type { ThemeConfig } from '../../../types';
 import { AVATARS } from '../../../utils/avatars';
 import { MAX_PLAYERS } from '../../../constants';
-import {
-  keyboardAvoidingBottomPadding,
-  scrollElementIntoViewCentered,
-} from '../../../hooks/useVisualViewportBottomInset';
 import { typographyClass } from '../../../constants/typography';
 import type { TranslationStrings } from '../../../hooks/useT';
 
@@ -18,21 +15,14 @@ export function AddOfflinePlayerSheet(props: {
   playersCount: number;
   theme: ThemeConfig;
   t: T;
-  keyboardBottomInset: number;
   onClose: () => void;
   addOfflinePlayer: (name: string, avatar: string) => void;
   showNotification: (message: string, type: 'error' | 'success' | 'info') => void;
 }): React.ReactNode {
-  const {
-    playersCount,
-    theme,
-    t,
-    keyboardBottomInset,
-    onClose,
-    addOfflinePlayer,
-    showNotification,
-  } = props;
+  const { playersCount, theme, t, onClose, addOfflinePlayer, showNotification } = props;
 
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  useDeferredSheetInputFocus(nameInputRef, true);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(
     AVATARS[(playersCount + 1) % AVATARS.length] ?? AVATARS[0] ?? '🙂'
@@ -64,7 +54,6 @@ export function AddOfflinePlayerSheet(props: {
       showClose
       closeAriaLabel={t.close}
       closeIconSize={24}
-      backdropStyle={keyboardAvoidingBottomPadding(keyboardBottomInset)}
       ariaLabelledBy="add-player-title"
       header={
         <ModalSheetTitle id="add-player-title" themeClass={theme.textMain}>
@@ -84,9 +73,8 @@ export function AddOfflinePlayerSheet(props: {
           </div>
         )}
         <input
-          autoFocus
+          ref={nameInputRef}
           value={newPlayerName}
-          onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
           onChange={(e) => setNewPlayerName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
           placeholder={t.namePlaceholder}
           className={`w-full bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-ui-accent focus:border-ui-accent transition-all font-bold text-center ${typographyClass.bodyInput}`}

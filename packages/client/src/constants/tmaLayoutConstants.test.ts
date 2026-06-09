@@ -32,13 +32,13 @@ describe('tmaLayoutConstants', () => {
 
   it('should build title row height CSS with content-safe floor', () => {
     expect(titleRowHeightCss()).toBe(
-      'max(calc(var(--tg-content-safe-area-inset-top, 88px) - var(--tma-device-inset-top, 0px)), 44px)'
+      'max(calc(var(--tma-content-safe-top, 88px) - var(--tma-device-inset-top, 0px)), 44px)'
     );
   });
 
   it('should build total header fallback with optional child row', () => {
     expect(appPageHeaderHeightFallbackCss()).toBe(
-      'calc(max(calc(var(--tg-content-safe-area-inset-top, 88px) - var(--tma-device-inset-top, 0px)), 44px) + var(--tma-device-inset-top, 0px) + 60px)'
+      'calc(max(calc(var(--tma-content-safe-top, 88px) - var(--tma-device-inset-top, 0px)), 44px) + var(--tma-device-inset-top, 0px) + 60px)'
     );
     expect(appPageHeaderHeightFallbackCss(44)).toContain('+ 44px)');
   });
@@ -50,12 +50,12 @@ describe('tmaLayoutConstants', () => {
   });
 
   it('should build home card top offset CSS', () => {
-    expect(appHomeCardTopCss()).toBe('calc(var(--tg-content-safe-area-inset-top, 88px) + 16px)');
+    expect(appHomeCardTopCss()).toBe('calc(var(--tma-content-safe-top, 88px) + 16px)');
   });
 
   it('should build tma inset top CSS with content floor var fallback', () => {
     expect(tmaInsetTopCss()).toBe(
-      'var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px))'
+      'var(--tma-content-safe-top, var(--tma-content-top-floor, 88px))'
     );
   });
 });

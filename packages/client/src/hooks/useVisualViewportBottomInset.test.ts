@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  computeKeyboardLiftPx,
   computeVisualViewportBottomInset,
+  KEYBOARD_LIFT_CSS_VAR,
+  KEYBOARD_SHEET_OVERLAP_PX,
   keyboardAvoidingBottomPadding,
 } from './useVisualViewportBottomInset';
 
@@ -22,15 +25,27 @@ describe('computeVisualViewportBottomInset', () => {
   });
 });
 
-describe('keyboardAvoidingBottomPadding', () => {
-  it('should return undefined when keyboard is closed', () => {
-    expect(keyboardAvoidingBottomPadding(0)).toBeUndefined();
-    expect(keyboardAvoidingBottomPadding(-1)).toBeUndefined();
+describe('computeKeyboardLiftPx', () => {
+  it('should return 0 when keyboard is closed', () => {
+    expect(computeKeyboardLiftPx(0)).toBe(0);
+    expect(computeKeyboardLiftPx(-1)).toBe(0);
   });
 
-  it('should lift the sheet by keyboard height when keyboard is open', () => {
+  it('should add overlap buffer when keyboard is open', () => {
+    expect(computeKeyboardLiftPx(280)).toBe(280 + KEYBOARD_SHEET_OVERLAP_PX);
+  });
+});
+
+describe('keyboardAvoidingBottomPadding', () => {
+  it('should set --sheet-keyboard-lift to 0px when keyboard is closed', () => {
+    expect(keyboardAvoidingBottomPadding(0)).toEqual({
+      [KEYBOARD_LIFT_CSS_VAR]: '0px',
+    });
+  });
+
+  it('should set --sheet-keyboard-lift with overlap when keyboard is open', () => {
     expect(keyboardAvoidingBottomPadding(280)).toEqual({
-      paddingBottom: '280px',
+      [KEYBOARD_LIFT_CSS_VAR]: `${280 + KEYBOARD_SHEET_OVERLAP_PX}px`,
     });
   });
 });

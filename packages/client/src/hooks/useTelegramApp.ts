@@ -43,15 +43,21 @@ function readCssVarPx(root: HTMLElement, name: string): number | null {
 /** Ensures `--tg-*-safe-area-inset-*` exist (SDK usually sets them; some clients need a sync after fullscreen). */
 function applyTelegramSafeAreaCssVars(webApp: TelegramWebApp): void {
   const root = document.documentElement;
+  const contentTopFloor =
+    readCssVarPx(root, CSS_VAR_TMA_CONTENT_TOP_FLOOR) ?? TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX;
+
   const applySide = (
     prefix: 'content-safe-area-inset' | 'safe-area-inset',
     inset: TelegramSafeAreaInset | null | undefined
   ) => {
     if (!inset) return;
     for (const side of ['top', 'right', 'bottom', 'left'] as const) {
-      const px = insetPx(inset[side]);
+      let px = insetPx(inset[side]);
       // Never write 0px: inline styles on <html> override the SDK’s own --tg-* vars and can zero out a correct inset.
       if (px == null || px <= 0) continue;
+      if (prefix === 'content-safe-area-inset' && side === 'top') {
+        px = Math.max(px, contentTopFloor);
+      }
       const cssVar = `--tg-${prefix}-${side}`;
       const existing = readCssVarPx(root, cssVar);
       // iOS can report a smaller JS value before contentSafeAreaChanged; keep the larger SDK/computed inset.

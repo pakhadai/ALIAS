@@ -30,238 +30,40 @@
 
 ## [Unreleased]
 
-### Added
-- TMA header Phase 6 verification — grep gates green; automated checklist; E2E `@smoke` 15/15 pass; `AppHeader` `backTestId` prop; E2E `neuterTelegramMiniAppDetection` / `forceBrowserChromeMode` for settings flows
-- TMA header Phase 5 — `resolveTelegramBackAction()` + `TELEGRAM_BACK_HIDDEN_STATES`; `--tma-content-top-floor` / `tmaInsetTopCss()`; `--tma-banner-top` for reconnect banner; Vitest in `useTelegramApp.test.ts`, expanded `useTelegramBackButton.test.ts`, `ToastNotification.test.tsx`
-- `AppHeader` Phase 2 API — `title`, `onBack`, `showBackInBrowser`, `children`/`childRowHeightPx`, `tgChromeGutter`; CSS `.ui-app-header__title-row` / `__child-row` / `data-tg-gutter`; `LobbyScreen` migrated to new props; Vitest in `GlassAppHeader.test.tsx` + `LobbyScreen.test.tsx`
-- `packages/client/src/constants/tmaLayoutConstants.ts` — TMA header SSOT (`HEADER_ROW_MIN_PX`, `TG_CHROME_GUTTER_PX`, `APP_HEADER_BAR_PX`, title-row CSS helpers); Vitest in `tmaLayoutConstants.test.ts`
-- `--app-page-header-height` CSS var — fallback formula + `GlassAppHeader` `ResizeObserver` measured sync; toast offset via `data-app-header`
-- `docs/TMA_LAYOUT.md` — Constants section (`--app-page-header-height`, SSOT table); Phase 1 roadmap ✅
-- `docs/TMA_HEADER_UNIFICATION.md` — phased plan to unify TMA headers (OMR patterns + Alias sticky glass), session prompts 0–6
-- `docs/TMA_LAYOUT.md` — Header matrix (GameState): pattern classification A–E, TMA back targets, grep audit 2026-06-08, migration gaps (Phase 0)
-
-### Added
-- **Lobby glass chrome docs:** `docs/TMA_LAYOUT.md` (Glass app chrome, Lobby start CTA, manual QA checklist), `docs/LOBBY_TEAM_BUILDER.md`, `docs/UI_TOKENS.md` — app header/footer tokens
-
 ### Fixed
-- E2E `@core` lobby helpers aligned with lobby redesign — `expectLobbyReadiness` checks blocked start shell (`aria-disabled`, `--blocked`) instead of removed `lobby-start-validation`; `closeLobbySettings` waits on `lobby-start-panel` (works for offline + online)
-- TMA lobby header excessive top gap — `GlassAppHeader` used `pt-safe-top` (full content-safe + device) plus fixed 44px title row; now `pt-device-top` + OMR title-row `max(content − device, 44px)`; `--tma-inset-top` = content-safe only
-- Lobby settings/mode changes no longer emit `UPDATE_SETTINGS` while the online socket is disconnected or reconnecting; shows localized `roomActionNotReady` instead of raw English `Join a room first`
+- ModalSheet keyboard lift jitter — CSS-animated `--sheet-keyboard-lift` (280ms) instead of instant `paddingBottom`; deferred input focus after enter animation; `pb-modal-bottom` padding transition via `data-keyboard-open`; single settle timer on dismiss (`ModalSheet.tsx`, `useVisualViewportBottomInset.ts`, `styles.css`)
+- TMA ModalSheet overlap with Telegram header buttons when SDK reports undersized `contentSafeAreaInset.top` — enforce 88px floor via `--tma-content-safe-top` and backdrop `padding-top` (`styles.css`, `useTelegramApp.ts`)
+
+### Added
+- **TMA header unification (Phases 0–6):** unified `ScreenShell` + `AppHeader` across menu, profile, lobby-adjacent, and non-playing game screens; `docs/TMA_HEADER_UNIFICATION.md`, header matrix in `docs/TMA_LAYOUT.md`; E2E `@smoke` 15/15
+- **Lobby Fix (Phases 1–4 + Final Audit):** `buildTeamShells`, `deriveLobbyReadinessServer`, server join/START guards, i18n, unit/integration/E2E coverage; regression B1–B12 in `AUDIT_RESULTS.md` Block I
+- **Lobby redesign (Phases 1–3):** avatar strip, readiness bar, play-mode bar, invite sheet, glass chrome
+- **TYPO-001 typography epic (implemented):** semantic `text-ui-*` tokens, `typographyClass` map, `ScreenTitle`, rule `08-typography.mdc`, governance test
+- **ModalSheet unification (Phases 0–5):** `size` presets, glass visuals, 16 consumers migrated
+- **Test coverage (Phases 1–8):** server **341**, client **44**, shared **12**; E2E `@smoke` / `@core`
+- **Theme `PAPER_LUXE`:** default app theme; **OAuth `skipNamePrompt`**; **`AppLoginProvider`** for anonymous PWA
+- **Doc harness (2026-06-06):** `docs/INDEX.md`, `CONTRIBUTING`, `alias-steward`, `alias-master` skill, `daily-log-reminder` hook
 
 ### Changed
-- **TMA hardening (Phase 5):** `--tma-inset-top` uses 88px content-safe floor via `--tma-content-top-floor` (synced by `useTelegramApp`); `ConnectionStatusBanner` top offset via `--tma-banner-top` (header-aware like toast); `useTelegramBackButton` explicit Header matrix map
-- **MenuScreen home (Phase 4):** fixed icon header + manual spacer → `ScreenShell` + sticky `AppHeader` (icons in `right` slot); removed `--tma-fixed-header-height` / `data-fixed-header`; toast via `data-app-header`; `--app-home-card-top` CSS var + `appHomeCardTopCss()`; `EnterNameSheet` overlay preserves `aria-hidden` / `pointer-events-none` on frozen menu chrome; Vitest in `MenuScreen.buttons.test.tsx`
-- **Lobby-adjacent + game non-playing (Phase 3b):** `SettingsScreen`, `TeamSetupScreen`, `JoinInputScreen`, `RulesScreen`, `VSScreen`, `CountdownScreen`, `RoundSummaryScreen`, `ScoreboardScreen`, `GameOverScreen` — `ScreenShell` + `AppHeader` where nav chrome exists; `FixedBottomBar` for footers; `settings-close` test id preserved for E2E; `ImposterScreen` / `PlayingScreen` untouched
-- **Menu / profile screens (Phase 3a):** `ProfileScreen`, `ProfileSettingsScreen`, `PlayerStatsScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `LobbySettingsScreen` — ad-hoc `pt-safe-top` headers → `ScreenShell` + `AppHeader`; save/create CTAs → `FixedBottomBar`; `LobbySettingsScreen` browser back aligned with `useTelegramBackButton` (LOBBY or MENU)
-- **App header glass architecture:** `ScreenShell` renders `header` as sticky overlay inside scroll (backdrop sees scrolling content); `contentClassName` applies to body wrapper only; `.ui-app-header` sticky + softer tint/feather masks; `@supports` / `prefers-reduced-transparency` gradient fallback
-- **Lobby start CTA glass footer:** `FixedBottomBar` `glass` prop + `.ui-app-footer` (mirror of header); `ScreenShell` footer sticky inside scroll; `LobbyStartPanel` drops rounded `ui-glass-panel` capsule — full-width bar with scroll-through blur
-- **Lobby start button UX:** opaque blocked/ready states; faded red blocked styling; lock icon when blocked; tap on blocked button fires hint toast (no `disabled`); removed duplicate validation line above CTA; calm neon-red snake border animation when ready
+- **TMA headers & safe area:** sticky in-scroll chrome; Telegram back matrix; `--tma-inset-top` content-safe floor
+- **Lobby UX:** invite sheet, play-mode bar, optimistic settings rollback, mid-game join blocked
+- **UI tokens (sessions 1–7):** `--ui-*` canon in `docs/UI_TOKENS.md`; admin panel migrated
+- **Bundle (C-1):** lazy routes — `main` **~306 KB** / **~94 KB gzip** (was 500 KB)
+- **Deploy env:** canonical `.env.prod`; NPM docker network `npm_network` default
+- **Doc hygiene (2026-06-09):** consolidated `[Unreleased]`; `AGENT_BRIEF` governance in `CONTRIBUTING` + steward; `docs/archive/README.md`
 
 ### Fixed
-- **Lobby play-mode bar gap:** `LobbyPlayModeBarSlot` shows Solo/Teams block immediately on first mount (no opacity-0 enter flash); `ResizeObserver` keeps slot height in sync with content
-- **Lobby scroll / footer overlap:** `FixedBottomBar` no longer `position:fixed` over scroll content inside `ScreenShell`; teams/players section scrolls above Start panel instead of hiding behind it
-- **Screen horizontal scroll:** `ScreenShell` / app root use `overflow-x-hidden` — page scrolls vertically only; avatar strip keeps its own inner horizontal scroll for many players
-- **ModalSheet TMA layout:** `max-height` subtracts `--tma-inset-top` so tall sheets (e.g. AppSettings) no longer overlap Telegram header buttons; backdrop `overflow: hidden` prevents sheet detaching on upward swipe
-- **ModalSheet drag:** bottom-anchored dismiss slide (`translate3d` + `scaleY` rubber band on pull-up); drag dismiss no longer snaps back before close
-
-### Changed
-- **Lobby avatar kick UX:** host taps guest avatar to show kick overlay on the avatar instead of a separate button below the name (`LobbyAvatarStrip.tsx`)
-- **Lobby horizontal inset + footer layout:** `px-4` shell padding; `FixedBottomBar` in flex flow (not viewport overlay); removed `pb-32` spacers (`LobbyScreen.tsx`, `FixedBottomBar.tsx`, `ScreenShell.tsx`)
-- **Toast frosted glass UI:** shared `ToastItem`; opaque `--ui-toast-surface` on element (no transparent fill / pseudo-only blur); flex + `w-fit` (`ToastItem.tsx`, `styles.css`)
-- **Connection reconnect banner:** opaque `ui-status-banner--warning` (same surface family as toast); removed transparent `color-mix` fill (`ConnectionStatusBanner.tsx`, `styles.css`)
-
-### Added
-- **Unified glass app header:** `GlassAppHeader` + `AppHeader` with Telegram top safe area; `ScreenShell` `header` slot; first use in lobby (`LobbyScreen.tsx`)
-- **Lobby Fix Final Audit (2026-06-08):** post-fix regression matrix B1–B12 verified; architecture invariants traced; test coverage matrix documented in `AUDIT_RESULTS.md` Block I
-- **Lobby Fix Phase 4 — test coverage:** `buildTeamShells.test.ts`, `TeamSetupScreen.test.tsx` (virtual shells); `socketHandlers.int` writer-only `room:exists`; E2E `lobby-team-builder.spec.ts` (`@core` assign/lock/validation/start, `@smoke` shortcut); `game-ui.ts` helpers `joinTeam`, `expectLobbyReadiness`
-- **Lobby Fix Phase 3 — i18n keys:** `teamSetupMoveHere`, `teamSetupTapHint`, `tgDeepLink*`, `lobbyQrGenerateFailed` (UA/DE/EN) in `translations.ts`
-- **Lobby Fix Phase 2 — `deriveLobbyReadinessServer`:** shared lobby readiness helper in `@alias/shared` (`lobbyReadiness.ts`) — min players, unassigned, empty team checks (mirror client rules, no i18n)
-- **Lobby Fix Phase 2 — `RoomErrorCode`:** `INVALID_STATE`, `LOBBY_NOT_READY`, `GAME_ALREADY_STARTED` for server-side lobby/join guards
-- **Lobby Fix Phase 1 — `buildTeamShells`:** shared client helper (`utils/buildTeamShells.ts`) for virtual team shells in `LobbyScreen`, `TeamSetupScreen`, and offline `TEAM_*` actions
-- **TYPO-001 wrap-up governance test:** `typography.test.ts` asserts Tailwind v4 `@theme` `--text-ui-*` tokens in `styles.css` (regression guard for Session D namespace fix)
+- **ModalSheet keyboard (all sheets):** built-in `keyboardAvoiding` on every `ModalSheet`; overlap buffer + `pb-4` when keyboard open; stale inset after dismiss; panel scroll reset; removed per-consumer wiring (`EnterNameSheet`, `QuickJoinSheet`, `AddOfflinePlayerSheet`)
+- **Lobby:** TMA header gap, play-mode bar slot, scroll/footer overlap, offline remove ghost, `teamsLocked` Redis restore, server readiness validation
+- **TMA:** keyboard bottom-sheet drift, MenuScreen header overlap, ModalSheet vs Telegram chrome
+- **E2E:** lobby helpers after redesign, offline assign i18n, multiplayer reconnect strict-mode
+- **Offline:** `TIME_UP` fallback, `TEAM_JOIN` with empty teams, add-player sheet mount-on-demand
 
 ### Removed
-- **E2E debug artifact:** `packages/e2e/debug-offline-add.png`; `.gitignore` pattern `packages/e2e/debug-*.png`
-- **Lobby fix phased prompts:** `docs/LOBBY_FIX_PROMPTS.md` — Phase 1–4 + Final Audit copy-paste prompts after lobby audit (2026-06-08)
-- **TYPO-001 Phase 3a body typography:** `text-ui-body-input` (16px) for inputs; modals + shared migrated (`ConfirmationModal`, `LoginModal`, `RulesModal`, `AppSettingsModal`, `CustomDeckModal`, `QuickBuyModal`, toast, `App.tsx` auth errors)
-- **TYPO-001 Phase 2 typography primitives:** `ScreenTitle` component; `modalSheetTitleClass` → `typographyClass.heading`; screen headings migrated in menu/admin/lobby
-- **TYPO-001 Phase 1 typography tokens:** `--ui-text-*` CSS vars + Tailwind `text-ui-heading|body|label|system` in `styles.css`; `typographyClass` map in `constants/typography.ts`; unit tests; `UI_TOKENS.md` Typography section
-- **TYPO-001 typography epic plan:** `docs/TYPOGRAPHY_UNIFICATION.md` — 7 phases, target token scale (heading/body/label/system + frozen game title), session prompts per phase, grep governance
-
-### Fixed
-- **E2E multiplayer reconnect:** scope player name assertions to `lobby-avatar-strip` (strict-mode vs unassigned assign button)
-
-### Changed
-- **Lobby Fix Phase 2 — join policy:** `room:join` allowed only when `gameState === LOBBY`; mid-game join returns `GAME_ALREADY_STARTED` (`room:rejoin` unchanged)
-- **TYPO-001 wrap-up ESLint cleanup:** removed 53 unused typography helper imports from Session C files (modals, lobby, menu, admin, shared)
-- **TYPO-001 Session C (app UI typography sweep):** modals, menu, lobby, shared — remaining `text-xs`/`text-sm` on semantic copy → `typographyClass.*` / `captionMutedClass` / `systemStatusClass`; 17 files; grep app UI (excl. GameFlow, admin/tabs) → 0
-- **TYPO-001 Session B (SettingsScreen labels + body):** lobby `SettingsScreen` — all legacy `text-xs`/`text-sm` on semantic copy → `typographyClass.label` / `body` / `labelSectionTitleClass`; block titles, intro paragraph, accent values, stepper controls; display timer `text-3xl/4xl` unchanged; grep `text-xs|text-sm` → 0
-- **TYPO-001 Phase 6 font + governance:** removed Merriweather from `index.html`; trimmed Playfair weights; `.cursor/rules/08-typography.mdc`; final app UI `text-[Npx]` sweep; epic marked implemented
-- **TYPO-001 Phase 5 system messages:** `systemBannerClass` / `systemStatusClass`; connection/PWA banners, MenuScreen server error, LobbyScreen guest strips, TMA auth boot/error, Sentry fallback, Store purchase banner → `text-ui-system`; toast stays `text-ui-body`
-- **TYPO-001 Phase 4 labels & captions:** micro uppercase text → `text-ui-label` via `typographyClass.label` + label helpers; `Button` base styles use label token; menu, lobby, admin, modals, store (~27 files)
-- **TYPO-001 Phase 3b body typography:** menu + lobby body → `text-ui-body` / `text-ui-body-input` (MenuScreen, EnterNameSheet, Profile*, PlayerStats, OnlineLobbyIntro, TeamCard, UnassignedPool, LobbyGuestWaitingCard, LobbyPlayModeBar, AssignPlayerSheet, LobbyInviteSheet, PlayersSection)
-- **ModalSheet backdrop glass:** tinted matte scrim (`--ui-overlay-tint-base`, desaturated blur) — приглушує accent CTA за sheet
-- **Pre-lobby enter name on menu canvas:** `EnterNameSheet` overlays frozen `MenuScreen` for `GameState.ENTER_NAME` (create / join / offline / deep link); `App.tsx` keeps `MENU` + `ENTER_NAME` on one `PageTransition` — same frosted backdrop as QuickJoin; `EnterNameScreen` re-exports sheet for tests
-- **ModalSheet Phase 5 (verification + governance):** grep guards green (0 consumer `panelClassName`, 0 `panelVariant`, 0 modal `max-h-[*dvh]`); preset→modal table in `TMA_LAYOUT.md`; `07-modals.mdc` Phase 5 status — docs/steward only
-- **ModalSheet Phase 4 (tall escape hatches):** `LoginModal` → `size="default"` + `ModalSheetFooter`; `RulesModal`, `AppSettingsModal`, `CustomDeckModal` → `ModalSheetBody`/`ModalSheetFooter`; tall split scroll CSS; `PlayingPauseOverlay` removes `shadow-2xl`; `EnterNameScreen` loading uses `bottomSheetBackdropClass`; `ImposterScreen` end-game → `ConfirmationModal` — client modals
-- **ModalSheet Phase 3 (simple consumers):** `QuickJoinSheet`, `LobbyInviteSheet`, `MenuScreen` fullscreen hint → `size="compact"`; redundant `maxWidth` / `paddedContent` / ad-hoc `contentClassName` removed; `QuickBuyModal` pay CTA → `Button primary`; `AssignPlayerSheet` cancel → `Button ghost` — lobby/menu/store sheets
-- **ModalSheet Phase 2 presets API:** `ModalSheet.presets.ts` centralizes padding + default `maxWidth` per `size`; `compact` uses `px-5` + auto `max-w-sm`; `tall` scroll on content wrapper; `paddedContent` / `panelClassName` documented as deprecated / escape hatch; `ModalSheetBody` / `ModalSheetFooter` helpers — `ModalSheet.tsx`, `ConfirmationModal.tsx`, docs, unit tests
-
-### Fixed
-- **Lobby Fix Phase 3 — optimistic settings rollback:** host `setSettings` reverts to last `game:state-sync` on `room:error` (theme/sound stay local) — `GameContext.tsx`
-- **Lobby Fix Phase 3 — offline `leaveRoom`:** `leaveRoom({ resetGameMode: false })` preserves `gameMode: OFFLINE` on exit (TMA back, `EnterNameSheet`, `LobbyScreen`)
-- **Lobby Fix Phase 3 — `LobbyPlayModeBar`:** removed duplicate team-count increment control
-- **Lobby Fix Phase 3 — `teamsExpanded`:** user toggle no longer overwritten by auto-collapse effect
-- **Lobby Fix Phase 3 — Start a11y:** `LobbyStartPanel` `disabled={!readiness.ok}` (toast unchanged in `handleStartTap`)
-- **Lobby Fix Phase 2 — START_GAME validation:** server rejects invalid lobby (min players, unassigned, empty team) via `LOBBY_NOT_READY` without mutating room — `GameEngine.ts`
-- **Lobby Fix Phase 2 — game-state guards:** lobby actions (`TEAM_*`, `GENERATE_TEAMS`, `UPDATE_SETTINGS`) blocked outside `LOBBY`/`TEAMS`; `START_GAME` only from `LOBBY` — `authorizeGameAction.ts`
-- **Lobby Fix Phase 2 — `room:exists`:** no longer returns true for stale Redis writer key without room snapshot — `socketHandlers.ts`
-- **Lobby Fix Phase 1 — TMA back navigation:** `SETTINGS`/`TEAMS` → `LOBBY` (not `leaveRoom`); `LOBBY` → `leaveRoom` (clears zombie rejoin keys); `LOBBY_SETTINGS` without `roomCode` → `MENU` — `useTelegramBackButton.ts`
-- **Lobby Fix Phase 1 — offline remove:** `REMOVE_OFFLINE_PLAYER` now removes player from teams (parity with `KICK_PLAYER`) — `offlineGameActions.ts`
-- **Lobby Fix Phase 1 — Redis restore:** `restoreRoomFromRedis` restores `teamsLocked` from sync snapshot — `RoomManager.ts`
-- **Lobby Fix Phase 1 — TeamSetup shells:** `TeamSetupScreen` materializes team shells when `teams[]` is empty (offline GENERATE_TEAMS path)
-- **TYPO-001 Phase 7 (Tailwind v4 @theme typography):** `@theme` used wrong namespaces (`--font-size-ui-*`) so `text-ui-heading|body|label|system` utilities were never generated — semantic copy inherited 16px; fixed to `--text-ui-*`, `--leading-ui-*`, `--tracking-ui-*` in `styles.css`
-- **TYPO-001 Phase 7 prep (Settings number inputs):** score-to-win and team-count stepper fields → `typographyClass.bodyInput` (16px, iOS zoom); `SettingsScreen.tsx`
-- **TYPO-001 Session A (TMA inputs 16px):** deck editor, word packs, offline add-player, lobby custom-words textareas → `typographyClass.bodyInput` (prevents iOS zoom in Telegram Mini App); `MyDecksScreen`, `MyWordPacksScreen`, `AddOfflinePlayerSheet`, `SettingsScreen`, `LobbySettingsScreen`
-- **Offline add-player sheet:** `AddOfflinePlayerSheet` mounts on demand (like `AssignPlayerSheet`) — fixes `useBottomSheetPresence` stuck `mounted=false` when sheet was always in tree with `open={false}`; E2E `add-player-modal` testid
-- **Offline lobby settings in TMA:** header gear visible for offline host (`lobby-header-settings`) when online chips are absent — offline E2E can open rules/time settings
-- **E2E offline assign:** multilingual `assignPlayerButton()` (UA/DE/EN aria-labels) — `game-ui.ts`
-- **E2E lobby settings:** `openLobbySettings` uses `lobby-settings-chips` (TMA hides header gear); asserts `settings-close` — `game-ui.ts`
-- **EnterNameScreen duplicate submit:** removed redundant `onClick` on submit `Button` (form `onSubmit` already calls `handleJoin`) — fixes double join in unit test and potential race
-- **ModalSheet drag vs CTA (mobile E2E):** `useSheetDragToClose` no longer captures pointer on buttons/inputs — sheet CTA clicks work on mobile viewport; fixes enter-name→lobby Playwright flows
-- **Local dev API/socket routing:** Vite proxy for `/api`, `/socket.io`, `/health`; `getApiBaseUrl()` prefers same-origin on `localhost:5173` in dev — avoids CORS when root `.env` points at prod
-- Menu quick join sheet: mount-on-demand `QuickJoinSheet` (LobbyInvite pattern) so join button opens the code input reliably in browser/TMA; `useBottomSheetPresence` ignores stale exit timers after reopen; `ModalSheet` guards backdrop dismiss for 450ms after open
-
-### Removed
-- **ModalSheet `panelVariant`:** deprecated card layout removed — `size="tall"` only; `.bottom-sheet-panel--card` CSS deleted
-
-### Changed
-- **ModalSheet Phase 3 (CTA):** `LogoutConfirmBottomSheet` and admin `ConfirmModal` use `Button` primary/danger + ghost cancel (same stack as `ConfirmationModal`); unit test for logout confirm
-- **ModalSheet Phase 2 (consumer migration):** all 16 call sites use `size` preset; removed ad-hoc `panelClassName` padding and `max-h-[90|92dvh]`; `LoginModal` card→`size="tall"` edge-to-edge sheet — modal/sheet consumers across client
-- **ModalSheet Phase 1b (API):** `size` prop (`compact` | `default` | `tall`) with built-in content padding; `bottomSheetPanelClass` size modifiers; `data-sheet-scroll` on tall; `panelVariant` deprecated — `ModalSheet.tsx`, `Shared.tsx`, `styles.css`, unit tests
-- **ModalSheet Phase 1a (visual foundation):** stronger backdrop glass (blur 36px, bottom scrim tint, softer mask fade); frosted panel via inset `::before`/`::after` (lobby-start-glass pattern); sheet variant `height: auto` + `max-height: min(88dvh, 820px)`; `prefers-reduced-transparency` opaque panel fallback — `styles.css`, `UI_TOKENS.md`
-- **ModalSheet Phase 0 audit (docs):** 16-consumer matrix, `size` target contract (`compact`/`default`/`tall`), migration roadmap in `TMA_LAYOUT.md`; overlay/panel tokens in `UI_TOKENS.md`; `07-modals.mdc` migration state — no TSX changes yet
-- **ModalSheet content inset:** `pb-modal-bottom` (`max(1rem, var(--tma-inset-bottom))`) on sheet content and footers — minimal gap from screen bottom while panel stays edge-to-edge; replaces `pb-env-bottom` in modals
-- **ModalSheet drag handle:** mandatory top-center grabber (`BottomSheetHandleRow`) on every sheet; improved contrast/size; removed optional `showHandle` prop
-- **ModalSheet edge-to-edge:** bottom sheet panel flush to screen bottom; safe area via internal `pb-env-bottom` only; backdrop keyboard lift is keyboard height without extra `max(1.5rem, …)` — `styles.css`, `ModalSheet.tsx`, `useVisualViewportBottomInset.ts`, modal consumers; docs `TMA_LAYOUT.md`, `UI_TOKENS.md`
-- **Lobby play format animation:** `LobbyPlayModeBarSlot` wraps `LobbyPlayModeBar` — slide-down enter, height-collapsing slide-up exit (520 ms); online **guests** hide block after `TEAM_JOIN`; host always sees format controls; avoids scroll clipping in TMA (`ScreenShell` `overflow-y-auto`)
-- **Lobby teams toolbar:** removed duplicate Shuffle / Shuffle all buttons next to Teams heading (random shuffle lives in `LobbyPlayModeBar`); lock teams toggle kept
-- **Lobby invite UX:** icon-only invite button beside room code opens `LobbyInviteSheet` (mount-on-demand + internal `open` state for TMA enter animation); Telegram / share link / QR options
-
-### Added
-- **Lobby play mode bar:** `LobbyPlayModeBar` at top of lobby — Solo vs Teams toggle, team count (+/− / add team up to 10), random shuffle hint; i18n keys `lobbyPlayMode`, `lobbyAddTeam`, `lobbyRandomTeams`, etc.
-- **`LobbyPlayModeBarSlot`:** presence wrapper + measured-height animation; Vitest coverage
-- **Lobby redesign audit (2026-06-07):** Phases 1–3 verified against original lobby checklist — 50/53 must-have, protocol unchanged (client-only); E2E `lobby-room-code` test id preserved; remaining gaps: i18n hardcodes in `AssignPlayerSheet` / tg-link error, full readiness checklist UI deferred
-- **Lobby Phase 3 (polish):** `LobbyInviteSheet` with copy code/link, Telegram invite, nested QR; TMA haptics on join batch, team join, start CTA, invite options; chip copy flash animation; lobby typography/a11y/theme token cleanup
-- **Lobby Phase 1 (quick wins):** `LobbyAvatarStrip` for ONLINE lobbies; invite options sheet in `OnlineLobbyIntro`; lobby i18n keys (shuffle all, unassigned pool, invite sheet, start validation); unit tests for conditional player UI
-- **Lobby Phase 2 (structure):** `LobbyReadinessBar` + `deriveLobbyReadiness`; `LobbyGuestWaitingCard` for online guests; compact 2-col team grid; progressive team collapse (≥3 teams, ≥6 players); offline «Configure teams» chip to `TeamSetupScreen`
-
-### Fixed
-- **Lobby invite/QR:** restored direct Share / Invite (Telegram) / QR buttons in `OnlineLobbyIntro` (invite sheet hid actions in TMA); QR modal always mounts with loading spinner when data pending
-- **Lobby scroll (TMA):** `ScreenShell` used only `min-h` — flex column grew with content and scroll never activated; fixed with viewport `h/max-h` + `App`/`PageTransition` height chain
-- **Lobby Solo toggle (online host):** `UPDATE_SETTINGS` for `teamMode` did not update local UI until server sync; lobby now uses `setSettings` with optimistic merge for host
-- **Lobby team count online:** `UPDATE_SETTINGS` for `teamCount`/`teamMode` now calls `ensureTeamShells` on server; schema max teams raised to 10 (aligned with settings UI)
-- **Lobby Phase 3.1 (i18n):** `AssignPlayerSheet`, `UnassignedPool`, `TeamCard` rename aria, Telegram invite link error — UA/DE/EN keys (`assignPlayerSheetHint`, `makeUnassigned`, `assignPlayerAria`, `renameTeam`, `tgAppLinkNotConfigured`)
-- Bottom sheet QA fixes: `QuickBuyModal` and `LogoutConfirmBottomSheet` use `onExited` instead of `setTimeout(300)`; `CustomDeckModal` adds `data-sheet-scroll` and footer safe area; close buttons meet 44×44 tap target; duplicate dismiss CTAs removed from MenuScreen/EnterNameScreen; backdrop blur fade on open; drag dismiss no longer toggles `data-open` mid-animation
-
-### Changed
-- **LobbyScreen Phase 3:** invite flow extracted to `LobbyInviteSheet`; reduced uppercase tracking; serif limited to room code and section titles; `LobbyReadinessBar` live region; icon-only buttons get aria labels
-- **LobbyScreen Phase 2:** readiness checklist above Start (first blocking reason / «Ready to start»); guest waiting card + compact footer; `TeamCard` grid layout; `UnassignedPool` hidden when empty; host shuffle primary/secondary + lock icon toolbar; removed empty-team pulse animation
-- **LobbyScreen Phase 1:** `ScreenShell` + `FixedBottomBar` (sticky Start); compact `OnlineLobbyIntro` (room code, invite sheet, settings chips); ONLINE hides full `PlayersSection` in favor of avatar strip — no duplicate player rows in team mode; 44×44 tap targets on header/copy/kick
-- Modal sheet titles unified via `ModalSheetTitle` (`text-2xl font-serif`, Rules-style) across all bottom sheets; App Settings keeps gear icon
-- Modal backdrop uses dual-layer blur/scrim with iOS-style easing (`400ms` slide, `280ms` fade)
-- Bottom sheet consumers simplified: single `open` state, no duplicate `useDeferredOpen` + `setTimeout` pairs
-- RulesModal: removed redundant footer Close button (dismiss via handle, backdrop, X, swipe)
-
-### Fixed
-- Swipe-to-dismiss works when scroll lives in nested `[data-sheet-scroll]` container (RulesModal)
-
-### Added
-
-- **OAuth skip name prompt:** `User.skipNamePrompt` + toggle in Profile Settings (Telegram/Google). When enabled, create/join/offline skips EnterName and uses displayName → OAuth name → email local part. Migration `20260607120000_add_skip_name_prompt`.
-- **Theme `PAPER_LUXE` (Warm Paper):** editorial light palette — bg `#E2E3DB`, fg `#272828`, accent `#EE4239`, Montserrat 900 uppercase headings, Inter body, flat borders (no card shadows), `6px` radius. Set as default via `DEFAULT_APP_THEME` in `@alias/shared`. Files: `enums.ts`, `constants.ts`, `themes.ts`, `GameContext.tsx`, `styles.css`, `index.html`.
-
-### Changed
-
-- **Login modal (guest):** single app-level gate via `AppLoginProvider` — auto-shows for anonymous PWA users (~80dvh floating card, Google CTA at bottom). `requestLogin()` re-opens from profile / gated features. Not shown in Telegram TMA.
-- **Default app theme:** `PAPER_LUXE` replaces `PREMIUM_DARK` for new sessions, room defaults, and `:root` CSS fallback. Guest-unlocked themes now use `ThemeConfig.isFree` instead of hardcoded `PREMIUM_DARK`.
-
-### Fixed
-
-- **TMA keyboard bottom sheet drift:** bottom sheets no longer jump above the keyboard — skip `scrollIntoView` inside `[data-bottom-sheet-backdrop]`, lock backdrop scroll while keyboard is open, reset scroll on inset change. Files: `useVisualViewportBottomInset.ts`, `ModalSheet.tsx`.
-
-- **TMA MenuScreen header overlap:** safe-area inset now sums Telegram content + device layers (`--tma-inset-*` in `styles.css`) instead of `max()`; MenuScreen fixed header uses `pr-env-right` / `pl-env-left`; `useTelegramApp` avoids downgrading SDK inset values on iOS. Files: `styles.css`, `tailwind.config.ts`, `MenuScreen.tsx`, `useTelegramApp.ts`, `ConnectionStatusBanner.tsx`, `useVisualViewportBottomInset.ts`.
-
-- **UI tokens + TMA session 7/7 (verification):** static grep audit green (`text-white`/`bg-white` 0 on game screens, admin className hex 0, fixed bottom always `pb-safe-*`, legacy tailwind colors 0); Prettier on 7 client files; unit tests client 48 / server 341 / shared 12; E2E `@smoke` mobile-chrome 7/7. `docs/UI_TOKENS.md` status → `implemented`. Manual TMA device checklist documented in `docs/daily/2026-06-07.md`.
-
-- **TMA safe area session 6/7:** Telegram content/device insets on lobby and game-flow screens — `pb-safe-*` / `pt-safe-top` instead of bare `pb-8`/`pt-12`; `SettingsScreen` and `PreRoundScreen` migrated to `ScreenShell` + `FixedBottomBar`; `ClassicUI` action footer uses `pb-safe-bottom-sm` for MainButton clearance. See `docs/TMA_LAYOUT.md`.
-
-### Changed
-
-- **UI tokens session 4/7:** `TEAM_COLORS` in `@alias/shared` — hex-only jewel palette (8 colors) for Midnight Ruby; optional `--team-color-*` CSS var names; `getTeamColorToken()` for `Team.color`. Removed Tailwind `bg-*-500` from shared; team dots/borders use inline `colorHex` (TeamCard, TeamSetup, VSScreen, AssignPlayerSheet).
-- **UI tokens session 3/7:** Admin panel unified on `--ui-*` — admin-only theme in `admin.html`, refactored `screens/admin/**` (AdminApp, StatsTab, PacksTab, DecksTab, ThemesTab), shared `AdminInput` + `adminStyles.ts`.
-- **UI tokens session 2/7:** `ThemeConfig.tokens` reduced to 5 base colors (`bg`, `surface`, `fg`, `accent`, `border`) + optional `elevated` and premium `accentAlt`/`accentWarm`; all other `--ui-*` derived in `GameContext` via `color-mix`. Updated `themes.ts`, `types.ts`, `docs/UI_TOKENS.md`, README theme table; Vitest for CSS var application on theme change.
-
-### Added
-
-- **TMA layout session 5/7:** `ScreenShell` and `FixedBottomBar` layout primitives (`packages/client/src/components/layout/`); `docs/TMA_LAYOUT.md` with safe-area guidelines, keyboard hook reference, and grep audit (file:line) for pending screen migrations.
- `authorizeGameAction.test.ts` — 42 table-driven cases (host-only, teams locked, IMPOSTER, explainer, GUESS_OPTION, relay host migration). Server tests 208 → 250.
-- **Test coverage Phase 2:** extended `GameEngine.test.ts` (+25) and `RoomManager.test.ts` (+20) — IMPOSTER flow, team builder, QUIZ lifecycle, Redis restore/rejoin/grace. Coverage: GameEngine 70%→**91.66%**, RoomManager 68%→**89.27%**. Server tests 250 → 295.
-- **Test coverage Phase 3:** REST integration tests — `store`, `purchases` (Stripe webhook invalid/valid), `custom-decks`, `push`, `admin` (IP whitelist + auth); `AuthService` Telegram HMAC + JWT expiry. Server tests 295 → 329.
-- **Test coverage Phase 4:** Socket integration + pipeline — `socketHandlers.int.test.ts` (+4: `room:exists` ack, grace `room:rejoin`, `game:action` NOT_HOST/NOT_EXPLAINER via socket), `gameActionPipeline.test.ts` (broadcast, KICK, IMPOSTER secrets), `RoomActionRelay.test.ts` (publish failures, relay timeout). Server tests 329 → **341**.
-- **Test coverage Phase 5:** Client unit — `offlineGameActions.test.ts` (11), `GameContext.test.tsx` (5), extended `gameReducer.test.ts` (+5), `QuickBuyModal.test.tsx` (TMA Stars). Client tests 20 → **44**.
-- **Test coverage Phase 6:** `@alias/shared` — `utils.test.ts` (12: `shuffleArray`, `getTeamColor`, `ROOM_CODE_LENGTH`/`MAX_PLAYERS`/defaults); vitest + exclude test files from `tsc` build.
-- **Test coverage Phase 7:** E2E acceptance — `packages/e2e/tests/helpers/game-ui.ts`, `smoke-round.spec.ts` (`@smoke`: create→join→CORRECT→ROUND_SUMMARY), `core-acceptance.spec.ts` (`@core`: host migration, team lock, IMPOSTER DOM leak guard, offline SCOREBOARD, rematch).
-- **Test coverage Phase 8:** expanded server `vitest.config.ts` coverage `include` (`game/`, `handlers/`, `routes/`); global thresholds aligned to measured totals (67% stmts/lines, 71% branches, 89% functions); `pnpm verify` green.
-
-### Fixed
-
-- **Offline timeUp auto-finish:** `GameContext` schedules 5s `TIME_UP` fallback when offline classic overtime is idle (parity with server `scheduleTimeUpFallback`); `@core Offline game` E2E no longer hangs waiting for `ROUND_SUMMARY`. `data-testid="round-summary"` / `playing-time-up` for stable E2E locators.
-- **E2E `@core Rematch`:** round 2 uses guest explainer; `lowerScoreToWin(10)` via − stepper + server-sync testid; `tapCorrect` waits 200ms between clicks (PlayingScreen debounce).
-- **Offline TEAM_JOIN with empty `teams[]`:** `materializeOfflineTeamsIfNeeded()` in `offlineGameActions.ts` — TEAM_JOIN/LEAVE/shuffle/rename work before team shells exist; `@core Offline game` Start button no longer stuck disabled.
-- **E2E lobby helpers:** `expectLobbyReadyToStart`, stable `settings-close` / multilingual locators (`joinTeamRe`, `lockTeamsRe`, anchored `startGameRe`); IMPOSTER reveal via `data-testid="imposter-reveal-cta"`.
-- **`socketHandlers.int.test.ts` NOT_EXPLAINER:** deterministic `TEAM_JOIN` (host team-0 / guest team-1) — host bypasses explainer check; guest CORRECT now reliably emits `NOT_EXPLAINER`.
-
-### Changed
-
-- **UI tokens canon (session 1/7):** `docs/UI_TOKENS.md` — `--ui-*`, Tailwind `*-ui-*`, safe-area utilities, заборони `text-white`/`bg-white`/raw hex; видалено невикористані legacy colors з `packages/client/tailwind.config.ts`.
-- **E2E i18n locators:** TeamCard `teamJoin`/`teamLeave`, settings rules tab UA/DE/EN, lock teams aria-labels; locator regression tests for join/start/assign/rules tab.
-- **E2E timeouts:** `@core Offline`/`Rematch` round summary 90s (30s floor); host migration Start enabled wait 60s; `multiplayer.spec.ts` uses shared helpers + opposing-team `playingNowRe` OR timer.
-- **Lint cleanup:** removed unused imports/deps across client (14 warnings → 0).
-
-### Changed
-
-- **Bundle lazy routes (C-1 follow-up):** `React.lazy` for GameFlow, lobby, store screens — `main` **306.5 KB** / **93.94 KB gzip** (was 500 KB / 142.67 KB).
-- **React mount effects (D-4):** `useDeferredOpen` / `useResourceLoad`; refactored sheet enter animations and screen data loads; Scoreboard progress via CSS keyframes; extracted `useTelegramLobbyDeepLink` / `useTelegramBackButton`.
-- **Bundle baseline (C-1):** prod build snapshot 2026-06-07 — initial `main` 500 KB at threshold; split applied same day.
-
-### Fixed
-
-- **AuthService test flake (D-3):** static import in `AuthService.test.ts` — 208/208 server tests on Windows.
-- **TypeScript strict (D-1):** `noUncheckedIndexedAccess` + `noImplicitReturns`; guards/helpers across monorepo.
-
-### Changed
-
-- **Node engines (D-2):** root `engines.node` `>=20` (already reflected in PROJECT_STATE).
-- **Logging (A-2):** production paths use dev-gated `console.warn` instead of `console.log`.
-- **`@alias/shared`:** `getTeamColor()`, `shuffleArray()`; client `useT` / `getUiStrings()` under strict indexed access.
-
-### Added
-
-- **Steward bootstrap (2026-06-06):** governance rules `.cursor/rules/00-identity` … `06-tma`, `AGENT_BRIEF.md`, `AUDIT_RESULTS.md`, `.cursor/CURRENT_FOCUS.md`, `.cursor/VISUAL_QA_CHECKLIST.md`.
-- **Док-система та steward:** [`docs/INDEX.md`](./docs/INDEX.md), [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md), [`docs/daily/`](./docs/daily/) (щоденник), кореневий [`AGENTS.md`](./AGENTS.md), агент `.cursor/agents/alias-steward.md`, rule `.cursor/rules/alias-project.mdc`, skill `.cursor/skills/alias-master/SKILL.md`, hook `daily-log-reminder.js` на `sessionEnd`.
-
-### Changed
-
-- **Docs sync (2026-06-06):** README `GameSyncState` + `purchase:success`; `LOBBY_TEAM_BUILDER.md`; `INDEX.md`, `AGENTS.md`, `CONTRIBUTING.md`, `PROJECT_STATE.md`.
-- **Деплой (NPM):** зовнішня docker-мережа за замовчуванням **`npm_network`** (`NPM_DOCKER_NETWORK` у `.env.prod`); у `docker-compose.npm.yml` додано змінні admin / `TRUST_PROXY_HOPS` для паритету з `docker-compose.prod.yml`. Оновлено `.env.prod.example`, README та шаблон `docs/VPS-INFRASTRUCTURE.md.example`.
-- **Env:** єдиний канонічний файл — кореневий **`.env.prod`** (шаблон `.env.prod.example`); сервер завантажує лише його; `docker-compose.yml` і Vite підховують той самий файл. Файл **`.env.example`** прибрано; GitHub Deploy більше не падає назад на `.env`.
-- **`README.md`:** посилання на INDEX, CONTRIBUTING, AGENTS, daily; правила ШІ винесено в `AGENTS.md`.
-- **`PROJECT_STATE.md`:** дата 2026-06-06, docs sync, `engines.node >=20`.
-
-### Removed
-
-- **Docs cleanup (2026-06-06):** `docs/Comands.md`; `.cursor/STACK_AUDIT.md`, `DOCS_AUDIT.md`, `ARCH_AUDIT.md` (консолідовано в `AUDIT_RESULTS.md`); `packages/client/src/context/_extracted_inner.txt`.
+- **`docs/LOBBY_FIX_PROMPTS.md`** → `docs/archive/` (epic completed 2026-06-08)
+- **E2E debug artifact:** `packages/e2e/debug-offline-add.png`; `.gitignore` `packages/e2e/debug-*.png`
+- **ModalSheet `panelVariant`:** deprecated card layout
+- **Docs cleanup (2026-06-06):** `docs/Comands.md`, legacy `.cursor/*_AUDIT.md` files
 
 ## [2026-04-19] — Release 0.6.2: лобі та правила (UX)
 

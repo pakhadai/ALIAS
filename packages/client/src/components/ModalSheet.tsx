@@ -10,6 +10,10 @@ import {
 import { zIndex } from '../constants/zIndex';
 import { BOTTOM_SHEET_ANIM_MS, useBottomSheetPresence } from '../hooks/useBottomSheetPresence';
 import { useSheetDragToClose } from '../hooks/useSheetDragToClose';
+import {
+  keyboardAvoidingBottomPadding,
+  useVisualViewportBottomInset,
+} from '../hooks/useVisualViewportBottomInset';
 import { modalSheetContentPadding, resolveModalSheetMaxWidth } from './ModalSheet.presets';
 
 export type ModalSheetZLayer = keyof typeof zIndex;
@@ -37,6 +41,11 @@ export type ModalSheetProps = {
   panelClassName?: string;
   backdropClassName?: string;
   backdropStyle?: React.CSSProperties;
+  /**
+   * Lift the sheet above the virtual keyboard via Visual Viewport API.
+   * Default `true` — all ModalSheet consumers get keyboard-safe layout automatically.
+   */
+  keyboardAvoiding?: boolean;
   backdropPosition?: 'fixed' | 'absolute';
   /**
    * @deprecated Prefer built-in padding from `size`. Set `false` only when the consumer
@@ -123,6 +132,7 @@ export function ModalSheet({
   panelClassName = '',
   backdropClassName = '',
   backdropStyle,
+  keyboardAvoiding = true,
   backdropPosition = 'fixed',
   paddedContent = true,
   contentClassName,
@@ -146,8 +156,18 @@ export function ModalSheet({
   const backdropClick = onBackdropClick ?? onClose;
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const keyboardAvoiding = Boolean(backdropStyle?.paddingBottom);
+  const keyboardBottomInset = useVisualViewportBottomInset();
+  const isKeyboardOpen = keyboardAvoiding && keyboardBottomInset > 0;
+  const builtInKeyboardBackdropStyle = keyboardAvoiding
+    ? keyboardAvoidingBottomPadding(keyboardBottomInset)
+    : keyboardAvoidingBottomPadding(0);
+  const mergedBackdropStyle: React.CSSProperties = {
+    overflow: 'hidden',
+    ...builtInKeyboardBackdropStyle,
+    ...backdropStyle,
+  };
   const openedAtRef = useRef(0);
+  const wasKeyboardOpenRef = useRef(false);
   const isTallSheet = size === 'tall';
 
   const { mounted, visible } = useBottomSheetPresence(open, { onExited });
@@ -173,10 +193,18 @@ export function ModalSheet({
   const ariaModalProp = role === 'presentation' || ariaModal === false ? undefined : true;
 
   useEffect(() => {
-    const el = backdropRef.current;
-    if (!el) return;
-    el.scrollTop = 0;
-  }, [backdropStyle?.paddingBottom]);
+    const keyboardJustToggled = isKeyboardOpen !== wasKeyboardOpenRef.current;
+    wasKeyboardOpenRef.current = isKeyboardOpen;
+    if (!keyboardJustToggled) return;
+
+    const backdrop = backdropRef.current;
+    const panel = panelRef.current;
+    if (!backdrop) return;
+    backdrop.scrollTop = 0;
+    if (panel) panel.scrollTop = 0;
+    const scrollBody = panel?.querySelector<HTMLElement>('[data-sheet-scroll]');
+    if (scrollBody) scrollBody.scrollTop = 0;
+  }, [isKeyboardOpen]);
 
   if (!mounted) {
     return null;
@@ -188,9 +216,10 @@ export function ModalSheet({
     <div
       ref={backdropRef}
       data-bottom-sheet-backdrop=""
+      data-keyboard-open={isKeyboardOpen ? 'true' : 'false'}
       data-open={visible ? 'true' : 'false'}
       className={bottomSheetBackdropClass(zClass, backdropPosition, mergedBackdropClass)}
-      style={{ overflow: 'hidden', ...backdropStyle }}
+      style={mergedBackdropStyle}
       onClick={visible ? handleBackdropClick : undefined}
       role="presentation"
     >

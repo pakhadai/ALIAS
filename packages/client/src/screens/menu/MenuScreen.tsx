@@ -61,12 +61,12 @@ export const MenuScreen = () => {
     }
   };
 
-  const menuHeaderIconBtn = [
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+  const menuActionIconBtn = [
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center',
     'transition-all duration-150 ease-out',
-    'active:scale-90 active:bg-ui-surface',
+    'active:scale-90',
   ].join(' ');
-  const menuHeaderIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
+  const menuActionIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
 
   const showProfileBadge = !isAuthenticated;
   const canQuickJoin = quickJoinCode.length === ROOM_CODE_LENGTH && /^\d+$/.test(quickJoinCode);
@@ -98,16 +98,16 @@ export const MenuScreen = () => {
     }
   };
 
-  const menuHeaderIcons = (
-    <div className="flex items-center gap-2 sm:gap-3">
+  const menuActionIcons = (
+    <div className="flex items-center justify-end gap-2 sm:gap-3" data-testid="menu-action-icons">
       <button
         type="button"
         onClick={handleProfileClick}
-        className={menuHeaderIconBtn}
+        className={menuActionIconBtn}
         aria-label="Profile"
       >
         <span className="relative inline-flex">
-          <User size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+          <User size={22} className={menuActionIcon} strokeWidth={1.75} />
           {showProfileBadge && (
             <span
               className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ui-danger ring-2 ring-ui-bg"
@@ -119,27 +119,27 @@ export const MenuScreen = () => {
       <button
         type="button"
         onClick={() => setShowAppSettings(true)}
-        className={menuHeaderIconBtn}
+        className={menuActionIconBtn}
         aria-label="Settings"
       >
-        <Settings size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+        <Settings size={22} className={menuActionIcon} strokeWidth={1.75} />
       </button>
       <button
         type="button"
         onClick={() => setShowRules(true)}
-        className={menuHeaderIconBtn}
+        className={menuActionIconBtn}
         aria-label={t.rulesTitle}
       >
-        <BookOpen size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+        <BookOpen size={22} className={menuActionIcon} strokeWidth={1.75} />
       </button>
       {!isStandaloneDisplay() && !isTelegram && (
         <button
           type="button"
           onClick={() => void handleFullscreenClick()}
-          className={menuHeaderIconBtn}
+          className={menuActionIconBtn}
           aria-label="Fullscreen"
         >
-          <Maximize size={22} className={menuHeaderIcon} strokeWidth={1.75} />
+          <Maximize size={22} className={menuActionIcon} strokeWidth={1.75} />
         </button>
       )}
     </div>
@@ -174,7 +174,7 @@ export const MenuScreen = () => {
           <AppHeader
             data-testid="menu-app-header"
             gradient
-            right={menuHeaderIcons}
+            right={menuActionIcons}
             ariaHidden={isEnterName}
             className={frozenChromeClass}
           />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDeferredSheetInputFocus } from '../../hooks/useBottomSheetPresence';
 import { Loader2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { ModalPortal, ModalSheetTitle, bottomSheetBackdropClass } from '../../components/Shared';
@@ -7,11 +8,6 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
-import {
-  keyboardAvoidingBottomPadding,
-  scrollElementIntoViewCentered,
-  useVisualViewportBottomInset,
-} from '../../hooks/useVisualViewportBottomInset';
 import { AVATARS } from '../../utils/avatars';
 import { zIndex } from '../../constants/zIndex';
 import { typographyClass } from '../../constants/typography';
@@ -41,9 +37,9 @@ export function EnterNameSheet(): React.ReactNode {
   const [isEntering, setIsEntering] = useState(false);
   const [open, setOpen] = useState(true);
   const t = useT();
-  const keyboardBottomInset = useVisualViewportBottomInset();
-
   const stableId = useRef(`player-${generateUUID()}`);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  useDeferredSheetInputFocus(nameInputRef, open);
   /** Prevents repeated auto-join while deps refetch (e.g. profile) without leaving the sheet. */
   const autoJoinAttemptedRef = useRef(false);
 
@@ -124,7 +120,6 @@ export function EnterNameSheet(): React.ReactNode {
         closeAriaLabel={t.cancel}
         closeDisabled={isEntering}
         closeIconSize={24}
-        backdropStyle={keyboardAvoidingBottomPadding(keyboardBottomInset)}
         ariaLabelledBy="enter-name-title"
         contentClassName="pt-2"
         header={
@@ -141,9 +136,8 @@ export function EnterNameSheet(): React.ReactNode {
           }}
         >
           <input
-            autoFocus
+            ref={nameInputRef}
             value={name}
-            onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
             onChange={(e) => setName(e.target.value.replace(/<[^>]*>/g, '').slice(0, 20))}
             data-testid="enter-name"
             placeholder={t.namePlaceholder}

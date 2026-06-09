@@ -1,7 +1,16 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ModalSheet } from './ModalSheet';
+import { useVisualViewportBottomInset } from '../hooks/useVisualViewportBottomInset';
+
+vi.mock('../hooks/useVisualViewportBottomInset', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useVisualViewportBottomInset')>();
+  return {
+    ...actual,
+    useVisualViewportBottomInset: vi.fn(() => 0),
+  };
+});
 import { bottomSheetPanelClass, modalSheetTitleClass } from './Shared';
 import { typographyClass } from '../constants/typography';
 import {
@@ -48,6 +57,10 @@ describe('bottomSheetPanelClass', () => {
 });
 
 describe('ModalSheet', () => {
+  beforeEach(() => {
+    vi.mocked(useVisualViewportBottomInset).mockReturnValue(0);
+  });
+
   it('should apply default size padding when paddedContent is true', () => {
     render(
       <ModalSheet open onClose={() => undefined}>
@@ -91,6 +104,41 @@ describe('ModalSheet', () => {
     const content = screen.getByText('Rules').parentElement;
     expect(content?.className).toContain('overflow-y-auto');
     expect(content?.className).toContain('pb-modal-bottom');
+  });
+
+  it('should lift via --sheet-keyboard-lift and keep pb-modal-bottom when keyboard is open', () => {
+    vi.mocked(useVisualViewportBottomInset).mockReturnValue(280);
+
+    render(
+      <ModalSheet open onClose={() => undefined}>
+        <p>Keyboard</p>
+      </ModalSheet>
+    );
+
+    const content = screen.getByText('Keyboard').parentElement;
+    expect(content?.className).toContain('pb-modal-bottom');
+    expect(content?.className).not.toContain('pb-4');
+
+    const backdrop = document.querySelector('[data-bottom-sheet-backdrop]') as HTMLElement | null;
+    expect(backdrop?.getAttribute('data-keyboard-open')).toBe('true');
+    expect(backdrop?.style.getPropertyValue('--sheet-keyboard-lift')).toBe('288px');
+  });
+
+  it('should ignore keyboard inset when keyboardAvoiding is false', () => {
+    vi.mocked(useVisualViewportBottomInset).mockReturnValue(280);
+
+    render(
+      <ModalSheet open keyboardAvoiding={false} onClose={() => undefined}>
+        <p>No lift</p>
+      </ModalSheet>
+    );
+
+    const content = screen.getByText('No lift').parentElement;
+    expect(content?.className).toContain('pb-modal-bottom');
+    expect(content?.className).not.toContain('pb-4');
+
+    const backdrop = document.querySelector('[data-bottom-sheet-backdrop]');
+    expect(backdrop?.getAttribute('data-keyboard-open')).toBe('false');
   });
 
   it('should render children without padding wrapper when paddedContent is false', () => {

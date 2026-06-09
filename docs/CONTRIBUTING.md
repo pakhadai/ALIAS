@@ -47,10 +47,13 @@
 | Seed / слова / Prisma data | `docs/PRISMA_WORD_DATA.md` |
 | Лобі / команди | `docs/LOBBY_TEAM_BUILDER.md` |
 | Критерії тестів | `docs/TESTING_ACCEPTANCE.md` |
-| Релізна / значна зміна | `CHANGELOG.md` → `[Unreleased]` |
+| Релізна / значна зміна (user-facing) | `CHANGELOG.md` → `[Unreleased]` — 1 рядок без CSS-класів |
+| Bundle baseline, test counts, backlog, «мінні поля» | `AGENT_BRIEF.md` (не дублювати версії з `PROJECT_STATE`) |
 | Audit / технічний борг | `AUDIT_RESULTS.md` |
 | Сьогоднішня сесія | `docs/daily/YYYY-MM-DD.md` |
+| UI/Tailwind рефакторинг, фази epic | `docs/daily/` + `.cursor/CURRENT_FOCUS.md` (деталі не в CHANGELOG) |
 | Новий тематичний doc | Додати рядок у `docs/INDEX.md` |
+| Завершений AI-harness | `docs/archive/` + рядок у `docs/INDEX.md` (секція «Архів») |
 
 Не відновлювати `CODE_REFERENCE.md`. Не дублювати ECC skills у проєктних файлах — посилання на [`.cursor/AGENTS.md`](../.cursor/AGENTS.md).
 
@@ -81,8 +84,9 @@
 ### Денний журнал (обов’язково після сесії з кодом/docs)
 
 1. Дописати [`docs/daily/YYYY-MM-DD.md`](./daily/) (Europe/Kyiv, новий день — новий файл).
-2. За потреби — `CHANGELOG.md` `[Unreleased]`.
-3. Якщо змінився стек — `PROJECT_STATE.md`.
+2. За потреби — `CHANGELOG.md` `[Unreleased]` (лише user-facing; див. таблицю вище).
+3. Після сесії з кодом — оновити [`AGENT_BRIEF.md`](../AGENT_BRIEF.md) (bundle, тести, backlog).
+4. Якщо змінився стек — `PROJECT_STATE.md`.
 
 Шаблон і правила — [`docs/daily/README.md`](./daily/README.md).
 

@@ -208,12 +208,17 @@ PlayingScreen навмисно використовує `pt-env-top pb-env-botto
 
 ## Клавіатура
 
-`useVisualViewportBottomInset()` + `keyboardAvoidingBottomPadding(inset)` з `hooks/useVisualViewportBottomInset.ts`:
+**`ModalSheet` (default):** вбудований `keyboardAvoiding` — `useVisualViewportBottomInset()` + `keyboardAvoidingBottomPadding` з `hooks/useVisualViewportBottomInset.ts`. Consumers **не** передають `backdropStyle` для клавіатури.
 
-- Повертає inline `paddingBottom: Npx` (висота клавіатури) коли клавіатура перекриває viewport.
-- Використовуй на bottom sheet / full-page з інпутами (LobbyScreen, MenuScreen, EnterNameSheet, JoinInputScreen).
-- **Не** викликай `scrollIntoView({ block: "center" })` на інпутах у bottom sheet — `ModalSheet` має `data-bottom-sheet-backdrop`; padding вже піднімає панель, scroll backdrop зсуває її занадто високо.
-- Під час відкритої клавіатури backdrop не скролиться (`overflow: hidden` + reset `scrollTop` при зміні inset).
+- Lift через CSS custom property `--sheet-keyboard-lift` на backdrop; `styles.css` анімує `padding-bottom` (`--ui-keyboard-anim-ms: 280ms`, sync з iOS keyboard).
+- Overlap buffer `KEYBOARD_SHEET_OVERLAP_PX` (8px) — sheet і keyboard як одна поверхня.
+- Контент лишається на `pb-modal-bottom`; при `data-keyboard-open='true'` CSS плавно зменшує inset до `1rem` (без class-swap `pb-4`).
+- **Не** використовуй `autoFocus` на інпутах у sheet — `useDeferredSheetInputFocus` після enter-анімації (`BOTTOM_SHEET_ANIM_MS` = 400ms).
+- Full-page з інпутами без sheet: `JoinInputScreen` — wrapper `.keyboard-avoiding-lift` + `keyboardAvoidingBottomPadding`.
+- **Не** викликай `scrollIntoView({ block: "center" })` на інпутах у bottom sheet — `ModalSheet` піднімає панель сам.
+- Scroll reset панелі — лише при переході keyboard open ↔ closed (не кожен кадр inset).
+- `prefers-reduced-motion` — миттєвий settle без keyboard/sheet transition.
+- Escape: `keyboardAvoiding={false}` на `ModalSheet` лише з обґрунтуванням.
 
 ## Заборони
 

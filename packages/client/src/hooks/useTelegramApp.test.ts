@@ -77,4 +77,14 @@ describe('useTelegramApp', () => {
       document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
     ).toBe('96px');
   });
+
+  it('should floor undersized SDK content-safe top inset to SSOT minimum', () => {
+    mockWebApp.contentSafeAreaInset = { top: 46, bottom: 0, left: 0, right: 0 };
+
+    renderHook(() => useTelegramApp());
+
+    expect(
+      document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
+    ).toBe(`${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`);
+  });
 });

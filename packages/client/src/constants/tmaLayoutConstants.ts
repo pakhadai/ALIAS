@@ -30,7 +30,7 @@ export const APP_HEADER_BAR_REM = pxToRem(APP_HEADER_BAR_PX);
 export function titleRowHeightCss(
   contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
 ): string {
-  return `max(calc(var(--tg-content-safe-area-inset-top, ${contentFloorPx}px) - var(--tma-device-inset-top, 0px)), ${HEADER_ROW_MIN_PX}px)`;
+  return `max(calc(var(${CSS_VAR_TMA_CONTENT_SAFE_TOP}, ${contentFloorPx}px) - var(--tma-device-inset-top, 0px)), ${HEADER_ROW_MIN_PX}px)`;
 }
 
 /**
@@ -54,11 +54,14 @@ export function appHomeCardTopCss(
   contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
   gapPx: number = HOME_CARD_TOP_GAP_PX
 ): string {
-  return `calc(var(--tg-content-safe-area-inset-top, ${contentFloorPx}px) + ${gapPx}px)`;
+  return `calc(var(${CSS_VAR_TMA_CONTENT_SAFE_TOP}, ${contentFloorPx}px) + ${gapPx}px)`;
 }
 
 /** CSS var name — synced from `useTelegramApp` on TMA bootstrap (Phase 5 floor). */
 export const CSS_VAR_TMA_CONTENT_TOP_FLOOR = '--tma-content-top-floor';
+
+/** Content-safe top with TMA floor — prefer over raw `--tg-content-safe-area-inset-top`. */
+export const CSS_VAR_TMA_CONTENT_SAFE_TOP = '--tma-content-safe-top';
 
 /**
  * `--tma-inset-top` — Telegram content-safe from viewport top (notch + native TG chrome).
@@ -67,5 +70,5 @@ export const CSS_VAR_TMA_CONTENT_TOP_FLOOR = '--tma-content-top-floor';
 export function tmaInsetTopCss(
   contentFloorPx: number = TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX
 ): string {
-  return `var(--tg-content-safe-area-inset-top, var(${CSS_VAR_TMA_CONTENT_TOP_FLOOR}, ${contentFloorPx}px))`;
+  return `var(${CSS_VAR_TMA_CONTENT_SAFE_TOP}, var(${CSS_VAR_TMA_CONTENT_TOP_FLOOR}, ${contentFloorPx}px))`;
 }

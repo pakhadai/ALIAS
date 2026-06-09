@@ -112,4 +112,4 @@
 
 **Automated E2E (Phase 4):** `packages/e2e/tests/lobby-team-builder.spec.ts` — `@core` (assign → lock → start validation → PRE_ROUND), `@smoke` (create → join → assign → start). Helpers: `joinTeam`, `expectLobbyReadiness` in `tests/helpers/game-ui.ts`.
 
-План виправлення відомих проблем лоббі (фази для AI) — [`LOBBY_FIX_PROMPTS.md`](./LOBBY_FIX_PROMPTS.md).
+Завершений план виправлень лоббі (архів AI-промтів) — [`archive/LOBBY_FIX_PROMPTS.md`](./archive/LOBBY_FIX_PROMPTS.md); аудит — [`AUDIT_RESULTS.md`](../AUDIT_RESULTS.md) Block I.
