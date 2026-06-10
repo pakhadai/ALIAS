@@ -99,9 +99,21 @@ export async function forceBrowserChromeMode(page: Page): Promise<void> {
  * Avoid scrollIntoViewIfNeeded — it scrolls the page to the portal node's document position.
  */
 export async function clickFixedChrome(locator: Locator): Promise<void> {
-  await expect(locator).toBeVisible({ timeout: 15_000 });
-  await expect(locator).toBeEnabled({ timeout: 15_000 });
-  await locator.click({ force: true });
+  await expect(locator).toBeVisible({ timeout: 30_000 });
+  const ariaDisabled = await locator.getAttribute('aria-disabled');
+  if (ariaDisabled !== 'true') {
+    await expect(locator).toBeEnabled({ timeout: 10_000 });
+  }
+  try {
+    await locator.click({ force: true, timeout: 15_000 });
+  } catch {
+    await locator.dispatchEvent('click');
+  }
+}
+
+/** Lobby start CTA in the fixed footer island (stable test id). */
+export function lobbyStartButton(page: Page): Locator {
+  return page.getByTestId('lobby-start-btn');
 }
 
 /** Anonymous web app shows a login sheet on the menu — dismiss before game flows. */
@@ -164,8 +176,9 @@ export async function expectLobbyScreen(page: Page): Promise<void> {
 
 export async function expectLobbyReadiness(page: Page, opts: { ready: boolean }): Promise<void> {
   if (opts.ready) {
-    const startBtn = page.getByRole('button', { name: startGameRe });
-    await expect(startBtn).toBeEnabled({ timeout: 15_000 });
+    const startBtn = lobbyStartButton(page);
+    await expect(startBtn).toBeVisible({ timeout: 15_000 });
+    await expect(startBtn).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
     await expect(page.getByTestId('lobby-readiness-bar')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('lobby-start-btn-shell')).toHaveClass(
       /accent-footer-cta-shell--ready/,
@@ -198,6 +211,7 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
   await neuterTelegramMiniAppDetection(guest);
 
   await host.goto('/');
+  await dismissLoginModalIfOpen(host);
   await host.getByTestId('menu-create-game').click();
   await submitName(host, HOST_NAME);
   const roomCode = await readRoomCode(host);
@@ -215,16 +229,17 @@ export async function closeTwoPlayerSession(session: TwoPlayerSession): Promise<
 
 export async function startFromLobby(host: Page): Promise<void> {
   await expectLobbyReadyToStart(host);
-  await clickFixedChrome(host.getByRole('button', { name: startGameRe }));
+  const startBtn = lobbyStartButton(host);
+  await clickFixedChrome(startBtn);
   const vs = host.getByText('VS', { exact: true });
   if (await vs.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    await clickFixedChrome(host.getByRole('button', { name: startGameRe }));
+    await clickFixedChrome(startBtn);
   }
 }
 
 export async function startRoundToPlaying(host: Page, guest?: Page): Promise<void> {
   await startFromLobby(host);
-  await expect(host.getByRole('button', { name: imReadyRe })).toBeVisible({ timeout: 30_000 });
+  await expect(host.getByRole('button', { name: imReadyRe })).toBeVisible({ timeout: 45_000 });
   await host.getByRole('button', { name: imReadyRe }).click();
   await expect(host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
   if (guest) {

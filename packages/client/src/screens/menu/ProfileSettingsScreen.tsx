@@ -82,7 +82,7 @@ export const ProfileSettingsScreen = () => {
         ? prev
         : baseline
     );
-  }, [profile?.displayName, profile?.avatarId, profile?.skipNamePrompt, profile?.email]);
+  }, [profile]);
 
   const isDirty = useMemo(() => {
     const trimmedName = name.trim();

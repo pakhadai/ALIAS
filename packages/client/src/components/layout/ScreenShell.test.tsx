@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { GLASS_CHROME_PORTAL_ROOT_ID } from './GlassChromePortal';
 import { ScreenShell } from './ScreenShell';
 
 describe('ScreenShell', () => {
@@ -106,7 +107,10 @@ describe('ScreenShell', () => {
 
     const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
     const header = screen.getByTestId('header');
-    expect(header.parentElement).toBe(document.body);
+    const portalRoot = document.getElementById(GLASS_CHROME_PORTAL_ROOT_ID);
+    expect(portalRoot).toBeTruthy();
+    expect(header.parentElement).toBe(portalRoot);
+    expect(header.closest('[data-screen-shell-scroll]')).toBeNull();
     expect(container.querySelector('[data-testid="header"]')).toBeNull();
     expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
     expect(scrollColumn?.className).not.toContain('pt-safe-top');
@@ -122,7 +126,10 @@ describe('ScreenShell', () => {
 
     const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
     const footer = screen.getByTestId('footer');
-    expect(footer.parentElement).toBe(document.body);
+    const portalRoot = document.getElementById(GLASS_CHROME_PORTAL_ROOT_ID);
+    expect(portalRoot).toBeTruthy();
+    expect(footer.parentElement).toBe(portalRoot);
+    expect(footer.closest('[data-screen-shell-scroll]')).toBeNull();
     expect(container.querySelector('[data-testid="footer"]')).toBeNull();
     expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
     expect(scrollColumn?.className).not.toContain('pb-safe-bottom');

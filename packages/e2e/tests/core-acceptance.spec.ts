@@ -8,6 +8,7 @@ import {
   HOST_NAME,
   imReadyRe,
   joinTeamRe,
+  lobbyStartButton,
   lockTeams,
   nextRoundRe,
   scoreboardRe,
@@ -18,9 +19,7 @@ import {
   startOfflineLobby,
   tapCorrect,
   waitForRoundSummary,
-  startGameRe,
   playingNowRe,
-  expectLobbyReadyToStart,
 } from './helpers/game-ui';
 
 test.describe.configure({ mode: 'serial' });
@@ -33,10 +32,9 @@ test.describe('@core Host migration', () => {
       await session.hostContext.close();
 
       await expect(session.guest.getByTestId('lobby-room-code')).toBeVisible({ timeout: 30_000 });
-      await expect(session.guest.getByRole('button', { name: startGameRe })).toBeEnabled({
-        timeout: 60_000,
-      });
-      await clickFixedChrome(session.guest.getByRole('button', { name: startGameRe }));
+      const startBtn = lobbyStartButton(session.guest);
+      await expect(startBtn).not.toHaveAttribute('aria-disabled', 'true', { timeout: 60_000 });
+      await clickFixedChrome(startBtn);
       // Guest is new host but not the round explainer (disconnected host still on team 0).
       await expect(session.guest.getByText(playingNowRe)).toBeVisible({ timeout: 30_000 });
       await expect(session.guest.getByTestId('lobby-room-code')).not.toBeVisible();
@@ -88,12 +86,8 @@ test.describe('@core Offline game', () => {
     test.setTimeout(180_000);
     await startOfflineLobby(page);
     await setMinimumRoundTime(page);
-    await expectLobbyReadyToStart(page);
-    await clickFixedChrome(page.getByRole('button', { name: startGameRe }));
+    await startFromLobby(page);
 
-    await expect(page.getByRole('button', { name: imReadyRe })).toBeVisible({
-      timeout: 30_000,
-    });
     await page.getByRole('button', { name: imReadyRe }).click();
     await expect(page.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
 

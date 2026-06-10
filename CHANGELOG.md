@@ -39,6 +39,7 @@
 - Liquid Glass chrome: `styles/glass.css` tokens, fixed header modifier (`ui-app-header--fixed`), floating `FooterIsland` capsule, `useGyroscope` (rAF-throttled DeviceOrientation after first gesture), `lib/glassTheme.ts` (`data-theme` from Telegram `colorScheme`); `ScreenShell` `headerFixed` / `footerFixed`, `FixedBottomBar` `island` mode; `GlassChromePortal` renders fixed chrome into `document.body` (Micro A)
 
 ### Fixed
+- CI/deploy quality gate: `ScreenShell.test.tsx` asserts fixed chrome in `#glass-chrome-portal-root`; `QuickBuyModal.test.tsx` reloads module after `VITE_STRIPE_PUBLIC_KEY` stub; E2E `clickFixedChrome` / `lobbyStartButton` helpers for portaled footer CTA; glass portal `pointer-events` pass-through (`glass.css`); deploy workflow runs full CI quality gate (client tests + server coverage); pre-commit includes client tests
 - Liquid Glass reconnect banner no longer stacks above glass header controls: `--z-status-banner` (25) below `--z-liquid-chrome` (30); sticky `.ui-app-header` aligned to liquid-chrome z-index; `--tma-banner-top` defaults to measured header height (`ConnectionStatusBanner.tsx`, `styles.css`, `constants/zIndex.ts`)
 - Lazy route Suspense fallback uses `ScreenShell` viewport + safe-area padding — reduces layout shift while chunks load (`App.tsx`)
 - Liquid Glass a11y: `prefers-reduced-transparency: reduce` disables blur on `.ui-app-header`, `.ui-app-footer`, and `.footer-island` — opaque `--ui-bg` fill (`glass.css`); removed dead `::before`/`::after` header fallback rules from `styles.css`

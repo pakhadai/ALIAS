@@ -3,6 +3,21 @@
  * Canon: TMA safe-area via `--tma-inset-*`; theme via `data-theme` from lib/glassTheme.ts.
  */
 
+/* Viewport-fixed chrome portaled to body — pass clicks through except on header/footer nodes. */
+#glass-chrome-portal-root,
+[data-glass-chrome-portal] {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-liquid-chrome);
+  pointer-events: none;
+  overflow: visible;
+}
+
+#glass-chrome-portal-root > *,
+[data-glass-chrome-portal] > * {
+  pointer-events: auto;
+}
+
 :root {
   --gyro-x: 0;
   --gyro-y: 0;

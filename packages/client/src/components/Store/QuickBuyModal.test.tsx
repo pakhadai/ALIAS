@@ -33,10 +33,22 @@ vi.mock('@stripe/react-stripe-js', () => ({
   useElements: () => ({}),
 }));
 
+async function renderQuickBuyModal(props: {
+  itemType: 'wordPack' | 'theme' | 'soundPack';
+  itemId: string;
+  isDark: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  vi.resetModules();
+  vi.stubEnv('VITE_STRIPE_PUBLIC_KEY', 'pk_test_mock');
+  const { QuickBuyModal } = await import('./QuickBuyModal');
+  return render(<QuickBuyModal {...props} />);
+}
+
 describe('QuickBuyModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_STRIPE_PUBLIC_KEY', 'pk_test_mock');
     createPaymentIntent.mockResolvedValue({
       clientSecret: 'cs_test_secret',
       amount: 499,
@@ -58,20 +70,17 @@ describe('QuickBuyModal', () => {
   });
 
   it('should render Telegram Stars button when TMA openInvoice is available', async () => {
-    const { QuickBuyModal } = await import('./QuickBuyModal');
-    render(
-      <QuickBuyModal
-        itemType="wordPack"
-        itemId="pack-1"
-        isDark
-        onClose={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/Telegram Stars/i)).toBeInTheDocument();
+    await renderQuickBuyModal({
+      itemType: 'wordPack',
+      itemId: 'pack-1',
+      isDark: true,
+      onClose: vi.fn(),
+      onSuccess: vi.fn(),
     });
+
+    expect(
+      await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 })
+    ).toBeInTheDocument();
   });
 
   it('should call openInvoice with invoiceUrl and invoke onSuccess when paid', async () => {
@@ -81,22 +90,17 @@ describe('QuickBuyModal', () => {
 
     const onSuccess = vi.fn();
     const onClose = vi.fn();
-    const { QuickBuyModal } = await import('./QuickBuyModal');
 
-    render(
-      <QuickBuyModal
-        itemType="wordPack"
-        itemId="pack-1"
-        isDark
-        onClose={onClose}
-        onSuccess={onSuccess}
-      />
-    );
+    await renderQuickBuyModal({
+      itemType: 'wordPack',
+      itemId: 'pack-1',
+      isDark: true,
+      onClose,
+      onSuccess,
+    });
 
     const user = userEvent.setup();
-    await waitFor(() => {
-      expect(screen.getByText(/Telegram Stars/i)).toBeInTheDocument();
-    });
+    await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 });
 
     await user.click(screen.getByRole('button', { name: /Telegram Stars/i }));
 
@@ -114,22 +118,17 @@ describe('QuickBuyModal', () => {
     });
 
     const onSuccess = vi.fn();
-    const { QuickBuyModal } = await import('./QuickBuyModal');
 
-    render(
-      <QuickBuyModal
-        itemType="theme"
-        itemId="theme-1"
-        isDark={false}
-        onClose={vi.fn()}
-        onSuccess={onSuccess}
-      />
-    );
+    await renderQuickBuyModal({
+      itemType: 'theme',
+      itemId: 'theme-1',
+      isDark: false,
+      onClose: vi.fn(),
+      onSuccess,
+    });
 
     const user = userEvent.setup();
-    await waitFor(() => {
-      expect(screen.getByText(/Telegram Stars/i)).toBeInTheDocument();
-    });
+    await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 });
 
     await user.click(screen.getByRole('button', { name: /Telegram Stars/i }));
 
