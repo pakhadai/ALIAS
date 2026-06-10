@@ -1,0 +1,8 @@
+title = "Alias Master gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Client localStorage key names (public identifiers, not secrets)"
+regexes = ['''^alias_[a-z0-9_]+$''']

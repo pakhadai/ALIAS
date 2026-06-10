@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@config "../tailwind.config.ts";
 @import './styles/glass.css';
+@config "../tailwind.config.ts";
 
 /* Semantic UI palette → utilities: bg-ui-bg, text-ui-fg, border-ui-border, … */
 @theme {

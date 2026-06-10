@@ -43,9 +43,7 @@ export function FixedBottomBar({
   if (island) {
     return (
       <FooterIsland className={className} style={style}>
-        <div className={joinClasses(contentClassName, 'h-full w-full flex items-center')}>
-          {children}
-        </div>
+        <div className={joinClasses(contentClassName, 'w-full')}>{children}</div>
       </FooterIsland>
     );
   }

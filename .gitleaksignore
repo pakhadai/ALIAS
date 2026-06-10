@@ -3,3 +3,4 @@
 057526d20ad9c484ef1372869f28e0418dd7f861:docker-compose.yml:generic-api-key:36
 057526d20ad9c484ef1372869f28e0418dd7f861:docker-compose.yml:generic-api-key:37
 057526d20ad9c484ef1372869f28e0418dd7f861:docker-compose.yml:stripe-access-token:35
+d8cf703a8414ccb658939cb3aada22168840b73a:packages/client/src/lib/guestLobbyDefaults.ts:generic-api-key:3

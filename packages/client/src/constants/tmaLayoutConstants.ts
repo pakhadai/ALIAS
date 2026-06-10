@@ -11,6 +11,12 @@ export const HOME_CARD_TOP_GAP_PX = 16;
 /** Written by {@link GlassAppHeader} ResizeObserver; CSS fallback in `styles.css` */
 export const CSS_VAR_APP_PAGE_HEADER_HEIGHT = '--app-page-header-height';
 
+/** Minimum floating footer island height — {@link FooterIsland} ResizeObserver may publish taller values. */
+export const FOOTER_ISLAND_MIN_PX = 68;
+
+/** Written by {@link FooterIsland} ResizeObserver; CSS fallback in `glass.css` */
+export const CSS_VAR_FOOTER_ISLAND_HEIGHT = '--footer-island-height';
+
 /** Home card offset from viewport top — content-safe + gap; see `--app-home-card-top` in styles.css */
 export const CSS_VAR_APP_HOME_CARD_TOP = '--app-home-card-top';
 
