@@ -5,7 +5,8 @@
 export const HEADER_ROW_MIN_PX = 44;
 export const TG_CHROME_GUTTER_PX = 80;
 export const APP_HEADER_BAR_PX = 60;
-export const TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX = 88;
+/** Minimum content-safe top when SDK under-reports (Dynamic Island + TG chrome ≈ 96–104px). */
+export const TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX = 104;
 export const HOME_CARD_TOP_GAP_PX = 16;
 
 /** Written by {@link GlassAppHeader} ResizeObserver; CSS fallback in `styles.css` */

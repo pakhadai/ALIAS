@@ -59,6 +59,8 @@ describe('FooterIsland', () => {
 
     const footer = container.querySelector('footer');
     expect(footer?.className).toContain(FOOTER_ISLAND_CLASS);
+    expect(footer?.className).toContain('ui-app-footer');
+    expect(footer?.className).toContain('items-stretch');
     expect(screen.getByRole('button', { name: 'Play' })).toBeTruthy();
   });
 

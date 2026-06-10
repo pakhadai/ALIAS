@@ -139,12 +139,15 @@ html[data-telegram-app='true'] #root {
     env(safe-area-inset-right, 0px)
   );
   /** Baseline content-safe floor when Telegram SDK not ready — SSOT: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX */
-  --tma-content-top-floor: 88px;
+  --tma-content-top-floor: 104px;
   /**
    * Content-safe top (TG chrome + notch clearance). On TMA, `html[data-telegram-app]` applies max(floor).
    * Use this instead of raw `--tg-content-safe-area-inset-top` — SDK may report a too-small positive value.
    */
-  --tma-content-safe-top: var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px));
+  --tma-content-safe-top: var(
+    --tg-content-safe-area-inset-top,
+    var(--tma-content-top-floor, 104px)
+  );
   /** Distance from viewport top to first app content — Telegram content-safe (notch + TG chrome). */
   --tma-inset-top: var(--tma-content-safe-top);
   --tma-inset-bottom: calc(
@@ -158,13 +161,13 @@ html[data-telegram-app='true'] #root {
   );
 
   /** Home card top offset — content-safe + gap; SSOT: HOME_CARD_TOP_GAP_PX in tmaLayoutConstants.ts */
-  --app-home-card-top: calc(var(--tma-content-safe-top, 88px) + 16px);
+  --app-home-card-top: calc(var(--tma-content-safe-top, 104px) + 16px);
   /**
    * Measured full header height — GlassAppHeader ResizeObserver overrides inline on <html>.
    * Fallback: title row = max(content-safe-top, 44px) — see tmaLayoutConstants.ts.
    */
   --app-page-header-height: max(
-    var(--tma-content-safe-top, var(--tma-content-top-floor, 88px)),
+    var(--tma-content-safe-top, var(--tma-content-top-floor, 104px)),
     44px
   );
   --tma-toast-offset-header: 0px;
@@ -374,12 +377,12 @@ html[data-app-header] {
 
 /**
  * TMA: enforce content-safe floor — SDK may report a too-small positive inset before fullscreen settles.
- * SSOT floor: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX (88px) via --tma-content-top-floor.
+ * SSOT floor: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX (104px) via --tma-content-top-floor.
  */
 html[data-telegram-app='true'] {
   --tma-content-safe-top: max(
-    var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)),
-    var(--tma-content-top-floor, 88px)
+    var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 104px)),
+    var(--tma-content-top-floor, 104px)
   );
 }
 
@@ -443,11 +446,15 @@ html[data-telegram-app='true'] {
 /** Full-width app header — sticky or fixed liquid glass (visuals in glass.css) */
 .ui-app-header {
   --lobby-glass-inset: 0;
+  --ui-app-header-opacity-top: 60%;
+  --ui-app-header-opacity-bottom: 25%;
+  --ui-app-header-blur: var(--ui-chrome-glass-blur);
+  --ui-app-header-saturate: var(--ui-chrome-glass-saturate);
   position: sticky;
   top: 0;
   z-index: var(--z-liquid-chrome);
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: none;
 }
 
@@ -486,23 +493,31 @@ html[data-telegram-app='true'] {
 }
 
 /**
- * Title row — reserves full content-safe band; controls sit in the bottom 44px row
- * aligned with Telegram native back / menu (not vertically centered in the notch zone).
+ * Title row — full content-safe height; slots sit in the bottom 44px control band
+ * aligned with Telegram native back / menu (notch / status bar in the top fr row).
  */
 .ui-app-header__title-row {
-  display: flex;
+  --ui-app-header-control-row: 44px;
+  --ui-app-header-title-row-chrome: max(
+    var(--tma-content-safe-top, var(--tma-content-top-floor, 104px)),
+    var(--ui-app-header-control-row)
+  );
+  display: grid;
   width: 100%;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  --ui-app-header-title-row-chrome: max(
-    var(--tma-content-safe-top, var(--tma-content-top-floor, 88px)),
-    44px
-  );
+  grid-template-columns:
+    minmax(var(--ui-app-header-control-row), auto) minmax(0, 1fr)
+    minmax(var(--ui-app-header-control-row), auto);
+  grid-template-rows: 1fr var(--ui-app-header-control-row);
+  height: var(--ui-app-header-title-row-chrome);
   min-height: var(--ui-app-header-title-row-chrome);
-  padding-top: max(0px, calc(var(--ui-app-header-title-row-chrome) - 44px));
+  gap: 0.5rem;
   padding-inline: 0.5rem;
+}
+
+.ui-app-header__title-row > * {
+  grid-row: 2;
+  min-height: var(--ui-app-header-control-row);
 }
 
 .ui-app-header[data-tg-gutter='true'] .ui-app-header__title-row {
@@ -511,7 +526,7 @@ html[data-telegram-app='true'] {
 
 /**
  * Menu home without real Telegram session — child row only (profile/settings/help).
- * Skips the 88px title-row chrome reserve that only applies inside TMA with initData.
+ * Skips the content-safe title-row chrome reserve that only applies inside TMA with initData.
  */
 .ui-app-header--menu-compact .ui-app-header__title-row {
   display: none;
@@ -537,11 +552,14 @@ html[data-telegram-app='true'] {
 
 /** Full-width app footer — sticky glass overlay inside scroll (visuals in glass.css) */
 .ui-app-footer {
+  --ui-app-footer-opacity-bottom: 60%;
+  --ui-app-footer-opacity-top: 25%;
+  --ui-app-footer-blur: var(--ui-chrome-glass-blur);
+  --ui-app-footer-saturate: var(--ui-chrome-glass-saturate);
   position: sticky;
   bottom: 0;
   z-index: var(--z-header);
   flex-shrink: 0;
-  /* Visible overflow — accent CTA snake/glow bleeds into footer px padding */
   overflow: visible;
   box-shadow: none;
 }
@@ -549,6 +567,18 @@ html[data-telegram-app='true'] {
 .ui-app-footer > * {
   position: relative;
   z-index: 1;
+}
+
+/** Fixed viewport footer (FooterIsland) — overrides sticky .ui-app-footer from above */
+footer.footer-island.ui-app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-liquid-chrome);
+  padding-bottom: calc(
+    var(--tma-inset-bottom, env(safe-area-inset-bottom, 0px)) + var(--footer-island-bottom-gap)
+  );
 }
 
 /* In-app toast — frosted glass (ToastItem, ToastNotification, admin toasts) */

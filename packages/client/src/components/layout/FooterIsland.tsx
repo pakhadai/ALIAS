@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { CSS_VAR_FOOTER_ISLAND_HEIGHT } from '../../constants/tmaLayoutConstants';
-import { useGyroscope } from '../../hooks/useGyroscope';
 
 export const FOOTER_ISLAND_CLASS = 'footer-island';
 export const FOOTER_ISLAND_DOCUMENT_FLAG = 'footerIsland';
@@ -17,10 +16,9 @@ function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
-/** Fixed floating glass capsule — backdrop blur on viewport-fixed layer (not inside scroll). */
+/** Fixed full-width glass footer — header feather mirrored; anchored to viewport bottom. */
 export function FooterIsland({ children, className = '', style, ariaLabel }: FooterIslandProps) {
   const footerRef = useRef<HTMLElement>(null);
-  useGyroscope(true);
 
   useEffect(() => {
     document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG] = 'true';
@@ -56,7 +54,8 @@ export function FooterIsland({ children, className = '', style, ariaLabel }: Foo
       ref={footerRef}
       className={joinClasses(
         FOOTER_ISLAND_CLASS,
-        'pointer-events-auto flex w-full flex-col justify-center px-3 py-2',
+        'ui-app-footer',
+        'pointer-events-auto flex w-full shrink-0 flex-col items-stretch px-4 py-2',
         className
       )}
       style={style}

@@ -9,7 +9,7 @@ export interface FixedBottomBarProps {
   className?: string;
   /** Sticky glass overlay (lobby start CTA); content scrolls underneath. */
   glass?: boolean;
-  /** Fixed floating glass capsule — viewport-fixed island (pair with {@link ScreenShell} `footerFixed`). */
+  /** Fixed full-width glass footer — viewport-fixed feather bar (pair with {@link ScreenShell} `footerFixed`). */
   island?: boolean;
   /** Fade from `--ui-bg` above the bar (PreRoundScreen pattern). Ignored when `glass` or `island`. */
   gradient?: boolean;
@@ -43,7 +43,7 @@ export function FixedBottomBar({
   if (island) {
     return (
       <FooterIsland className={className} style={style}>
-        <div className={joinClasses(contentClassName, 'w-full')}>{children}</div>
+        <div className={joinClasses(contentClassName, 'min-w-0 w-full')}>{children}</div>
       </FooterIsland>
     );
   }

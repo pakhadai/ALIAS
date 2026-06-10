@@ -10,7 +10,10 @@ import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
 export interface GlassAppHeaderProps {
   children: ReactNode;
   className?: string;
-  /** Fade from `--ui-bg` below the bar (mirrors {@link FixedBottomBar} gradient). */
+  /**
+   * @deprecated Feather is global via `.ui-app-header::after` in `styles/glass.css`.
+   * Prop is ignored; kept for call-site compatibility.
+   */
   gradient?: boolean;
   style?: CSSProperties;
   /** Viewport-fixed liquid glass bar (outside scroll — pair with {@link ScreenShell} `headerFixed`). */
@@ -36,10 +39,7 @@ export const UI_APP_HEADER_TITLE_ROW_CLASS = 'ui-app-header__title-row';
 export const UI_APP_HEADER_CHILD_ROW_CLASS = 'ui-app-header__child-row';
 export const UI_APP_HEADER_SLOT_CLASS = 'ui-app-header__slot';
 
-const GRADIENT_CLASS =
-  'bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_72%,transparent)] to-[color-mix(in_srgb,var(--ui-bg)_25%,transparent)]';
-
-/** Title row reserves content-safe-top; controls align to bottom band with TG chrome (Bot API 8.0+). */
+/** Title row reserves content-safe-top; slots align to bottom 44px band with TG chrome (Bot API 8.0+). */
 const HEADER_BASE = 'pointer-events-auto flex w-full shrink-0 flex-col';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
@@ -52,7 +52,7 @@ export const APP_HEADER_DOCUMENT_FLAG = 'appHeader';
 export function GlassAppHeader({
   children,
   className = '',
-  gradient = false,
+  gradient: _gradient = false,
   style,
   fixed = false,
   tgGutter = false,
@@ -106,7 +106,6 @@ export function GlassAppHeader({
         UI_APP_HEADER_CLASS,
         fixed && UI_APP_HEADER_FIXED_CLASS,
         HEADER_BASE,
-        gradient && GRADIENT_CLASS,
         className
       )}
       style={headerStyle}
@@ -137,6 +136,7 @@ export interface AppHeaderProps {
   center?: ReactNode;
   right?: ReactNode;
   className?: string;
+  /** @deprecated Ignored — feather via `.ui-app-header::after` in `styles/glass.css`. */
   gradient?: boolean;
   /** Viewport-fixed liquid glass header. */
   fixed?: boolean;

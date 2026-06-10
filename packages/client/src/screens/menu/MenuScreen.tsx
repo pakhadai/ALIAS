@@ -174,7 +174,6 @@ export const MenuScreen = () => {
           <AppHeader
             fixed
             data-testid="menu-app-header"
-            gradient
             tgChromeGutter={hasTelegramInitData()}
             childRowHeightPx={HEADER_ROW_MIN_PX}
             ariaHidden={isEnterName}

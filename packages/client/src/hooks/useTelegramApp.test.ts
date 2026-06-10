@@ -113,14 +113,14 @@ describe('useTelegramApp', () => {
   });
 
   it('should sync positive SDK content-safe inset without clobbering larger CSS value', () => {
-    document.documentElement.style.setProperty('--tg-content-safe-area-inset-top', '96px');
+    document.documentElement.style.setProperty('--tg-content-safe-area-inset-top', '112px');
     mockWebApp.contentSafeAreaInset = { top: 72, bottom: 0, left: 0, right: 0 };
 
     renderHook(() => useTelegramApp());
 
     expect(
       document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
-    ).toBe('96px');
+    ).toBe('112px');
   });
 
   it('should return true from hasTelegramInitData only when initData is non-empty', () => {
