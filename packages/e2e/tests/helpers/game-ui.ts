@@ -1,4 +1,4 @@
-import { expect, type Browser, type Page } from '@playwright/test';
+import { expect, type Browser, type Locator, type Page } from '@playwright/test';
 
 export const HOST_NAME = 'E2E Host';
 export const GUEST_NAME = 'E2E Guest';
@@ -92,6 +92,16 @@ export async function forceBrowserChromeMode(page: Page): Promise<void> {
   await page.evaluate(() => {
     delete (window as { Telegram?: unknown }).Telegram;
   });
+}
+
+/**
+ * Clicks viewport-fixed glass chrome (header/footer portals).
+ * Avoid scrollIntoViewIfNeeded — it scrolls the page to the portal node's document position.
+ */
+export async function clickFixedChrome(locator: Locator): Promise<void> {
+  await expect(locator).toBeVisible({ timeout: 15_000 });
+  await expect(locator).toBeEnabled({ timeout: 15_000 });
+  await locator.click({ force: true });
 }
 
 /** Anonymous web app shows a login sheet on the menu — dismiss before game flows. */
@@ -205,10 +215,10 @@ export async function closeTwoPlayerSession(session: TwoPlayerSession): Promise<
 
 export async function startFromLobby(host: Page): Promise<void> {
   await expectLobbyReadyToStart(host);
-  await host.getByRole('button', { name: startGameRe }).click();
+  await clickFixedChrome(host.getByRole('button', { name: startGameRe }));
   const vs = host.getByText('VS', { exact: true });
   if (await vs.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    await host.getByRole('button', { name: startGameRe }).click();
+    await clickFixedChrome(host.getByRole('button', { name: startGameRe }));
   }
 }
 
@@ -253,8 +263,7 @@ export async function openLobbySettings(page: Page): Promise<void> {
   } else {
     const headerSettings = page.getByTestId('lobby-header-settings');
     if (await headerSettings.isVisible().catch(() => false)) {
-      await headerSettings.scrollIntoViewIfNeeded();
-      await headerSettings.click();
+      await clickFixedChrome(headerSettings);
     } else {
       const settingsBtn = page.getByRole('button', { name: lobbySettingsButtonRe });
       await settingsBtn.scrollIntoViewIfNeeded();
@@ -280,11 +289,9 @@ export async function closeLobbySettings(page: Page): Promise<void> {
   const closeBtn = page.getByTestId('settings-close');
   const appBack = page.getByTestId('app-header-back');
   if (await closeBtn.isVisible().catch(() => false)) {
-    await closeBtn.scrollIntoViewIfNeeded();
-    await closeBtn.click();
+    await clickFixedChrome(closeBtn);
   } else if (await appBack.isVisible().catch(() => false)) {
-    await appBack.scrollIntoViewIfNeeded();
-    await appBack.click();
+    await clickFixedChrome(appBack);
   } else {
     throw new Error('closeLobbySettings: no browser back control visible');
   }

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import {
+  clickFixedChrome,
   closeTwoPlayerSession,
   confirmRoundSummary,
   createTwoPlayerLobby,
@@ -35,7 +36,7 @@ test.describe('@core Host migration', () => {
       await expect(session.guest.getByRole('button', { name: startGameRe })).toBeEnabled({
         timeout: 60_000,
       });
-      await session.guest.getByRole('button', { name: startGameRe }).click();
+      await clickFixedChrome(session.guest.getByRole('button', { name: startGameRe }));
       // Guest is new host but not the round explainer (disconnected host still on team 0).
       await expect(session.guest.getByText(playingNowRe)).toBeVisible({ timeout: 30_000 });
       await expect(session.guest.getByTestId('lobby-room-code')).not.toBeVisible();
@@ -88,7 +89,7 @@ test.describe('@core Offline game', () => {
     await startOfflineLobby(page);
     await setMinimumRoundTime(page);
     await expectLobbyReadyToStart(page);
-    await page.getByRole('button', { name: startGameRe }).click();
+    await clickFixedChrome(page.getByRole('button', { name: startGameRe }));
 
     await expect(page.getByRole('button', { name: imReadyRe })).toBeVisible({
       timeout: 30_000,
