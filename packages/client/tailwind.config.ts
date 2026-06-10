@@ -70,7 +70,8 @@ export default {
         },
         pageIn: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          /* `none` (not translateY(0)) so forwards fill does not isolate backdrop-filter on chrome */
+          '100%': { opacity: '1', transform: 'none' },
         },
         countdownHit: {
           '0%': { opacity: '0', transform: 'scale(1.5)' },

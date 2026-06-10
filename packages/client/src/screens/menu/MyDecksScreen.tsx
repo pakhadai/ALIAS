@@ -101,14 +101,17 @@ export const MyDecksScreen = () => {
       <ScreenShell
         className="bg-ui-bg"
         contentClassName="px-6 py-4 space-y-5"
+        headerFixed
+        footerFixed
         header={
           <AppHeader
+            fixed
             title={<ScreenTitle themeClass={currentTheme.textMain}>New Deck</ScreenTitle>}
             onBack={exitCreateView}
           />
         }
         footer={
-          <FixedBottomBar contentClassName="w-full px-6">
+          <FixedBottomBar island contentClassName="w-full px-6">
             <button
               type="button"
               onClick={handleCreate}
@@ -168,14 +171,17 @@ export const MyDecksScreen = () => {
     <ScreenShell
       className="bg-ui-bg"
       contentClassName="px-6 space-y-4"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={<ScreenTitle themeClass={currentTheme.textMain}>My Decks</ScreenTitle>}
           onBack={() => setGameState(GameState.MENU)}
         />
       }
       footer={
-        <FixedBottomBar glass contentClassName="w-full px-6">
+        <FixedBottomBar island contentClassName="w-full px-6">
           <button
             type="button"
             onClick={() => setView('create')}

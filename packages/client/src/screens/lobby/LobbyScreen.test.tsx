@@ -2,6 +2,11 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {
+  APP_HEADER_DOCUMENT_FLAG,
+  UI_APP_HEADER_FIXED_CLASS,
+} from '../../components/layout/GlassAppHeader';
+import { FOOTER_ISLAND_DOCUMENT_FLAG } from '../../components/layout/FooterIsland';
 import { LobbyScreen } from './LobbyScreen';
 import { GameMode } from '../../types';
 
@@ -331,5 +336,23 @@ describe('LobbyScreen', () => {
     expect(screen.getByText('TG')).toBeTruthy();
     expect(screen.getByText('Copy')).toBeTruthy();
     expect(screen.getByText('QR')).toBeTruthy();
+  });
+
+  it('should use viewport-fixed liquid glass header and footer island', () => {
+    const { container } = render(<LobbyScreen />);
+
+    const header = document.body.querySelector('header');
+    expect(header?.className).toContain(UI_APP_HEADER_FIXED_CLASS);
+    expect(document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG]).toBe('true');
+    expect(document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG]).toBe('true');
+
+    const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
+    expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
+    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(header?.closest('[data-screen-shell-scroll]')).toBeNull();
+
+    const footerIsland = document.body.querySelector('footer.footer-island');
+    expect(footerIsland).toBeTruthy();
+    expect(footerIsland?.closest('[data-screen-shell-scroll]')).toBeNull();
   });
 });

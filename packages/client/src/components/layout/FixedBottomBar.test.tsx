@@ -26,6 +26,7 @@ describe('FixedBottomBar', () => {
 
     const footer = container.querySelector('footer');
     expect(footer?.className).toContain('footer-island');
+    expect(footer?.className).not.toContain(UI_APP_FOOTER_CLASS);
     expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy();
   });
 

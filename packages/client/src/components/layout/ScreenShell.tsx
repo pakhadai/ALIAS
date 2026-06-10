@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { GlassChromePortal } from './GlassChromePortal';
 
 export interface ScreenShellProps {
   children: ReactNode;
@@ -9,9 +10,9 @@ export interface ScreenShellProps {
   header?: ReactNode;
   /** Sticky glass footer inside the scroll column — e.g. {@link FixedBottomBar}; content scrolls above it. */
   footer?: ReactNode;
-  /** Fixed liquid glass header outside scroll — expects `fixed` on {@link GlassAppHeader}. */
+  /** Fixed liquid glass header outside scroll — expects `fixed` on {@link GlassAppHeader}; portaled to `document.body`. */
   headerFixed?: boolean;
-  /** Fixed footer island outside scroll — e.g. {@link FooterIsland}. */
+  /** Fixed footer island outside scroll — e.g. {@link FooterIsland}; portaled to `document.body`. */
   footerFixed?: boolean;
   /** Extra classes on the scroll / main column (not the outer shell). */
   contentClassName?: string;
@@ -50,6 +51,12 @@ function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
+/** Viewport-fixed chrome — portal escapes transformed ancestors for backdrop-filter. */
+function renderFixedChrome(node: ReactNode): ReactNode {
+  if (!node) return null;
+  return <GlassChromePortal>{node}</GlassChromePortal>;
+}
+
 export function ScreenShell({
   children,
   className = '',
@@ -67,7 +74,7 @@ export function ScreenShell({
   if (scroll) {
     return (
       <div className={shellClass}>
-        {headerFixed ? header : null}
+        {headerFixed ? renderFixedChrome(header) : null}
         <div
           className={scrollColumnClass(hasHeader, hasFooter, headerFixed, footerFixed)}
           data-screen-shell-scroll=""
@@ -76,7 +83,7 @@ export function ScreenShell({
           <div className={joinClasses(CONTENT_WRAP_BASE, contentClassName)}>{children}</div>
           {footerFixed ? null : footer}
         </div>
-        {footerFixed ? footer : null}
+        {footerFixed ? renderFixedChrome(footer) : null}
       </div>
     );
   }
@@ -97,13 +104,13 @@ export function ScreenShell({
             : 'pb-safe-bottom'
       )}
     >
-      {header}
+      {headerFixed ? renderFixedChrome(header) : header}
       <div
         className={joinClasses('flex min-h-0 flex-1 flex-col overflow-hidden', contentClassName)}
       >
         {children}
       </div>
-      {footer}
+      {footerFixed ? renderFixedChrome(footer) : footer}
     </div>
   );
 }

@@ -91,8 +91,11 @@ export const TeamSetupScreen = () => {
     <ScreenShell
       className={currentTheme.bg}
       contentClassName="px-8 space-y-6 pb-4"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={
             <h2
               className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
@@ -105,7 +108,7 @@ export const TeamSetupScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar contentClassName="w-full space-y-4">
+        <FixedBottomBar island contentClassName="w-full space-y-4">
           {canEdit && (
             <p
               className={`text-center ${typographyClass.label} tracking-[0.35em] ${currentTheme.textSecondary}`}

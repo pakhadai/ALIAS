@@ -20,15 +20,18 @@ export const ScoreboardScreen = () => {
     <ScreenShell
       className={`${bgColor} ${textColor} font-sans antialiased transition-colors`}
       contentClassName="pb-4"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={<h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>}
           onBack={() => leaveRoom()}
           backAriaLabel={t.toMainMenu}
         />
       }
       footer={
-        <FixedBottomBar padding="lg" gradient contentClassName="w-full px-6">
+        <FixedBottomBar island contentClassName="w-full px-6">
           {isHost ? (
             <button
               onClick={handleNextRound}

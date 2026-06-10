@@ -96,4 +96,36 @@ describe('ScreenShell', () => {
     const scrollColumn = screen.getByTestId('content').parentElement?.parentElement;
     expect(scrollColumn?.className).toContain('pb-safe-bottom');
   });
+
+  it('should render fixed header outside scroll with top clearance padding', () => {
+    const { container } = render(
+      <ScreenShell headerFixed header={<div data-testid="header">Header</div>}>
+        <div data-testid="content">Scrollable body</div>
+      </ScreenShell>
+    );
+
+    const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
+    const header = screen.getByTestId('header');
+    expect(header.parentElement).toBe(document.body);
+    expect(container.querySelector('[data-testid="header"]')).toBeNull();
+    expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
+    expect(scrollColumn?.className).not.toContain('pt-safe-top');
+    expect(scrollColumn?.querySelector('[data-testid="header"]')).toBeNull();
+  });
+
+  it('should render fixed footer outside scroll with island stack padding', () => {
+    const { container } = render(
+      <ScreenShell footerFixed footer={<div data-testid="footer">Footer</div>}>
+        <div data-testid="content">Scrollable body</div>
+      </ScreenShell>
+    );
+
+    const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
+    const footer = screen.getByTestId('footer');
+    expect(footer.parentElement).toBe(document.body);
+    expect(container.querySelector('[data-testid="footer"]')).toBeNull();
+    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(scrollColumn?.className).not.toContain('pb-safe-bottom');
+    expect(scrollColumn?.querySelector('[data-testid="footer"]')).toBeNull();
+  });
 });

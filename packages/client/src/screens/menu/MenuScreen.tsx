@@ -169,8 +169,10 @@ export const MenuScreen = () => {
 
       <ScreenShell
         className={`relative z-10 ${currentTheme.bg}`}
+        headerFixed
         header={
           <AppHeader
+            fixed
             data-testid="menu-app-header"
             gradient
             tgChromeGutter={hasTelegramInitData()}

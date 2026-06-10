@@ -169,10 +169,15 @@ html[data-telegram-app='true'] #root {
   );
   --tma-toast-offset-header: 0px;
   --tma-toast-top: calc(max(0.75rem, var(--tma-inset-top)) + var(--tma-toast-offset-header));
-  --tma-banner-top: var(--tma-inset-top);
+  /** Top status banners (reconnect) — below measured header chrome; SSOT for ConnectionStatusBanner */
+  --tma-banner-top: var(--app-page-header-height);
 
-  /* Overlay stacking — use via `constants/zIndex.ts` + Tailwind `z-[var(--…)]` */
+  /* Overlay stacking — use via `constants/zIndex.ts` + Tailwind `z-[var(--…)]`
+   * Order (low → high): page < status-banner < header/liquid-chrome < fx < banner < modal-low < modal < toast
+   * Top reconnect banner stays below glass header (z-status-banner < z-liquid-chrome). */
   --z-header: 20;
+  --z-status-banner: 25;
+  --z-liquid-chrome: 30;
   --z-fx: 40;
   --z-banner: 60;
   --z-modal-low: 80;
@@ -440,7 +445,7 @@ html[data-telegram-app='true'] {
   --lobby-glass-inset: 0;
   position: sticky;
   top: 0;
-  z-index: var(--z-header);
+  z-index: var(--z-liquid-chrome);
   flex-shrink: 0;
   overflow: hidden;
   box-shadow: none;
@@ -530,77 +535,15 @@ html[data-telegram-app='true'] {
   min-width: 44px;
 }
 
-/** Full-width app footer — sticky glass overlay inside scroll; feather at top edge */
+/** Full-width app footer — sticky glass overlay inside scroll (visuals in glass.css) */
 .ui-app-footer {
-  --ui-app-footer-opacity-bottom: 28%;
-  --ui-app-footer-opacity-top: 6%;
-  --ui-app-footer-blur: 16px;
-  --ui-app-footer-saturate: 1.2;
   position: sticky;
   bottom: 0;
   z-index: var(--z-header);
   flex-shrink: 0;
   /* Visible overflow — accent CTA snake/glow bleeds into footer px padding */
   overflow: visible;
-  background: transparent;
-  border: 0 solid transparent;
   box-shadow: none;
-}
-
-.ui-app-footer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 0;
-  pointer-events: none;
-  z-index: 0;
-  backdrop-filter: blur(var(--ui-app-footer-blur)) saturate(var(--ui-app-footer-saturate));
-  -webkit-backdrop-filter: blur(var(--ui-app-footer-blur)) saturate(var(--ui-app-footer-saturate));
-  mask-image: linear-gradient(
-    to top,
-    rgb(0 0 0 / 92%) 0%,
-    rgb(0 0 0 / 78%) 45%,
-    rgb(0 0 0 / 42%) 72%,
-    rgb(0 0 0 / 14%) 90%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to top,
-    rgb(0 0 0 / 92%) 0%,
-    rgb(0 0 0 / 78%) 45%,
-    rgb(0 0 0 / 42%) 72%,
-    rgb(0 0 0 / 14%) 90%,
-    transparent 100%
-  );
-}
-
-.ui-app-footer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--ui-bg) var(--ui-app-footer-opacity-bottom), transparent) 0%,
-    color-mix(in srgb, var(--ui-bg) var(--ui-app-footer-opacity-top), transparent) 58%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to top,
-    rgb(0 0 0 / 100%) 0%,
-    rgb(0 0 0 / 88%) 52%,
-    rgb(0 0 0 / 36%) 82%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to top,
-    rgb(0 0 0 / 100%) 0%,
-    rgb(0 0 0 / 88%) 52%,
-    rgb(0 0 0 / 36%) 82%,
-    transparent 100%
-  );
 }
 
 .ui-app-footer > * {
@@ -671,6 +614,7 @@ html[data-telegram-app='true'] {
 
 /* Fixed status banners (reconnect, etc.) — opaque surface, toast family */
 .ui-status-banner {
+  z-index: var(--z-status-banner);
   background-color: var(--ui-status-banner-surface, var(--ui-toast-surface));
   color: var(--ui-status-banner-fg, var(--ui-toast-fg));
   backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
@@ -1234,21 +1178,8 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ui-app-header::before,
-  .ui-app-footer::before,
   .bottom-sheet-top-bar::before {
     display: none;
-  }
-
-  .ui-app-header::after {
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ui-bg) 82%, transparent) 0%,
-      color-mix(in srgb, var(--ui-bg) 54%, transparent) 68%,
-      transparent 100%
-    );
-    mask-image: none;
-    -webkit-mask-image: none;
   }
 
   .bottom-sheet-top-bar::after {
@@ -1261,35 +1192,11 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
     mask-image: none;
     -webkit-mask-image: none;
   }
-
-  .ui-app-footer::after {
-    background: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--ui-bg) 72%, transparent) 0%,
-      color-mix(in srgb, var(--ui-bg) 44%, transparent) 58%,
-      transparent 100%
-    );
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .ui-app-header::before,
-  .ui-app-footer::before,
   .bottom-sheet-top-bar::before {
     display: none;
-  }
-
-  .ui-app-header::after {
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ui-bg) 90%, transparent) 0%,
-      color-mix(in srgb, var(--ui-bg) 68%, transparent) 68%,
-      transparent 100%
-    );
-    mask-image: none;
-    -webkit-mask-image: none;
   }
 
   .bottom-sheet-top-bar::after {
@@ -1297,17 +1204,6 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
       to bottom,
       color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 90%, transparent) 0%,
       color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 68%, transparent) 68%,
-      transparent 100%
-    );
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  .ui-app-footer::after {
-    background: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--ui-bg) 84%, transparent) 0%,
-      color-mix(in srgb, var(--ui-bg) 58%, transparent) 55%,
       transparent 100%
     );
     mask-image: none;
@@ -1347,5 +1243,11 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   .keyboard-avoiding-lift,
   .bottom-sheet-backdrop[data-keyboard-open='true'] .pb-modal-bottom {
     transition: none !important;
+  }
+
+  .animate-page-in {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
 }

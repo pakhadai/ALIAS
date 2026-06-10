@@ -156,7 +156,7 @@ export function useSheetDragToClose({
       setOffsetY(0);
       window.setTimeout(() => setIsSnapping(false), SHEET_DRAG_SNAP_MS);
     },
-    [panelRef, resetDrag]
+    [panelRef]
   );
 
   const panelStyle = useMemo((): React.CSSProperties | undefined => {

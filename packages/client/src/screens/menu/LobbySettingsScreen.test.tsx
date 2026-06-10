@@ -1,8 +1,13 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BackNavigationGuardProvider } from '../../context/BackNavigationGuardContext';
+import {
+  APP_HEADER_DOCUMENT_FLAG,
+  UI_APP_HEADER_FIXED_CLASS,
+} from '../../components/layout/GlassAppHeader';
+import { FOOTER_ISLAND_DOCUMENT_FLAG } from '../../components/layout/FooterIsland';
 import { LobbySettingsScreen } from './LobbySettingsScreen';
 import type { GameSettings } from '../../types';
 
@@ -118,6 +123,11 @@ vi.mock('../../context/GameContext', () => ({
 }));
 
 describe('LobbySettingsScreen', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG];
+    delete document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG];
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
@@ -299,6 +309,33 @@ describe('LobbySettingsScreen', () => {
       expect(saveLobbySettings).not.toHaveBeenCalled();
       expect(screen.getByText('30')).toBeVisible();
     });
+  });
+
+  it('should use viewport-fixed liquid glass header and footer island', async () => {
+    fetchLobbySettings.mockResolvedValueOnce({
+      general: { scoreToWin: 30 },
+      mode: { classicRoundTime: 60 },
+    });
+
+    const { container } = renderLobbySettings();
+
+    await waitFor(() => {
+      expect(screen.getByText('Lobby settings')).toBeVisible();
+    });
+
+    const header = document.body.querySelector('header');
+    expect(header?.className).toContain(UI_APP_HEADER_FIXED_CLASS);
+    expect(document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG]).toBe('true');
+    expect(document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG]).toBe('true');
+
+    const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
+    expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
+    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(header?.closest('[data-screen-shell-scroll]')).toBeNull();
+
+    const footerIsland = document.body.querySelector('footer.footer-island');
+    expect(footerIsland).toBeTruthy();
+    expect(footerIsland?.closest('[data-screen-shell-scroll]')).toBeNull();
   });
 
   it('resets to factory defaults after confirm', async () => {

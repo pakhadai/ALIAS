@@ -6,9 +6,9 @@
 
 | Компонент | Шлях | Призначення |
 |-----------|------|-------------|
-| `ScreenShell` | `packages/client/src/components/layout/ScreenShell.tsx` | Повноекранна оболонка: scroll-колонка `flex-1 min-h-0 overflow-y-auto`; `header` і `footer` — **sticky всередині scroll** (glass бачить контент при скролі); `contentClassName` лише на body wrapper |
-| `AppHeader` / `GlassAppHeader` | `packages/client/src/components/layout/GlassAppHeader.tsx` | Повноширинний flat bar зверху: `pt-safe-top`, `.ui-app-header` |
-| `FixedBottomBar` | `packages/client/src/components/layout/FixedBottomBar.tsx` | In-flow footer: `pb-safe-bottom*`; prop `glass` → `.ui-app-footer` (дзеркало header); без `glass` — gradient wash (PreRoundScreen) |
+| `ScreenShell` | `packages/client/src/components/layout/ScreenShell.tsx` | Повноекранна оболонка: scroll-колонка `flex-1 min-h-0 overflow-y-auto`; `headerFixed` / `footerFixed` — chrome **поза** scroll через `GlassChromePortal` → `document.body`; без них — **sticky in-flow** (legacy prod); `contentClassName` лише на body wrapper |
+| `AppHeader` / `GlassAppHeader` | `packages/client/src/components/layout/GlassAppHeader.tsx` | Повноширинний flat bar: `pt-safe-top`, `.ui-app-header`; prop `fixed` → `.ui-app-header--fixed` (pair з `headerFixed`) |
+| `FixedBottomBar` | `packages/client/src/components/layout/FixedBottomBar.tsx` | Sticky glass: `glass` → `.ui-app-footer`; viewport island: `island` → `.footer-island` (pair з `footerFixed`); без `glass` — gradient wash (PreRoundScreen) |
 | `ModalSheet` | `packages/client/src/components/ModalSheet.tsx` | Edge-to-edge bottom sheet: панель від фізичного низу екрана; safe area **лише всередині** контенту (`pb-modal-bottom`) |
 
 **Canonical приклад (2026-06-08):** `LobbyScreen` — glass header + scroll + glass footer з `LobbyStartPanel`, invite/add-player sheets, nested QR.
@@ -19,27 +19,46 @@ import { LobbyStartPanel } from './components/LobbyStartPanel';
 
 <ScreenShell
   className={currentTheme.bg}
-  header={<AppHeader left={...} center={...} right={...} />}
+  headerFixed
+  footerFixed
+  header={<AppHeader fixed left={...} center={...} right={...} />}
   contentClassName="px-4"
   footer={
-    <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
+    <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
       <LobbyStartPanel readiness={...} t={...} theme={...} onStartTap={handleStartTap} />
     </FixedBottomBar>
   }
 >
-  {/* scrollable content — at scroll=0 starts below header, ends above footer */}
+  {/* scrollable content — padding vars reserve chrome space at scroll=0 */}
 </ScreenShell>
 ```
 
 ## Glass app chrome (header + footer)
 
-> **Статус:** ✅ канон з 2026-06-08 (Lobby host). Токени: [`UI_TOKENS.md` — App chrome](./UI_TOKENS.md#app-chrome-glass-header--footer).
+> **Статус:** ✅ Liquid Glass epic Sessions 0–9 (2026-06-10). Токени: [`UI_TOKENS.md` — App chrome](./UI_TOKENS.md#app-chrome-glass-header--footer). Session prompts: [`LIQUID_GLASS_FIX_PROMPTS.md`](./LIQUID_GLASS_FIX_PROMPTS.md).
 
-### Чому sticky всередині scroll
+### Два режими chrome
 
-`backdrop-filter` бачить лише пікселі **в тому ж scroll-контейнері**. Якщо header/footer — сиблінги scroll-колонки, під blur лише `--ui-bg` shell → «суцільна плита» без frosted glass.
+| Режим | API | Де зараз | Коли використовувати |
+|-------|-----|----------|----------------------|
+| **Fixed (target)** | `ScreenShell` `headerFixed` + `AppHeader fixed`; `footerFixed` + `FixedBottomBar island` | Усі menu/lobby екрани з chrome + `ScoreboardScreen` (Micro B ✅) | Blur поза scroll; chrome не залежить від transformed предків; footer — floating capsule |
+| **Sticky in-flow (legacy)** | `ScreenShell` без `*Fixed`; `AppHeader`; `FixedBottomBar glass` / gradient | `PreRoundScreen`, `VSScreen`, `RoundSummaryScreen`; game exceptions (`PlayingScreen`, `ImposterScreen`) | Контент проходить під sticky bar при скролі; blur бачить pixels у scroll-колонці |
 
-**Канон:**
+**Fixed layout:**
+
+```
+ScreenShell (flex col, fixed h)
+├── GlassChromePortal → document.body
+│   └── header         → .ui-app-header--fixed
+├── scroll column      → pt-[var(--app-page-header-height)] pb-[var(--footer-island-stack)]
+│   └── content
+└── GlassChromePortal → document.body
+    └── footer         → .footer-island
+```
+
+`GlassChromePortal` (`layout/GlassChromePortal.tsx`) — той самий патерн що `ModalPortal`: fixed chrome не під `PageTransition` / іншими transformed предками, тому `backdrop-filter` бачить viewport. `GlassAppHeader` лишає `ResizeObserver` для `--app-page-header-height`.
+
+**Sticky layout (legacy):**
 
 ```
 ScreenShell (flex col, fixed h)
@@ -49,27 +68,35 @@ ScreenShell (flex col, fixed h)
     └── footer     → position: sticky; bottom: 0  (.ui-app-footer, FixedBottomBar glass)
 ```
 
-| Інваріант | Правило |
-|-----------|---------|
-| scroll=0 | Контент **під** заголовком і **над** footer — без negative margin overlap |
-| При скролі | Контент проходить під sticky glass → blur + tint |
-| Full-width chrome | `contentClassName` (напр. `px-4`) **не** на header/footer — лише на body wrapper |
-| Safe area | Header: title row `min-height: var(--tma-content-safe-top)` на `GlassAppHeader` (без окремого `pt-device-top`); footer: `pb-safe-bottom` на `FixedBottomBar`; scroll **без** `pt/pb-safe-*` коли є header/footer |
-| Rounded capsule | **Не** для app chrome — flat edge-to-edge. Окремо лишається `.ui-glass-panel` (bottom sheets, nested panels) |
+| Інваріант | Fixed | Sticky |
+|-----------|-------|--------|
+| scroll=0 | Padding vars резервують місце під chrome | Контент під header і над footer |
+| Blur джерело | Viewport-fixed шар (`glass.css`) | Scroll-колонка (контент під bar) |
+| Transform предок | Portal + Session 1 (`GlassChromePortal`, `PageTransition` → `transform: none`) | Потребує відсутності persistent transform на предку |
+| Footer форма | Rounded `.footer-island` + gyro sheen | Flat edge-to-edge `.ui-app-footer` |
+| Rollout | Micro B ✅ (2026-06-10) | Лише transitional game-flow + pattern E exceptions |
 
-### CSS-класи (`styles.css`)
+**Спільні правила:** `contentClassName` (напр. `px-4`) **не** на header/footer — лише на body wrapper; safe area на `GlassAppHeader` title row і `FixedBottomBar` / island inset; rounded capsule **не** для flat sticky footer — лише `.footer-island` або `.ui-glass-panel` (sheets).
+
+### CSS (`styles/glass.css` + `styles.css`)
 
 | Клас | Роль |
 |------|------|
-| `.ui-app-header` | Sticky top; `::before` blur + mask feather вниз; `::after` tint `--ui-bg` |
-| `.ui-app-footer` | Sticky bottom; дзеркальні gradient/mask (feather **зверху**) |
-| `.ui-glass-panel` | **Окремий** патерн — rounded inset panel (ModalSheet-adjacent, **не** app header/footer) |
+| `.ui-app-header` | Direct `backdrop-filter` + `--glass-header-bg`; pseudos вимкнені |
+| `.ui-app-header--fixed` | `position: fixed; top: 0; z-index: var(--z-liquid-chrome)` |
+| `.ui-app-footer` | Direct blur (той самий патерн що header); sticky in-flow у `styles.css` |
+| `.footer-island` | Fixed floating capsule; `--footer-island-stack` для scroll padding; gyro `::before` sheen |
+| `.ui-glass-panel` | **Окремий** патерн — rounded inset panel (ModalSheet, **не** app chrome) |
 
-**Tuning vars:** `--ui-app-header-opacity-top/bottom`, `--ui-app-header-blur`, `--ui-app-footer-*` (footer — ті самі імена з префіксом `footer`).
+**Z-index stack (low → high):** page content < `--z-status-banner` (25) < `--z-liquid-chrome` (30) < `--z-fx` (40) < `--z-banner` (60) < `--z-modal-low` (80) < `--z-modal` (100) < toast (1000). Reconnect banner: `.ui-status-banner` + `--tma-banner-top` = measured header height.
 
-**Fallback:** `@supports not (backdrop-filter)` і `prefers-reduced-transparency: reduce` → gradient-only wash без blur.
+**Fallback:** `@supports not (backdrop-filter)` і `prefers-reduced-transparency: reduce` → opaque `--ui-bg` / rgba fill без blur (`glass.css`).
 
-**Toasts:** `GlassAppHeader` виставляє `data-app-header` на `<html>` → `--app-page-header-height` (measured) → `--tma-toast-top` нижче хедера.
+**Toasts / banner:** `GlassAppHeader` → `data-app-header` на `<html>` → `--app-page-header-height` (ResizeObserver) → `--tma-toast-top`, `--tma-banner-top`.
+
+**TMA bootstrap:** `bootstrapTelegramMiniApp()` у `index.tsx` (sync `ready`/`expand` до `createRoot`); `useTelegramApp` — `viewportChanged` + `isExpanded`, safe-area listeners.
+
+**Gyro:** `useGyroscope` лише коли змонтований `FooterIsland` (`FixedBottomBar island`); CSS vars `--gyro-x/y` cleared on unmount.
 
 ### Lobby start CTA (`LobbyStartPanel`)
 
@@ -103,13 +130,14 @@ sendAction({ action: 'START_GAME' });
 
 **Deprecated:** `ready` / `blocked` boolean props — `variant` має пріоритет.
 
-**Guest + auth footer:** `FixedBottomBar glass`, `contentClassName="max-w-sm mx-auto w-full"`; confirm через `LogoutConfirmBottomSheet` (різні title/labels для guest vs auth).
+**Guest + auth footer:** `FixedBottomBar island` + `footerFixed`, `contentClassName="max-w-sm mx-auto w-full"`; confirm через `LogoutConfirmBottomSheet` (різні title/labels для guest vs auth).
 
 ### Заборони (glass chrome)
 
 | Заборонено | Чому |
 |------------|------|
-| Header/footer **над/під** scroll як flex-sibling | Blur не бачить контент |
+| Sticky chrome + header/footer як flex-sibling **поза** scroll без `*Fixed` API | Blur не бачить scroll-контент (fixed mode — навмисно поза scroll) |
+| Persistent `transform` на предку chrome (крім GPU hint на самому bar) | Ізолює backdrop-filter — див. Session 1 |
 | Negative margin overlap для «штучного» glass | Ламає layout at scroll=0 |
 | `--ui-overlay-tint-base` sepia на app header/footer | Занадто «матова підкладка» |
 | `disabled` на start CTA | Блокує tap → toast hint |
@@ -117,11 +145,18 @@ sendAction({ action: 'START_GAME' });
 
 ### Manual QA (TMA @375px)
 
-- [ ] Lobby host: scroll teams — контент просвічує крізь header **і** footer
+**Automated (Vitest 285/285, 2026-06-10):** fixed chrome wiring (`ProfileSettingsScreen`, `LobbySettingsScreen`); banner below header (`ConnectionStatusBanner`); `LazyRouteFallback` safe-area padding; z-index tokens; gyro scope; TMA bootstrap mocks.
+
+**Manual (owner, deferred):**
+
+- [ ] Lobby host (sticky): scroll teams — контент просвічує крізь header **і** footer
+- [ ] Profile/Lobby settings (fixed): island footer + fixed header blur на device
+- [ ] Reconnect banner не перекриває header back/title
 - [ ] scroll=0: «ЛОБІ» відокремлено; room code нижче header; CTA не перекриває перший блок
 - [ ] 1 гравець: tap start → toast «мінімум 2 гравці»; lock icon на кнопці
 - [ ] Ready: спокійна червона змійка по краю кнопки
-- [ ] `prefers-reduced-transparency` / без backdrop-filter: gradient fallback, CTA читабельний
+- [ ] `prefers-reduced-transparency` / без backdrop-filter: opaque fallback, CTA читабельний
+- [ ] Modal open: sheet завжди над glass chrome (z 30 vs 80+)
 
 ---
 
@@ -216,7 +251,8 @@ PlayingScreen навмисно використовує `pt-env-top pb-env-botto
 - Завжди `pb-safe-bottom` або `pb-safe-bottom-8` на bottom bar — ніколи лише `p-6` / `pb-8`.
 - Патерн кліків: зовнішній `pointer-events-none`, внутрішній контент `pointer-events-auto` (`FixedBottomBar` за замовчуванням).
 - **Gradient wash:** `FixedBottomBar` prop `gradient={true}` (default) — PreRoundScreen, Settings.
-- **Glass footer:** `FixedBottomBar glass` — sticky `.ui-app-footer` всередині scroll; еталон — Lobby `LobbyStartPanel`. Див. [Glass app chrome](#glass-app-chrome-header--footer).
+- **Glass footer (sticky):** `FixedBottomBar glass` — `.ui-app-footer` in-flow; еталон — Lobby `LobbyStartPanel`.
+- **Footer island (fixed):** `FixedBottomBar island` + `footerFixed` — `.footer-island` capsule; еталон — settings screens. Див. [Glass app chrome](#glass-app-chrome-header--footer).
 
 ## Клавіатура
 
@@ -242,7 +278,7 @@ PlayingScreen навмисно використовує `pt-env-top pb-env-botto
 | `pb-env-bottom` у ModalSheet content / footer | `pb-modal-bottom` (мін. 1rem + inset) |
 | `pb-env-bottom` на fixed game footer без мінімуму | `pb-safe-bottom` (або свідомий виняток з коментарем) |
 
-Bootstrap viewport/safe-area: `useTelegramApp.ts` (`expand`, `safeAreaChanged`, `contentSafeAreaChanged`).
+Bootstrap viewport/safe-area: `bootstrapTelegramMiniApp()` у `index.tsx` (sync `ready`/`expand` до `createRoot`); події в `useTelegramApp` (`viewportChanged` + `isExpanded`, `safeAreaChanged`, `contentSafeAreaChanged`).
 
 ---
 
@@ -270,8 +306,8 @@ Bootstrap viewport/safe-area: `useTelegramApp.ts` (`expand`, `safeAreaChanged`, 
 | `MENU` | **A** ✅ | `AppHeader` sticky: icons у `right`; empty center; `data-app-header` toast | **hide** | — | Фаза 4 ✅; logo + CTA у scroll; `HOME_CARD_TOP_GAP_PX` body padding |
 | `ENTER_NAME` | **A** ✅ | Той самий `MenuScreen`; `AppHeader` + main `aria-hidden` + `pointer-events-none` | **hide** | — | `EnterNameSheet` overlay; не окремий route component |
 | `PROFILE` | **A** ✅ | `AppHeader` (browser back → MENU); hero title у scroll | **show** → MENU | — | Фаза 3a ✅ |
-| `PROFILE_SETTINGS` | **A** ✅ | `AppHeader` + title | **show** → PROFILE | `FixedBottomBar` Save | Фаза 3a ✅ |
-| `LOBBY_SETTINGS` | **A** ✅ | `AppHeader` + title; reset у `right` slot | **show** → LOBBY або MENU | `FixedBottomBar` Save | Фаза 3a ✅; browser `onBack` = TMA matrix |
+| `PROFILE_SETTINGS` | **A+fixed** ✅ | `AppHeader fixed` + `headerFixed`; title | **show** → PROFILE | `FixedBottomBar island` + `footerFixed` Save | Liquid Glass Session 2 ✅ |
+| `LOBBY_SETTINGS` | **A+fixed** ✅ | `AppHeader fixed`; reset у `right` slot | **show** → LOBBY або MENU | `FixedBottomBar island` Save | Liquid Glass Session 2 ✅; browser `onBack` = TMA matrix |
 | `MY_WORD_PACKS` | **A** ✅ | `AppHeader` (list / locked / create variants) | **show** → MENU | `FixedBottomBar glass` create CTA | Фаза 3a ✅ |
 | `PLAYER_STATS` | **A** ✅ | `AppHeader` + title | **show** → PROFILE або MENU | — | Фаза 3a ✅ |
 | `STORE` | **A** ✅ | `AppHeader` + title; tabs у child row; browser back → MENU | **show** → MENU | `FixedBottomBar` Stripe trust | Фаза 3a post-6 ✅ |
@@ -297,7 +333,7 @@ Bootstrap viewport/safe-area: `useTelegramApp.ts` (`expand`, `safeAreaChanged`, 
 |---------|---------|--------|-------|
 | `AdminApp` | ad-hoc | `border-b` sticky bar | Defer або trivial glass bar (фаза 3b) |
 | `TelegramAuthLoadingScreen` | **D** | Немає chrome | Bootstrap only |
-| `LazyRouteFallback` | **D** | Немає chrome | Loading copy |
+| `LazyRouteFallback` | **D** ✅ | `ScreenShell` skeleton (safe-area padding) | Liquid Glass Session 8 ✅ |
 
 ### Grep audit (2026-06-08)
 

@@ -7,13 +7,13 @@ import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { TelegramAuthLoadingScreen } from './components/TelegramAuthLoadingScreen';
 import { useTelegramApp } from './hooks/useTelegramApp';
-import { useGyroscope } from './hooks/useGyroscope';
 import { applyGlassTheme } from './lib/glassTheme';
 import { useAuthContext } from './context/AuthContext';
 import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
 import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import { AppLoginProvider } from './context/AppLoginContext';
 import { BackNavigationGuardProvider } from './context/BackNavigationGuardContext';
+import { ScreenShell } from './components/layout/ScreenShell';
 import { typographyClass } from './constants/typography';
 import {
   MenuScreen,
@@ -50,10 +50,11 @@ const RulesScreen = React.lazy(() =>
   import('./screens/menu/RulesScreen').then((mod) => ({ default: mod.RulesScreen }))
 );
 
+/** Suspense placeholder — same viewport + safe-area padding as {@link ScreenShell} without chrome. */
 const LazyRouteFallback = () => (
-  <div className="min-h-screen w-full bg-ui-bg text-ui-fg font-sans flex items-center justify-center px-6">
+  <ScreenShell contentClassName="flex flex-1 items-center justify-center px-6">
     <p className={`${typographyClass.body} text-ui-fg-muted`}>Завантаження…</p>
-  </div>
+  </ScreenShell>
 );
 
 const LazyRoute = ({ children }: { children: React.ReactNode }) => (
@@ -254,7 +255,6 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 
 const AppContent = () => {
   const { isTelegram, startParam } = useTelegramApp();
-  useGyroscope(true);
 
   React.useEffect(() => {
     if (isTelegram) return;

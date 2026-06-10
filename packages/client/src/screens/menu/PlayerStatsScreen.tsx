@@ -62,8 +62,10 @@ export const PlayerStatsScreen = () => {
     <ScreenShell
       className={`relative ${currentTheme.bg} transition-colors duration-500`}
       contentClassName="max-w-md w-full mx-auto px-6 md:px-8 flex flex-col flex-1 py-4 pb-4 gap-4"
+      headerFixed
       header={
         <AppHeader
+          fixed
           title={<ScreenTitle themeClass={currentTheme.textMain}>{t.statsScreenTitle}</ScreenTitle>}
           onBack={goBack}
           backAriaLabel={t.goBack}

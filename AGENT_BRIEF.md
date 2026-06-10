@@ -17,13 +17,13 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 **Останній аудит:** 2026-06-07 — Block G (G-1…G-8) ✅, деталі в `AUDIT_RESULTS.md`  
 **Відкритих issues:** 0
 
-**Test baseline (2026-06-07):**
+**Test baseline (2026-06-10):**
 
 | Пакет | Тести | Примітка |
 |-------|-------|----------|
-| `@alias/server` | **341** | unit + integration (authorizeGameAction, GameEngine, RoomManager, routes, socketHandlers) |
-| `@alias/client` | **44** | GameContext, offlineGameActions, gameReducer, QuickBuyModal |
-| `@alias/shared` | **12** | `utils.test.ts` (shuffleArray, getTeamColor, constants) |
+| `@alias/server` | **341** | unit + integration |
+| `@alias/client` | **285** | incl. Liquid Glass layout/TMA tests (59 files) |
+| `@alias/shared` | **12** | `utils.test.ts` |
 
 **Coverage floor** (`packages/server/vitest.config.ts`, measured after Phases 1–7): **67%** stmts/lines, **71%** branches, **89%** functions. Core modules: GameEngine ~92%, RoomManager ~89%.
 

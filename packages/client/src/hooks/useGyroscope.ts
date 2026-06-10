@@ -61,6 +61,8 @@ export function useGyroscope(enabled = true): void {
       document.removeEventListener('touchstart', activateGyroscope);
       window.removeEventListener('deviceorientation', onOrientation);
       if (rafId !== 0) cancelAnimationFrame(rafId);
+      document.documentElement.style.removeProperty('--gyro-x');
+      document.documentElement.style.removeProperty('--gyro-y');
     };
   }, [enabled]);
 }

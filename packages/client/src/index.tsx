@@ -2,10 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { bootstrapTelegramMiniApp } from './hooks/useTelegramApp';
 import { setupPwaRegister } from './pwa-client';
 import { initClientSentry, Sentry } from './sentry';
 import { SentryErrorFallback } from './components/SentryErrorFallback';
 
+bootstrapTelegramMiniApp();
 setupPwaRegister();
 initClientSentry();
 

@@ -127,8 +127,11 @@ export const StoreScreen = () => {
     <ScreenShell
       className="bg-ui-bg transition-colors duration-500"
       contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={<ScreenTitle themeClass={currentTheme.textMain}>Магазин</ScreenTitle>}
           onBack={goBack}
           childRowHeightPx={HEADER_ROW_MIN_PX}
@@ -150,7 +153,7 @@ export const StoreScreen = () => {
         </AppHeader>
       }
       footer={
-        <FixedBottomBar contentClassName="max-w-2xl mx-auto w-full">
+        <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full">
           <div className="flex items-center justify-center gap-1.5 border-t border-ui-border pt-4">
             <ShieldCheck size={12} className="text-ui-fg-muted opacity-70" aria-hidden />
             <p className={`${typographyClass.label} tracking-widest text-ui-fg-muted opacity-70`}>

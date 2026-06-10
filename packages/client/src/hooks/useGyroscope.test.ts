@@ -27,6 +27,48 @@ describe('useGyroscope', () => {
     });
   });
 
+  it('should not attach listeners when disabled', () => {
+    const addSpy = vi.spyOn(window, 'addEventListener');
+    renderHook(() => useGyroscope(false));
+
+    expect(addSpy).not.toHaveBeenCalledWith('deviceorientation', expect.any(Function), {
+      passive: true,
+    });
+  });
+
+  it('should clear gyro CSS vars on unmount', async () => {
+    let orientationHandler: ((event: DeviceOrientationEvent) => void) | undefined;
+
+    const addListener = window.addEventListener.bind(window);
+    vi.spyOn(window, 'addEventListener').mockImplementation(((
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ) => {
+      if (type === 'deviceorientation' && typeof listener === 'function') {
+        orientationHandler = listener as (event: DeviceOrientationEvent) => void;
+      }
+      addListener(type, listener, options);
+    }) as typeof window.addEventListener);
+
+    const { unmount } = renderHook(() => useGyroscope(true));
+
+    await act(async () => {
+      document.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      orientationHandler?.(
+        new DeviceOrientationEvent('deviceorientation', { gamma: 30, beta: 60 })
+      );
+      await vi.runAllTimersAsync();
+    });
+
+    expect(document.documentElement.style.getPropertyValue('--gyro-x').trim()).toBe('1');
+
+    unmount();
+
+    expect(document.documentElement.style.getPropertyValue('--gyro-x').trim()).toBe('');
+    expect(document.documentElement.style.getPropertyValue('--gyro-y').trim()).toBe('');
+  });
+
   it('should write gyro CSS vars when orientation events fire', async () => {
     let orientationHandler: ((event: DeviceOrientationEvent) => void) | undefined;
 

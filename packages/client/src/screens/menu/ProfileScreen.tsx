@@ -170,7 +170,7 @@ export const ProfileScreen = () => {
   }`;
 
   const sessionEndFooter = !loadingAuth ? (
-    <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
+    <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
       <AccentFooterCta
         variant="plain"
         buttonTestId={isGuest ? 'profile-guest-reset-btn' : 'profile-logout-btn'}
@@ -189,8 +189,11 @@ export const ProfileScreen = () => {
       <ScreenShell
         className={`relative ${currentTheme.bg} transition-colors duration-500`}
         contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 flex flex-col flex-1"
+        headerFixed
+        footerFixed={!loadingAuth}
         header={
           <AppHeader
+            fixed
             onBack={() => setGameState(GameState.MENU)}
             title={
               <ScreenTitle

@@ -206,8 +206,11 @@ export const LobbySettingsScreen = () => {
     <ScreenShell
       className={`relative ${currentTheme.bg} transition-colors duration-500`}
       contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 py-4"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={
             <ScreenTitle themeClass={currentTheme.textMain}>
               {t.profileNavLobbySettings}
@@ -227,7 +230,7 @@ export const LobbySettingsScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar glass contentClassName="max-w-2xl mx-auto w-full">
+        <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full">
           <Button
             type="button"
             size="xl"

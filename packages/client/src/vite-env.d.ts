@@ -57,6 +57,8 @@ declare global {
     /** Insets avoiding Telegram chrome (header, etc.) — `var(--tg-content-safe-area-inset-*)` */
     contentSafeAreaInset?: TelegramSafeAreaInset;
     isFullscreen?: boolean;
+    /** False when the Mini App is collapsible and not yet expanded to full height (SDK). */
+    isExpanded?: boolean;
     ready: () => void;
     expand: () => void;
     close: () => void;

@@ -144,8 +144,10 @@ export const MyWordPacksScreen = () => {
       <ScreenShell
         className="bg-ui-bg"
         contentClassName="max-w-2xl w-full mx-auto flex flex-col items-center justify-center px-8 gap-6 text-center"
+        headerFixed
         header={
           <AppHeader
+            fixed
             title={<ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>}
             onBack={goBack}
           />
@@ -180,14 +182,17 @@ export const MyWordPacksScreen = () => {
       <ScreenShell
         className="bg-ui-bg"
         contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 py-4 space-y-5"
+        headerFixed
+        footerFixed
         header={
           <AppHeader
+            fixed
             title={<ScreenTitle themeClass={currentTheme.textMain}>Новий пак</ScreenTitle>}
             onBack={exitCreateView}
           />
         }
         footer={
-          <FixedBottomBar contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
+          <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
             <button
               type="button"
               onClick={handleCreate}
@@ -256,8 +261,11 @@ export const MyWordPacksScreen = () => {
     <ScreenShell
       className="bg-ui-bg"
       contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 space-y-4"
+      headerFixed
+      footerFixed={decks.length < MAX_USER_PACKS}
       header={
         <AppHeader
+          fixed
           title={
             <div className="text-center">
               <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
@@ -271,7 +279,7 @@ export const MyWordPacksScreen = () => {
       }
       footer={
         decks.length < MAX_USER_PACKS ? (
-          <FixedBottomBar glass contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
+          <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
             <button
               type="button"
               onClick={() => setView('create')}

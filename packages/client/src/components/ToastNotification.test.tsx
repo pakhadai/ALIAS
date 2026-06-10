@@ -42,6 +42,7 @@ describe('ToastNotification', () => {
       :root {
         --tma-toast-offset-header: 0px;
         --app-page-header-height: 148px;
+        --tma-banner-top: var(--app-page-header-height);
         --tma-toast-top: calc(max(0.75rem, var(--tma-inset-top)) + var(--tma-toast-offset-header));
       }
       html[data-app-header] {

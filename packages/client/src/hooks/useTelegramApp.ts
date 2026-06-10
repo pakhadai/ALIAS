@@ -24,6 +24,14 @@ export function hasTelegramInitData(): boolean {
   return typeof initData === 'string' && initData.length > 0;
 }
 
+function safeTelegramCall(fn: () => void): void {
+  try {
+    fn();
+  } catch (_err) {
+    void _err;
+  }
+}
+
 function applyTelegramThemeCssVars(theme: TelegramWebAppThemeParams | null): void {
   if (!theme) return;
   const root = document.documentElement;
@@ -92,6 +100,64 @@ function applyTelegramViewportCssVars(webApp: TelegramWebApp): void {
   }
 }
 
+/** Sync viewport + safe-area CSS vars from the live WebApp object (no extra bottom padding — uses `--tma-inset-*`). */
+export function syncTelegramLayout(webApp: TelegramWebApp): void {
+  applyTelegramViewportCssVars(webApp);
+  applyTelegramSafeAreaCssVars(webApp);
+}
+
+/** Initial mount: always expand per TMA canon. */
+function bootstrapTelegramViewport(webApp: TelegramWebApp): void {
+  safeTelegramCall(() => webApp.expand());
+  safeTelegramCall(() => webApp.requestFullscreen?.());
+}
+
+/** Re-expand after viewport changes when the SDK reports a collapsed WebView. */
+export function ensureTelegramExpanded(webApp: TelegramWebApp): void {
+  if (webApp.isExpanded !== true) {
+    safeTelegramCall(() => webApp.expand());
+    safeTelegramCall(() => webApp.requestFullscreen?.());
+  }
+}
+
+let tmaBootstrapDone = false;
+
+/**
+ * Synchronous TMA bootstrap — call before `createRoot` (index.tsx) for earliest `ready()` / layout vars.
+ * Idempotent; hook `useEffect` re-invokes safely for test-only mounts.
+ */
+export function bootstrapTelegramMiniApp(): boolean {
+  const webApp = getTelegramWebApp();
+  if (!webApp || !isTelegramMiniApp()) return false;
+  if (tmaBootstrapDone) return true;
+
+  tmaBootstrapDone = true;
+
+  document.documentElement.setAttribute('data-telegram-app', 'true');
+  document.documentElement.style.setProperty(
+    CSS_VAR_TMA_CONTENT_TOP_FLOOR,
+    `${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`
+  );
+
+  safeTelegramCall(() => webApp.ready());
+  bootstrapTelegramViewport(webApp);
+  safeTelegramCall(() => webApp.disableVerticalSwipes?.());
+  safeTelegramCall(() => webApp.enableClosingConfirmation?.());
+
+  syncTelegramLayout(webApp);
+  requestAnimationFrame(() => syncTelegramLayout(webApp));
+
+  applyTelegramThemeCssVars(webApp.themeParams ?? null);
+  applyGlassTheme(webApp.colorScheme ?? null);
+
+  return true;
+}
+
+/** @internal Vitest-only — reset module bootstrap guard between cases. */
+export function resetTelegramBootstrapForTests(): void {
+  tmaBootstrapDone = false;
+}
+
 export type UseTelegramAppResult = {
   isTelegram: boolean;
   webApp: TelegramWebApp | null;
@@ -119,49 +185,25 @@ export function useTelegramApp(): UseTelegramAppResult {
     webApp?.colorScheme ?? null
   );
 
-  // TMA bootstrap — deferred: SDK init + viewport/safe-area event subscriptions (AUDIT D-4 / F-1).
+  // Event subscriptions + late layout sync — bootstrap runs sync in index.tsx / bootstrapTelegramMiniApp().
   useEffect(() => {
     if (!webApp || !isTelegram) return;
 
-    document.documentElement.setAttribute('data-telegram-app', 'true');
-    document.documentElement.style.setProperty(
-      CSS_VAR_TMA_CONTENT_TOP_FLOOR,
-      `${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`
-    );
-
-    try {
-      webApp.ready();
-    } catch (_err) {
-      void _err;
-    }
-    try {
-      webApp.expand();
-    } catch (_err) {
-      void _err;
-    }
-    // Mini App fullscreen is expected in Telegram; SDK updates safe-area / viewport after this.
-    // We hide the in-app browser fullscreen button in MenuScreen when `isTelegram`.
-    try {
-      webApp.requestFullscreen?.();
-    } catch (_err) {
-      void _err;
-    }
-    try {
-      webApp.disableVerticalSwipes?.();
-    } catch (_err) {
-      void _err;
-    }
-    try {
-      webApp.enableClosingConfirmation?.();
-    } catch (_err) {
-      void _err;
-    }
+    bootstrapTelegramMiniApp();
 
     const syncLayout = () => {
-      applyTelegramViewportCssVars(webApp);
-      applyTelegramSafeAreaCssVars(webApp);
+      syncTelegramLayout(webApp);
     };
-    syncLayout();
+
+    const handleViewportChanged = () => {
+      ensureTelegramExpanded(webApp);
+      syncLayout();
+    };
+
+    const handleInsetsChanged = () => {
+      syncLayout();
+    };
+
     const insetSyncRaf = requestAnimationFrame(() => syncLayout());
     const lateSync80 = window.setTimeout(syncLayout, 80);
     const lateSync150 = window.setTimeout(syncLayout, 150);
@@ -170,24 +212,15 @@ export function useTelegramApp(): UseTelegramAppResult {
     const handleThemeChanged = () => {
       setThemeParams(webApp.themeParams ?? null);
       setColorScheme(webApp.colorScheme ?? null);
-      // Theme vars may arrive a bit later than init; ensure CSS vars are applied.
       applyTelegramThemeCssVars(webApp.themeParams ?? null);
       applyGlassTheme(webApp.colorScheme ?? null);
-    };
-
-    const handleInsetsChanged = () => {
-      syncLayout();
     };
 
     webApp.onEvent?.('themeChanged', handleThemeChanged);
     webApp.onEvent?.('safeAreaChanged', handleInsetsChanged);
     webApp.onEvent?.('contentSafeAreaChanged', handleInsetsChanged);
     webApp.onEvent?.('fullscreenChanged', handleInsetsChanged);
-    webApp.onEvent?.('viewportChanged', handleInsetsChanged);
-
-    // Apply initial theme vars as soon as possible.
-    applyTelegramThemeCssVars(webApp.themeParams ?? null);
-    applyGlassTheme(webApp.colorScheme ?? null);
+    webApp.onEvent?.('viewportChanged', handleViewportChanged);
 
     return () => {
       window.clearTimeout(lateSync80);
@@ -198,7 +231,7 @@ export function useTelegramApp(): UseTelegramAppResult {
       webApp.offEvent?.('safeAreaChanged', handleInsetsChanged);
       webApp.offEvent?.('contentSafeAreaChanged', handleInsetsChanged);
       webApp.offEvent?.('fullscreenChanged', handleInsetsChanged);
-      webApp.offEvent?.('viewportChanged', handleInsetsChanged);
+      webApp.offEvent?.('viewportChanged', handleViewportChanged);
     };
   }, [isTelegram, webApp]);
 

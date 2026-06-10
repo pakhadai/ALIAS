@@ -1,4 +1,5 @@
 import { useEffect, type CSSProperties, type ReactNode } from 'react';
+import { useGyroscope } from '../../hooks/useGyroscope';
 
 export const FOOTER_ISLAND_CLASS = 'footer-island';
 export const FOOTER_ISLAND_DOCUMENT_FLAG = 'footerIsland';
@@ -17,6 +18,8 @@ function joinClasses(...parts: Array<string | false | undefined>): string {
 
 /** Fixed floating glass capsule — backdrop blur on viewport-fixed layer (not inside scroll). */
 export function FooterIsland({ children, className = '', style, ariaLabel }: FooterIslandProps) {
+  useGyroscope(true);
+
   useEffect(() => {
     document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG] = 'true';
     return () => {

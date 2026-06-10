@@ -2,6 +2,8 @@ export { ScreenAccentGlow, SCREEN_ACCENT_GLOW_FOCAL } from './ScreenAccentGlow';
 export type { ScreenAccentGlowFocal, ScreenAccentGlowProps } from './ScreenAccentGlow';
 export { ScreenShell } from './ScreenShell';
 export type { ScreenShellProps } from './ScreenShell';
+export { GlassChromePortal } from './GlassChromePortal';
+export type { GlassChromePortalProps } from './GlassChromePortal';
 export { FixedBottomBar, UI_APP_FOOTER_CLASS } from './FixedBottomBar';
 export type { FixedBottomBarProps } from './FixedBottomBar';
 export {

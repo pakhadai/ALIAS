@@ -5,20 +5,20 @@
 
 ## Контекст (коротко)
 
-| Шар | Файл | Стан після аудиту |
-|-----|------|-------------------|
+| Шар | Файл | Стан після epic (Sessions 0–9 ✅) |
+|-----|------|-----------------------------------|
 | Header entry | `packages/client/src/components/layout/Header.tsx` | Re-export `GlassAppHeader` / `AppHeader` |
-| Header impl | `packages/client/src/components/layout/GlassAppHeader.tsx` | Liquid glass у `glass.css`; prod = **sticky** in-flow |
+| Header impl | `packages/client/src/components/layout/GlassAppHeader.tsx` | Direct blur у `glass.css`; `fixed` + `.ui-app-header--fixed` на пілотах |
 | Footer entry | `packages/client/src/components/layout/Footer.tsx` | Re-export `FooterIsland` |
-| Footer island | `packages/client/src/components/layout/FooterIsland.tsx` | Fixed capsule — **не підключений** до екранів |
-| Sticky footer (prod) | `packages/client/src/components/layout/FixedBottomBar.tsx` + `.ui-app-footer` | Mask-based blur у `styles.css` |
-| Glass tokens | `packages/client/src/styles/glass.css` | `--z-liquid-chrome: 100` колізія з `--z-modal` |
-| Layout shell | `packages/client/src/components/layout/ScreenShell.tsx` | `headerFixed` / `footerFixed` є, **не використовуються** |
-| Transform predок | `packages/client/src/components/Shared.tsx` → `PageTransition` | `animate-page-in` залишає `transform` → ламає backdrop |
-| TMA | `packages/client/src/hooks/useTelegramApp.ts` | `ready()` у `useEffect` (після paint) |
-| Gyro | `packages/client/src/hooks/useGyroscope.ts` | Глобально в `App.tsx`; CSS vars лише для `.footer-island` |
+| Footer island | `packages/client/src/components/layout/FooterIsland.tsx` | Fixed capsule — **пілот:** settings screens (`FixedBottomBar island`) |
+| Sticky footer (legacy prod) | `packages/client/src/components/layout/FixedBottomBar.tsx` + `.ui-app-footer` | Direct blur у `glass.css` (Session 4 ✅) |
+| Glass tokens | `packages/client/src/styles/glass.css` + `styles.css` | `--z-liquid-chrome: 30`; `--z-status-banner: 25` |
+| Layout shell | `packages/client/src/components/layout/ScreenShell.tsx` | `headerFixed` / `footerFixed` — **2 екрани** (settings); решта sticky |
+| Transform predок | `PageTransition` / `animate-page-in` | Session 1 ✅ — `transform: none` після анімації |
+| TMA | `bootstrapTelegramMiniApp()` + `useTelegramApp.ts` | Sync bootstrap до `createRoot`; `isExpanded` на `viewportChanged` |
+| Gyro | `useGyroscope.ts` | Лише з `FooterIsland` mount (Session 6 ✅) |
 
-**Критичні findings (P0):** transform на `PageTransition`, sticky blur у scroll, `FooterIsland` не в проді, z-index 100 = modal.
+**Залишилось (post-epic):** manual TMA @375px glass QA (owner). ~~Micro A~~ ✅; ~~Micro B~~ ✅ (2026-06-10).
 
 ---
 
@@ -386,7 +386,7 @@ pnpm typecheck && pnpm --filter @alias/client test.
 
 ---
 
-## Сесія 9 — Visual QA + тести + doc sync (P1)
+## Сесія 9 — Visual QA + тести + doc sync (P1) ✅ 2026-06-10
 
 **Задачі:**
 1. Пройти `.cursor/VISUAL_QA_CHECKLIST.md` на viewport 375px + TMA emulator.
@@ -394,6 +394,8 @@ pnpm typecheck && pnpm --filter @alias/client test.
 3. Оновити `docs/TMA_LAYOUT.md` — зафіксувати fixed chrome як канон, sticky як legacy якщо залишиться.
 4. `CHANGELOG.md` [Unreleased], `docs/daily/YYYY-MM-DD.md`, `.cursor/CURRENT_FOCUS.md`.
 5. За потреби — запис у `AUDIT_RESULTS.md` (закрити liquid glass items).
+
+**Acceptance (2026-06-10):** typecheck ✅; client **285/285** ✅; `TMA_LAYOUT.md` synced (fixed vs sticky, z-index, `glass.css`); manual TMA glass QA deferred (owner).
 
 **Промт для агента:**
 
@@ -406,30 +408,24 @@ pnpm typecheck && pnpm --filter @alias/client test.
 
 ---
 
-## Мікро A — GlassChromePortal (опційно, P1)
+## Мікро A — GlassChromePortal (опційно, P1) ✅ 2026-06-10
 
 **Коли:** якщо після сесії 1–2 blur у fixed режимі все ще обрізаний через вкладеність дерева.
 
 **Ідея:** portal для `GlassAppHeader` / `FooterIsland` у `document.body` (аналог `ModalPortal`).
 
-**Файли:** новий `GlassChromePortal.tsx` або розширення layout; `ScreenShell.tsx`.
+**Файли:** `GlassChromePortal.tsx`; `ScreenShell.tsx` (`renderFixedChrome`).
 
-**Промт:**
-
-```
-@architect Спроектуй і реалізуй GlassChromePortal: fixed header/footer рендеряться через portal
-в document.body (референс ModalPortal у Shared.tsx), зберігаючи ResizeObserver висоти header
-для --app-page-header-height. Мінімальний diff. Тести + TMA_LAYOUT.md.
-
-Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §Micro A
-```
+**Acceptance:** fixed header/footer portaled to `document.body`; `ResizeObserver` on header unchanged; Vitest `GlassChromePortal.test.tsx` + updated `ScreenShell.test.tsx`.
 
 ---
 
-## Мікро B — Rollout fixed/island на решту екранів (P2)
+## Мікро B — Rollout fixed/island на решту екранів (P2) ✅ 2026-06-10
 
 **Екрани з `ScreenShell` + header/footer (після пілота):**  
-`MenuScreen`, `ProfileScreen`, `LobbyScreen`, `StoreScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `TeamSetupScreen`, `SettingsScreen`, `JoinInputScreen`, `RulesScreen`, `PlayerStatsScreen`, game scoreboard тощо.
+`MenuScreen`, `ProfileScreen`, `LobbyScreen`, `StoreScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `TeamSetupScreen`, `SettingsScreen`, `JoinInputScreen`, `RulesScreen`, `PlayerStatsScreen`, `ScoreboardScreen`.
+
+**Залишились sticky (game-flow exceptions):** `PreRoundScreen`, `VSScreen`, `RoundSummaryScreen`; `PlayingScreen` / `ImposterScreen` (pattern E).
 
 **Промт:**
 

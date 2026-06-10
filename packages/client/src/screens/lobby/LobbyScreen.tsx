@@ -348,8 +348,11 @@ export const LobbyScreen = () => {
     <ScreenShell
       className={currentTheme.bg}
       contentClassName="w-full items-center no-scrollbar px-4"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           data-testid="lobby-app-header"
           title={
             <h2
@@ -376,7 +379,7 @@ export const LobbyScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar glass contentClassName="max-w-sm mx-auto w-full">
+        <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
           {isHost ? (
             <LobbyStartPanel
               readiness={lobbyReadiness}

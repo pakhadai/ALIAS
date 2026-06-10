@@ -237,8 +237,11 @@ export const SettingsScreen = () => {
     <ScreenShell
       className={`items-center ${currentTheme.bg}`}
       contentClassName="items-center max-w-2xl w-full mx-auto px-6 md:px-8"
+      headerFixed
+      footerFixed
       header={
         <AppHeader
+          fixed
           title={<ScreenTitle themeClass={currentTheme.textMain}>{t.settings}</ScreenTitle>}
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
@@ -257,7 +260,7 @@ export const SettingsScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar contentClassName="max-w-2xl w-full">
+        <FixedBottomBar island contentClassName="max-w-2xl w-full">
           <Button
             themeClass={currentTheme.button}
             fullWidth

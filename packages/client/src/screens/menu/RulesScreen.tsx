@@ -14,7 +14,10 @@ export const RulesScreen = () => {
     <ScreenShell
       className={currentTheme.bg}
       contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"
-      header={<AppHeader onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.close} />}
+      headerFixed
+      header={
+        <AppHeader fixed onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.close} />
+      }
     >
       <div
         className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`}
