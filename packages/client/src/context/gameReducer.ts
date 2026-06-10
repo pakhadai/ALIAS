@@ -74,6 +74,36 @@ export const initialState: AppState = {
   imposterWord: null,
 };
 
+/** True when API returned no saved lobby defaults (null or empty partial). */
+export function isEmptySavedLobbySettings(
+  settings: Record<string, unknown> | null | undefined
+): boolean {
+  if (settings == null) return true;
+  const general = settings.general;
+  const mode = settings.mode;
+  const generalEmpty =
+    general == null || (typeof general === 'object' && Object.keys(general).length === 0);
+  const modeEmpty = mode == null || (typeof mode === 'object' && Object.keys(mode).length === 0);
+  return generalEmpty && modeEmpty;
+}
+
+/** Factory syncable lobby fields merged onto current settings (keeps device-only general prefs). */
+export function applyFactoryLobbyDefaults(current: GameSettings): GameSettings {
+  const factory = initialState.settings;
+  return {
+    ...current,
+    general: {
+      ...current.general,
+      language: factory.general.language,
+      scoreToWin: factory.general.scoreToWin,
+      skipPenalty: factory.general.skipPenalty,
+      categories: [...factory.general.categories],
+      customWords: undefined,
+    },
+    mode: { ...factory.mode } as GameSettings['mode'],
+  };
+}
+
 export function gameReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SET_STATE':

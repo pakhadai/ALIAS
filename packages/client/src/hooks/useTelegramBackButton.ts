@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useBackNavigationGuardOptional } from '../context/BackNavigationGuardContext';
 import { GameState } from '../types';
 
 type UseTelegramBackButtonArgs = {
@@ -87,6 +88,8 @@ export function useTelegramBackButton({
   setGameState,
   leaveRoom,
 }: UseTelegramBackButtonArgs): void {
+  const backGuard = useBackNavigationGuardOptional();
+
   useEffect(() => {
     if (!isTelegram) return;
     const tg = window.Telegram?.WebApp;
@@ -109,13 +112,28 @@ export function useTelegramBackButton({
         gameMode,
       });
       if (!resolved) return;
-      if (resolved.type === 'setGameState') setGameState(resolved.state);
-      else leaveRoom(resolved.opts);
+
+      const proceed = () => {
+        if (resolved.type === 'setGameState') setGameState(resolved.state);
+        else leaveRoom(resolved.opts);
+      };
+
+      if (backGuard) backGuard.runGuardedNavigation(proceed);
+      else proceed();
     };
 
     back.onClick(onBack);
     return () => {
       back.offClick?.(onBack);
     };
-  }, [gameMode, gameState, isAuthenticated, isTelegram, leaveRoom, roomCode, setGameState]);
+  }, [
+    backGuard,
+    gameMode,
+    gameState,
+    isAuthenticated,
+    isTelegram,
+    leaveRoom,
+    roomCode,
+    setGameState,
+  ]);
 }

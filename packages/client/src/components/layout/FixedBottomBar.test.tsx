@@ -17,6 +17,18 @@ describe('FixedBottomBar', () => {
     expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy();
   });
 
+  it('should render footer island when island mode is enabled', () => {
+    const { container } = render(
+      <FixedBottomBar island>
+        <button type="button">Start</button>
+      </FixedBottomBar>
+    );
+
+    const footer = container.querySelector('footer');
+    expect(footer?.className).toContain('footer-island');
+    expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy();
+  });
+
   it('should keep gradient wash when glass is disabled', () => {
     const { container } = render(
       <FixedBottomBar>

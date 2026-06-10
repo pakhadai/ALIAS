@@ -15,13 +15,6 @@ const NO_DRAG_HANDLERS = {
   onPointerCancel: () => undefined,
 } as const;
 
-function isSheetScrollAtTop(panel: HTMLElement): boolean {
-  if (panel.scrollTop > 0) return false;
-  const scrollBody = panel.querySelector('[data-sheet-scroll]');
-  if (scrollBody instanceof HTMLElement && scrollBody.scrollTop > 0) return false;
-  return true;
-}
-
 /** Buttons/inputs must receive clicks — do not capture pointer for sheet drag. */
 function isInteractiveSheetTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
@@ -100,11 +93,9 @@ export function useSheetDragToClose({
   const canStartDrag = useCallback(
     (target: EventTarget | null) => {
       if (!enabled || !panelRef.current) return false;
-      const panel = panelRef.current;
-      const handle = panel.querySelector('[data-sheet-drag-handle]');
-      if (handle?.contains(target as Node)) return true;
       if (isInteractiveSheetTarget(target)) return false;
-      return isSheetScrollAtTop(panel);
+      const dragZone = panelRef.current.querySelector('[data-sheet-drag-handle]');
+      return Boolean(dragZone?.contains(target as Node));
     },
     [enabled, panelRef]
   );

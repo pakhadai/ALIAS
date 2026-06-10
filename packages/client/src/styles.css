@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @config "../tailwind.config.ts";
+@import './styles/glass.css';
 
 /* Semantic UI palette → utilities: bg-ui-bg, text-ui-fg, border-ui-border, … */
 @theme {
@@ -426,8 +427,7 @@ html[data-telegram-app='true'] {
   z-index: 1;
 }
 
-/** Sticky chrome glass tokens — shared by app header + modal sheet top bar */
-.ui-app-header,
+/** Modal sheet top bar — mask-based chrome glass (header uses liquid glass in glass.css) */
 .bottom-sheet-top-bar {
   --ui-app-header-opacity-top: var(--ui-chrome-glass-opacity-top);
   --ui-app-header-opacity-bottom: var(--ui-chrome-glass-opacity-bottom);
@@ -435,7 +435,7 @@ html[data-telegram-app='true'] {
   --ui-app-header-saturate: var(--ui-chrome-glass-saturate);
 }
 
-/** Full-width app header — sticky glass overlay inside scroll; layout starts below (no overlap) */
+/** Full-width app header — sticky or fixed liquid glass (visuals in glass.css) */
 .ui-app-header {
   --lobby-glass-inset: 0;
   position: sticky;
@@ -443,12 +443,9 @@ html[data-telegram-app='true'] {
   z-index: var(--z-header);
   flex-shrink: 0;
   overflow: hidden;
-  background: transparent;
-  border: 0 solid transparent;
   box-shadow: none;
 }
 
-.ui-app-header::before,
 .bottom-sheet-top-bar::before {
   content: '';
   position: absolute;
@@ -478,43 +475,15 @@ html[data-telegram-app='true'] {
   );
 }
 
-.ui-app-header::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--ui-bg) var(--ui-app-header-opacity-top), transparent) 0%,
-    color-mix(in srgb, var(--ui-bg) var(--ui-app-header-opacity-bottom), transparent) 68%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 100%) 0%,
-    rgb(0 0 0 / 96%) 42%,
-    rgb(0 0 0 / 72%) 66%,
-    rgb(0 0 0 / 38%) 84%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 100%) 0%,
-    rgb(0 0 0 / 96%) 42%,
-    rgb(0 0 0 / 72%) 66%,
-    rgb(0 0 0 / 38%) 84%,
-    transparent 100%
-  );
-}
-
 .ui-app-header > * {
   position: relative;
   z-index: 1;
 }
 
-/** Title row — full content-safe band; title vertically centered with TG back / menu (SSOT: titleRowHeightCss) */
+/**
+ * Title row — reserves full content-safe band; controls sit in the bottom 44px row
+ * aligned with Telegram native back / menu (not vertically centered in the notch zone).
+ */
 .ui-app-header__title-row {
   display: flex;
   width: 100%;
@@ -522,7 +491,12 @@ html[data-telegram-app='true'] {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  min-height: max(var(--tma-content-safe-top, var(--tma-content-top-floor, 88px)), 44px);
+  --ui-app-header-title-row-chrome: max(
+    var(--tma-content-safe-top, var(--tma-content-top-floor, 88px)),
+    44px
+  );
+  min-height: var(--ui-app-header-title-row-chrome);
+  padding-top: max(0px, calc(var(--ui-app-header-title-row-chrome) - 44px));
   padding-inline: 0.5rem;
 }
 
@@ -566,7 +540,8 @@ html[data-telegram-app='true'] {
   bottom: 0;
   z-index: var(--z-header);
   flex-shrink: 0;
-  overflow: hidden;
+  /* Visible overflow — accent CTA snake/glow bleeds into footer px padding */
+  overflow: visible;
   background: transparent;
   border: 0 solid transparent;
   box-shadow: none;
@@ -766,6 +741,13 @@ html[data-telegram-app='true'] {
   isolation: isolate;
   border-radius: var(--theme-radius);
   width: 100%;
+}
+
+.accent-footer-cta-shell--ready {
+  --accent-footer-cta-bleed: 14px;
+  padding: var(--accent-footer-cta-bleed);
+  margin-inline: calc(-1 * var(--accent-footer-cta-bleed));
+  overflow: visible;
 }
 
 .accent-footer-cta-shell--ready::before,
@@ -1125,6 +1107,12 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   z-index: 2;
   overflow: hidden;
   background: transparent;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bottom-sheet-top-bar:active {
+  cursor: grabbing;
 }
 
 .bottom-sheet-top-bar::after {
@@ -1194,6 +1182,8 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
 
 .bottom-sheet-top-bar__close {
   color: var(--ui-sheet-close-fg);
+  touch-action: manipulation;
+  cursor: pointer;
 }
 
 .bottom-sheet-top-bar__close:hover:not(:disabled) {

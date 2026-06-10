@@ -1,0 +1,126 @@
+/**
+ * Liquid Glass chrome — fixed header + floating footer island.
+ * Canon: TMA safe-area via `--tma-inset-*`; theme via `data-theme` from lib/glassTheme.ts.
+ */
+
+:root {
+  --gyro-x: 0;
+  --gyro-y: 0;
+
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-header-bg: rgba(255, 255, 255, 0.4);
+  --glass-header-border: rgba(255, 255, 255, 0.15);
+
+  --footer-island-height: 68px;
+  --footer-island-bottom-gap: 12px;
+  --footer-island-stack: calc(
+    var(--footer-island-height) + var(--footer-island-bottom-gap) +
+      var(--tma-inset-bottom, env(safe-area-inset-bottom, 0px))
+  );
+
+  --z-liquid-chrome: 100;
+}
+
+[data-theme='dark'] {
+  --glass-bg: rgba(0, 0, 0, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-header-bg: rgba(0, 0, 0, 0.4);
+  --glass-header-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ── App header — liquid glass (replaces mask-based ::before/::after on .ui-app-header) ── */
+
+.ui-app-header {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: var(--glass-header-bg);
+  border-bottom: 1px solid var(--glass-header-border);
+  border-radius: 0;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.ui-app-header::before,
+.ui-app-header::after {
+  content: none;
+  display: none;
+}
+
+.ui-app-header--fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-liquid-chrome);
+  /* Title row already reserves content-safe-top (notch + TG chrome) — no extra device pad */
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .ui-app-header {
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  [data-theme='dark'] .ui-app-header {
+    background: rgba(0, 0, 0, 0.92);
+  }
+}
+
+/* ── Floating footer island (capsule) ── */
+
+.footer-island {
+  position: fixed;
+  bottom: calc(
+    var(--tma-inset-bottom, env(safe-area-inset-bottom, 0px)) + var(--footer-island-bottom-gap)
+  );
+  left: 16px;
+  right: 16px;
+  height: var(--footer-island-height);
+  border-radius: 24px;
+  overflow: hidden;
+
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  background: var(--glass-bg);
+
+  box-shadow:
+    0 0 0 1px var(--glass-border),
+    0 8px 32px rgba(0, 0, 0, 0.12);
+
+  will-change: transform;
+  transform: translateZ(0);
+  z-index: var(--z-liquid-chrome);
+}
+
+.footer-island::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at calc(50% + calc(var(--gyro-x, 0) * 40px)) calc(30% + calc(var(--gyro-y, 0) * 20px)),
+    rgba(255, 255, 255, 0.35) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+.footer-island > * {
+  position: relative;
+  z-index: 1;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .footer-island {
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  [data-theme='dark'] .footer-island {
+    background: rgba(0, 0, 0, 0.92);
+  }
+}
+
+/** Scroll clearance when a fixed footer island is mounted */
+html[data-footer-island] {
+  --app-footer-island-stack: var(--footer-island-stack);
+}

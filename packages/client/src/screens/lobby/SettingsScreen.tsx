@@ -10,10 +10,6 @@ import {
   GraduationCap,
   Flame,
   UserSearch,
-  Utensils,
-  Plane,
-  FlaskConical,
-  Clapperboard,
 } from 'lucide-react';
 import {
   typographyClass,
@@ -21,6 +17,7 @@ import {
   labelSectionTitleClass,
 } from '../../constants/typography';
 import { Button } from '../../components/Button';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import {
   AppHeader,
   FixedBottomBar,
@@ -29,13 +26,15 @@ import {
 } from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameMode } from '../../types';
-
-const LOBBY_LANG_FLAG: Record<Language, string> = {
-  [Language.UA]: '🇺🇦',
-  [Language.DE]: '🇩🇪',
-  [Language.EN]: '🇬🇧',
-};
 import type { GameSettings } from '../../types';
+import {
+  CategoryChipGrid,
+  DEFAULT_LOBBY_CATEGORIES,
+  getCategoryLabel,
+  LanguageChipRow,
+  LOBBY_LANG_FLAG,
+  SettingsToggle,
+} from '../../components/Settings';
 import { useGame } from '../../context/GameContext';
 import { initialState } from '../../context/gameReducer';
 import { useAuthContext } from '../../context/AuthContext';
@@ -184,34 +183,6 @@ export const SettingsScreen = () => {
     updateGeneral('selectedPackIds', next);
   };
 
-  const categoriesList = [
-    Category.GENERAL,
-    Category.FOOD,
-    Category.TRAVEL,
-    Category.SCIENCE,
-    Category.MOVIES,
-    Category.CUSTOM,
-  ];
-
-  const categoryIcon = (cat: Category) => {
-    const common = 'shrink-0 opacity-85';
-    switch (cat) {
-      case Category.GENERAL:
-        return <Sparkles size={18} strokeWidth={2} className={common} aria-hidden />;
-      case Category.FOOD:
-        return <Utensils size={18} strokeWidth={2} className={common} aria-hidden />;
-      case Category.TRAVEL:
-        return <Plane size={18} strokeWidth={2} className={common} aria-hidden />;
-      case Category.SCIENCE:
-        return <FlaskConical size={18} strokeWidth={2} className={common} aria-hidden />;
-      case Category.MOVIES:
-        return <Clapperboard size={18} strokeWidth={2} className={common} aria-hidden />;
-      case Category.CUSTOM:
-        return <FileText size={18} strokeWidth={2} className={common} aria-hidden />;
-      default:
-        return null;
-    }
-  };
   const packLanguage = (settings.general.targetLanguage ?? settings.general.language) as Language;
   const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === packLanguage);
 
@@ -268,13 +239,7 @@ export const SettingsScreen = () => {
       contentClassName="items-center max-w-2xl w-full mx-auto px-6 md:px-8"
       header={
         <AppHeader
-          title={
-            <h2
-              className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
-            >
-              {t.settings}
-            </h2>
-          }
+          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.settings}</ScreenTitle>}
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
           backTestId="settings-close"
@@ -436,25 +401,11 @@ export const SettingsScreen = () => {
                 >
                   {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                 </p>
-                <div className="flex gap-2">
-                  {[Language.UA, Language.DE, Language.EN].map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => updateGeneral('targetLanguage', l)}
-                      className={`flex flex-1 flex-col items-center gap-1 rounded-2xl border py-3 ${typographyClass.label} transition-all duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 will-change-transform ${
-                        (settings.general.targetLanguage ?? Language.EN) === l
-                          ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_18%,transparent)] text-ui-fg`
-                          : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                      }`}
-                    >
-                      <span className="text-2xl leading-none" aria-hidden>
-                        {LOBBY_LANG_FLAG[l]}
-                      </span>
-                      <span>{l}</span>
-                    </button>
-                  ))}
-                </div>
+                <LanguageChipRow
+                  value={settings.general.targetLanguage ?? Language.EN}
+                  onChange={(l) => updateGeneral('targetLanguage', l)}
+                  disabled={!isHost}
+                />
                 <p
                   className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}
                 >
@@ -474,31 +425,13 @@ export const SettingsScreen = () => {
                 onToggle={() => setContentOpen((s) => ({ ...s, categories: !s.categories }))}
               />
               {contentOpen.categories && (
-                <div className="grid grid-cols-2 gap-3">
-                  {categoriesList.map((cat) => {
-                    const catKey = `cat_${cat.toLowerCase()}` as keyof typeof t;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => {
-                          const newCats = settings.general.categories.includes(cat)
-                            ? settings.general.categories.filter((c) => c !== cat)
-                            : [...settings.general.categories, cat];
-                          if (newCats.length > 0) updateGeneral('categories', newCats);
-                        }}
-                        className={`p-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center justify-center gap-2 text-center ${
-                          settings.general.categories.includes(cat)
-                            ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
-                            : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                        }`}
-                      >
-                        {categoryIcon(cat)}
-                        <span className="leading-tight">{t[catKey] || cat}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <CategoryChipGrid
+                  categories={DEFAULT_LOBBY_CATEGORIES}
+                  selected={settings.general.categories}
+                  getLabel={(cat) => getCategoryLabel(t, cat)}
+                  disabled={!isHost}
+                  onChange={(next) => updateGeneral('categories', next)}
+                />
               )}
             </div>
 
@@ -546,25 +479,12 @@ export const SettingsScreen = () => {
                       <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
                         {t.packLanguage ?? 'Pack language'}
                       </p>
-                      <div className="flex gap-2">
-                        {[Language.UA, Language.DE, Language.EN].map((l) => (
-                          <button
-                            key={l}
-                            type="button"
-                            onClick={() => updateGeneral('targetLanguage', l)}
-                            className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl border py-2.5 ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                              packLanguage === l
-                                ? `border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent`
-                                : 'bg-ui-surface border-ui-border text-ui-fg-muted'
-                            }`}
-                          >
-                            <span className="text-lg leading-none" aria-hidden>
-                              {LOBBY_LANG_FLAG[l]}
-                            </span>
-                            <span>{l}</span>
-                          </button>
-                        ))}
-                      </div>
+                      <LanguageChipRow
+                        value={packLanguage}
+                        onChange={(l) => updateGeneral('targetLanguage', l)}
+                        size="compact"
+                        disabled={!isHost}
+                      />
                       <p
                         className={`${typographyClass.label} text-ui-fg-muted opacity-70 leading-relaxed`}
                       >
@@ -1285,34 +1205,14 @@ export const SettingsScreen = () => {
                     />
                     {rulesOpen.extras && (
                       <div className="space-y-4 pt-1">
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={settings.general.skipPenalty}
-                          onClick={() =>
-                            updateGeneral('skipPenalty', !settings.general.skipPenalty)
-                          }
-                          className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
-                            settings.general.skipPenalty
-                              ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                              : 'border-ui-border bg-ui-surface'
-                          }`}
-                        >
-                          <span className={currentTheme.textMain}>
-                            {settings.general.skipPenalty ? t.enabled : t.disabled}
-                          </span>
-                          <span
-                            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out ${
-                              settings.general.skipPenalty ? 'bg-ui-accent' : 'bg-ui-border'
-                            }`}
-                          >
-                            <span
-                              className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
-                                settings.general.skipPenalty ? 'translate-x-5' : 'translate-x-0'
-                              }`}
-                            />
-                          </span>
-                        </button>
+                        <SettingsToggle
+                          variant="compact"
+                          checked={settings.general.skipPenalty}
+                          onChange={(v) => updateGeneral('skipPenalty', v)}
+                          enabledLabel={t.enabled}
+                          disabledLabel={t.disabled}
+                          titleClassName={currentTheme.textMain}
+                        />
                       </div>
                     )}
                   </div>

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { FooterIsland } from './FooterIsland';
 
 /** Full-width frosted footer bar — sticky inside scroll; mirrors {@link UI_APP_HEADER_CLASS}. */
 export const UI_APP_FOOTER_CLASS = 'ui-app-footer';
@@ -8,9 +9,11 @@ export interface FixedBottomBarProps {
   className?: string;
   /** Sticky glass overlay (lobby start CTA); content scrolls underneath. */
   glass?: boolean;
-  /** Fade from `--ui-bg` above the bar (PreRoundScreen pattern). Ignored when `glass`. */
+  /** Fixed floating glass capsule — viewport-fixed island (pair with {@link ScreenShell} `footerFixed`). */
+  island?: boolean;
+  /** Fade from `--ui-bg` above the bar (PreRoundScreen pattern). Ignored when `glass` or `island`. */
   gradient?: boolean;
-  /** `default` → `pb-safe-bottom`; `lg` → `pb-safe-bottom-8`. */
+  /** `default` → `pb-safe-bottom`; `lg` → `pb-safe-bottom-8`. Ignored when `island`. */
   padding?: 'default' | 'lg';
   contentClassName?: string;
   style?: CSSProperties;
@@ -21,7 +24,7 @@ const GRADIENT_CLASS =
 
 const IN_FLOW_BASE = 'pointer-events-none shrink-0 w-full overflow-x-hidden pt-4 px-4';
 
-const GLASS_BASE = 'pointer-events-none shrink-0 w-full overflow-x-hidden px-4 pt-3';
+const GLASS_BASE = 'pointer-events-none shrink-0 w-full px-4 pt-3';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');
@@ -31,11 +34,22 @@ export function FixedBottomBar({
   children,
   className = '',
   glass = false,
+  island = false,
   gradient = true,
   padding = 'default',
   contentClassName = 'mx-auto max-w-sm w-full',
   style,
 }: FixedBottomBarProps) {
+  if (island) {
+    return (
+      <FooterIsland className={className} style={style}>
+        <div className={joinClasses(contentClassName, 'h-full w-full flex items-center')}>
+          {children}
+        </div>
+      </FooterIsland>
+    );
+  }
+
   const pbClass = padding === 'lg' ? 'pb-safe-bottom-8' : 'pb-safe-bottom';
 
   return (

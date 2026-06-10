@@ -9,6 +9,7 @@ import {
   GlassAppHeader,
   UI_APP_HEADER_CHILD_ROW_CLASS,
   UI_APP_HEADER_CLASS,
+  UI_APP_HEADER_FIXED_CLASS,
   UI_APP_HEADER_TITLE_ROW_CLASS,
 } from './GlassAppHeader';
 
@@ -132,6 +133,16 @@ describe('GlassAppHeader', () => {
     unmount();
     expect(readAppPageHeaderHeight()).toBe('');
     expect(MockResizeObserver.instances[0]?.disconnect).toHaveBeenCalled();
+  });
+
+  it('should apply fixed liquid glass modifier when fixed prop is true', () => {
+    const { container } = render(
+      <GlassAppHeader fixed>
+        <span>Title</span>
+      </GlassAppHeader>
+    );
+
+    expect(container.querySelector('header')?.className).toContain(UI_APP_HEADER_FIXED_CLASS);
   });
 
   it('should set data-tg-gutter when tgGutter prop is true', () => {

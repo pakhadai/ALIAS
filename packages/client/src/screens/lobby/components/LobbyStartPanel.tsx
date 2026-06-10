@@ -17,7 +17,7 @@ export function LobbyStartPanel(props: {
   const { readiness, t, theme, onStartTap } = props;
 
   return (
-    <div data-testid="lobby-start-panel" className="w-full space-y-3">
+    <div data-testid="lobby-start-panel" className="w-full space-y-4">
       <LobbyReadinessBar readiness={readiness} t={t} />
       <AccentFooterCta
         buttonTestId="lobby-start-btn"

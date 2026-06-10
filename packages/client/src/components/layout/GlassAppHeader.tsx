@@ -13,6 +13,8 @@ export interface GlassAppHeaderProps {
   /** Fade from `--ui-bg` below the bar (mirrors {@link FixedBottomBar} gradient). */
   gradient?: boolean;
   style?: CSSProperties;
+  /** Viewport-fixed liquid glass bar (outside scroll — pair with {@link ScreenShell} `headerFixed`). */
+  fixed?: boolean;
   /** Apply 80px inline padding on title row in TMA (native chrome clearance). */
   tgGutter?: boolean;
   /** Height of optional child row — sets `--ui-app-header-child-row-height`. */
@@ -27,6 +29,9 @@ export const UI_GLASS_PANEL_CLASS = 'ui-glass-panel';
 /** Full-width frosted header bar — device inset + title row clearance (OMR formula). */
 export const UI_APP_HEADER_CLASS = 'ui-app-header';
 
+/** Fixed viewport liquid glass modifier — see `styles/glass.css`. */
+export const UI_APP_HEADER_FIXED_CLASS = 'ui-app-header--fixed';
+
 export const UI_APP_HEADER_TITLE_ROW_CLASS = 'ui-app-header__title-row';
 export const UI_APP_HEADER_CHILD_ROW_CLASS = 'ui-app-header__child-row';
 export const UI_APP_HEADER_SLOT_CLASS = 'ui-app-header__slot';
@@ -34,7 +39,7 @@ export const UI_APP_HEADER_SLOT_CLASS = 'ui-app-header__slot';
 const GRADIENT_CLASS =
   'bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] via-[color-mix(in_srgb,var(--ui-bg)_72%,transparent)] to-[color-mix(in_srgb,var(--ui-bg)_25%,transparent)]';
 
-/** Title row min-height = content-safe-top — TG centers native chrome in that band (Bot API 8.0+). */
+/** Title row reserves content-safe-top; controls align to bottom band with TG chrome (Bot API 8.0+). */
 const HEADER_BASE = 'pointer-events-auto flex w-full shrink-0 flex-col';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
@@ -49,6 +54,7 @@ export function GlassAppHeader({
   className = '',
   gradient = false,
   style,
+  fixed = false,
   tgGutter = false,
   childRowHeightPx,
   ariaHidden,
@@ -98,6 +104,7 @@ export function GlassAppHeader({
       data-tg-gutter={tgGutter ? 'true' : undefined}
       className={joinClasses(
         UI_APP_HEADER_CLASS,
+        fixed && UI_APP_HEADER_FIXED_CLASS,
         HEADER_BASE,
         gradient && GRADIENT_CLASS,
         className
@@ -131,6 +138,8 @@ export interface AppHeaderProps {
   right?: ReactNode;
   className?: string;
   gradient?: boolean;
+  /** Viewport-fixed liquid glass header. */
+  fixed?: boolean;
   /** Hide header from assistive tech while overlay (e.g. EnterName) is open. */
   ariaHidden?: boolean;
   'data-testid'?: string;
@@ -179,6 +188,7 @@ export function AppHeader({
   right,
   className,
   gradient,
+  fixed,
   ariaHidden,
   'data-testid': dataTestId,
 }: AppHeaderProps) {
@@ -212,6 +222,7 @@ export function AppHeader({
     <GlassAppHeader
       className={className}
       gradient={gradient}
+      fixed={fixed}
       tgGutter={applyTgGutter}
       childRowHeightPx={childRow ? childRowHeightPx : undefined}
       ariaHidden={ariaHidden}

@@ -64,6 +64,31 @@ export function getAuthToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
+export type TokenAuthType = 'anonymous' | 'google' | 'telegram';
+
+/** Decode JWT `type` claim without verification (routing only; server validates on API). */
+export function getTokenAuthType(): TokenAuthType | null {
+  const token = getAuthToken();
+  if (!token) return null;
+  try {
+    const segment = token.split('.')[1];
+    if (!segment) return null;
+    const payload = JSON.parse(atob(segment.replace(/-/g, '+').replace(/_/g, '/'))) as {
+      type?: string;
+    };
+    if (payload.type === 'anonymous' || payload.type === 'google' || payload.type === 'telegram') {
+      return payload.type;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function isAnonymousSession(): boolean {
+  return getTokenAuthType() === 'anonymous';
+}
+
 /** Store JWT */
 export function setAuthToken(token: string): void {
   localStorage.setItem(AUTH_TOKEN_KEY, token);

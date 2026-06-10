@@ -36,6 +36,8 @@
 | [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
 | [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, glass header/footer, `FixedBottomBar`, Lobby start CTA, safe-area |
 | [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md) | План фаз уніфікації хедерів (OMR → Alias), session prompts 0–6 |
+| [`PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`](./PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md) | Profile / ProfileSettings / LobbySettings — аудит, session prompts 0–8 + мікро A–C |
+| [`LIQUID_GLASS_FIX_PROMPTS.md`](./LIQUID_GLASS_FIX_PROMPTS.md) | Liquid Glass Header/Footer — аудит backdrop/TMA, session prompts 0–9 + мікро A–B |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |
@@ -69,6 +71,7 @@
 | TMA / Stars | `TELEGRAM_SKILL.md` |
 | TMA safe area / layout / glass chrome | `TMA_LAYOUT.md` |
 | Уніфікація хедерів (фази + промти) | `TMA_HEADER_UNIFICATION.md` |
+| Profile / lobby settings (промти покращень) | `PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
 | UI-токени / теми в компонентах | `UI_TOKENS.md` |
 | Уніфікація шрифтів / розмірів | `TYPOGRAPHY_UNIFICATION.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |

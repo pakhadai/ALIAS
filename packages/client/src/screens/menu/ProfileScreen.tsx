@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronRight } from 'lucide-react';
+import { ShoppingBag, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { AccountBadge, ProviderBadge } from '../../components/Auth/AccountBadge';
 import {
   AccentFooterCta,
@@ -114,22 +114,12 @@ export const ProfileScreen = () => {
           : (t.profileNavUnlockPacksSub ?? 'Available in the store'),
       },
       {
-        emoji: '📊',
-        label: t.profileStatsSummary
-          .replace('{0}', String(playerStats.gamesPlayed))
-          .replace('{1}', String(playerStats.wordsGuessed))
-          .replace('{2}', String(playerStats.wordsSkipped))
-          .replace('{3}', String(statsAccuracy)),
-        sub: t.profileStatsDetailLink,
-        onPress: goToPlayerStats,
-      },
-      {
         emoji: '☁️',
         label: t.profileBenefitSyncLabel,
         sub: t.profileBenefitAuthSyncSub,
       },
     ],
-    [t, purchaseCounts, playerStats, statsAccuracy, goToPlayerStats]
+    [t, purchaseCounts]
   );
 
   const showAdminEntry =
@@ -151,11 +141,6 @@ export const ProfileScreen = () => {
         emoji: '🎨',
         label: t.profileBenefitVisualThemesLabelZero,
         sub: t.profileBenefitVisualThemesSub,
-      },
-      {
-        emoji: '🛍️',
-        label: t.profileBenefitStoreLabel,
-        sub: t.profileBenefitStoreSub,
       },
       {
         emoji: '📊',
@@ -287,6 +272,32 @@ export const ProfileScreen = () => {
 
             <button
               type="button"
+              onClick={() => setGameState(GameState.LOBBY_SETTINGS)}
+              className={storeNavBtn}
+              data-testid="profile-guest-lobby-settings"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <SlidersHorizontal size={16} className={currentTheme.iconColor} />
+                <div className="text-left min-w-0">
+                  <span
+                    className={`${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`}
+                  >
+                    {t.profileNavLobbySettings}
+                  </span>
+                  {t.profileNavLobbySettingsSub ? (
+                    <p
+                      className={`${typographyClass.label} mt-0.5 tracking-widest text-ui-fg-muted`}
+                    >
+                      {t.profileNavLobbySettingsSub}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+              <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30 shrink-0`} />
+            </button>
+
+            <button
+              type="button"
               onClick={() => setGameState(GameState.STORE)}
               className={storeNavBtn}
             >
@@ -346,6 +357,7 @@ export const ProfileScreen = () => {
                 unlockPacksSub: t.profileNavUnlockPacksSub ?? 'Available in the store',
                 profileSettings: t.profileNavProfileSettings ?? 'Profile settings',
                 lobbySettings: t.profileNavLobbySettings ?? 'Lobby settings',
+                lobbySettingsSub: t.profileNavLobbySettingsSub,
                 store: t.profileNavStore ?? t.store ?? 'Store',
                 adminPanel: t.profileAdminPanel,
               }}

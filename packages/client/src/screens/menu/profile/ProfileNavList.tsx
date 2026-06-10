@@ -28,6 +28,7 @@ export interface ProfileNavListProps {
     unlockPacksSub: string;
     profileSettings: string;
     lobbySettings: string;
+    lobbySettingsSub?: string;
     store: string;
     adminPanel: string;
   };
@@ -110,11 +111,18 @@ export function ProfileNavList({
       </button>
 
       <button type="button" onClick={onLobbySettings} className={navBtn}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <SlidersHorizontal size={16} className={themeIconColor} />
-          <span className={navLabel}>{labels.lobbySettings}</span>
+          <div className="text-left min-w-0">
+            <span className={navLabel}>{labels.lobbySettings}</span>
+            {labels.lobbySettingsSub ? (
+              <p className={`${typographyClass.label} mt-0.5 tracking-widest text-ui-fg-muted`}>
+                {labels.lobbySettingsSub}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <ChevronRight size={16} className={`${themeIconColor} opacity-30`} />
+        <ChevronRight size={16} className={`${themeIconColor} opacity-30 shrink-0`} />
       </button>
 
       <NavSection title={labels.sectionExtra} />

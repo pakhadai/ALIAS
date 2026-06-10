@@ -6,6 +6,8 @@ import {
   PREFS_KEY,
   SAVABLE_STATES,
   gameReducer,
+  isEmptySavedLobbySettings,
+  applyFactoryLobbyDefaults,
 } from './gameReducer';
 import { GameState, Language, AppTheme, SoundPreset } from '../types';
 
@@ -159,5 +161,29 @@ describe('restoreSession', () => {
 
     const restored = restoreSession(initialState);
     expect(restored.roomCode).toBe('');
+  });
+
+  test('isEmptySavedLobbySettings treats null and {} as empty', () => {
+    expect(isEmptySavedLobbySettings(null)).toBe(true);
+    expect(isEmptySavedLobbySettings({})).toBe(true);
+    expect(isEmptySavedLobbySettings({ general: { scoreToWin: 30 } })).toBe(false);
+  });
+
+  test('applyFactoryLobbyDefaults resets syncable fields but keeps device prefs', () => {
+    const current = {
+      ...initialState.settings,
+      general: {
+        ...initialState.settings.general,
+        scoreToWin: 50,
+        theme: AppTheme.PREMIUM_DARK,
+        soundEnabled: false,
+        soundPreset: SoundPreset.MINIMAL,
+      },
+    };
+    const next = applyFactoryLobbyDefaults(current);
+    expect(next.general.scoreToWin).toBe(30);
+    expect(next.general.theme).toBe(AppTheme.PREMIUM_DARK);
+    expect(next.general.soundEnabled).toBe(false);
+    expect(next.general.soundPreset).toBe(SoundPreset.MINIMAL);
   });
 });

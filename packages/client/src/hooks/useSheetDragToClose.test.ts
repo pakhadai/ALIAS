@@ -13,9 +13,11 @@ function setupPanel(scrollTop = 0) {
   panel.style.height = '400px';
   Object.defineProperty(panel, 'scrollTop', { value: scrollTop, writable: true });
   Object.defineProperty(panel, 'offsetHeight', { value: 400 });
+  const dragZone = document.createElement('div');
+  dragZone.setAttribute('data-sheet-drag-handle', '');
   const handle = document.createElement('div');
-  handle.setAttribute('data-sheet-drag-handle', '');
-  panel.appendChild(handle);
+  dragZone.appendChild(handle);
+  panel.appendChild(dragZone);
   document.body.appendChild(panel);
   return panel;
 }
@@ -168,6 +170,59 @@ describe('useSheetDragToClose', () => {
         clientY: 200,
         pointerId: 3,
         target: button,
+        currentTarget: panel,
+        setPointerCapture: vi.fn(),
+      } as unknown as React.PointerEvent<HTMLElement>);
+    });
+
+    expect(result.current.isDragging).toBe(false);
+  });
+
+  it('should not start drag when pointer down is on sheet body (only top bar)', () => {
+    const panel = setupPanel();
+    const body = document.createElement('p');
+    body.textContent = 'Language';
+    panel.appendChild(body);
+    const onDismiss = vi.fn();
+
+    const { result } = renderHook(() => {
+      const panelRef = useRef<HTMLElement | null>(panel);
+      return useSheetDragToClose({ enabled: true, onDismiss, panelRef });
+    });
+
+    act(() => {
+      result.current.dragHandlers.onPointerDown({
+        button: 0,
+        clientY: 200,
+        pointerId: 5,
+        target: body,
+        currentTarget: panel,
+        setPointerCapture: vi.fn(),
+      } as unknown as React.PointerEvent<HTMLElement>);
+    });
+
+    expect(result.current.isDragging).toBe(false);
+  });
+
+  it('should not start drag when pointer down is on close button inside drag zone', () => {
+    const panel = setupPanel();
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.textContent = 'Close';
+    panel.querySelector('[data-sheet-drag-handle]')!.appendChild(closeButton);
+    const onDismiss = vi.fn();
+
+    const { result } = renderHook(() => {
+      const panelRef = useRef<HTMLElement | null>(panel);
+      return useSheetDragToClose({ enabled: true, onDismiss, panelRef });
+    });
+
+    act(() => {
+      result.current.dragHandlers.onPointerDown({
+        button: 0,
+        clientY: 40,
+        pointerId: 6,
+        target: closeButton,
         currentTarget: panel,
         setPointerCapture: vi.fn(),
       } as unknown as React.PointerEvent<HTMLElement>);

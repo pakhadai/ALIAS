@@ -9,6 +9,10 @@ export interface ScreenShellProps {
   header?: ReactNode;
   /** Sticky glass footer inside the scroll column — e.g. {@link FixedBottomBar}; content scrolls above it. */
   footer?: ReactNode;
+  /** Fixed liquid glass header outside scroll — expects `fixed` on {@link GlassAppHeader}. */
+  headerFixed?: boolean;
+  /** Fixed footer island outside scroll — e.g. {@link FooterIsland}. */
+  footerFixed?: boolean;
   /** Extra classes on the scroll / main column (not the outer shell). */
   contentClassName?: string;
 }
@@ -17,11 +21,24 @@ export interface ScreenShellProps {
 const SHELL_OUTER =
   'flex flex-col h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full min-h-0 overflow-x-hidden';
 /** Scroll column — vertical only; clip decorative bleed (start CTA ring, -mx strips). */
-const scrollColumnClass = (hasHeader: boolean, hasFooter: boolean) =>
+const scrollColumnClass = (
+  hasHeader: boolean,
+  hasFooter: boolean,
+  headerFixed: boolean,
+  footerFixed: boolean
+) =>
   [
     'flex flex-col flex-1 min-h-0 w-full overflow-x-hidden overflow-y-auto overscroll-y-contain overscroll-x-none [-webkit-overflow-scrolling:touch]',
-    hasHeader ? null : 'pt-safe-top',
-    hasFooter ? null : 'pb-safe-bottom',
+    hasHeader && !headerFixed
+      ? null
+      : headerFixed
+        ? 'pt-[var(--app-page-header-height)]'
+        : 'pt-safe-top',
+    hasFooter && !footerFixed
+      ? null
+      : footerFixed
+        ? 'pb-[var(--footer-island-stack)]'
+        : 'pb-safe-bottom',
   ]
     .filter(Boolean)
     .join(' ');
@@ -39,6 +56,8 @@ export function ScreenShell({
   scroll = true,
   header,
   footer,
+  headerFixed = false,
+  footerFixed = false,
   contentClassName = '',
 }: ScreenShellProps) {
   const shellClass = joinClasses(SHELL_OUTER, className);
@@ -48,11 +67,16 @@ export function ScreenShell({
   if (scroll) {
     return (
       <div className={shellClass}>
-        <div className={scrollColumnClass(hasHeader, hasFooter)} data-screen-shell-scroll="">
-          {header}
+        {headerFixed ? header : null}
+        <div
+          className={scrollColumnClass(hasHeader, hasFooter, headerFixed, footerFixed)}
+          data-screen-shell-scroll=""
+        >
+          {headerFixed ? null : header}
           <div className={joinClasses(CONTENT_WRAP_BASE, contentClassName)}>{children}</div>
-          {footer}
+          {footerFixed ? null : footer}
         </div>
+        {footerFixed ? footer : null}
       </div>
     );
   }
@@ -61,8 +85,16 @@ export function ScreenShell({
     <div
       className={joinClasses(
         shellClass,
-        hasHeader ? undefined : 'pt-safe-top',
-        hasFooter ? undefined : 'pb-safe-bottom'
+        hasHeader && !headerFixed
+          ? undefined
+          : headerFixed
+            ? 'pt-[var(--app-page-header-height)]'
+            : 'pt-safe-top',
+        hasFooter && !footerFixed
+          ? undefined
+          : footerFixed
+            ? 'pb-[var(--footer-island-stack)]'
+            : 'pb-safe-bottom'
       )}
     >
       {header}

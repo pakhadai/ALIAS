@@ -3,6 +3,7 @@ import {
   CSS_VAR_TMA_CONTENT_TOP_FLOOR,
   TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
 } from '../constants/tmaLayoutConstants';
+import { applyGlassTheme } from '../lib/glassTheme';
 
 function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
@@ -171,6 +172,7 @@ export function useTelegramApp(): UseTelegramAppResult {
       setColorScheme(webApp.colorScheme ?? null);
       // Theme vars may arrive a bit later than init; ensure CSS vars are applied.
       applyTelegramThemeCssVars(webApp.themeParams ?? null);
+      applyGlassTheme(webApp.colorScheme ?? null);
     };
 
     const handleInsetsChanged = () => {
@@ -185,6 +187,7 @@ export function useTelegramApp(): UseTelegramAppResult {
 
     // Apply initial theme vars as soon as possible.
     applyTelegramThemeCssVars(webApp.themeParams ?? null);
+    applyGlassTheme(webApp.colorScheme ?? null);
 
     return () => {
       window.clearTimeout(lateSync80);

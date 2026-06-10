@@ -7,10 +7,13 @@ import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { TelegramAuthLoadingScreen } from './components/TelegramAuthLoadingScreen';
 import { useTelegramApp } from './hooks/useTelegramApp';
+import { useGyroscope } from './hooks/useGyroscope';
+import { applyGlassTheme } from './lib/glassTheme';
 import { useAuthContext } from './context/AuthContext';
 import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
 import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import { AppLoginProvider } from './context/AppLoginContext';
+import { BackNavigationGuardProvider } from './context/BackNavigationGuardContext';
 import { typographyClass } from './constants/typography';
 import {
   MenuScreen,
@@ -251,6 +254,18 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 
 const AppContent = () => {
   const { isTelegram, startParam } = useTelegramApp();
+  useGyroscope(true);
+
+  React.useEffect(() => {
+    if (isTelegram) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const sync = () => {
+      applyGlassTheme(media.matches ? 'dark' : 'light');
+    };
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, [isTelegram]);
   const { isAuthenticated } = useAuthContext();
   const {
     gameState,
@@ -301,7 +316,9 @@ const App: React.FC = () => {
     <AuthProvider>
       <TelegramAuthBootstrap>
         <GameProvider>
-          <AppContent />
+          <BackNavigationGuardProvider>
+            <AppContent />
+          </BackNavigationGuardProvider>
         </GameProvider>
       </TelegramAuthBootstrap>
     </AuthProvider>

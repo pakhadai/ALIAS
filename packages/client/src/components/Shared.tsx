@@ -62,17 +62,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
  * Bottom sheet primitives — visual state via `data-open` on backdrop/panel (see styles.css).
  * NOTE: do not use `animate-pop-in` / `animate-fade-in` on these nodes; they override CSS transitions.
  */
-/** Drag handle row — `data-sheet-drag-handle` enables swipe-to-dismiss; always on ModalSheet */
+/** Top bar — `data-sheet-drag-handle` on `BottomSheetTopBar` enables swipe-to-dismiss from handle + title row */
 export const bottomSheetHandleRowClass = 'bottom-sheet-handle-row';
 export const bottomSheetHandleBarClass = 'bottom-sheet-handle';
 
 export function BottomSheetHandleRow({ className = '' }: { className?: string }) {
   return (
-    <div
-      className={[bottomSheetHandleRowClass, className].filter(Boolean).join(' ')}
-      data-sheet-drag-handle=""
-      aria-hidden
-    >
+    <div className={[bottomSheetHandleRowClass, className].filter(Boolean).join(' ')} aria-hidden>
       <div className={bottomSheetHandleBarClass} />
     </div>
   );
@@ -111,7 +107,7 @@ export function BottomSheetTopBar({
   const showHeaderRow = title != null || showClose;
 
   return (
-    <div className={bottomSheetTopBarClass}>
+    <div className={bottomSheetTopBarClass} data-sheet-drag-handle="">
       <BottomSheetHandleRow />
       {showHeaderRow ? (
         <div className={[bottomSheetHeaderRowClass, headerClassName].filter(Boolean).join(' ')}>

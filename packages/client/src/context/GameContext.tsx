@@ -27,7 +27,17 @@ import { MOCK_WORDS, THEME_CONFIG, ROOM_CODE_LENGTH, DEFAULT_APP_THEME } from '.
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
-import { fetchLobbySettings, fetchDeckByCode, PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
+import {
+  fetchLobbySettings,
+  fetchDeckByCode,
+  isAnonymousSession,
+  PLAYER_ID_KEY,
+  ROOM_CODE_KEY,
+} from '../services/api';
+import {
+  loadGuestLobbyDefaults,
+  mergeSavedLobbyDefaultsIntoSettings,
+} from '../lib/guestLobbyDefaults';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
 import { shuffleArray } from '@alias/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
@@ -43,6 +53,7 @@ import {
   initialState,
   gameReducer,
   restoreSession,
+  isEmptySavedLobbySettings,
 } from './gameReducer';
 import { applyOfflineGameAction } from './offlineGameActions';
 import { canEmitOnlineGameAction, resolveRoomErrorMessage } from '../utils/roomErrorMessage';
@@ -800,34 +811,31 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_STATE', payload: { gameState: s } });
       },
       createNewRoom: async () => {
-        let saved: unknown = null;
-        try {
-          saved = await fetchLobbySettings();
-        } catch {
-          // offline / network errors: still allow creating a room with local defaults
-        }
-
         let mergedSettings = stateRef.current.settings;
-        if (saved && typeof saved === 'object') {
-          const roomSettings = saved as Partial<GameSettings>;
-          mergedSettings = {
-            ...stateRef.current.settings,
-            ...(roomSettings.general
-              ? {
-                  general: {
-                    ...stateRef.current.settings.general,
-                    ...roomSettings.general,
-                    theme: stateRef.current.settings.general.theme,
-                    soundEnabled: stateRef.current.settings.general.soundEnabled,
-                    soundPreset: stateRef.current.settings.general.soundPreset,
-                    language: stateRef.current.uiLanguage,
-                  },
-                }
-              : {}),
-            ...(roomSettings.mode
-              ? { mode: roomSettings.mode as unknown as GameSettings['mode'] }
-              : {}),
-          };
+        const uiLanguage = stateRef.current.uiLanguage;
+
+        if (isAnonymousSession()) {
+          const guestSaved = loadGuestLobbyDefaults();
+          if (guestSaved && !isEmptySavedLobbySettings(guestSaved)) {
+            mergedSettings = mergeSavedLobbyDefaultsIntoSettings(
+              mergedSettings,
+              guestSaved,
+              uiLanguage
+            );
+          }
+        } else {
+          try {
+            const saved = await fetchLobbySettings();
+            if (saved && typeof saved === 'object' && !isEmptySavedLobbySettings(saved)) {
+              mergedSettings = mergeSavedLobbyDefaultsIntoSettings(
+                mergedSettings,
+                saved as Partial<GameSettings>,
+                uiLanguage
+              );
+            }
+          } catch {
+            // offline / network errors: still allow creating a room with local defaults
+          }
         }
 
         dispatch({

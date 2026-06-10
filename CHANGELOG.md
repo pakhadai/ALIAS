@@ -30,10 +30,25 @@
 
 ## [Unreleased]
 
+### Added
+- Guest lobby defaults (Micro C): `ProfileScreen` nav to `LobbySettingsScreen`; guests save defaults in `localStorage` (`guestLobbyDefaults.ts`); sign-in sync banner (`lobbyDefaultsGuestBannerBody`, UA/DE/EN); `createNewRoom` applies guest local defaults; authenticated `saveLobbySettings` path unchanged
+- Shared settings UI primitives in `components/Settings/`: `SettingsToggle`, `SettingsSlider`, `LanguageChipRow`, `CategoryChipGrid`, `UnsavedChangesModal`; migrated `LobbySettingsScreen`; incremental DRY in in-lobby `SettingsScreen` (categories, language chips, skip penalty)
+- Unsaved-changes guard on `ProfileSettingsScreen` and `LobbySettingsScreen`: `useUnsavedChangesGuard` + `BackNavigationGuardProvider` (AppHeader back + Telegram `BackButton`); i18n `settingsUnsaved*` (UA/DE/EN)
+- Lobby defaults UX copy: info banner on `LobbySettingsScreen` (`lobbyDefaultsInfoBanner`, UA/DE/EN) clarifying defaults apply to new rooms only; subtitle on profile nav item (`profileNavLobbySettingsSub`)
+- Profile/Lobby settings i18n: `useT()` on `ProfileSettingsScreen` and `LobbySettingsScreen`; new translation keys (UA/DE/EN) for profile settings, lobby defaults, time units, and category labels; language-agnostic `LobbySettingsScreen.test.tsx` mock
+- Liquid Glass chrome: `styles/glass.css` tokens, fixed header modifier (`ui-app-header--fixed`), floating `FooterIsland` capsule, `useGyroscope` (rAF-throttled DeviceOrientation after first gesture), `lib/glassTheme.ts` (`data-theme` from Telegram `colorScheme`); `ScreenShell` `headerFixed` / `footerFixed`, `FixedBottomBar` `island` mode
+
 ### Fixed
+- Lobby defaults reset: confirm dialog before clearing saved defaults; UI restores factory values from `initialState` (`applyFactoryLobbyDefaults`) after `saveLobbySettings({})` + refetch; deep-merge on load; i18n `lobbyDefaultsReset*` (UA/DE/EN); Vitest confirm/cancel/success paths
+- Lobby START CTA glow no longer clipped by glass footer: `overflow: visible` on `.ui-app-footer`, bleed padding on `.accent-footer-cta-shell--ready`, removed horizontal clip on glass `FixedBottomBar` (`styles.css`, `FixedBottomBar.tsx`, `LobbyStartPanel.tsx`)
+- Profile and lobby defaults save errors no longer fail silently: `showNotification` with i18n (`profileSettingsSaveFailed`, `lobbyDefaultsSaveFailed`) on `ProfileSettingsScreen` and `LobbySettingsScreen`; Vitest coverage for failed save paths
+- Bottom sheet swipe-to-dismiss restricted to top bar (handle + title row); content area no longer closes the sheet on downward drag (`useSheetDragToClose.ts`, `Shared.tsx`, `styles.css`)
 - Sticky chrome glass legibility: stronger frost on `.ui-app-header` and `.bottom-sheet-top-bar` via SSOT `--ui-chrome-glass-*` tokens (62% tint, 22px blur) so scroll content under title row stays unreadable (`styles.css`, `docs/UI_TOKENS.md`)
 
 ### Changed
+- Profile screen UX: authenticated users see stats only in `ProfileStatsCards` (removed duplicate row from purchases benefits); guest store path consolidated to single «Browse store» CTA (removed duplicate store benefit row)
+- Lobby defaults settings UI aligned with in-lobby `SettingsScreen`: language chips with flag emojis, category grid with Lucide icons + `t.cat_*`, accessible skip-penalty switch (`role="switch"`, `aria-checked`), haptic feedback on slider steps (`LobbySettingsScreen.tsx`, Vitest)
+- Profile and lobby defaults settings screens: theme background + dot pattern (aligned with `PlayerStatsScreen` / `ProfileScreen`); glass `FixedBottomBar` with `Button` size xl for save CTA (`ProfileSettingsScreen`, `LobbySettingsScreen`)
 - `PlayerStatsScreen` aligned with profile stats UX: read-only `ProfileStatsCards` hero, `PlayerStatsDetailPanel` (Lucide icons), empty-state CTA, sync badge, theme-aware layout; profile benefits stats row tappable for guest and auth (`PlayerStatsScreen.tsx`, `ProfileStatsCards.tsx`, `ProfileBenefitsList.tsx`, `ProfileScreen.tsx`, translations)
 - `StoreScreen` migrated to canonical `ScreenShell` + `AppHeader` (tabs in child row) + `FixedBottomBar`; TMA safe inset, viewport height, back → MENU aligned with `useTelegramBackButton`; removed ad-hoc drag pill and duplicate close button (`StoreScreen.tsx`, `docs/TMA_LAYOUT.md`)
 - `AccentFooterCta` variants: `animated` | `plain` | `blocked`; profile guest + auth share plain footer CTA (no snake); lobby uses explicit `variant`; deprecated `ready`/`blocked` shims (`AccentFooterCta.tsx`, `ProfileScreen.tsx`, `LobbyStartPanel.tsx`, `styles.css`, `docs/TMA_LAYOUT.md`, `docs/UI_TOKENS.md`)

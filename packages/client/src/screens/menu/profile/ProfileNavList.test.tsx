@@ -13,6 +13,7 @@ const labels = {
   unlockPacksSub: 'Available in the store',
   profileSettings: 'Profile settings',
   lobbySettings: 'Lobby settings',
+  lobbySettingsSub: 'Defaults for new games',
   store: 'Store',
   adminPanel: 'Admin panel',
 };
@@ -50,6 +51,12 @@ describe('ProfileNavList', () => {
     await userEvent.click(screen.getByText('My statistics'));
 
     expect(onMyStats).toHaveBeenCalledOnce();
+  });
+
+  it('should show lobby settings subtitle when provided', () => {
+    render(<ProfileNavList {...baseProps} />);
+
+    expect(screen.getByText('Defaults for new games')).toBeInTheDocument();
   });
 
   it('should show admin entry when enabled', () => {
