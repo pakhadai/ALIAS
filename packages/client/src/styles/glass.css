@@ -13,10 +13,8 @@
   overflow: visible;
 }
 
-#glass-chrome-portal-root > *,
-[data-glass-chrome-portal] > * {
-  pointer-events: auto;
-}
+/* Chrome nodes opt into hits via component classes — do not force auto on portal children
+   (would defeat footer feather pass-through: pointer-events-none + inner pointer-events-auto). */
 
 :root {
   --gyro-x: 0;

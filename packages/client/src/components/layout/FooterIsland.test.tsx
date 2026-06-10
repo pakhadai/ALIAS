@@ -61,7 +61,11 @@ describe('FooterIsland', () => {
     expect(footer?.className).toContain(FOOTER_ISLAND_CLASS);
     expect(footer?.className).toContain('ui-app-footer');
     expect(footer?.className).toContain('items-stretch');
+    expect(footer?.className).toContain('pointer-events-none');
     expect(screen.getByRole('button', { name: 'Play' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Play' }).parentElement?.className).toContain(
+      'pointer-events-auto'
+    );
   });
 
   it('should flag the document for scroll clearance padding', () => {

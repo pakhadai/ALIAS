@@ -55,13 +55,13 @@ export function FooterIsland({ children, className = '', style, ariaLabel }: Foo
       className={joinClasses(
         FOOTER_ISLAND_CLASS,
         'ui-app-footer',
-        'pointer-events-auto flex w-full shrink-0 flex-col items-stretch px-4 py-2',
+        'pointer-events-none flex w-full shrink-0 flex-col items-stretch px-4 py-2',
         className
       )}
       style={style}
       aria-label={ariaLabel}
     >
-      {children}
+      <div className="pointer-events-auto relative z-[1] w-full min-w-0">{children}</div>
     </footer>
   );
 }
