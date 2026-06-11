@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import {
@@ -5,6 +6,7 @@ import {
   TELEGRAM_BACK_HIDDEN_STATES,
   useTelegramBackButton,
 } from './useTelegramBackButton';
+import { LobbyExitProvider, useLobbyExit } from '../context/LobbyExitContext';
 import { GameState } from '../types';
 
 describe('resolveTelegramBackAction', () => {
@@ -84,9 +86,15 @@ describe('resolveTelegramBackAction', () => {
     }
   });
 
-  it('should leave room from LOBBY and in-game states', () => {
+  it('should request lobby exit confirmation from LOBBY', () => {
+    expect(resolveTelegramBackAction(GameState.LOBBY, ctx)).toEqual({ type: 'requestLobbyExit' });
+    expect(resolveTelegramBackAction(GameState.LOBBY, { ...ctx, gameMode: 'OFFLINE' })).toEqual({
+      type: 'requestLobbyExit',
+    });
+  });
+
+  it('should leave room from in-game states', () => {
     for (const state of [
-      GameState.LOBBY,
       GameState.VS_SCREEN,
       GameState.PRE_ROUND,
       GameState.COUNTDOWN,
@@ -97,13 +105,6 @@ describe('resolveTelegramBackAction', () => {
     ]) {
       expect(resolveTelegramBackAction(state, ctx)).toEqual({ type: 'leaveRoom' });
     }
-  });
-
-  it('should leave offline lobby without resetting gameMode', () => {
-    expect(resolveTelegramBackAction(GameState.LOBBY, { ...ctx, gameMode: 'OFFLINE' })).toEqual({
-      type: 'leaveRoom',
-      opts: { resetGameMode: false },
-    });
   });
 });
 
@@ -142,25 +143,45 @@ describe('useTelegramBackButton', () => {
     handler();
   }
 
+  function LobbyExitRegistrar({ onRequest }: { onRequest: () => void }) {
+    const { registerLobbyExitHandler } = useLobbyExit();
+    useEffect(() => {
+      registerLobbyExitHandler(onRequest);
+      return () => registerLobbyExitHandler(null);
+    }, [onRequest, registerLobbyExitHandler]);
+    return null;
+  }
+
   function renderBackHook(
     gameState: GameState,
     roomCode: string | null = '12345',
-    gameMode: 'ONLINE' | 'OFFLINE' = 'ONLINE'
+    gameMode: 'ONLINE' | 'OFFLINE' = 'ONLINE',
+    lobbyExitRequest = vi.fn()
   ) {
     const setGameState = vi.fn();
     const leaveRoom = vi.fn();
-    renderHook(() =>
-      useTelegramBackButton({
-        isTelegram: true,
-        isAuthenticated: true,
-        gameState,
-        gameMode,
-        roomCode,
-        setGameState,
-        leaveRoom,
-      })
+    renderHook(
+      () =>
+        useTelegramBackButton({
+          isTelegram: true,
+          isAuthenticated: true,
+          gameState,
+          gameMode,
+          roomCode,
+          setGameState,
+          leaveRoom,
+        }),
+      {
+        wrapper: ({ children }) =>
+          React.createElement(
+            LobbyExitProvider,
+            null,
+            React.createElement(LobbyExitRegistrar, { onRequest: lobbyExitRequest }),
+            children
+          ),
+      }
     );
-    return { setGameState, leaveRoom };
+    return { setGameState, leaveRoom, lobbyExitRequest };
   }
 
   it('should hide BackButton on MENU and ENTER_NAME', () => {
@@ -194,17 +215,26 @@ describe('useTelegramBackButton', () => {
     expect(leaveRoom).not.toHaveBeenCalled();
   });
 
-  it('should leave room on LOBBY back', () => {
-    const { setGameState, leaveRoom } = renderBackHook(GameState.LOBBY);
+  it('should request lobby exit on LOBBY back instead of leaving immediately', () => {
+    const lobbyExitRequest = vi.fn();
+    const { setGameState, leaveRoom } = renderBackHook(
+      GameState.LOBBY,
+      '12345',
+      'ONLINE',
+      lobbyExitRequest
+    );
     triggerBack();
-    expect(leaveRoom).toHaveBeenCalledWith(undefined);
+    expect(lobbyExitRequest).toHaveBeenCalledTimes(1);
+    expect(leaveRoom).not.toHaveBeenCalled();
     expect(setGameState).not.toHaveBeenCalled();
   });
 
-  it('should leave offline lobby without resetting gameMode', () => {
-    const { leaveRoom } = renderBackHook(GameState.LOBBY, '12345', 'OFFLINE');
+  it('should request lobby exit for offline lobby back without leaveRoom', () => {
+    const lobbyExitRequest = vi.fn();
+    const { leaveRoom } = renderBackHook(GameState.LOBBY, '12345', 'OFFLINE', lobbyExitRequest);
     triggerBack();
-    expect(leaveRoom).toHaveBeenCalledWith({ resetGameMode: false });
+    expect(lobbyExitRequest).toHaveBeenCalledTimes(1);
+    expect(leaveRoom).not.toHaveBeenCalled();
   });
 
   it('should leave room on PLAYING back', () => {

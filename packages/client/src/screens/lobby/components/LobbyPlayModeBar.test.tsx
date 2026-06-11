@@ -18,17 +18,9 @@ const theme = {
 } as ThemeConfig;
 
 const t = {
-  lobbyPlayMode: 'Play format',
-  teamMode: 'Team mode',
+  lobbyPlayMode: 'How we play',
   teamModeSolo: 'Solo',
   teamModeTeams: 'Teams',
-  teamModeSoloHint: 'Solo hint',
-  teamCount: 'Team count',
-  lobbyAddTeam: 'Add team',
-  lobbyRemoveTeam: 'Remove team',
-  lobbyTeamAssignHint: 'Pick a team below',
-  lobbyRandomTeams: 'Random shuffle',
-  shuffle: 'Shuffle',
   lobbyTeamsCount: '{0} teams',
 } as TranslationStrings;
 
@@ -62,7 +54,7 @@ describe('LobbyPlayModeBar', () => {
     expect(onTeamModeChange).toHaveBeenCalledWith('SOLO');
   });
 
-  it('should expose a single increment control for team count', () => {
+  it('should render only the mode toggle for host in teams mode', () => {
     render(
       <LobbyPlayModeBar
         theme={theme}
@@ -77,7 +69,10 @@ describe('LobbyPlayModeBar', () => {
       />
     );
 
-    expect(screen.getAllByRole('button', { name: 'Add team' })).toHaveLength(1);
+    expect(screen.getByText('How we play')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Solo' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Teams' })).toBeTruthy();
+    expect(screen.queryByText('Random shuffle')).toBeNull();
   });
 
   it('should hide team controls when solo is active', () => {
@@ -95,8 +90,26 @@ describe('LobbyPlayModeBar', () => {
       />
     );
 
-    expect(screen.getByText('Solo hint')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Solo' })).toBeTruthy();
     expect(screen.queryByText('Random shuffle')).toBeNull();
-    expect(screen.queryByText('Add team')).toBeNull();
+  });
+
+  it('should show guest play format without toggle', () => {
+    render(
+      <LobbyPlayModeBar
+        theme={theme}
+        t={t}
+        isHost={false}
+        isSolo={false}
+        teamCount={3}
+        onTeamModeChange={onTeamModeChange}
+        onTeamCountChange={onTeamCountChange}
+        onShuffleUnassigned={onShuffleUnassigned}
+        shuffleDisabled
+      />
+    );
+
+    expect(screen.getByText('3 teams')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Solo' })).toBeNull();
   });
 });

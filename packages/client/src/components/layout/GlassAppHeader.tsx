@@ -1,11 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import {
   CSS_VAR_APP_PAGE_HEADER_HEIGHT,
   HEADER_ROW_MIN_PX,
   TG_CHROME_GUTTER_PX,
 } from '../../constants/tmaLayoutConstants';
-import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
+import type { ScreenLayoutContentRail } from '../../constants/screenLayout';
+import { useScreenLayoutOptional } from '../../context/ScreenLayoutContext';
+import { hasTelegramInitData } from '../../hooks/useTelegramApp';
+import { AppHeaderOverflowMenu, type AppHeaderMenuItem } from './AppHeaderOverflowMenu';
+import { GlassIconButton } from './GlassIconButton';
+
+export type { AppHeaderMenuItem };
 
 export interface GlassAppHeaderProps {
   children: ReactNode;
@@ -29,6 +35,9 @@ export interface GlassAppHeaderProps {
 /** Shared frosted panel — lobby start CTA, bottom sheets (`styles.css`). */
 export const UI_GLASS_PANEL_CLASS = 'ui-glass-panel';
 
+/** 33px circular liquid glass icon chip — browser header back (`styles.css`). */
+export const UI_GLASS_ICON_BTN_CLASS = 'ui-glass-icon-btn';
+
 /** Full-width frosted header bar — device inset + title row clearance (OMR formula). */
 export const UI_APP_HEADER_CLASS = 'ui-app-header';
 
@@ -38,9 +47,14 @@ export const UI_APP_HEADER_FIXED_CLASS = 'ui-app-header--fixed';
 export const UI_APP_HEADER_TITLE_ROW_CLASS = 'ui-app-header__title-row';
 export const UI_APP_HEADER_CHILD_ROW_CLASS = 'ui-app-header__child-row';
 export const UI_APP_HEADER_SLOT_CLASS = 'ui-app-header__slot';
+export const UI_APP_HEADER_CONTENT_RAIL_CLASS = 'ui-app-header__content-rail';
+export const UI_APP_HEADER_CONTENT_RAIL_FULL_CLASS = 'ui-app-header__content-rail--full';
+export const UI_APP_HEADER_CONTENT_RAIL_NARROW_CLASS = 'ui-app-header__content-rail--narrow';
 
-/** Title row reserves content-safe-top; slots align to bottom 44px band with TG chrome (Bot API 8.0+). */
-const HEADER_BASE = 'pointer-events-auto flex w-full shrink-0 flex-col';
+export type AppHeaderContentRail = ScreenLayoutContentRail;
+
+/** Pass-through chrome — interactive rows opt in (mirrors FooterIsland feather hit-testing). */
+const HEADER_BASE = 'pointer-events-none flex w-full shrink-0 flex-col';
 
 function joinClasses(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');
@@ -126,6 +140,14 @@ export interface AppHeaderProps {
   backAriaLabel?: string;
   /** Override `data-testid` on browser back button (default `app-header-back`). */
   backTestId?: string;
+  /** Browser overflow menu items — button always shown in browser; `right` prop takes priority. */
+  menuItems?: AppHeaderMenuItem[];
+  /** Accessible label for browser overflow menu button. */
+  menuAriaLabel?: string;
+  /** Show overflow menu outside Telegram Mini App. */
+  showMenuInBrowser?: boolean;
+  /** Override `data-testid` on browser overflow menu (default `app-header-menu`). */
+  menuTestId?: string;
   /** Optional second row (search, tabs). */
   children?: ReactNode;
   /** Explicit height for `children` row. */
@@ -142,6 +164,12 @@ export interface AppHeaderProps {
   fixed?: boolean;
   /** Hide header from assistive tech while overlay (e.g. EnterName) is open. */
   ariaHidden?: boolean;
+  /** Override {@link ScreenShell} `layout` rail (prefer `layout` on shell). */
+  contentRail?: AppHeaderContentRail;
+  /** Override shell layout inset (`--ui-screen-inline-padding`). */
+  contentInsetX?: string;
+  /** Override shell layout md inset (`--ui-screen-inline-padding-md`). */
+  contentInsetXMd?: string;
   'data-testid'?: string;
 }
 
@@ -157,15 +185,9 @@ function BrowserBackButton({
   testId?: string;
 }) {
   return (
-    <button
-      type="button"
-      data-testid={testId}
-      onClick={onClick}
-      className={`${UI_APP_HEADER_SLOT_CLASS} min-h-11 min-w-11 flex items-center justify-center text-ui-fg-muted hover:text-ui-fg transition-colors active:scale-90`}
-      aria-label={ariaLabel}
-    >
-      <X size={20} aria-hidden />
-    </button>
+    <GlassIconButton onClick={onClick} ariaLabel={ariaLabel} testId={testId} align="start">
+      <ArrowLeft size={16} strokeWidth={2} aria-hidden />
+    </GlassIconButton>
   );
 }
 
@@ -180,6 +202,10 @@ export function AppHeader({
   showBackInBrowser = true,
   backAriaLabel = 'Back',
   backTestId,
+  menuItems,
+  menuAriaLabel = 'More options',
+  showMenuInBrowser = true,
+  menuTestId,
   children: childRow,
   childRowHeightPx = DEFAULT_CHILD_ROW_HEIGHT_PX,
   tgChromeGutter = true,
@@ -190,15 +216,24 @@ export function AppHeader({
   gradient,
   fixed,
   ariaHidden,
+  contentRail: contentRailProp,
+  contentInsetX: contentInsetXProp,
+  contentInsetXMd: contentInsetXMdProp,
   'data-testid': dataTestId,
 }: AppHeaderProps) {
-  const isTelegram = isTelegramMiniApp();
-  const applyTgGutter = isTelegram && tgChromeGutter;
+  const screenLayout = useScreenLayoutOptional();
+  const contentRail = contentRailProp ?? screenLayout?.contentRail ?? 'canonical';
+  const contentInsetX = contentInsetXProp ?? screenLayout?.contentInsetX;
+  const contentInsetXMd = contentInsetXMdProp ?? screenLayout?.contentInsetXMd;
+
+  /** Real TMA session only — plain browser loads SDK stub with `platform` but empty initData. */
+  const isTelegramSession = hasTelegramInitData();
+  const applyTgGutter = isTelegramSession && tgChromeGutter;
   const centerContent = title ?? center;
 
   const leftSlot =
     left ??
-    (isTelegram ? (
+    (isTelegramSession ? (
       applyTgGutter ? (
         <TgChromeSpacer />
       ) : (
@@ -210,23 +245,40 @@ export function AppHeader({
       <div className={`${UI_APP_HEADER_SLOT_CLASS} min-w-11`} aria-hidden />
     ));
 
+  const showBrowserMenu = !isTelegramSession && showMenuInBrowser;
+
   const rightSlot =
     right ??
-    (applyTgGutter ? (
+    (showBrowserMenu ? (
+      <AppHeaderOverflowMenu
+        items={menuItems ?? []}
+        ariaLabel={menuAriaLabel}
+        testId={menuTestId}
+      />
+    ) : applyTgGutter ? (
       <TgChromeSpacer />
     ) : (
       <div className={`${UI_APP_HEADER_SLOT_CLASS} min-w-11`} aria-hidden />
     ));
 
-  return (
-    <GlassAppHeader
-      className={className}
-      gradient={gradient}
-      fixed={fixed}
-      tgGutter={applyTgGutter}
-      childRowHeightPx={childRow ? childRowHeightPx : undefined}
-      ariaHidden={ariaHidden}
-    >
+  const contentRailClass = joinClasses(
+    UI_APP_HEADER_CONTENT_RAIL_CLASS,
+    contentRail === 'full' && UI_APP_HEADER_CONTENT_RAIL_FULL_CLASS,
+    contentRail === 'narrow' && UI_APP_HEADER_CONTENT_RAIL_NARROW_CLASS
+  );
+
+  const headerInsetStyle: CSSProperties | undefined =
+    contentInsetX || contentInsetXMd
+      ? {
+          ...(contentInsetX ? { ['--ui-screen-inline-padding' as string]: contentInsetX } : {}),
+          ...(contentInsetXMd
+            ? { ['--ui-screen-inline-padding-md' as string]: contentInsetXMd }
+            : {}),
+        }
+      : undefined;
+
+  const chromeRows = (
+    <>
       <div className={UI_APP_HEADER_TITLE_ROW_CLASS}>
         <div className={`${UI_APP_HEADER_SLOT_CLASS} shrink-0 items-center justify-start`}>
           {leftSlot}
@@ -239,6 +291,20 @@ export function AppHeader({
         </div>
       </div>
       {childRow ? <div className={UI_APP_HEADER_CHILD_ROW_CLASS}>{childRow}</div> : null}
+    </>
+  );
+
+  return (
+    <GlassAppHeader
+      className={className}
+      gradient={gradient}
+      fixed={fixed}
+      tgGutter={applyTgGutter}
+      childRowHeightPx={childRow ? childRowHeightPx : undefined}
+      ariaHidden={ariaHidden}
+      style={headerInsetStyle}
+    >
+      {applyTgGutter ? chromeRows : <div className={contentRailClass}>{chromeRows}</div>}
     </GlassAppHeader>
   );
 }

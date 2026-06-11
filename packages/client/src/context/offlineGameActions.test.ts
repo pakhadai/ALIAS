@@ -131,7 +131,11 @@ describe('applyOfflineGameAction', () => {
       teams: [],
       settings: {
         ...initialState.settings,
-        general: { ...initialState.settings.general, teamCount: 2 },
+        general: {
+          ...initialState.settings.general,
+          teamMode: 'TEAMS',
+          teamCount: 2,
+        },
       },
     });
     applyOfflineGameAction(deps, { action: 'TEAM_JOIN', data: { teamId: 'team-0' } });

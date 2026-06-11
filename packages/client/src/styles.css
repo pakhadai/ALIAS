@@ -373,6 +373,9 @@ html[data-app-header] {
   --ui-chrome-glass-opacity-bottom: 12%;
   --ui-chrome-glass-blur: 22px;
   --ui-chrome-glass-saturate: 1.5;
+  /** Canonical screen body inset — mirrors Tailwind `px-6` / `md:px-8` on `contentClassName`. */
+  --ui-screen-inline-padding: 1.5rem;
+  --ui-screen-inline-padding-md: 2rem;
 }
 
 /**
@@ -433,6 +436,113 @@ html[data-telegram-app='true'] {
 .lobby-start-glass > * {
   position: relative;
   z-index: 1;
+}
+
+/** Inset hairlines inside profile glass list panels — softer than full-width border dividers. */
+.ui-profile-list {
+  --ui-profile-list-divider-inset: 1.25rem;
+  --ui-profile-list-divider-color: color-mix(in srgb, var(--ui-fg) 8%, transparent);
+}
+
+.ui-profile-panel-header {
+  --ui-profile-list-divider-inset: 1.25rem;
+  --ui-profile-list-divider-color: color-mix(in srgb, var(--ui-fg) 8%, transparent);
+  position: relative;
+}
+
+.ui-profile-panel-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--ui-profile-list-divider-inset);
+  right: var(--ui-profile-list-divider-inset);
+  height: 1px;
+  background: var(--ui-profile-list-divider-color);
+  pointer-events: none;
+}
+
+.ui-profile-list > li {
+  position: relative;
+}
+
+.ui-profile-list > li + li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--ui-profile-list-divider-inset);
+  right: var(--ui-profile-list-divider-inset);
+  height: 1px;
+  background: var(--ui-profile-list-divider-color);
+  pointer-events: none;
+}
+
+/** Small circular liquid glass control — browser header back (theme-adaptive, 33px visual). */
+.ui-glass-icon-btn {
+  --ui-glass-icon-size: 33px;
+  --lobby-glass-inset: 1px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ui-glass-icon-size);
+  height: var(--ui-glass-icon-size);
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--ui-border-subtle) 50%, transparent);
+  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 68%, transparent);
+  box-shadow:
+    0 8px 40px color-mix(in srgb, var(--ui-bg) 78%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 11%, transparent);
+  color: var(--ui-fg-muted);
+  pointer-events: none;
+  transition:
+    color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.ui-glass-icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: var(--lobby-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(20px) saturate(1.65);
+  -webkit-backdrop-filter: blur(20px) saturate(1.65);
+}
+
+.ui-glass-icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: var(--lobby-glass-inset);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ui-fg) 13%, transparent) 0%,
+    transparent 44%,
+    transparent 56%,
+    color-mix(in srgb, var(--ui-bg) 9%, transparent) 100%
+  );
+}
+
+.ui-glass-icon-btn > svg {
+  position: relative;
+  z-index: 1;
+}
+
+button:hover .ui-glass-icon-btn,
+button:focus-visible .ui-glass-icon-btn {
+  color: var(--ui-fg);
+  box-shadow:
+    0 8px 40px color-mix(in srgb, var(--ui-bg) 72%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 14%, transparent);
+}
+
+button:active .ui-glass-icon-btn {
+  transform: scale(0.92);
 }
 
 /** Modal sheet top bar — mask-based chrome glass (header uses liquid glass in glass.css) */
@@ -520,6 +630,34 @@ html[data-telegram-app='true'] {
   min-height: var(--ui-app-header-control-row);
 }
 
+/** Browser / non-TMA — align chrome controls with centered screen body (`max-w-2xl` + px-6). */
+.ui-app-header__content-rail {
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+  pointer-events: auto;
+}
+
+.ui-app-header__content-rail--full {
+  max-width: none;
+}
+
+.ui-app-header__content-rail--narrow {
+  max-width: 28rem;
+}
+
+.ui-app-header:not([data-tg-gutter='true']) .ui-app-header__title-row,
+.ui-app-header:not([data-tg-gutter='true']) .ui-app-header__child-row {
+  padding-inline: var(--ui-screen-inline-padding);
+}
+
+@media (min-width: 768px) {
+  .ui-app-header:not([data-tg-gutter='true']) .ui-app-header__title-row,
+  .ui-app-header:not([data-tg-gutter='true']) .ui-app-header__child-row {
+    padding-inline: var(--ui-screen-inline-padding-md);
+  }
+}
+
 .ui-app-header[data-tg-gutter='true'] .ui-app-header__title-row {
   padding-inline: 80px;
 }
@@ -532,6 +670,16 @@ html[data-telegram-app='true'] {
   display: none;
 }
 
+/** Menu home (no TG title row) — device notch clearance for icon row */
+.ui-app-header--menu-compact {
+  padding-top: var(--tma-device-inset-top, env(safe-area-inset-top, 0px));
+}
+
+.ui-app-header__title-row,
+.ui-app-header__child-row {
+  pointer-events: auto;
+}
+
 .ui-app-header__child-row {
   display: flex;
   flex-shrink: 0;
@@ -541,13 +689,29 @@ html[data-telegram-app='true'] {
   width: 100%;
   height: var(--ui-app-header-child-row-height, 44px);
   padding-inline: 0.5rem;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ui-app-header__slot {
   display: flex;
   min-height: 44px;
   min-width: 44px;
+}
+
+/** Menu profile — guest login dot (hardcoded fill; avoids icon-head overlap + token wash-out in glass chrome) */
+.menu-profile-guest-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+  display: block;
+  width: 8px;
+  height: 8px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background-color: #ff3b3b;
+  border: 2px solid var(--ui-bg, #111111);
+  pointer-events: none;
 }
 
 /** Full-width app footer — sticky glass overlay inside scroll (visuals in glass.css) */
@@ -833,15 +997,12 @@ footer.footer-island.ui-app-footer {
   isolation: isolate;
   pointer-events: auto;
   box-sizing: border-box;
-  padding-bottom: var(--sheet-keyboard-lift);
-  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
 }
 
 /** Full-page screens that lift content above the virtual keyboard (JoinInputScreen, etc.) */
 .keyboard-avoiding-lift {
   --sheet-keyboard-lift: 0px;
   padding-bottom: var(--sheet-keyboard-lift);
-  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
 }
 
 /** Keep sheet top below Telegram native header — flex content box ends above TG chrome */
@@ -1025,6 +1186,25 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   will-change: transform;
 }
 
+/**
+ * Keyboard lift — margin on panel (not backdrop padding) so glass ::before/::after extend into the
+ * keyboard zone. No CSS transition: visualViewport resize must track the OS keyboard frame-by-frame.
+ */
+.bottom-sheet-backdrop[data-keyboard-open='true'] .bottom-sheet-panel--sheet {
+  margin-bottom: var(--sheet-keyboard-lift);
+  overflow: visible;
+}
+
+.bottom-sheet-backdrop[data-keyboard-open='true'] .bottom-sheet-panel::before,
+.bottom-sheet-backdrop[data-keyboard-open='true'] .bottom-sheet-panel::after {
+  bottom: calc(var(--ui-sheet-glass-inset) - var(--sheet-keyboard-lift));
+}
+
+.bottom-sheet-backdrop[data-keyboard-open='true'] .bottom-sheet-panel::after {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 .bottom-sheet-panel[data-dragging='true'] {
   transition: none;
 }
@@ -1055,7 +1235,6 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
 /** Device safe-area is covered by the keyboard — tighten footer/body inset inside lifted sheets. */
 .bottom-sheet-backdrop[data-keyboard-open='true'] .pb-modal-bottom {
   padding-bottom: 1rem;
-  transition: padding-bottom var(--ui-keyboard-anim-ms) var(--ui-keyboard-ease);
 }
 
 /** Tall sheet scroll column — header sticky inside (iOS material; TMA_LAYOUT glass canon). */
@@ -1261,8 +1440,14 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
     display: none;
   }
 
-  .bottom-sheet-panel {
+  .bottom-sheet-panel,
+  .ui-glass-panel {
     background: color-mix(in srgb, var(--ui-card) 94%, var(--ui-elevated) 6%);
+  }
+
+  .ui-glass-panel::before,
+  .ui-glass-panel::after {
+    display: none;
   }
 }
 

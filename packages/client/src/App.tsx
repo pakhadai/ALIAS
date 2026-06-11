@@ -13,6 +13,7 @@ import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
 import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import { AppLoginProvider } from './context/AppLoginContext';
 import { BackNavigationGuardProvider } from './context/BackNavigationGuardContext';
+import { LobbyExitProvider } from './context/LobbyExitContext';
 import { ScreenShell } from './components/layout/ScreenShell';
 import { typographyClass } from './constants/typography';
 import {
@@ -317,7 +318,9 @@ const App: React.FC = () => {
       <TelegramAuthBootstrap>
         <GameProvider>
           <BackNavigationGuardProvider>
-            <AppContent />
+            <LobbyExitProvider>
+              <AppContent />
+            </LobbyExitProvider>
           </BackNavigationGuardProvider>
         </GameProvider>
       </TelegramAuthBootstrap>

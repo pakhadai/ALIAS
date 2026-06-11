@@ -18,12 +18,7 @@ import {
 } from '../../constants/typography';
 import { Button } from '../../components/Button';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
-import {
-  AppHeader,
-  FixedBottomBar,
-  ScreenShell,
-  UI_APP_HEADER_SLOT_CLASS,
-} from '../../components/layout';
+import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
 import { GameState, Language, Category, GameMode } from '../../types';
 import type { GameSettings } from '../../types';
@@ -36,13 +31,19 @@ import {
   SettingsToggle,
 } from '../../components/Settings';
 import { useGame } from '../../context/GameContext';
-import { initialState } from '../../context/gameReducer';
 import { useAuthContext } from '../../context/AuthContext';
 import { fetchStore } from '../../services/api';
 import type { WordPackItem } from '../../services/api';
 import { useResourceLoad } from '../../hooks/useResourceLoad';
 import { useT } from '../../hooks/useT';
 import { HAPTIC, vibrate } from '../../utils/haptics';
+import { HEADER_ROW_MIN_PX } from '../../constants/tmaLayoutConstants';
+
+const SETTINGS_TABS = [
+  ['mode', 'gameMode'] as const,
+  ['content', 'content'] as const,
+  ['rules', 'rulesTitle'] as const,
+] as const;
 
 function SectionHeader({
   title,
@@ -90,7 +91,6 @@ export const SettingsScreen = () => {
   });
   const [rulesOpen, setRulesOpen] = useState({
     basics: true,
-    teams: false,
     extras: false,
     quizTypes: true,
     quizMore: false,
@@ -107,10 +107,8 @@ export const SettingsScreen = () => {
     settings.mode.gameMode === GameMode.QUIZ ? settings.mode.quizQuestionTime : 10
   );
   const [localScoreToWin, setLocalScoreToWin] = useState(settings.general.scoreToWin);
-  const [localTeamCount, setLocalTeamCount] = useState(settings.general.teamCount);
   const lastHapticRoundTime = useRef(localRoundTime);
   const lastHapticScoreToWin = useRef(localScoreToWin);
-  const lastHapticTeamCount = useRef(localTeamCount);
 
   // Sync local state with server changes
   useEffect(() => {
@@ -125,10 +123,6 @@ export const SettingsScreen = () => {
   useEffect(() => {
     setLocalScoreToWin(settings.general.scoreToWin);
   }, [settings.general.scoreToWin]);
-
-  useEffect(() => {
-    setLocalTeamCount(settings.general.teamCount);
-  }, [settings.general.teamCount]);
 
   const updateGeneral = <K extends keyof GameSettings['general']>(
     key: K,
@@ -207,36 +201,50 @@ export const SettingsScreen = () => {
     }
   }, [settings.mode.gameMode]);
 
-  const resetAllRoomSettings = () => {
-    if (!isHost) return;
-    if (
-      gameState !== GameState.LOBBY &&
-      gameState !== GameState.MENU &&
-      gameState !== GameState.SETTINGS
-    )
-      return;
-    const { theme, soundEnabled, soundPreset } = settings.general;
-    sendAction({
-      action: 'UPDATE_SETTINGS',
-      data: {
-        general: {
-          ...initialState.settings.general,
-          // Keep device-only prefs intact (they are not "room rules")
-          theme,
-          soundEnabled,
-          soundPreset,
-        },
-        mode: initialState.settings.mode,
-      },
-    });
-  };
-
   const goBackToLobby = () => setGameState(GameState.LOBBY);
+
+  const settingsMenuItems = useMemo(
+    () => [
+      { id: '1', label: 'Пункт 1', onSelect: () => console.log('settings menu: item 1') },
+      { id: '2', label: 'Пункт 2', onSelect: () => console.log('settings menu: item 2') },
+      { id: '3', label: 'Пункт 3', onSelect: () => console.log('settings menu: item 3') },
+    ],
+    []
+  );
+
+  const settingsTabBar = (
+    <div className="grid w-full grid-cols-3 gap-2">
+      {SETTINGS_TABS.map(([id, labelKey]) => {
+        const active = activeTab === id;
+        const label =
+          labelKey === 'gameMode'
+            ? (t.gameMode ?? 'Режим')
+            : labelKey === 'content'
+              ? (t.content ?? 'Словник')
+              : t.rulesTitle;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setActiveTab(id)}
+            className={`py-2 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
+              active
+                ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <ScreenShell
       className={`items-center ${currentTheme.bg}`}
-      contentClassName="items-center max-w-2xl w-full mx-auto px-6 md:px-8"
+      layout="canonical"
+      contentClassName="items-center"
       headerFixed
       footerFixed
       header={
@@ -246,18 +254,11 @@ export const SettingsScreen = () => {
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
           backTestId="settings-close"
-          right={
-            isHost ? (
-              <button
-                type="button"
-                onClick={resetAllRoomSettings}
-                className={`${UI_APP_HEADER_SLOT_CLASS} min-h-11 px-2 ${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg active:scale-95`}
-              >
-                {t.reset ?? 'Скинути'}
-              </button>
-            ) : undefined
-          }
-        />
+          menuItems={settingsMenuItems}
+          childRowHeightPx={HEADER_ROW_MIN_PX}
+        >
+          {settingsTabBar}
+        </AppHeader>
       }
       footer={
         <FixedBottomBar island contentClassName="max-w-2xl w-full">
@@ -272,35 +273,7 @@ export const SettingsScreen = () => {
         </FixedBottomBar>
       }
     >
-      <div className="w-full space-y-6 pb-4">
-        <div className="sticky top-0 z-10 -mt-6 pt-2 pb-4 bg-linear-to-b from-[color-mix(in_srgb,var(--ui-bg)_92%,transparent)] to-transparent">
-          <div className="grid grid-cols-3 gap-2">
-            {(
-              [
-                ['mode', t.gameMode ?? 'Режим'] as const,
-                ['content', t.content ?? 'Словник'] as const,
-                ['rules', t.rulesTitle] as const,
-              ] as const
-            ).map(([id, label]) => {
-              const active = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTab(id)}
-                  className={`py-2.5 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
-                    active
-                      ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                      : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
+      <div className="w-full space-y-6 pb-4 pt-3">
         {/* BLOCK 1: Game Mode */}
         {activeTab === 'mode' && (
           <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
@@ -1079,127 +1052,6 @@ export const SettingsScreen = () => {
                 )}
 
                 <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2 -mt-2">
-                  <div className="py-4">
-                    <SectionHeader
-                      title={t.lobbyRulesSectionTeams}
-                      open={rulesOpen.teams}
-                      onToggle={() => setRulesOpen((s) => ({ ...s, teams: !s.teams }))}
-                    />
-                    {rulesOpen.teams && (
-                      <div className="space-y-4 pt-1">
-                        <div className="flex justify-between">
-                          <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                            {t.teamCount}
-                          </p>
-                          <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
-                            {settings.general.teamCount}
-                          </span>
-                        </div>
-                        <div className="rounded-2xl border border-ui-border bg-ui-surface p-3">
-                          <p className={`${labelSectionClass} text-ui-fg-muted mb-2`}>
-                            {t.teamMode ?? 'Team mode'}
-                          </p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => updateGeneral('teamMode', 'TEAMS')}
-                              className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
-                                (settings.general.teamMode ?? 'TEAMS') === 'TEAMS'
-                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                              }`}
-                            >
-                              {t.teamModeTeams ?? 'Teams'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateGeneral('teamMode', 'SOLO')}
-                              className={`py-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all active:scale-[0.98] ${
-                                (settings.general.teamMode ?? 'TEAMS') === 'SOLO'
-                                  ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-                                  : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-                              }`}
-                            >
-                              {t.teamModeSolo ?? 'Solo'}
-                            </button>
-                          </div>
-                          {(settings.general.teamMode ?? 'TEAMS') === 'SOLO' && (
-                            <p
-                              className={`mt-2 ${typographyClass.label} text-ui-fg-muted opacity-80`}
-                            >
-                              {t.teamModeSoloHint ??
-                                'Teams are disabled — each player plays for themselves.'}
-                            </p>
-                          )}
-                        </div>
-                        <input
-                          type="range"
-                          min="2"
-                          max="10"
-                          step="1"
-                          value={localTeamCount}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value);
-                            setLocalTeamCount(v);
-                            if (v !== lastHapticTeamCount.current) {
-                              lastHapticTeamCount.current = v;
-                              vibrate(HAPTIC.nav);
-                            }
-                          }}
-                          onMouseUp={() => updateGeneral('teamCount', localTeamCount)}
-                          onTouchEnd={() => updateGeneral('teamCount', localTeamCount)}
-                          disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                          className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
-                        />
-                        <div className="flex items-center justify-between gap-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = Math.max(2, localTeamCount - 1);
-                              setLocalTeamCount(next);
-                              updateGeneral('teamCount', next);
-                            }}
-                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                            className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                          >
-                            −
-                          </button>
-                          <input
-                            type="number"
-                            min={2}
-                            max={10}
-                            step={1}
-                            value={localTeamCount}
-                            onChange={(e) => {
-                              const v = Number(e.target.value);
-                              if (!Number.isFinite(v)) return;
-                              setLocalTeamCount(v);
-                            }}
-                            onBlur={() => {
-                              const clamped = Math.max(2, Math.min(10, Math.round(localTeamCount)));
-                              setLocalTeamCount(clamped);
-                              updateGeneral('teamCount', clamped);
-                            }}
-                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                            className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = Math.min(10, localTeamCount + 1);
-                              setLocalTeamCount(next);
-                              updateGeneral('teamCount', next);
-                            }}
-                            disabled={(settings.general.teamMode ?? 'TEAMS') === 'SOLO'}
-                            className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
                   <div className="py-4">
                     <SectionHeader
                       title={t.lobbyRulesSectionExtras}

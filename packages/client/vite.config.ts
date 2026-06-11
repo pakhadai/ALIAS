@@ -105,8 +105,11 @@ export default defineConfig({
       '/socket.io': { target: 'http://127.0.0.1:3001', ws: true },
       '/health': { target: 'http://127.0.0.1:3001', changeOrigin: true },
     },
+    // Fail fast if 5173 is taken — avoids silent drift to 5174/5175 from orphan Vite instances.
+    strictPort: true,
     // Ensure HMR websocket binds to localhost on the expected port
     host: 'localhost',
+    port: 5173,
     hmr: {
       protocol: 'ws',
       host: 'localhost',

@@ -205,7 +205,8 @@ export const LobbySettingsScreen = () => {
   return (
     <ScreenShell
       className={`relative ${currentTheme.bg} transition-colors duration-500`}
-      contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 py-4"
+      layout="canonical"
+      contentClassName="py-4"
       headerFixed
       footerFixed
       header={

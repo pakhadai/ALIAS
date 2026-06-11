@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBackNavigationGuardOptional } from '../context/BackNavigationGuardContext';
+import { useLobbyExitOptional } from '../context/LobbyExitContext';
 import { GameState } from '../types';
 
 type UseTelegramBackButtonArgs = {
@@ -20,6 +21,7 @@ export const TELEGRAM_BACK_HIDDEN_STATES: ReadonlySet<GameState> = new Set([
 
 export type TelegramBackAction =
   | { type: 'setGameState'; state: GameState }
+  | { type: 'requestLobbyExit' }
   | { type: 'leaveRoom'; opts?: { resetGameMode?: boolean } };
 
 type TelegramBackContext = {
@@ -55,10 +57,7 @@ export function resolveTelegramBackAction(
     case GameState.TEAMS:
       return { type: 'setGameState', state: GameState.LOBBY };
     case GameState.LOBBY:
-      return {
-        type: 'leaveRoom',
-        opts: ctx.gameMode === 'OFFLINE' ? { resetGameMode: false } : undefined,
-      };
+      return { type: 'requestLobbyExit' };
     case GameState.VS_SCREEN:
     case GameState.PRE_ROUND:
     case GameState.COUNTDOWN:
@@ -89,6 +88,7 @@ export function useTelegramBackButton({
   leaveRoom,
 }: UseTelegramBackButtonArgs): void {
   const backGuard = useBackNavigationGuardOptional();
+  const lobbyExit = useLobbyExitOptional();
 
   useEffect(() => {
     if (!isTelegram) return;
@@ -115,6 +115,7 @@ export function useTelegramBackButton({
 
       const proceed = () => {
         if (resolved.type === 'setGameState') setGameState(resolved.state);
+        else if (resolved.type === 'requestLobbyExit') lobbyExit?.requestLobbyExit();
         else leaveRoom(resolved.opts);
       };
 
@@ -133,6 +134,7 @@ export function useTelegramBackButton({
     isAuthenticated,
     isTelegram,
     leaveRoom,
+    lobbyExit,
     roomCode,
     setGameState,
   ]);

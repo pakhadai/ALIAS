@@ -25,5 +25,8 @@ export {
   UI_APP_HEADER_TITLE_ROW_CLASS,
   UI_GLASS_PANEL_CLASS,
 } from './GlassAppHeader';
-export type { AppHeaderProps, GlassAppHeaderProps } from './GlassAppHeader';
+export type { AppHeaderProps, AppHeaderMenuItem, GlassAppHeaderProps } from './GlassAppHeader';
+export { GlassIconButton } from './GlassIconButton';
+export type { GlassIconButtonProps } from './GlassIconButton';
+export { AppHeaderOverflowMenu } from './AppHeaderOverflowMenu';
 export { AppHeader as Header, GlassAppHeader as LiquidGlassHeader } from './Header';

@@ -1,9 +1,16 @@
 import type { ReactNode } from 'react';
+import { SCREEN_LAYOUT, type ScreenLayoutPreset } from '../../constants/screenLayout';
+import { ScreenLayoutProvider } from '../../context/ScreenLayoutContext';
 import { GlassChromePortal } from './GlassChromePortal';
 
 export interface ScreenShellProps {
   children: ReactNode;
   className?: string;
+  /**
+   * SSOT body width + horizontal inset — syncs scroll column with browser {@link AppHeader} back rail.
+   * Extra layout classes go in `contentClassName` (flex, gap, py, etc.).
+   */
+  layout?: ScreenLayoutPreset;
   /** Scrollable main column (default `true`). Safe-area padding on the scroll container. */
   scroll?: boolean;
   /** Sticky glass bar inside the scroll column — e.g. {@link GlassAppHeader}; content starts below it at scroll=0. */
@@ -60,6 +67,7 @@ function renderFixedChrome(node: ReactNode): ReactNode {
 export function ScreenShell({
   children,
   className = '',
+  layout,
   scroll = true,
   header,
   footer,
@@ -70,25 +78,23 @@ export function ScreenShell({
   const shellClass = joinClasses(SHELL_OUTER, className);
   const hasHeader = Boolean(header);
   const hasFooter = Boolean(footer);
+  const layoutConfig = layout ? SCREEN_LAYOUT[layout] : null;
+  const bodyClassName = joinClasses(layoutConfig?.bodyClassName, contentClassName);
 
-  if (scroll) {
-    return (
-      <div className={shellClass}>
-        {headerFixed ? renderFixedChrome(header) : null}
-        <div
-          className={scrollColumnClass(hasHeader, hasFooter, headerFixed, footerFixed)}
-          data-screen-shell-scroll=""
-        >
-          {headerFixed ? null : header}
-          <div className={joinClasses(CONTENT_WRAP_BASE, contentClassName)}>{children}</div>
-          {footerFixed ? null : footer}
-        </div>
-        {footerFixed ? renderFixedChrome(footer) : null}
+  const shell = scroll ? (
+    <div className={shellClass}>
+      {headerFixed ? renderFixedChrome(header) : null}
+      <div
+        className={scrollColumnClass(hasHeader, hasFooter, headerFixed, footerFixed)}
+        data-screen-shell-scroll=""
+      >
+        {headerFixed ? null : header}
+        <div className={joinClasses(CONTENT_WRAP_BASE, bodyClassName)}>{children}</div>
+        {footerFixed ? null : footer}
       </div>
-    );
-  }
-
-  return (
+      {footerFixed ? renderFixedChrome(footer) : null}
+    </div>
+  ) : (
     <div
       className={joinClasses(
         shellClass,
@@ -105,12 +111,12 @@ export function ScreenShell({
       )}
     >
       {headerFixed ? renderFixedChrome(header) : header}
-      <div
-        className={joinClasses('flex min-h-0 flex-1 flex-col overflow-hidden', contentClassName)}
-      >
+      <div className={joinClasses('flex min-h-0 flex-1 flex-col overflow-hidden', bodyClassName)}>
         {children}
       </div>
       {footerFixed ? renderFixedChrome(footer) : footer}
     </div>
   );
+
+  return <ScreenLayoutProvider value={layoutConfig}>{shell}</ScreenLayoutProvider>;
 }

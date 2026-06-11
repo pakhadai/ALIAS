@@ -75,6 +75,16 @@ export const StoreScreen = () => {
 
   const goBack = () => setGameState(GameState.MENU);
 
+  const storeMenuItems = useMemo(
+    () => [
+      { id: '1', label: 'Пункт 1', onSelect: () => console.log('store menu: item 1') },
+      { id: '2', label: 'Пункт 2', onSelect: () => console.log('store menu: item 2') },
+      { id: '3', label: 'Пункт 3', onSelect: () => console.log('store menu: item 3') },
+      { id: '4', label: 'Пункт 4', onSelect: () => console.log('store menu: item 4') },
+    ],
+    []
+  );
+
   const redirectGuestToProfile = () => {
     showNotification(t.storeAuthRequiredToast, 'info');
     setGameState(GameState.PROFILE);
@@ -126,7 +136,7 @@ export const StoreScreen = () => {
   return (
     <ScreenShell
       className="bg-ui-bg transition-colors duration-500"
-      contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8"
+      layout="canonical"
       headerFixed
       footerFixed
       header={
@@ -134,6 +144,7 @@ export const StoreScreen = () => {
           fixed
           title={<ScreenTitle themeClass={currentTheme.textMain}>Магазин</ScreenTitle>}
           onBack={goBack}
+          menuItems={storeMenuItems}
           childRowHeightPx={HEADER_ROW_MIN_PX}
         >
           <div className={`w-full border-b ${divider}`}>

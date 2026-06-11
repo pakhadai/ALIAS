@@ -62,11 +62,14 @@ export const MenuScreen = () => {
   };
 
   const menuActionIconBtn = [
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center',
-    'transition-all duration-150 ease-out',
+    'relative z-[1] inline-flex h-11 w-11 shrink-0 items-center justify-center',
+    'touch-manipulation transition-all duration-150 ease-out',
     'active:scale-90',
   ].join(' ');
-  const menuActionIcon = `${currentTheme.iconColor} opacity-50 hover:opacity-100 transition-opacity`;
+  const menuActionIcon = [
+    currentTheme.iconColor,
+    'pointer-events-none opacity-50 hover:opacity-100 transition-opacity',
+  ].join(' ');
 
   const showProfileBadge = !isAuthenticated;
   const canQuickJoin = quickJoinCode.length === ROOM_CODE_LENGTH && /^\d+$/.test(quickJoinCode);
@@ -103,18 +106,17 @@ export const MenuScreen = () => {
       <button
         type="button"
         onClick={handleProfileClick}
-        className={menuActionIconBtn}
+        className={`${menuActionIconBtn} overflow-visible`}
         aria-label="Profile"
       >
-        <span className="relative inline-flex">
-          <User size={22} className={menuActionIcon} strokeWidth={1.75} />
-          {showProfileBadge && (
-            <span
-              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ui-danger ring-2 ring-ui-bg"
-              aria-hidden
-            />
-          )}
-        </span>
+        <User size={22} className={menuActionIcon} strokeWidth={1.75} />
+        {showProfileBadge ? (
+          <span
+            data-testid="menu-profile-guest-badge"
+            className="menu-profile-guest-badge"
+            aria-hidden
+          />
+        ) : null}
       </button>
       <button
         type="button"
@@ -129,6 +131,7 @@ export const MenuScreen = () => {
         onClick={() => setShowRules(true)}
         className={menuActionIconBtn}
         aria-label={t.rulesTitle}
+        data-testid="menu-rules-button"
       >
         <BookOpen size={22} className={menuActionIcon} strokeWidth={1.75} />
       </button>

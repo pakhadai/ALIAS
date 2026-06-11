@@ -19,7 +19,6 @@ const labels = {
 };
 
 const baseProps = {
-  isDark: false,
   themeTextMain: 'text-ui-fg',
   themeIconColor: 'text-ui-fg',
   themeButtonClass: 'bg-ui-accent',

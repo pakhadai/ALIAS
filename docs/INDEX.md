@@ -38,6 +38,7 @@
 | [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md) | План фаз уніфікації хедерів (OMR → Alias), session prompts 0–6 |
 | [`PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`](./PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md) | Profile / ProfileSettings / LobbySettings — аудит, session prompts 0–8 + мікро A–C |
 | [`LIQUID_GLASS_FIX_PROMPTS.md`](./LIQUID_GLASS_FIX_PROMPTS.md) | Liquid Glass Header/Footer — аудит backdrop/TMA, session prompts 0–9 + мікро A–B |
+| [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md) | LAYOUT-001 — layout presets, footer width, radius, surface classes; session prompts 0–7 + мікро A–B |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |
@@ -74,6 +75,7 @@
 | Profile / lobby settings (промти покращень) | `PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
 | UI-токени / теми в компонентах | `UI_TOKENS.md` |
 | Уніфікація шрифтів / розмірів | `TYPOGRAPHY_UNIFICATION.md` |
+| Layout / footer / radius / surfaces (промти) | `LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |
 | Тести | `TESTING_ACCEPTANCE.md` + `pnpm verify` |
 | Кінець сесії | `docs/daily/YYYY-MM-DD.md` + `CHANGELOG` `[Unreleased]` |

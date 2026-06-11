@@ -346,8 +346,8 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
         </ModalSheetTitle>
       }
     >
-      <div className="shrink-0 overflow-x-auto scrollbar-hide px-5">
-        <div role="tablist" aria-label={t.rulesTitle} className="flex w-max gap-2 pb-3">
+      <div className="w-full min-w-0 shrink-0 overflow-x-auto no-scrollbar box-border">
+        <div role="tablist" aria-label={t.rulesTitle} className="flex w-max gap-2 px-5 pb-3">
           {TABS.map((tab) => (
             <button
               key={tab}

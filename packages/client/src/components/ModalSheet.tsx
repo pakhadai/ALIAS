@@ -199,9 +199,9 @@ export function ModalSheet({
   const ariaModalProp = role === 'presentation' || ariaModal === false ? undefined : true;
 
   useEffect(() => {
-    const keyboardJustToggled = isKeyboardOpen !== wasKeyboardOpenRef.current;
+    const keyboardJustOpened = isKeyboardOpen && !wasKeyboardOpenRef.current;
     wasKeyboardOpenRef.current = isKeyboardOpen;
-    if (!keyboardJustToggled) return;
+    if (!keyboardJustOpened) return;
 
     const backdrop = backdropRef.current;
     const panel = panelRef.current;

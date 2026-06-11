@@ -1,8 +1,18 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { useScreenLayoutOptional } from '../../context/ScreenLayoutContext';
 import { GLASS_CHROME_PORTAL_ROOT_ID } from './GlassChromePortal';
 import { ScreenShell } from './ScreenShell';
+
+function LayoutProbe() {
+  const layout = useScreenLayoutOptional();
+  return (
+    <span data-testid="layout-probe">
+      {layout ? `${layout.contentRail}:${layout.contentInsetX}` : 'none'}
+    </span>
+  );
+}
 
 describe('ScreenShell', () => {
   it('should constrain shell height and make the content column scrollable', () => {
@@ -50,6 +60,20 @@ describe('ScreenShell', () => {
     expect(contentWrap?.className).toContain('px-4');
     expect(contentWrap?.className).toContain('items-center');
     expect(contentWrap?.className).not.toContain('overflow-y-auto');
+  });
+
+  it('should merge layout preset body classes and provide layout context to fixed chrome', () => {
+    render(
+      <ScreenShell layout="canonical" headerFixed header={<LayoutProbe />} contentClassName="gap-4">
+        <div data-testid="content">Body</div>
+      </ScreenShell>
+    );
+
+    const contentWrap = screen.getByTestId('content').parentElement;
+    expect(contentWrap?.className).toContain('max-w-2xl');
+    expect(contentWrap?.className).toContain('px-6');
+    expect(contentWrap?.className).toContain('gap-4');
+    expect(screen.getByTestId('layout-probe').textContent).toBe('canonical:1.5rem');
   });
 
   it('should omit scroll top safe-area when header reserves space', () => {

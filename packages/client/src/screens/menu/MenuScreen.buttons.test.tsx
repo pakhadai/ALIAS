@@ -129,6 +129,14 @@ describe('MenuScreen buttons', () => {
     expect(setGameState).toHaveBeenCalledWith(GameState.PROFILE);
   });
 
+  it('should show solid guest badge on profile icon when not authenticated', () => {
+    render(<MenuScreen />);
+
+    const badge = screen.getByTestId('menu-profile-guest-badge');
+    expect(badge).toBeVisible();
+    expect(badge.className).toContain('menu-profile-guest-badge');
+  });
+
   it('should open app settings when settings button is clicked', async () => {
     const user = userEvent.setup();
     render(<MenuScreen />);
@@ -144,7 +152,7 @@ describe('MenuScreen buttons', () => {
     const user = userEvent.setup();
     render(<MenuScreen />);
 
-    await user.click(screen.getByRole('button', { name: 'Правила' }));
+    await user.click(screen.getByTestId('menu-rules-button'));
 
     await waitFor(() => {
       expect(screen.getByRole('dialog', { name: 'Правила' })).toBeTruthy();

@@ -8,11 +8,10 @@ import {
   Shield,
   BarChart3,
 } from 'lucide-react';
-import { labelSectionClass } from '../../../constants/typography';
-import { typographyClass } from '../../../constants/typography';
+import { labelSectionClass, typographyClass } from '../../../constants/typography';
+import { PROFILE_NAV_ACCENT_BTN_CLASS, PROFILE_NAV_BTN_CLASS } from './profileSurfaceClasses';
 
 export interface ProfileNavListProps {
-  isDark: boolean;
   themeTextMain: string;
   themeIconColor: string;
   themeButtonClass: string;
@@ -47,7 +46,6 @@ function NavSection({ title }: { title: string }) {
 }
 
 export function ProfileNavList({
-  isDark,
   themeTextMain,
   themeIconColor,
   themeButtonClass,
@@ -61,11 +59,6 @@ export function ProfileNavList({
   onStore,
   onAdminPanel,
 }: ProfileNavListProps) {
-  const navBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-[0.98] ${
-    isDark
-      ? 'bg-ui-surface border border-ui-border active:bg-ui-surface-hover'
-      : 'bg-ui-card border border-ui-border active:bg-ui-surface-hover shadow-sm'
-  }`;
   const navLabel = `${typographyClass.label} font-sans tracking-[0.25em] ${themeTextMain}`;
   const accentLock = 'text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]';
 
@@ -73,7 +66,7 @@ export function ProfileNavList({
     <div className="w-full max-w-md mx-auto space-y-3">
       <NavSection title={labels.sectionGame} />
 
-      <button type="button" onClick={onMyStats} className={navBtn}>
+      <button type="button" onClick={onMyStats} className={PROFILE_NAV_BTN_CLASS}>
         <div className="flex items-center gap-3">
           <BarChart3 size={16} className={themeIconColor} />
           <span className={navLabel}>{labels.myStats}</span>
@@ -81,7 +74,7 @@ export function ProfileNavList({
         <ChevronRight size={16} className={`${themeIconColor} opacity-30`} />
       </button>
 
-      <button type="button" onClick={onMyPacks} className={navBtn}>
+      <button type="button" onClick={onMyPacks} className={PROFILE_NAV_BTN_CLASS}>
         <div className="flex items-center gap-3 min-w-0">
           <BookOpen size={16} className={hasCustomPacks ? themeIconColor : accentLock} />
           <div className="text-left min-w-0">
@@ -102,7 +95,7 @@ export function ProfileNavList({
 
       <NavSection title={labels.sectionSettings} />
 
-      <button type="button" onClick={onProfileSettings} className={navBtn}>
+      <button type="button" onClick={onProfileSettings} className={PROFILE_NAV_BTN_CLASS}>
         <div className="flex items-center gap-3">
           <User size={16} className={themeIconColor} />
           <span className={navLabel}>{labels.profileSettings}</span>
@@ -110,7 +103,7 @@ export function ProfileNavList({
         <ChevronRight size={16} className={`${themeIconColor} opacity-30`} />
       </button>
 
-      <button type="button" onClick={onLobbySettings} className={navBtn}>
+      <button type="button" onClick={onLobbySettings} className={PROFILE_NAV_BTN_CLASS}>
         <div className="flex items-center gap-3 min-w-0">
           <SlidersHorizontal size={16} className={themeIconColor} />
           <div className="text-left min-w-0">
@@ -127,7 +120,11 @@ export function ProfileNavList({
 
       <NavSection title={labels.sectionExtra} />
 
-      <button type="button" onClick={onStore} className={`${navBtn} ${themeButtonClass}`}>
+      <button
+        type="button"
+        onClick={onStore}
+        className={`${PROFILE_NAV_ACCENT_BTN_CLASS} ${themeButtonClass}`}
+      >
         <div className="flex items-center gap-3">
           <ShoppingBag size={16} />
           <span className={`${typographyClass.label} font-sans tracking-[0.25em]`}>
@@ -138,7 +135,7 @@ export function ProfileNavList({
       </button>
 
       {showAdminEntry ? (
-        <button type="button" onClick={onAdminPanel} className={navBtn}>
+        <button type="button" onClick={onAdminPanel} className={PROFILE_NAV_BTN_CLASS}>
           <div className="flex items-center gap-3">
             <Shield size={16} className="text-ui-accent" strokeWidth={2.25} aria-hidden />
             <span className={navLabel}>{labels.adminPanel}</span>

@@ -56,7 +56,12 @@ import {
   isEmptySavedLobbySettings,
 } from './gameReducer';
 import { applyOfflineGameAction } from './offlineGameActions';
-import { canEmitOnlineGameAction, resolveRoomErrorMessage } from '../utils/roomErrorMessage';
+import {
+  canEmitOnlineGameAction,
+  isSessionEndedRoomError,
+  resolveRoomErrorMessage,
+  shouldEjectToMenuOnSessionEnd,
+} from '../utils/roomErrorMessage';
 
 const GameStateContext = createContext<GameStateContextValue | undefined>(undefined);
 const GameUIContext = createContext<GameUIContextValue | undefined>(undefined);
@@ -76,6 +81,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /** Last server-confirmed settings — used to rollback optimistic host updates on room:error. */
   const lastSyncedSettingsRef = useRef<GameSettings | null>(null);
   const pendingOptimisticSettingsRef = useRef(false);
+  const socketLeaveRef = useRef<(() => void) | null>(null);
 
   const showNotification = useCallback(
     (message: string, type: 'info' | 'error' | 'success' = 'info') => {
@@ -445,8 +451,43 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           pendingOptimisticSettingsRef.current = false;
         }
-        const uiLang = stateRef.current.uiLanguage;
+        const cur = stateRef.current;
+        const uiLang = cur.uiLanguage;
         const message = resolveRoomErrorMessage(err.code, err.message, uiLang);
+
+        if (
+          isSessionEndedRoomError(err.code) &&
+          shouldEjectToMenuOnSessionEnd(cur.gameMode, cur.roomCode)
+        ) {
+          try {
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem(ROOM_CODE_KEY);
+            localStorage.removeItem(PLAYER_ID_KEY);
+          } catch (_err) {
+            void _err;
+          }
+          socketLeaveRef.current?.();
+          offlineJoinPendingRef.current = false;
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              gameState: GameState.MENU,
+              gameMode: 'ONLINE',
+              isHost: false,
+              isConnected: false,
+              roomCode: '',
+              myPlayerId: '',
+              players: [],
+              teams: [],
+              teamsLocked: false,
+              connectionError: null,
+              connectionErrorCode: null,
+            },
+          });
+          showNotification(getUiStrings(uiLang).sessionEnded, 'error');
+          return;
+        }
+
         dispatch({
           type: 'SET_STATE',
           payload: { connectionError: message, connectionErrorCode: err.code },
@@ -476,6 +517,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }, []),
   });
+
+  useEffect(() => {
+    socketLeaveRef.current = socketApi.leaveRoom;
+  }, [socketApi.leaveRoom]);
 
   // Після повного reload сокет не підключений, але ключі rejoin уже в localStorage —
   // інакше `room:rejoin` у useSocketConnection ніколи не виконається.

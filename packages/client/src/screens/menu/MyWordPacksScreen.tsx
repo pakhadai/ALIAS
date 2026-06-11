@@ -143,7 +143,8 @@ export const MyWordPacksScreen = () => {
     return (
       <ScreenShell
         className="bg-ui-bg"
-        contentClassName="max-w-2xl w-full mx-auto flex flex-col items-center justify-center px-8 gap-6 text-center"
+        layout="canonical"
+        contentClassName="flex flex-col items-center justify-center gap-6 text-center"
         headerFixed
         header={
           <AppHeader
@@ -181,7 +182,8 @@ export const MyWordPacksScreen = () => {
     return (
       <ScreenShell
         className="bg-ui-bg"
-        contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 py-4 space-y-5"
+        layout="canonical"
+        contentClassName="py-4 space-y-5"
         headerFixed
         footerFixed
         header={
@@ -260,7 +262,8 @@ export const MyWordPacksScreen = () => {
   return (
     <ScreenShell
       className="bg-ui-bg"
-      contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 space-y-4"
+      layout="canonical"
+      contentClassName="space-y-4"
       headerFixed
       footerFixed={decks.length < MAX_USER_PACKS}
       header={

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../../components/layout';
+import { ScreenTitle } from '../../../components/typography/ScreenTitle';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
@@ -19,13 +20,14 @@ export const ScoreboardScreen = () => {
   return (
     <ScreenShell
       className={`${bgColor} ${textColor} font-sans antialiased transition-colors`}
+      layout="fullPx6"
       contentClassName="pb-4"
       headerFixed
       footerFixed
       header={
         <AppHeader
           fixed
-          title={<h2 className="font-serif text-lg tracking-widest uppercase">{t.score}</h2>}
+          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.score}</ScreenTitle>}
           onBack={() => leaveRoom()}
           backAriaLabel={t.toMainMenu}
         />

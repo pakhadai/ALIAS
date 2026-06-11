@@ -13,7 +13,6 @@ const baseProps = {
     accuracy: 'Accuracy',
     tapForDetails: 'Tap for details',
   },
-  isDark: false,
   themeTextMain: 'text-ui-fg',
   themeTextSecondary: 'text-ui-fg-muted',
   onPress: vi.fn(),

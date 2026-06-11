@@ -19,11 +19,27 @@ export function canEmitOnlineGameAction(
   return true;
 }
 
+const SESSION_ENDED_ERROR_CODES = new Set<RoomErrorCode>(['ROOM_NOT_FOUND', 'PLAYER_NOT_IN_ROOM']);
+
 const ROOM_ERROR_I18N_KEYS: Partial<Record<RoomErrorCode, keyof ReturnType<typeof getUiStrings>>> =
   {
     PLAYER_NOT_IN_ROOM: 'playerNotInRoom',
+    ROOM_NOT_FOUND: 'sessionEnded',
     SOCKET_CONNECT_ERROR: 'connectionFailed',
   };
+
+/** Room no longer exists or player was removed — client should leave lobby UI. */
+export function isSessionEndedRoomError(code: RoomErrorCode): boolean {
+  return SESSION_ENDED_ERROR_CODES.has(code);
+}
+
+/** True when an expired online room should reset app state to MENU (not mid join/create). */
+export function shouldEjectToMenuOnSessionEnd(
+  gameMode: 'ONLINE' | 'OFFLINE',
+  roomCode: string
+): boolean {
+  return gameMode === 'ONLINE' && roomCode.trim().length > 0;
+}
 
 /** User-facing copy for `room:error` — prefers i18n over raw server English. */
 export function resolveRoomErrorMessage(

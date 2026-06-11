@@ -1,12 +1,13 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   APP_HEADER_DOCUMENT_FLAG,
   UI_APP_HEADER_FIXED_CLASS,
 } from '../../components/layout/GlassAppHeader';
 import { FOOTER_ISLAND_DOCUMENT_FLAG } from '../../components/layout/FooterIsland';
+import { LobbyExitProvider } from '../../context/LobbyExitContext';
 import { LobbyScreen } from './LobbyScreen';
 import { GameMode } from '../../types';
 
@@ -207,14 +208,26 @@ vi.mock('../../hooks/useHapticFeedback', () => ({
 
 const isTelegramMiniApp = vi.fn(() => false);
 
+const hasTelegramInitData = vi.fn(() => false);
+
 vi.mock('../../hooks/useTelegramApp', () => ({
   isTelegramMiniApp: () => isTelegramMiniApp(),
+  hasTelegramInitData: () => hasTelegramInitData(),
 }));
+
+function renderLobbyScreen() {
+  return render(
+    <LobbyExitProvider>
+      <LobbyScreen />
+    </LobbyExitProvider>
+  );
+}
 
 describe('LobbyScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     isTelegramMiniApp.mockReturnValue(false);
+    hasTelegramInitData.mockReturnValue(false);
     mockGameMode = 'ONLINE';
     mockIsHost = true;
     mockTeams = [
@@ -239,27 +252,51 @@ describe('LobbyScreen', () => {
     ];
   });
 
+  it('should open leave confirmation when browser back is tapped and leave room on confirm', async () => {
+    const user = userEvent.setup();
+    renderLobbyScreen();
+
+    await user.click(screen.getByTestId('app-header-back'));
+    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
+    expect(within(dialog).getByRole('heading', { name: 'Leave?' })).toBeTruthy();
+    expect(within(dialog).getByText('Sure?')).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Exit' }));
+    expect(leaveRoom).toHaveBeenCalledWith(undefined);
+  });
+
+  it('should leave offline lobby without resetting gameMode after confirm', async () => {
+    const user = userEvent.setup();
+    mockGameMode = 'OFFLINE';
+    renderLobbyScreen();
+
+    await user.click(screen.getByTestId('app-header-back'));
+    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
+    await user.click(within(dialog).getByRole('button', { name: 'Exit' }));
+    expect(leaveRoom).toHaveBeenCalledWith({ resetGameMode: false });
+  });
+
   it('should show avatar strip instead of full players list in ONLINE mode', () => {
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByTestId('lobby-avatar-strip')).toBeTruthy();
     expect(screen.queryByTestId('lobby-players-section')).toBeNull();
   });
 
   it('should show full players section in OFFLINE mode', () => {
     mockGameMode = 'OFFLINE';
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByTestId('lobby-players-section')).toBeTruthy();
     expect(screen.queryByTestId('lobby-avatar-strip')).toBeNull();
   });
 
   it('should hide start validation line above button when teams incomplete', () => {
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.queryByTestId('lobby-start-validation')).toBeNull();
     expect(screen.queryByTestId('lobby-readiness-bar')).toBeNull();
   });
 
   it('should mark start as unavailable but still tappable for hint toast', () => {
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     const startBtn = screen.getByTestId('lobby-start-btn');
     expect(startBtn).toHaveAttribute('aria-disabled', 'true');
     expect(startBtn).not.toBeDisabled();
@@ -268,20 +305,20 @@ describe('LobbyScreen', () => {
 
   it('should show guest waiting card for online guests', () => {
     mockIsHost = false;
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByTestId('lobby-guest-waiting')).toBeTruthy();
     expect(screen.getByText('Pick a team')).toBeTruthy();
     expect(screen.getByText('Waiting for start')).toBeTruthy();
   });
 
   it('should show unassigned pool when a player has no team', () => {
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByText('Unassigned (1)')).toBeTruthy();
   });
 
   it('should show play mode bar for online guest without a team', () => {
     mockIsHost = false;
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByTestId('lobby-play-mode-bar')).toBeTruthy();
   });
 
@@ -307,26 +344,27 @@ describe('LobbyScreen', () => {
         nextPlayerIndex: 0,
       },
     ];
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.queryByTestId('lobby-play-mode-bar-slot')).toBeNull();
   });
 
   it('should show browser back and settings in header for online host outside TMA', () => {
-    render(<LobbyScreen />);
+    renderLobbyScreen();
     expect(screen.getByTestId('app-header-back')).toBeTruthy();
     expect(screen.getByTestId('lobby-header-settings')).toBeTruthy();
   });
 
   it('should hide header settings in TMA online mode', () => {
     isTelegramMiniApp.mockReturnValue(true);
-    render(<LobbyScreen />);
+    hasTelegramInitData.mockReturnValue(true);
+    renderLobbyScreen();
     expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
     expect(screen.queryByTestId('app-header-back')).toBeNull();
   });
 
   it('should open invite sheet when invite button is tapped', async () => {
     const user = userEvent.setup();
-    render(<LobbyScreen />);
+    renderLobbyScreen();
 
     await user.click(screen.getByTestId('lobby-invite-button'));
 
@@ -339,7 +377,7 @@ describe('LobbyScreen', () => {
   });
 
   it('should use viewport-fixed liquid glass header and footer island', () => {
-    const { container } = render(<LobbyScreen />);
+    const { container } = renderLobbyScreen();
 
     const header = document.body.querySelector('header');
     expect(header?.className).toContain(UI_APP_HEADER_FIXED_CLASS);

@@ -1,5 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { typographyClass, labelSectionTitleClass } from '../../../constants/typography';
+import {
+  PROFILE_LIST_CLASS,
+  PROFILE_PANEL_CLASS,
+  PROFILE_PANEL_HEADER_CLASS,
+} from './profileSurfaceClasses';
 
 export interface PlayerStatsDetailRow {
   label: string;
@@ -10,7 +15,6 @@ export interface PlayerStatsDetailRow {
 export interface PlayerStatsDetailPanelProps {
   title: string;
   rows: PlayerStatsDetailRow[];
-  isDark: boolean;
   themeTextMain: string;
   themeIconColor: string;
 }
@@ -18,20 +22,15 @@ export interface PlayerStatsDetailPanelProps {
 export function PlayerStatsDetailPanel({
   title,
   rows,
-  isDark,
   themeTextMain,
   themeIconColor,
 }: PlayerStatsDetailPanelProps) {
-  const panelClass = isDark
-    ? 'bg-ui-surface border-ui-border'
-    : 'bg-ui-card border-ui-border shadow-sm';
-
   return (
-    <div className={`w-full rounded-3xl border overflow-hidden ${panelClass}`}>
-      <div className="px-5 py-3.5 border-b border-ui-border-subtle text-center">
+    <div className={`w-full overflow-hidden ${PROFILE_PANEL_CLASS}`}>
+      <div className={PROFILE_PANEL_HEADER_CLASS}>
         <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>{title}</p>
       </div>
-      <ul className="divide-y divide-ui-border-subtle">
+      <ul className={PROFILE_LIST_CLASS}>
         {rows.map((row) => {
           const Icon = row.icon;
           return (

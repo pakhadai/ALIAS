@@ -7,6 +7,7 @@ import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import type { Player, Team } from '../../types';
+import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { typographyClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
 
@@ -90,19 +91,14 @@ export const TeamSetupScreen = () => {
   return (
     <ScreenShell
       className={currentTheme.bg}
-      contentClassName="px-8 space-y-6 pb-4"
+      layout="fullPx8"
+      contentClassName="space-y-6 pb-4"
       headerFixed
       footerFixed
       header={
         <AppHeader
           fixed
-          title={
-            <h2
-              className={`${typographyClass.label} font-sans tracking-[0.4em] ${currentTheme.textSecondary}`}
-            >
-              {t.teams}
-            </h2>
-          }
+          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.teams}</ScreenTitle>}
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
         />

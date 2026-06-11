@@ -31,6 +31,27 @@
 ## [Unreleased]
 
 ### Added
+- LAYOUT-001 epic plan: `docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` — screen layout presets, footer island SSOT, radius/surface classes; session prompts 0–7 + micro A–B
+- Browser `AppHeader` overflow menu: liquid glass ⋯ chip (`GlassIconButton`) always in the header rail (like back); `ui-glass-panel` popover portaled below the chip without layout shift; `menuItems` API; demo stubs on Profile, Store, and lobby Settings; hidden in TMA (native chrome)
+
+### Changed
+- Profile surface panels unified: guest/auth benefits list, stats cards, nav rows, and detail panel use `ui-glass-panel` volume (SSOT `profileSurfaceClasses.ts`); inset hairline dividers (`.ui-profile-list`, `.ui-profile-panel-header`) replace full-width `divide-ui-border`; `prefers-reduced-transparency` fallback for `.ui-glass-panel`
+- Browser header back control: liquid glass circular chip (33px) with `ArrowLeft` icon and theme `--ui-*` tokens (`ui-glass-icon-btn`) instead of plain X glyph
+- Screen layout SSOT: `ScreenShell` `layout` preset (`screenLayout.ts`) syncs body padding/max-width with browser `AppHeader` back rail via `ScreenLayoutContext` (through `GlassChromePortal`); migrated all back-button screens
+
+### Fixed
+- Expired online lobby session (`ROOM_NOT_FOUND` / `PLAYER_NOT_IN_ROOM` after rejoin): auto-reset to main menu, clear `alias_active_session` and rejoin keys — fixes stuck lobby UI after closing Telegram
+- Browser header overflow menu: `ui-glass-panel` overrode `position: fixed` with `relative`, so the popover stretched full-width and appeared mid-screen; inline `fixed` + `w-max` + `pointer-events-auto` anchor it under the ⋯ chip (`AppHeaderOverflowMenu.tsx`)
+- Lobby exit flow unified: browser `AppHeader` back, TMA `BackButton`, and future hardware back all route through `LobbyExitContext` → `ConfirmationModal` before `leaveRoom` (offline keeps `resetGameMode: false` on confirm)
+- Lobby browser back: wire `onBack` directly to `openExitConfirm` (not context indirection); register TMA handler in `useLayoutEffect` with ref-stable callback; exit modal portaled at screen root; `pointer-events: auto` on header content rail
+- Browser back button in `AppHeader`: use `hasTelegramInitData()` instead of `isTelegramMiniApp()` — plain browser loads `telegram-web-app.js` with a `platform` stub but no signed `initData`, so the header wrongly hid the back control
+- ModalSheet keyboard lift: panel tracks visual viewport instantly (no 280ms padding transition); glass shelf extends to keyboard edge — fixes black gap / exposed rounded corners on open and jank on dismiss (`styles.css`, `ModalSheet.tsx`, `useVisualViewportBottomInset.ts`)
+
+### Changed
+- Online lobby rules card (`OnlineLobbyIntro`): labeled summary (mode, round time, goal, words) with title «Правила гри» instead of cryptic `Classic · 60s · …` chip line; single host hint under title (no duplicate edit CTA)
+- Lobby play-format block (`LobbyPlayModeBar`): Solo/Teams toggle only (no hint copy); team count/shuffle live in teams section; default `teamMode` is `SOLO` (client `gameReducer`, server `RoomManager`)
+
+### Added
 - Guest lobby defaults (Micro C): `ProfileScreen` nav to `LobbySettingsScreen`; guests save defaults in `localStorage` (`guestLobbyDefaults.ts`); sign-in sync banner (`lobbyDefaultsGuestBannerBody`, UA/DE/EN); `createNewRoom` applies guest local defaults; authenticated `saveLobbySettings` path unchanged
 - Shared settings UI primitives in `components/Settings/`: `SettingsToggle`, `SettingsSlider`, `LanguageChipRow`, `CategoryChipGrid`, `UnsavedChangesModal`; migrated `LobbySettingsScreen`; incremental DRY in in-lobby `SettingsScreen` (categories, language chips, skip penalty)
 - Unsaved-changes guard on `ProfileSettingsScreen` and `LobbySettingsScreen`: `useUnsavedChangesGuard` + `BackNavigationGuardProvider` (AppHeader back + Telegram `BackButton`); i18n `settingsUnsaved*` (UA/DE/EN)
@@ -39,6 +60,7 @@
 - Liquid Glass chrome: `styles/glass.css` tokens, fixed header modifier (`ui-app-header--fixed`), floating `FooterIsland` capsule, `useGyroscope` (rAF-throttled DeviceOrientation after first gesture), `lib/glassTheme.ts` (`data-theme` from Telegram `colorScheme`); `ScreenShell` `headerFixed` / `footerFixed`, `FixedBottomBar` `island` mode; `GlassChromePortal` renders fixed chrome into `document.body` (Micro A)
 
 ### Fixed
+- Lobby/team-setup/scoreboard `AppHeader` titles now use canonical `ScreenTitle` (heading serif 1.5rem) instead of micro `typographyClass.label` — matches menu, profile, and in-lobby settings headers
 - Fixed footer feather blocking lobby team-card clicks — `FooterIsland` uses pass-through `pointer-events-none` with interactive inner wrapper; removed portal child `pointer-events: auto` override in `glass.css` (`FooterIsland.tsx`, `glass.css`)
 - TMA `AppHeader` glass bar too short for native back/menu chrome and title sitting above control row — title row uses CSS grid bottom 44px band; content-safe floor raised to 104px (`styles.css`, `tmaLayoutConstants.ts`, `GlassAppHeader.tsx`)
 - CI/deploy quality gate: `ScreenShell.test.tsx` asserts fixed chrome in `#glass-chrome-portal-root`; `QuickBuyModal.test.tsx` reloads module after `VITE_STRIPE_PUBLIC_KEY` stub; E2E `clickFixedChrome` / `lobbyStartButton` helpers for portaled footer CTA; glass portal `pointer-events` pass-through (`glass.css`); deploy workflow runs full CI quality gate (client tests + server coverage); pre-commit includes client tests

@@ -12,6 +12,7 @@ import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { typographyClass } from '../../constants/typography';
 import { ProfileStatsCards } from './profile/ProfileStatsCards';
 import { PlayerStatsDetailPanel } from './profile/PlayerStatsDetailPanel';
+import { PROFILE_PANEL_CLASS } from './profile/profileSurfaceClasses';
 
 export const PlayerStatsScreen = () => {
   const { setGameState, currentTheme, uiLanguage } = useGame();
@@ -20,8 +21,6 @@ export const PlayerStatsScreen = () => {
   const { get: getStats } = usePlayerStats();
   const stats = getStats();
   const t = useT();
-  const isDark = currentTheme.isDark;
-
   const dateLocale =
     uiLanguage === Language.UA ? 'uk-UA' : uiLanguage === Language.DE ? 'de-DE' : 'en-US';
 
@@ -54,14 +53,11 @@ export const PlayerStatsScreen = () => {
     setGameState(isAuthenticated ? GameState.PROFILE : GameState.MENU);
   };
 
-  const emptyPanelClass = isDark
-    ? 'bg-ui-surface border-ui-border'
-    : 'bg-ui-card border-ui-border shadow-sm';
-
   return (
     <ScreenShell
       className={`relative ${currentTheme.bg} transition-colors duration-500`}
-      contentClassName="max-w-md w-full mx-auto px-6 md:px-8 flex flex-col flex-1 py-4 pb-4 gap-4"
+      layout="narrow"
+      contentClassName="flex flex-col flex-1 py-4 pb-4 gap-4"
       headerFixed
       header={
         <AppHeader
@@ -93,14 +89,13 @@ export const PlayerStatsScreen = () => {
             accuracy: t.profileStatsCardAccuracy,
             tapForDetails: t.profileTapForDetails,
           }}
-          isDark={isDark}
           themeTextMain={currentTheme.textMain}
           themeTextSecondary={currentTheme.textSecondary}
         />
 
         {isEmpty ? (
           <div
-            className={`w-full rounded-3xl border px-5 py-6 text-center ${emptyPanelClass}`}
+            className={`w-full px-5 py-6 text-center ${PROFILE_PANEL_CLASS}`}
             data-testid="player-stats-empty"
           >
             <p className={`${typographyClass.heading} ${currentTheme.textMain}`}>
@@ -125,7 +120,6 @@ export const PlayerStatsScreen = () => {
           <PlayerStatsDetailPanel
             title={t.statsSectionDetails}
             rows={detailRows}
-            isDark={isDark}
             themeTextMain={currentTheme.textMain}
             themeIconColor={currentTheme.iconColor}
           />

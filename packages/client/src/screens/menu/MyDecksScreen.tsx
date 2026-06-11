@@ -100,7 +100,8 @@ export const MyDecksScreen = () => {
     return (
       <ScreenShell
         className="bg-ui-bg"
-        contentClassName="px-6 py-4 space-y-5"
+        layout="fullPx6"
+        contentClassName="py-4 space-y-5"
         headerFixed
         footerFixed
         header={
@@ -170,7 +171,8 @@ export const MyDecksScreen = () => {
   return (
     <ScreenShell
       className="bg-ui-bg"
-      contentClassName="px-6 space-y-4"
+      layout="fullPx6"
+      contentClassName="space-y-4"
       headerFixed
       footerFixed
       header={

@@ -9,7 +9,6 @@ import { ROOM_CODE_LENGTH } from '../../constants';
 import { useT } from '../../hooks/useT';
 import {
   keyboardAvoidingBottomPadding,
-  scrollElementIntoViewCentered,
   useVisualViewportBottomInset,
 } from '../../hooks/useVisualViewportBottomInset';
 import { typographyClass } from '../../constants/typography';
@@ -51,7 +50,8 @@ export const JoinInputScreen = () => {
     >
       <ScreenShell
         className={currentTheme.bg}
-        contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"
+        layout="wideMd"
+        contentClassName="justify-center items-center pb-6 md:pb-10"
         headerFixed
         header={
           <AppHeader fixed onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.cancel} />
@@ -76,7 +76,6 @@ export const JoinInputScreen = () => {
               inputMode="numeric"
               maxLength={ROOM_CODE_LENGTH}
               value={code}
-              onFocus={(e) => scrollElementIntoViewCentered(e.currentTarget)}
               onChange={handleInputChange}
               data-testid="join-room-code"
               placeholder="00000"

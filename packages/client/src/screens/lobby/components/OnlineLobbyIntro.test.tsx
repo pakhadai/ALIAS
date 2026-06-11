@@ -52,7 +52,14 @@ const t = {
   lobbyInviteCopyLink: 'Link',
   lobbyInviteQr: 'QR code',
   pts: 'pts',
-  tapToEdit: 'Tap to edit',
+  gameMode: 'Mode',
+  roundTime: 'Round',
+  scoreToWin: 'Goal',
+  categories: 'Words',
+  lobbyRulesSummaryTitle: 'Game rules',
+  lobbyRulesSummaryHintHost: 'Tap to change mode, time and words',
+  lobbyRulesSummaryHintGuest: 'Host chose these rules',
+  lobbyRulesSummaryEdit: 'Edit rules',
   customDeckChip: 'Custom: {0}',
 } as TranslationStrings;
 
@@ -76,15 +83,20 @@ describe('OnlineLobbyIntro', () => {
     vi.clearAllMocks();
   });
 
-  it('should render settings chips as read-only for guest', () => {
+  it('should render labeled rules summary for guest', () => {
     render(<OnlineLobbyIntro {...defaultProps} isHost={false} />);
 
     expect(screen.getByTestId('lobby-settings-chips').tagName).toBe('DIV');
-    expect(screen.queryByText('Tap to edit')).toBeNull();
-    expect(screen.getByText(/Classic · 60s · 30 pts · General/)).toBeTruthy();
+    expect(screen.getByText('Game rules')).toBeTruthy();
+    expect(screen.queryByText('Host chose these rules')).toBeNull();
+    expect(screen.queryByText('Tap to change mode, time and words')).toBeNull();
+    expect(screen.getByText('Classic')).toBeTruthy();
+    expect(screen.getByText('60s')).toBeTruthy();
+    expect(screen.getByText('30 pts')).toBeTruthy();
+    expect(screen.getByText('General')).toBeTruthy();
   });
 
-  it('should call onOpenSettings when host taps chips', async () => {
+  it('should call onOpenSettings when host taps rules card', async () => {
     const user = userEvent.setup();
     const onOpenSettings = vi.fn();
 
@@ -92,6 +104,14 @@ describe('OnlineLobbyIntro', () => {
 
     await user.click(screen.getByTestId('lobby-settings-chips'));
     expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('should show rules title for host without description copy', () => {
+    render(<OnlineLobbyIntro {...defaultProps} />);
+
+    expect(screen.getByText('Game rules')).toBeTruthy();
+    expect(screen.queryByText('Tap to change mode, time and words')).toBeNull();
+    expect(screen.queryByText('Edit rules')).toBeNull();
   });
 
   it('should preserve lobby-room-code test id without invite button inside', () => {

@@ -81,6 +81,7 @@ export function useVisualViewportBottomInset(): number {
       vv.addEventListener('geometrychange', update);
     }
     window.addEventListener('resize', update);
+    document.addEventListener('focusin', update, true);
     document.addEventListener('focusout', schedulePostKeyboardUpdate, true);
     return () => {
       cancelAnimationFrame(raf);
@@ -91,6 +92,7 @@ export function useVisualViewportBottomInset(): number {
         vv.removeEventListener('geometrychange', update);
       }
       window.removeEventListener('resize', update);
+      document.removeEventListener('focusin', update, true);
       document.removeEventListener('focusout', schedulePostKeyboardUpdate, true);
     };
   }, []);
@@ -99,8 +101,8 @@ export function useVisualViewportBottomInset(): number {
 }
 
 /**
- * Sets `--sheet-keyboard-lift` for CSS-animated padding on `.bottom-sheet-backdrop`
- * and `.keyboard-avoiding-lift` wrappers.
+ * Sets `--sheet-keyboard-lift` for instant panel lift on `.bottom-sheet-backdrop`
+ * and padding on `.keyboard-avoiding-lift` wrappers (no CSS transition — tracks OS keyboard).
  */
 export function keyboardAvoidingBottomPadding(insetPx: number): CSSProperties {
   const liftPx = computeKeyboardLiftPx(insetPx);

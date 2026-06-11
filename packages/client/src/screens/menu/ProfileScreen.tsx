@@ -26,6 +26,7 @@ import { ProfileBenefitsList } from './profile/ProfileBenefitsList';
 import { ProfileStatsCards } from './profile/ProfileStatsCards';
 import { ProfileNavList } from './profile/ProfileNavList';
 import { countProfilePurchases } from './profile/profilePurchaseCounts';
+import { PROFILE_NAV_BTN_CLASS } from './profile/profileSurfaceClasses';
 
 export const ProfileScreen = () => {
   const { setGameState, currentTheme } = useGame();
@@ -36,7 +37,6 @@ export const ProfileScreen = () => {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const heroTitleRef = useRef<HTMLDivElement>(null);
-  const isDark = currentTheme.isDark;
   const t = useT();
 
   const loadingAuth = authState.status === 'loading';
@@ -87,6 +87,15 @@ export const ProfileScreen = () => {
       : undefined;
 
   const goToPlayerStats = useCallback(() => setGameState(GameState.PLAYER_STATS), [setGameState]);
+
+  const profileMenuItems = useMemo(
+    () => [
+      { id: '1', label: 'Пункт 1', onSelect: () => console.log('profile menu: item 1') },
+      { id: '2', label: 'Пункт 2', onSelect: () => console.log('profile menu: item 2') },
+      { id: '3', label: 'Пункт 3', onSelect: () => console.log('profile menu: item 3') },
+    ],
+    []
+  );
 
   const authBenefits = useMemo(
     () => [
@@ -163,12 +172,6 @@ export const ProfileScreen = () => {
     <ProviderBadge provider={provider} />
   ) : null;
 
-  const storeNavBtn = `w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 ease-out active:scale-[0.98] ${
-    isDark
-      ? 'bg-ui-surface border border-ui-border active:bg-ui-surface-hover'
-      : 'bg-ui-card border border-ui-border active:bg-ui-surface-hover shadow-sm'
-  }`;
-
   const sessionEndFooter = !loadingAuth ? (
     <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
       <AccentFooterCta
@@ -188,13 +191,15 @@ export const ProfileScreen = () => {
     <>
       <ScreenShell
         className={`relative ${currentTheme.bg} transition-colors duration-500`}
-        contentClassName="max-w-2xl w-full mx-auto px-6 md:px-8 flex flex-col flex-1"
+        layout="canonical"
+        contentClassName="flex flex-col flex-1"
         headerFixed
         footerFixed={!loadingAuth}
         header={
           <AppHeader
             fixed
             onBack={() => setGameState(GameState.MENU)}
+            menuItems={profileMenuItems}
             title={
               <ScreenTitle
                 as="p"
@@ -269,14 +274,13 @@ export const ProfileScreen = () => {
             <ProfileGuestBenefits
               title={t.profileBenefitsTitle}
               items={guestBenefits}
-              isDark={isDark}
               themeTextSecondary={currentTheme.textSecondary}
             />
 
             <button
               type="button"
               onClick={() => setGameState(GameState.LOBBY_SETTINGS)}
-              className={storeNavBtn}
+              className={PROFILE_NAV_BTN_CLASS}
               data-testid="profile-guest-lobby-settings"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -302,7 +306,7 @@ export const ProfileScreen = () => {
             <button
               type="button"
               onClick={() => setGameState(GameState.STORE)}
-              className={storeNavBtn}
+              className={PROFILE_NAV_BTN_CLASS}
             >
               <div className="flex items-center gap-3">
                 <ShoppingBag size={16} className={currentTheme.iconColor} />
@@ -327,7 +331,6 @@ export const ProfileScreen = () => {
                 accuracy: t.profileStatsCardAccuracy,
                 tapForDetails: t.profileTapForDetails,
               }}
-              isDark={isDark}
               themeTextMain={currentTheme.textMain}
               themeTextSecondary={currentTheme.textSecondary}
               onPress={goToPlayerStats}
@@ -337,14 +340,10 @@ export const ProfileScreen = () => {
               title={t.profilePurchasesTitle}
               subtitle={purchasesSummary}
               items={authBenefits}
-              isDark={isDark}
               themeTextSecondary={currentTheme.textSecondary}
             />
 
-            <div className="h-px w-full bg-ui-border" />
-
             <ProfileNavList
-              isDark={isDark}
               themeTextMain={currentTheme.textMain}
               themeIconColor={currentTheme.iconColor}
               themeButtonClass={currentTheme.button}

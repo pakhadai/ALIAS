@@ -13,7 +13,8 @@ export const RulesScreen = () => {
   return (
     <ScreenShell
       className={currentTheme.bg}
-      contentClassName="px-6 md:px-10 justify-center items-center pb-6 md:pb-10"
+      layout="wideMd"
+      contentClassName="justify-center items-center pb-6 md:pb-10"
       headerFixed
       header={
         <AppHeader fixed onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.close} />

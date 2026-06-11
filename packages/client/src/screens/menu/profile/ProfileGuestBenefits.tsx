@@ -6,7 +6,6 @@ export type { ProfileBenefitItem };
 export interface ProfileGuestBenefitsProps {
   title: string;
   items: ProfileBenefitItem[];
-  isDark: boolean;
   themeTextSecondary: string;
 }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { GameProvider, useGame } from './GameContext';
+import { SESSION_KEY } from './gameReducer';
 import { GameState, AppTheme, Language, GameMode, SoundPreset } from '../types';
 import type { GameSyncState } from '@alias/shared';
 
@@ -19,12 +20,16 @@ type SocketHandlers = {
 let socketHandlers: SocketHandlers | null = null;
 const sendGameAction = vi.fn();
 const createRoom = vi.fn();
+const leaveRoom = vi.fn(() => {
+  mockSocketApi.roomCode = '';
+  mockSocketApi.myPlayerId = '';
+});
 
 const mockSocketApi = {
   isConnected: false,
   isReconnecting: false,
-  roomCode: '12345',
-  myPlayerId: 'p-host',
+  roomCode: '',
+  myPlayerId: '',
 };
 
 vi.mock('../hooks/useSocketConnection', () => ({
@@ -34,7 +39,7 @@ vi.mock('../hooks/useSocketConnection', () => ({
       connect: vi.fn(),
       createRoom,
       joinRoom: vi.fn(),
-      leaveRoom: vi.fn(),
+      leaveRoom,
       sendGameAction,
       checkRoomExists: vi.fn(),
       get isConnected() {
@@ -180,8 +185,9 @@ describe('GameProvider', () => {
     createRoom.mockReset();
     mockSocketApi.isConnected = false;
     mockSocketApi.isReconnecting = false;
-    mockSocketApi.roomCode = '12345';
+    mockSocketApi.roomCode = '';
     mockSocketApi.myPlayerId = 'p-host';
+    leaveRoom.mockClear();
     localStorage.clear();
   });
 
@@ -193,6 +199,7 @@ describe('GameProvider', () => {
     );
 
     await act(async () => {
+      socketHandlers?.onRejoined('12345', 'p-host');
       socketHandlers?.onStateSync(
         baseSync({ gameState: GameState.PLAYING, currentWord: 'TestWord', timeLeft: 42 })
       );
@@ -344,6 +351,7 @@ describe('GameProvider', () => {
     );
 
     await act(async () => {
+      socketHandlers?.onRejoined('12345', 'p-host');
       socketHandlers?.onStateSync(baseSync());
     });
     expect(screen.getByTestId('score-to-win').textContent).toBe('30');
@@ -366,6 +374,7 @@ describe('GameProvider', () => {
     );
 
     await act(async () => {
+      socketHandlers?.onRejoined('12345', 'p-host');
       socketHandlers?.onStateSync(baseSync());
     });
     expect(screen.getByTestId('score-to-win').textContent).toBe('30');
@@ -384,7 +393,7 @@ describe('GameProvider', () => {
     expect(screen.getByTestId('score-to-win').textContent).toBe('30');
   });
 
-  it('should show localized message for PLAYER_NOT_IN_ROOM room:error', async () => {
+  it('should show localized message for PLAYER_NOT_IN_ROOM room:error without active room', async () => {
     render(
       <GameProvider>
         <Probe />
@@ -396,6 +405,47 @@ describe('GameProvider', () => {
     });
 
     expect(screen.getByText(/кімнат/i)).toBeTruthy();
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.MENU);
+    expect(screen.getByTestId('room-code').textContent).toBe('');
+  });
+
+  it('should eject restored online lobby to MENU when rejoin fails (ROOM_NOT_FOUND)', async () => {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        gameState: GameState.LOBBY,
+        gameMode: 'ONLINE',
+        roomCode: '12345',
+        isHost: true,
+        myPlayerId: '11111111-1111-1111-8111-111111111111',
+        players: [{ id: '11111111-1111-1111-8111-111111111111', name: 'Host', avatar: '🎮' }],
+        teams: [],
+        settings: {
+          general: { language: Language.UA, scoreToWin: 30, categories: [] },
+          mode: { gameMode: GameMode.CLASSIC, classicRoundTime: 60 },
+        },
+      })
+    );
+
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.LOBBY);
+    expect(screen.getByTestId('room-code').textContent).toBe('12345');
+
+    await act(async () => {
+      socketHandlers?.onError({ code: 'ROOM_NOT_FOUND', message: 'Room not found' });
+    });
+
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.MENU);
+    expect(screen.getByTestId('room-code').textContent).toBe('');
+    expect(screen.getByTestId('player-count').textContent).toBe('0');
+    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+    expect(leaveRoom).toHaveBeenCalled();
+    expect(screen.getByText(/Сесію в лобі/i)).toBeTruthy();
   });
 
   it('should preserve OFFLINE gameMode when leaveRoom resetGameMode is false', async () => {

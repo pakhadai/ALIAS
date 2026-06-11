@@ -1,5 +1,10 @@
 import { ChevronRight } from 'lucide-react';
 import { typographyClass, labelSectionTitleClass } from '../../../constants/typography';
+import {
+  PROFILE_LIST_CLASS,
+  PROFILE_PANEL_CLASS,
+  PROFILE_PANEL_HEADER_CLASS,
+} from './profileSurfaceClasses';
 
 export interface ProfileBenefitItem {
   emoji: string;
@@ -12,7 +17,6 @@ export interface ProfileBenefitsListProps {
   title: string;
   subtitle?: string;
   items: ProfileBenefitItem[];
-  isDark: boolean;
   themeTextSecondary: string;
 }
 
@@ -20,16 +24,11 @@ export function ProfileBenefitsList({
   title,
   subtitle,
   items,
-  isDark,
   themeTextSecondary,
 }: ProfileBenefitsListProps) {
-  const panelClass = isDark
-    ? 'bg-ui-surface border-ui-border'
-    : 'bg-ui-card border-ui-border shadow-sm';
-
   return (
-    <div className={`w-full max-w-md mx-auto rounded-3xl border overflow-hidden ${panelClass}`}>
-      <div className="px-5 py-3.5 border-b border-ui-border-subtle text-center">
+    <div className={`w-full max-w-md mx-auto overflow-hidden ${PROFILE_PANEL_CLASS}`}>
+      <div className={PROFILE_PANEL_HEADER_CLASS}>
         <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>{title}</p>
         {subtitle ? (
           <p className={`${typographyClass.body} mt-1 leading-snug ${themeTextSecondary}`}>
@@ -37,7 +36,7 @@ export function ProfileBenefitsList({
           </p>
         ) : null}
       </div>
-      <ul className="divide-y divide-ui-border-subtle">
+      <ul className={PROFILE_LIST_CLASS}>
         {items.map((item) => {
           const rowContent = (
             <>

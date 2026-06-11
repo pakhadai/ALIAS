@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { typographyClass } from '../../../constants/typography';
+import { PROFILE_STAT_CARD_CLASS } from './profileSurfaceClasses';
 
 export interface ProfileStatsCardsProps {
   gamesPlayed: number;
@@ -11,7 +12,6 @@ export interface ProfileStatsCardsProps {
     accuracy: string;
     tapForDetails: string;
   };
-  isDark: boolean;
   themeTextMain: string;
   themeTextSecondary: string;
   /** Omit for read-only summary (e.g. PlayerStatsScreen hero). */
@@ -23,17 +23,10 @@ export function ProfileStatsCards({
   wordsGuessed,
   accuracy,
   labels,
-  isDark,
   themeTextMain,
   themeTextSecondary,
   onPress,
 }: ProfileStatsCardsProps) {
-  const cardClass = `flex flex-col items-center justify-center rounded-2xl px-2 py-3.5 min-h-[72px] ${
-    isDark
-      ? 'bg-ui-surface border border-ui-border'
-      : 'bg-ui-card border border-ui-border shadow-sm'
-  }`;
-
   const cards = [
     { label: labels.games, value: gamesPlayed },
     { label: labels.guessed, value: wordsGuessed },
@@ -43,7 +36,7 @@ export function ProfileStatsCards({
   const grid = (
     <div className="grid grid-cols-3 gap-2">
       {cards.map((card) => (
-        <div key={card.label} className={cardClass}>
+        <div key={card.label} className={PROFILE_STAT_CARD_CLASS}>
           <span className={`text-xl font-bold font-serif leading-none ${themeTextMain}`}>
             {card.value}
           </span>
