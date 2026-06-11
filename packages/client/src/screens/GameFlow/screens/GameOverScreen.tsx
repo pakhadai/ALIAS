@@ -256,7 +256,7 @@ export const GameOverScreen = () => {
   const cardBg = 'bg-ui-card border-ui-border';
 
   return (
-    <ScreenShell className={currentTheme.bg} contentClassName="px-6 items-center pb-4">
+    <ScreenShell layout="fullPx6" className={currentTheme.bg} contentClassName="items-center pb-4">
       <Confetti />
 
       {/* Winner banner */}

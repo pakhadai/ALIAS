@@ -1,6 +1,6 @@
 # LAYOUT-001 — Layout, Surface & Radius Unification
 
-**Status:** `planned` (аудит 2026-06-11)  
+**Status:** `implemented` (Phases 0–7 ✅, 2026-06-11)  
 **Epic:** Уніфікація screen layout presets, footer width, border radius, surface patterns і поступова міграція `currentTheme.*` legacy  
 **Scope:** `packages/client` only (без `@alias/shared` / server, якщо не вказано явно)  
 **Пов’язано:** [`UI_TOKENS.md`](./UI_TOKENS.md), [`TMA_LAYOUT.md`](./TMA_LAYOUT.md), [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md), [`PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`](./PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md)
@@ -24,18 +24,18 @@
 
 ---
 
-## Поточний стан (baseline audit 2026-06-11)
+## Поточний стан (epic close 2026-06-11)
 
-| Метрика | Значення | SSOT / ціль |
-|---------|----------|-------------|
-| `ScreenShell` + `layout=` preset | **14** екранів | усі menu/lobby/game transitional |
-| `ScreenShell` без `layout=` | **6** екранів | `MenuScreen`, `CountdownScreen`, `GameOverScreen`, `PreRoundScreen`, `VSScreen`, `RoundSummaryScreen` |
-| `var(--theme-radius)` у TSX | **2** файли | `Button`, `AccentFooterCta` |
-| `rounded-2xl/3xl/xl` у menu+lobby | **~80+** використань | phased migration |
-| Footer island ad-hoc `max-w-*` | **8+** overrides | `footerLayout.ts` presets |
-| `currentTheme.textMain/Secondary` | **~70+** файлів | поступова міграція на `typographyClass` + `text-ui-*` |
-| Spacing tokens | **немає** | optional Phase 6 |
-| `TMA_LAYOUT.md` floor | doc **88px**, code **104px** | sync Phase 7 |
+| Метрика | Baseline (Phase 0) | Після Phase 7 | SSOT |
+|---------|-------------------|---------------|------|
+| `ScreenShell` + `layout=` preset | **14** | **19** файлів (allowlist: `MyWordPacksScreen` loading spinner — без body inset) | `screenLayout.ts` |
+| `ScreenShell` без `layout=` (body screens) | **6** | **0** (1 loading branch allowlisted) | Phase 1 ✅ |
+| `island contentClassName="max-w` | **8+** | **0** | `footerLayout.ts` ✅ |
+| `rounded-theme` / surface SSOT | **2** files | `Button`, `AccentFooterCta` + `surfaceClasses.ts` | Phase 3/5 ✅ |
+| `currentTheme.textMain/Secondary` menu+lobby | **86** menu | **8** (7 menu + 1 lobby — deferred `font-serif` titles) | Phase 4a/4b ✅ |
+| Spacing tokens | немає | `spacing.ts` (5 constants, 3 pilot screens) | Phase 6 ✅ |
+| `TMA_LAYOUT.md` floor | doc **88px**, code **104px** | **104px** synced | Phase 7 ✅ |
+| `text-[Npx]` app UI (excl. GameFlow) | — | **1** whitelist (`text-[18px]` icon glyph) | TYPO-001 |
 
 **Вже зроблено (не чіпати без причини):** TYPO-001 ✅, Liquid Glass ✅, `screenLayout.ts` foundation ✅, `profileSurfaceClasses.ts` ✅, `ScreenLayoutContext` ✅.
 

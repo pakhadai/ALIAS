@@ -34,7 +34,7 @@ export function LobbyPlayModeBar(props: {
       className="w-full max-w-sm rounded-3xl border border-ui-border bg-ui-surface px-4 py-4 space-y-3"
       data-testid="lobby-play-mode-bar"
     >
-      <p className={`${typographyClass.label} tracking-[0.15em] text-ui-fg ${theme.textMain}`}>
+      <p className={`${typographyClass.label} tracking-[0.15em] text-ui-fg`}>
         {t.lobbyPlayMode ?? 'How we play'}
       </p>
 
@@ -64,7 +64,7 @@ export function LobbyPlayModeBar(props: {
           </button>
         </div>
       ) : (
-        <p className={`${typographyClass.body} font-semibold text-center ${theme.textMain}`}>
+        <p className={`${typographyClass.body} font-semibold text-center text-ui-fg`}>
           {isSolo ? (t.teamModeSolo ?? 'Solo') : teamsLabel}
         </p>
       )}

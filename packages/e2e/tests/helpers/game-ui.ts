@@ -21,6 +21,8 @@ export const addPlayerRe = /Додати гравця|Add Player|Spieler hinzuf�
 
 /** TeamCard join — distinct from menu joinGame (Join Game / Beitreten). */
 export const joinTeamRe = /^(В команду|Join team|Zum Team)$/i;
+/** LobbyPlayModeBar TEAMS segment (`t.teamModeTeams`) — default room mode is SOLO since 2026-06-11. */
+export const teamsModeRe = /^(Команди|Teams)$/i;
 export const teamLeaveRe = /^(Вийти|Leave|Verlassen)$/i;
 /** UnassignedPool offline assign trigger (`aria-label` per locale). */
 export function assignPlayerButton(page: Page, playerName: string) {
@@ -37,6 +39,7 @@ export const imposterRevealRe = /^(Натисни, щоб перевернути
 
 /** In-room settings gear (`t.settings` aria-label). */
 export const lobbySettingsButtonRe = /^(Settings|Налаштування|Einstellungen)$/i;
+/** @deprecated Header gear removed from lobby (2026-06-11). Use `lobby-settings-chips` via `openLobbySettings`. */
 /** SettingsScreen rules tab (`t.rulesTitle`). */
 export const lobbySettingsRulesTabRe = /^(Правила|Rules|Regeln)$/;
 /** Collapsible "Time & goal" block on the rules tab (`t.lobbyRulesSectionBasics`). */
@@ -157,6 +160,24 @@ export async function guestJoinByCode(
   await expect(guest.getByTestId('lobby-room-code')).toHaveText(roomCode, { timeout: 30_000 });
 }
 
+/** Switch host lobby from default SOLO to TEAMS so TeamCard join controls render. */
+export async function ensureTeamsMode(page: Page): Promise<void> {
+  const bar = page.getByTestId('lobby-play-mode-bar');
+  await expect(bar).toBeVisible({ timeout: 15_000 });
+  const teamsBtn = page.getByRole('button', { name: teamsModeRe });
+  if ((await teamsBtn.count()) === 0) {
+    // Guest sees read-only format — host must switch mode first.
+    return;
+  }
+  if ((await teamsBtn.getAttribute('aria-pressed')) !== 'true') {
+    await teamsBtn.scrollIntoViewIfNeeded();
+    await teamsBtn.click();
+    await expect(page.getByRole('button', { name: joinTeamRe }).first()).toBeVisible({
+      timeout: 15_000,
+    });
+  }
+}
+
 /** Host → team 0, guest → team 1. */
 /** Join a team card by index (0-based). */
 export async function joinTeam(page: Page, teamIndex: number): Promise<void> {
@@ -216,6 +237,7 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
   await submitName(host, HOST_NAME);
   const roomCode = await readRoomCode(host);
   await guestJoinByCode(guest, roomCode);
+  await ensureTeamsMode(host);
   await assignDistinctTeams(host, guest);
   await expectLobbyReadyToStart(host);
 
@@ -272,19 +294,9 @@ export async function confirmRoundSummary(host: Page): Promise<void> {
 export async function openLobbySettings(page: Page): Promise<void> {
   await forceBrowserChromeMode(page);
   const chips = page.getByTestId('lobby-settings-chips');
-  if (await chips.isVisible().catch(() => false)) {
-    await chips.scrollIntoViewIfNeeded();
-    await chips.click();
-  } else {
-    const headerSettings = page.getByTestId('lobby-header-settings');
-    if (await headerSettings.isVisible().catch(() => false)) {
-      await clickFixedChrome(headerSettings);
-    } else {
-      const settingsBtn = page.getByRole('button', { name: lobbySettingsButtonRe });
-      await settingsBtn.scrollIntoViewIfNeeded();
-      await settingsBtn.click();
-    }
-  }
+  await chips.scrollIntoViewIfNeeded();
+  await expect(chips).toBeVisible({ timeout: 15_000 });
+  await chips.click();
   await expect(page.getByTestId('settings-close')).toBeVisible({ timeout: 15_000 });
 }
 
@@ -371,6 +383,7 @@ export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): 
   await page.getByTestId('menu-offline').click();
   await submitName(page, hostName);
   await addOfflinePlayer(page, 'Offline Guest');
+  await ensureTeamsMode(page);
   await page.getByRole('button', { name: joinTeamRe }).first().click();
   await assignOfflinePlayerToTeam(page, 'Offline Guest', 1);
   await expectLobbyReadyToStart(page);

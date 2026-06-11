@@ -11,6 +11,7 @@ const addConfirmRe = /^(Додати|Add|Hinzufügen)$/i;
 const addPlayerModalTitleRe = /^(Новий гравець|New Player|Neuer Spieler)$/i;
 const startGameRe = /^(Почати гру|Start|Starten)$/i;
 const joinTeamRe = /^(В команду|Join team|Zum Team)$/i;
+const teamsModeRe = /^(Команди|Teams)$/i;
 function assignPlayerButtonRe(name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^(Призначити ${escaped}|Assign ${escaped}|${escaped} zuweisen)$`, 'i');
@@ -83,6 +84,15 @@ test('joinTeamRe matches team join, not menu join game', () => {
   }
   for (const label of ['Приєднатися', 'Join Game', 'Beitreten', 'Приєднатися до гри']) {
     assert.doesNotMatch(label, joinTeamRe, `team join must not match menu label: ${label}`);
+  }
+});
+
+test('teamsModeRe matches play-mode TEAMS segment only (UA/DE/EN)', () => {
+  for (const label of ['Команди', 'Teams']) {
+    assert.match(label, teamsModeRe);
+  }
+  for (const label of ['Кожен за себе', 'Solo', 'Jeder für sich', 'Join team']) {
+    assert.doesNotMatch(label, teamsModeRe, `teams mode must not match: ${label}`);
   }
 });
 

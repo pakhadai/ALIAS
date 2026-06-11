@@ -123,7 +123,7 @@ export function EnterNameSheet(): React.ReactNode {
         ariaLabelledBy="enter-name-title"
         contentClassName="pt-2"
         header={
-          <ModalSheetTitle id="enter-name-title" themeClass={currentTheme.textMain}>
+          <ModalSheetTitle id="enter-name-title" themeClass="text-ui-fg">
             {t.whoAreYou}
           </ModalSheetTitle>
         }

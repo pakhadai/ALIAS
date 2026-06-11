@@ -15,16 +15,17 @@
 
 ```tsx
 import { ScreenShell, FixedBottomBar, AppHeader } from '../components/layout';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { LobbyStartPanel } from './components/LobbyStartPanel';
 
 <ScreenShell
-  className={currentTheme.bg}
+  className="bg-ui-bg"
+  layout="fullPx4"
   headerFixed
   footerFixed
   header={<AppHeader fixed left={...} center={...} right={...} />}
-  contentClassName="px-4"
   footer={
-    <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
+    <FixedBottomBar island contentClassName={footerIslandClassName('narrow')}>
       <LobbyStartPanel readiness={...} t={...} theme={...} onStartTap={handleStartTap} />
     </FixedBottomBar>
   }
@@ -130,7 +131,7 @@ sendAction({ action: 'START_GAME' });
 
 **Deprecated:** `ready` / `blocked` boolean props — `variant` має пріоритет.
 
-**Guest + auth footer:** `FixedBottomBar island` + `footerFixed`, `contentClassName="max-w-sm mx-auto w-full"`; confirm через `LogoutConfirmBottomSheet` (різні title/labels для guest vs auth).
+**Guest + auth footer:** `FixedBottomBar island` + `footerFixed`, `contentClassName={footerIslandClassName('narrow')}`; confirm через `LogoutConfirmBottomSheet` (різні title/labels для guest vs auth).
 
 ### Заборони (glass chrome)
 
@@ -245,6 +246,20 @@ Inset формула (канон, [Bot API 8.0+](https://core.telegram.org/bots/
 PlayingScreen навмисно використовує `pt-env-top pb-env-bottom`, щоб не додавати зайвий 1.5rem поверх Telegram UI.
 
 **MenuScreen (Phase 4 ✅):** `ScreenShell` + sticky `AppHeader` (icons right); `--app-home-card-top` = content-safe + 16px; toast via `data-app-header`.
+
+## Footer island layout presets (LAYOUT-001 ✅)
+
+SSOT: `packages/client/src/constants/footerLayout.ts` → `footerIslandClassName(preset)`. Canon tokens: [`UI_TOKENS.md` — Footer island presets](./UI_TOKENS.md#footer-island-presets).
+
+| Preset | Classes | Коли |
+|--------|---------|------|
+| `narrow` | `max-w-sm mx-auto w-full` | Single primary CTA — lobby start (`LobbyScreen`), profile logout |
+| `canonical` | `max-w-2xl mx-auto w-full` | Save bar, store trust strip, settings host footer (`ProfileSettingsScreen`, `LobbySettingsScreen`, `StoreScreen`, in-lobby `SettingsScreen`, `MyWordPacksScreen`) |
+| `fullBleed` | `w-full px-6` | Full-width CTA row aligned with body `fullPx6` (`MyDecksScreen`, `ScoreboardScreen`, `TeamSetupScreen` + optional `space-y-4`) |
+
+**Default `FixedBottomBar` (non-island):** `max-w-sm` — не змінювати без окремого epic.
+
+**Grep gate (Phase 7):** `rg 'island contentClassName="max-w' packages/client/src/screens` → **0** (усі через `footerIslandClassName(`).
 
 ## Fixed footer
 
@@ -361,14 +376,14 @@ Bootstrap viewport/safe-area: `bootstrapTelegramMiniApp()` у `index.tsx` (sync 
 | `HEADER_ROW_MIN_PX` | 44 | Мін. висота title row |
 | `TG_CHROME_GUTTER_PX` | 80 | L/R clearance під нативні TG кнопки (Phase 2) |
 | `APP_HEADER_BAR_PX` | 60 (`3.75rem`) | Legacy constant (історичний fallback); висота header = title row (`content-safe-top`) |
-| `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | 88 | Fallback `--tg-content-safe-area-inset-top` / `--tma-content-top-floor` коли SDK не ready |
+| `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | **104** | Fallback `--tg-content-safe-area-inset-top` / `--tma-content-top-floor` коли SDK не ready |
 | `HOME_CARD_TOP_GAP_PX` | 16 | Зазор home card body padding (`MenuScreen` Phase 4 ✅) |
 
 ### `--app-home-card-top`
 
 | Джерело | Значення |
 |---------|----------|
-| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, 88px) + 16px)` |
+| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, 104px) + 16px)` |
 | **Runtime usage** | `MenuScreen` main `paddingTop: HOME_CARD_TOP_GAP_PX` below sticky `AppHeader` |
 
 Helper: `appHomeCardTopCss()`.
@@ -377,7 +392,7 @@ Helper: `appHomeCardTopCss()`.
 
 | Джерело | Значення |
 |---------|----------|
-| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 88px)) + device-inset)` |
+| **CSS** (`styles.css`) | `calc(var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 104px)) + device-inset)` |
 | **Runtime** | `useTelegramApp` writes `--tma-content-top-floor` from SSOT; SDK insets when >0 (never 0px inline) |
 | **Tailwind** | `pt-safe-top` → `max(1.5rem, var(--tma-inset-top))` |
 
@@ -404,8 +419,8 @@ Helpers: `titleRowHeightCss()`, `appPageHeaderHeightFallbackCss()`, `appPageHead
 | **3a — Menu / profile** | ✅ 2026-06-08 | Profile*, MyDecks, MyWordPacks, PlayerStats, LobbySettings |
 | **3b — Lobby-adjacent + game non-playing** | ✅ 2026-06-08 | Settings, TeamSetup, JoinInput, PreRound, summaries… |
 | **4 — MenuScreen home** | ✅ 2026-06-08 | fixed → `ScreenShell` + sticky `AppHeader`; `--app-home-card-top` |
-| **5 — TMA hardening** | ✅ 2026-06-08 | 88px floor, back matrix, toast/banner offset |
-| **6 — Verification** | pending | grep gates, tests, manual @375px |
+| **5 — TMA hardening** | ✅ 2026-06-08 | 104px content-safe floor, back matrix, toast/banner offset |
+| **6 — Verification** | ✅ 2026-06-11 | grep gates green; client **340/340**; `TMA_LAYOUT.md` floor synced (LAYOUT-001 Phase 7); manual @375px — owner |
 
 ---
 

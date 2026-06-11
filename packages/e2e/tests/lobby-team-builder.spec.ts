@@ -8,6 +8,7 @@ import {
   joinTeam,
   joinTeamRe,
   lockTeams,
+  ensureTeamsMode,
   expectLobbyReadiness,
   readRoomCode,
   startFromLobby,
@@ -38,6 +39,7 @@ test.describe('@core Lobby team builder', () => {
       await submitName(host, HOST_NAME);
       const roomCode = await readRoomCode(host);
       await guestJoinByCode(guest, roomCode);
+      await ensureTeamsMode(host);
 
       await expectLobbyReadiness(host, { ready: false });
 

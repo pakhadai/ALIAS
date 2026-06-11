@@ -8,6 +8,7 @@ import { useGame } from '../../context/GameContext';
 import { useT } from '../../hooks/useT';
 import type { Player, Team } from '../../types';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
 
@@ -90,7 +91,7 @@ export const TeamSetupScreen = () => {
 
   return (
     <ScreenShell
-      className={currentTheme.bg}
+      className="bg-ui-bg"
       layout="fullPx8"
       contentClassName="space-y-6 pb-4"
       headerFixed
@@ -98,16 +99,16 @@ export const TeamSetupScreen = () => {
       header={
         <AppHeader
           fixed
-          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.teams}</ScreenTitle>}
+          title={<ScreenTitle>{t.teams}</ScreenTitle>}
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
         />
       }
       footer={
-        <FixedBottomBar island contentClassName="w-full space-y-4">
+        <FixedBottomBar island contentClassName={`${footerIslandClassName('fullBleed')} space-y-4`}>
           {canEdit && (
             <p
-              className={`text-center ${typographyClass.label} tracking-[0.35em] ${currentTheme.textSecondary}`}
+              className={`text-center ${typographyClass.label} tracking-[0.35em] text-ui-fg-muted`}
             >
               {t.teamSetupTapHint}
             </p>
@@ -116,7 +117,7 @@ export const TeamSetupScreen = () => {
             <button
               type="button"
               onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-              className={`w-full text-center ${typographyClass.label} tracking-[0.35em] ${currentTheme.textSecondary} hover:text-ui-fg transition-colors`}
+              className={`w-full text-center ${typographyClass.label} tracking-[0.35em] text-ui-fg-muted hover:text-ui-fg transition-colors`}
             >
               {t.shuffle}
             </button>
@@ -133,7 +134,7 @@ export const TeamSetupScreen = () => {
             </Button>
           ) : (
             <p
-              className={`text-center ${typographyClass.label} tracking-widest animate-pulse ${currentTheme.textSecondary}`}
+              className={`text-center ${typographyClass.label} tracking-widest animate-pulse text-ui-fg-muted`}
             >
               {t.waitTeams}
             </p>
@@ -198,9 +199,7 @@ export const TeamSetupScreen = () => {
                   )}
                 </div>
               )}
-              <span
-                className={`ml-auto ${typographyClass.label} normal-case ${currentTheme.textSecondary}`}
-              >
+              <span className={`ml-auto ${typographyClass.label} normal-case text-ui-fg-muted`}>
                 ({team.players.length})
               </span>
             </div>
@@ -238,9 +237,7 @@ export const TeamSetupScreen = () => {
                     ) : (
                       <span>{p.avatar}</span>
                     )}
-                    <span
-                      className={`${typographyClass.label} tracking-widest ${currentTheme.textSecondary}`}
-                    >
+                    <span className={`${typographyClass.label} tracking-widest text-ui-fg-muted`}>
                       {p.name}
                     </span>
                     {gameMode === 'ONLINE' && !online && (
@@ -252,9 +249,7 @@ export const TeamSetupScreen = () => {
                 );
               })}
               {team.players.length === 0 && (
-                <span
-                  className={`${typographyClass.label} italic normal-case ${currentTheme.textSecondary}`}
-                >
+                <span className={`${typographyClass.label} italic normal-case text-ui-fg-muted`}>
                   {t.noPlayersInTeam}
                 </span>
               )}

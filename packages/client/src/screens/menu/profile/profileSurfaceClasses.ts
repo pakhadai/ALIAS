@@ -1,15 +1,16 @@
-/** Frosted elevated surfaces — SSOT for profile / stats list cards and nav rows. */
-export const PROFILE_PANEL_CLASS = 'ui-glass-panel rounded-3xl';
+/**
+ * Profile screen surface class aliases.
+ * @deprecated Prefer `packages/client/src/constants/surfaceClasses.ts` for SSOT.
+ */
+import { SURFACE_CARD_CLASS } from '../../../constants/surfaceClasses';
 
-export const PROFILE_NAV_BTN_CLASS =
-  'ui-glass-panel rounded-2xl w-full flex items-center justify-between px-5 py-4 transition-all duration-200 ease-out active:scale-[0.98] active:bg-ui-surface-hover/50';
+export {
+  SURFACE_PANEL_CLASS as PROFILE_PANEL_CLASS,
+  SURFACE_NAV_ROW_CLASS as PROFILE_NAV_BTN_CLASS,
+  SURFACE_NAV_ACCENT_BTN_CLASS as PROFILE_NAV_ACCENT_BTN_CLASS,
+} from '../../../constants/surfaceClasses';
 
-/** Accent CTA row — solid fill, lobby-start volume (no frosted glass). */
-export const PROFILE_NAV_ACCENT_BTN_CLASS =
-  'rounded-2xl w-full flex items-center justify-between px-5 py-4 transition-all duration-200 ease-out active:scale-[0.98] lobby-start-btn lobby-start-btn--plain';
-
-export const PROFILE_STAT_CARD_CLASS =
-  'ui-glass-panel rounded-2xl flex flex-col items-center justify-center px-2 py-3.5 min-h-[72px]';
+export const PROFILE_STAT_CARD_CLASS = `${SURFACE_CARD_CLASS} flex flex-col items-center justify-center px-2 py-3.5 min-h-[72px]`;
 
 export const PROFILE_LIST_CLASS = 'ui-profile-list';
 

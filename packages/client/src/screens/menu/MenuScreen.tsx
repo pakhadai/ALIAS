@@ -157,9 +157,7 @@ export const MenuScreen = () => {
     .join(' ');
 
   return (
-    <div
-      className={`relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full ${currentTheme.bg} transition-colors duration-500 overflow-hidden`}
-    >
+    <div className="relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full bg-ui-bg transition-colors duration-500 overflow-hidden">
       <ScreenAccentGlow />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -171,7 +169,8 @@ export const MenuScreen = () => {
       />
 
       <ScreenShell
-        className={`relative z-10 ${currentTheme.bg}`}
+        layout="canonical"
+        className="relative z-10 bg-ui-bg"
         headerFixed
         header={
           <AppHeader
@@ -190,12 +189,12 @@ export const MenuScreen = () => {
             </div>
           </AppHeader>
         }
-        contentClassName="max-w-2xl mx-auto w-full flex-1 min-h-0"
+        contentClassName="flex-1 min-h-0"
       >
         <main
           aria-hidden={isEnterName ? true : undefined}
           className={[
-            'relative flex flex-1 flex-col items-center justify-center w-full max-w-xs mx-auto px-6 md:px-8 pb-20 min-h-0',
+            'relative flex flex-1 flex-col items-center justify-center w-full max-w-xs mx-auto pb-20 min-h-0',
             frozenChromeClass,
           ]
             .filter(Boolean)
@@ -299,7 +298,7 @@ export const MenuScreen = () => {
           closeAriaLabel={t.close}
           ariaLabelledBy="fullscreen-hint-title"
           header={
-            <ModalSheetTitle id="fullscreen-hint-title" themeClass={currentTheme.textMain}>
+            <ModalSheetTitle id="fullscreen-hint-title" themeClass="text-ui-fg">
               {t.fullscreenUnavailableTitle}
             </ModalSheetTitle>
           }

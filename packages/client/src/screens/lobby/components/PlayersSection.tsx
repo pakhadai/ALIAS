@@ -44,7 +44,7 @@ export function PlayersSection(props: {
 
   return (
     <div className="w-full max-w-sm space-y-6" data-testid="lobby-players-section">
-      <ScreenTitle as="h3" themeClass={theme.textMain}>
+      <ScreenTitle as="h3">
         {t.players} ({players.length})
       </ScreenTitle>
 
@@ -72,7 +72,7 @@ export function PlayersSection(props: {
 
               <div className="ml-4 flex flex-col min-w-0 flex-1">
                 <span
-                  className={`font-bold truncate ${theme.textMain} inline-flex items-center gap-2 ${typographyClass.body}`}
+                  className={`font-bold truncate text-ui-fg inline-flex items-center gap-2 ${typographyClass.body}`}
                 >
                   {p.name}
                   {p.isHost && (

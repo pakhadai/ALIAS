@@ -6,6 +6,16 @@ import type { AppState, Player } from '../types';
 import { GameState, GameMode } from '../types';
 import { MAX_PLAYERS } from '../constants';
 
+const quizModeSettings: AppState['settings']['mode'] = {
+  gameMode: GameMode.QUIZ,
+  classicRoundTime: 60,
+  quizRoundTime: 90,
+  quizQuestionTime: 12,
+  quizTimerMode: 'ROUND',
+  quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: true },
+  quizWrongPenaltyEnabled: false,
+};
+
 function makePlayer(id: string, name: string): Player {
   return {
     id,
@@ -86,6 +96,87 @@ describe('applyOfflineGameAction', () => {
     expect(getState().gameState).toBe(GameState.PRE_ROUND);
     expect(getState().teamsLocked).toBe(true);
     expect(getState().currentTeamIndex).toBe(0);
+    expect(getState().teams).toHaveLength(2);
+    expect(getState().teams[0]?.players).toHaveLength(1);
+    expect(getState().teams[1]?.players).toHaveLength(1);
+  });
+
+  it('should build solo teams from players on START_GAME in SOLO mode', () => {
+    const { deps, getState } = createOfflineDeps({
+      gameState: GameState.LOBBY,
+      settings: {
+        ...initialState.settings,
+        general: { ...initialState.settings.general, teamMode: 'SOLO' },
+      },
+    });
+    applyOfflineGameAction(deps, { action: 'START_GAME' });
+    const { teams, players } = getState();
+    expect(teams).toHaveLength(players.length);
+    expect(teams.every((team) => team.players.length === 1)).toBe(true);
+    expect(teams.map((team) => team.players[0]?.id)).toEqual(players.map((p) => p.id));
+  });
+
+  it('should persist assigned TEAMS shells on START_GAME in TEAMS mode', () => {
+    const host = makePlayer('host', 'Host');
+    const guest = makePlayer('guest', 'Guest');
+    const { deps, getState } = createOfflineDeps({
+      gameState: GameState.LOBBY,
+      players: [host, guest],
+      settings: {
+        ...initialState.settings,
+        general: { ...initialState.settings.general, teamMode: 'TEAMS', teamCount: 2 },
+      },
+      teams: [
+        {
+          id: 'team-0',
+          name: 'A',
+          score: 0,
+          color: 'c1',
+          colorHex: '#111',
+          players: [host],
+          nextPlayerIndex: 0,
+        },
+        {
+          id: 'team-1',
+          name: 'B',
+          score: 0,
+          color: 'c2',
+          colorHex: '#222',
+          players: [guest],
+          nextPlayerIndex: 0,
+        },
+      ],
+    });
+    applyOfflineGameAction(deps, { action: 'START_GAME' });
+    expect(getState().gameState).toBe(GameState.PRE_ROUND);
+    expect(getState().teams).toHaveLength(2);
+    expect(getState().teams[0]?.players.map((p) => p.id)).toEqual(['host']);
+    expect(getState().teams[1]?.players.map((p) => p.id)).toEqual(['guest']);
+  });
+
+  it('should reject START_GAME when lobby readiness fails (fewer than 2 players)', () => {
+    const { deps, getState } = createOfflineDeps({
+      gameState: GameState.LOBBY,
+      players: [makePlayer('host', 'Host')],
+    });
+    applyOfflineGameAction(deps, { action: 'START_GAME' });
+    expect(getState().gameState).toBe(GameState.LOBBY);
+    expect(getState().teamsLocked).toBe(false);
+  });
+
+  it('should build solo teams on START_GAME in QUIZ mode', () => {
+    const { deps, getState } = createOfflineDeps({
+      gameState: GameState.LOBBY,
+      settings: {
+        ...initialState.settings,
+        general: { ...initialState.settings.general, teamMode: 'SOLO' },
+        mode: quizModeSettings,
+      },
+    });
+    applyOfflineGameAction(deps, { action: 'START_GAME' });
+    expect(getState().gameState).toBe(GameState.COUNTDOWN);
+    expect(getState().teams).toHaveLength(2);
+    expect(getState().teams.every((team) => team.players.length === 1)).toBe(true);
   });
 
   it('should increment correct count and call nextWordLogic on CORRECT', () => {
@@ -242,14 +333,17 @@ describe('applyOfflineGameAction', () => {
 
   it('should seed IMPOSTER reveal phase on START_GAME in IMPOSTER mode', () => {
     const { deps, getState } = createOfflineDeps({
+      gameState: GameState.LOBBY,
       settings: {
         ...initialState.settings,
+        general: { ...initialState.settings.general, teamMode: 'SOLO' },
         mode: { gameMode: GameMode.IMPOSTER, imposterDiscussionTime: 180 },
       },
     });
     applyOfflineGameAction(deps, { action: 'START_GAME' });
     expect(getState().imposterPhase).toBe('REVEAL');
     expect(getState().imposterPlayerId).toBeTruthy();
+    expect(getState().teams).toHaveLength(2);
     expect(deps.nextOfflineImposterWord).toHaveBeenCalled();
   });
 });

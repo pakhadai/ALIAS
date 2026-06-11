@@ -49,7 +49,7 @@ export const JoinInputScreen = () => {
       style={keyboardAvoidingBottomPadding(keyboardBottomInset)}
     >
       <ScreenShell
-        className={currentTheme.bg}
+        className="bg-ui-bg"
         layout="wideMd"
         contentClassName="justify-center items-center pb-6 md:pb-10"
         headerFixed
@@ -58,14 +58,10 @@ export const JoinInputScreen = () => {
         }
       >
         <Logo theme={currentTheme} />
-        <div
-          className={`w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card}`}
-        >
+        <div className="w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] bg-ui-card border border-ui-border shadow-2xl">
           <div className="text-center space-y-4">
-            <ScreenTitle themeClass={currentTheme.textMain}>{t.joinTitle}</ScreenTitle>
-            <p
-              className={`${typographyClass.label} opacity-30 tracking-[0.4em] ${currentTheme.textMain}`}
-            >
+            <ScreenTitle>{t.joinTitle}</ScreenTitle>
+            <p className={`${typographyClass.label} opacity-30 tracking-[0.4em] text-ui-fg`}>
               {t.enterCode}
             </p>
           </div>
@@ -103,7 +99,7 @@ export const JoinInputScreen = () => {
             <button
               onClick={() => setGameState(GameState.MENU)}
               data-testid="join-cancel"
-              className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity ${currentTheme.textMain}`}
+              className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity text-ui-fg`}
             >
               {t.cancel}
             </button>

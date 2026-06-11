@@ -10,6 +10,7 @@ import {
   deleteCustomDeck,
   type CustomDeckSummary,
 } from '../../services/api';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass } from '../../constants/typography';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 
@@ -105,14 +106,10 @@ export const MyDecksScreen = () => {
         headerFixed
         footerFixed
         header={
-          <AppHeader
-            fixed
-            title={<ScreenTitle themeClass={currentTheme.textMain}>New Deck</ScreenTitle>}
-            onBack={exitCreateView}
-          />
+          <AppHeader fixed title={<ScreenTitle>New Deck</ScreenTitle>} onBack={exitCreateView} />
         }
         footer={
-          <FixedBottomBar island contentClassName="w-full px-6">
+          <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
             <button
               type="button"
               onClick={handleCreate}
@@ -125,9 +122,7 @@ export const MyDecksScreen = () => {
         }
       >
         <div className="space-y-2">
-          <label
-            className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
-          >
+          <label className={`${typographyClass.label} tracking-[0.25em] text-ui-fg-muted`}>
             Deck Name
           </label>
           <input
@@ -138,12 +133,10 @@ export const MyDecksScreen = () => {
           />
         </div>
         <div className="space-y-2">
-          <label
-            className={`${typographyClass.label} tracking-[0.25em] ${currentTheme.textSecondary}`}
-          >
+          <label className={`${typographyClass.label} tracking-[0.25em] text-ui-fg-muted`}>
             Words
             <span
-              className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} ${currentTheme.textSecondary} opacity-50`}
+              className={`ml-2 font-normal normal-case tracking-normal ${typographyClass.label} text-ui-fg-muted opacity-50`}
             >
               (one per line or comma-separated)
             </span>
@@ -155,9 +148,7 @@ export const MyDecksScreen = () => {
             rows={10}
             className={`w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all resize-none ${inputCls}`}
           />
-          <p
-            className={`${typographyClass.label} normal-case ${currentTheme.textSecondary} opacity-40`}
-          >
+          <p className={`${typographyClass.label} normal-case text-ui-fg-muted opacity-40`}>
             {wordsText.split(/[\n,]+/).filter((w) => w.trim()).length} words
           </p>
         </div>
@@ -178,12 +169,12 @@ export const MyDecksScreen = () => {
       header={
         <AppHeader
           fixed
-          title={<ScreenTitle themeClass={currentTheme.textMain}>My Decks</ScreenTitle>}
+          title={<ScreenTitle>My Decks</ScreenTitle>}
           onBack={() => setGameState(GameState.MENU)}
         />
       }
       footer={
-        <FixedBottomBar island contentClassName="w-full px-6">
+        <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
           <button
             type="button"
             onClick={() => setView('create')}
@@ -203,7 +194,7 @@ export const MyDecksScreen = () => {
         <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
           <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
           <p
-            className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+            className={`${typographyClass.system} font-sans text-center text-ui-fg-muted opacity-50`}
           >
             No custom decks yet
           </p>
@@ -219,7 +210,7 @@ export const MyDecksScreen = () => {
                   {deck.name}
                 </h3>
                 <p
-                  className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                  className={`${typographyClass.label} font-sans mt-1 normal-case text-ui-fg-muted`}
                 >
                   {deck.wordCount} words
                 </p>
@@ -239,7 +230,7 @@ export const MyDecksScreen = () => {
             </div>
             <div className="flex items-center justify-between pt-1">
               <span
-                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? 'text-ui-fg-muted'}`}
               >
                 {deck.status}
               </span>

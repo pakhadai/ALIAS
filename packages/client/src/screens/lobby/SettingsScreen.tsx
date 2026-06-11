@@ -11,6 +11,8 @@ import {
   Flame,
   UserSearch,
 } from 'lucide-react';
+import { footerIslandClassName } from '../../constants/footerLayout';
+import { SURFACE_PANEL_CLASS } from '../../constants/surfaceClasses';
 import {
   typographyClass,
   labelSectionClass,
@@ -242,7 +244,7 @@ export const SettingsScreen = () => {
 
   return (
     <ScreenShell
-      className={`items-center ${currentTheme.bg}`}
+      className="items-center bg-ui-bg"
       layout="canonical"
       contentClassName="items-center"
       headerFixed
@@ -250,7 +252,7 @@ export const SettingsScreen = () => {
       header={
         <AppHeader
           fixed
-          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.settings}</ScreenTitle>}
+          title={<ScreenTitle>{t.settings}</ScreenTitle>}
           onBack={goBackToLobby}
           backAriaLabel={t.backToLobby}
           backTestId="settings-close"
@@ -261,7 +263,7 @@ export const SettingsScreen = () => {
         </AppHeader>
       }
       footer={
-        <FixedBottomBar island contentClassName="max-w-2xl w-full">
+        <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
             themeClass={currentTheme.button}
             fullWidth
@@ -276,9 +278,9 @@ export const SettingsScreen = () => {
       <div className="w-full space-y-6 pb-4 pt-3">
         {/* BLOCK 1: Game Mode */}
         {activeTab === 'mode' && (
-          <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
+          <div className={`${SURFACE_PANEL_CLASS} p-6 space-y-5`}>
             <div className="space-y-2">
-              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+              <h3 className={`${labelSectionTitleClass} text-ui-fg !opacity-100`}>
                 {t.gameMode ?? 'Режим гри'}
               </h3>
               <div className="h-px w-full bg-ui-border" />
@@ -352,16 +354,14 @@ export const SettingsScreen = () => {
         {activeTab === 'content' && (
           <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-6">
             <div className="space-y-2">
-              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+              <h3 className={`${labelSectionTitleClass} text-ui-fg !opacity-100`}>
                 {t.content ?? 'Словник'}
               </h3>
               <div className="h-px w-full bg-ui-border" />
             </div>
 
             <div className="flex items-center justify-between">
-              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                {t.gameMode ?? 'Режим'}
-              </p>
+              <p className={`${labelSectionClass} text-ui-fg`}>{t.gameMode ?? 'Режим'}</p>
               <span
                 className={`inline-flex items-center gap-2 ${typographyClass.label} tracking-widest text-ui-fg-muted`}
               >
@@ -372,9 +372,7 @@ export const SettingsScreen = () => {
 
             {(settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION && (
               <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_28%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-accent)_10%,var(--ui-surface))] p-4">
-                <p
-                  className={`${typographyClass.label} tracking-widest opacity-60 ${currentTheme.textMain}`}
-                >
+                <p className={`${typographyClass.label} tracking-widest opacity-60 text-ui-fg`}>
                   {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                 </p>
                 <LanguageChipRow
@@ -439,7 +437,7 @@ export const SettingsScreen = () => {
                 {contentOpen.packs && (
                   <>
                     <div className="flex items-center justify-between">
-                      <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                      <p className={`${labelSectionClass} text-ui-fg`}>
                         {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                       </p>
                       {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
@@ -452,7 +450,7 @@ export const SettingsScreen = () => {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                      <p className={`${labelSectionClass} text-ui-fg`}>
                         {t.packLanguage ?? 'Pack language'}
                       </p>
                       <LanguageChipRow
@@ -560,7 +558,7 @@ export const SettingsScreen = () => {
         {activeTab === 'rules' && (
           <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
             <div className="space-y-2">
-              <h3 className={`${labelSectionTitleClass} ${currentTheme.textMain} !opacity-100`}>
+              <h3 className={`${labelSectionTitleClass} text-ui-fg !opacity-100`}>
                 {t.rules ?? 'Правила'}
               </h3>
               <div className="h-px w-full bg-ui-border" />
@@ -574,7 +572,7 @@ export const SettingsScreen = () => {
                   return (
                     <div className="space-y-3 py-4 first:pt-0">
                       <div className="flex justify-between items-center">
-                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                        <p className={`${labelSectionClass} text-ui-fg`}>
                           {t.imposterDiscussionTime ?? 'Час обговорення'}
                         </p>
                         <span className={`${typographyClass.label} ${currentTheme.textAccent}`}>
@@ -668,7 +666,7 @@ export const SettingsScreen = () => {
                         {rulesOpen.quizMore && (
                           <div className="space-y-4 pt-1">
                             <div className="space-y-4">
-                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                              <p className={`${labelSectionClass} text-ui-fg`}>
                                 {t.lobbyQuizWrongPenaltyTitle}
                               </p>
                               <button
@@ -684,7 +682,7 @@ export const SettingsScreen = () => {
                                     : 'border-ui-border bg-ui-surface opacity-70'
                                 }`}
                               >
-                                <span className={currentTheme.textMain}>
+                                <span className="text-ui-fg">
                                   {mode.quizWrongPenaltyEnabled
                                     ? t.lobbyQuizWrongPenaltyOn
                                     : t.lobbyQuizWrongPenaltyOff}
@@ -704,7 +702,7 @@ export const SettingsScreen = () => {
                             </div>
 
                             <div className="space-y-4">
-                              <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                              <p className={`${labelSectionClass} text-ui-fg`}>
                                 {t.lobbyQuizTimerModeTitle}
                               </p>
                               <div className="grid grid-cols-2 gap-2">
@@ -734,7 +732,7 @@ export const SettingsScreen = () => {
 
                               <div className="space-y-3">
                                 <div className="flex justify-between">
-                                  <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                                  <p className={`${labelSectionClass} text-ui-fg`}>
                                     {timerMode === 'PER_TASK'
                                       ? t.lobbyQuizLabelQuestionTime
                                       : t.lobbyQuizLabelRoundTime}
@@ -786,7 +784,7 @@ export const SettingsScreen = () => {
                               {timerMode === 'PER_TASK' && (
                                 <div className="space-y-3">
                                   <div className="flex justify-between">
-                                    <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
+                                    <p className={`${labelSectionClass} text-ui-fg`}>
                                       {t.lobbyQuizLabelTotalRound}
                                     </p>
                                     <span
@@ -839,9 +837,7 @@ export const SettingsScreen = () => {
                     />
                     {rulesOpen.basics && (
                       <div className="space-y-3 pt-1">
-                        <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                          {t.roundTime}
-                        </p>
+                        <p className={`${labelSectionClass} text-ui-fg`}>{t.roundTime}</p>
                         <div className="flex items-stretch gap-2">
                           <button
                             type="button"
@@ -889,9 +885,7 @@ export const SettingsScreen = () => {
 
                         <div className="space-y-4 pt-4 border-t border-ui-border">
                           <div className="flex justify-between">
-                            <p className={`${labelSectionClass} ${currentTheme.textMain}`}>
-                              {t.scoreToWin}
-                            </p>
+                            <p className={`${labelSectionClass} text-ui-fg`}>{t.scoreToWin}</p>
                             <span
                               data-testid="settings-score-to-win"
                               className={`${typographyClass.label} ${currentTheme.textAccent}`}
@@ -1066,7 +1060,7 @@ export const SettingsScreen = () => {
                           onChange={(v) => updateGeneral('skipPenalty', v)}
                           enabledLabel={t.enabled}
                           disabledLabel={t.disabled}
-                          titleClassName={currentTheme.textMain}
+                          titleClassName="text-ui-fg"
                         />
                       </div>
                     )}

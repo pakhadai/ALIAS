@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { SCREEN_LAYOUT } from './screenLayout';
+import { SCREEN_LAYOUT, type ScreenLayoutPreset } from './screenLayout';
+
+const PRESETS = Object.keys(SCREEN_LAYOUT) as ScreenLayoutPreset[];
 
 describe('SCREEN_LAYOUT', () => {
+  it.each(PRESETS)('should define non-empty bodyClassName for preset %s', (preset) => {
+    expect(SCREEN_LAYOUT[preset].bodyClassName.trim().length).toBeGreaterThan(0);
+  });
+
   it('should keep canonical body padding in sync with header inset tokens', () => {
     const { bodyClassName, contentInsetX, contentInsetXMd, contentRail } = SCREEN_LAYOUT.canonical;
     expect(bodyClassName).toContain('max-w-2xl');

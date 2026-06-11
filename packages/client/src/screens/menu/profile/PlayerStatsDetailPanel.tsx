@@ -15,14 +15,12 @@ export interface PlayerStatsDetailRow {
 export interface PlayerStatsDetailPanelProps {
   title: string;
   rows: PlayerStatsDetailRow[];
-  themeTextMain: string;
   themeIconColor: string;
 }
 
 export function PlayerStatsDetailPanel({
   title,
   rows,
-  themeTextMain,
   themeIconColor,
 }: PlayerStatsDetailPanelProps) {
   return (
@@ -46,9 +44,7 @@ export function PlayerStatsDetailPanel({
                   {row.label}
                 </span>
               </div>
-              <span className={`shrink-0 text-xl font-bold font-serif ${themeTextMain}`}>
-                {row.value}
-              </span>
+              <span className="shrink-0 text-xl font-bold font-serif text-ui-fg">{row.value}</span>
             </li>
           );
         })}

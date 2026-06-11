@@ -65,8 +65,8 @@ export const RoundSummaryScreen = () => {
       {points > 0 && <Confetti />}
 
       <ScreenShell
+        layout="fullPx8"
         className={currentTheme.bg}
-        contentClassName="px-8"
         footer={
           <FixedBottomBar contentClassName="w-full">
             {isHost ? (

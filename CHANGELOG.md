@@ -31,16 +31,26 @@
 ## [Unreleased]
 
 ### Added
+- `LobbyRulesSummaryCard.test.tsx` — rules card host/guest UX + `rulesTimeRow` mode variants (CLASSIC/QUIZ/IMPOSTER)
+- LAYOUT-001 Phase 3: theme-aware `rounded-theme` utility (`--radius-theme` in `@theme`); surface SSOT `surfaceClasses.ts` (`SURFACE_PANEL_CLASS`, `SURFACE_CARD_CLASS`, nav row/accent); `profileSurfaceClasses.ts` re-exports aliases
+- LAYOUT-001 Phase 2: footer island layout presets (`footerLayout.ts` — `narrow`, `canonical`, `fullBleed`); island footers on menu/lobby/scoreboard screens use `footerIslandClassName()`
 - LAYOUT-001 epic plan: `docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` — screen layout presets, footer island SSOT, radius/surface classes; session prompts 0–7 + micro A–B
 - Browser `AppHeader` overflow menu: liquid glass ⋯ chip (`GlassIconButton`) always in the header rail (like back); `ui-glass-panel` popover portaled below the chip without layout shift; `menuItems` API; demo stubs on Profile, Store, and lobby Settings; hidden in TMA (native chrome)
 
 ### Changed
+- Offline lobby: «Правила гри» quick-access card (mode, time, score, categories) — same as online; tap opens settings; header gear removed from lobby (`LobbyRulesSummaryCard.tsx`, `LobbyScreen.tsx`)
+- Docs/tests: `LOBBY_TEAM_BUILDER.md`, `TESTING_ACCEPTANCE.md`, E2E `openLobbySettings` → rules card only; unit tests for `LobbyRulesSummaryCard`, offline SOLO/TEAMS `START_GAME`
+- LAYOUT-001 Phase 5: menu/lobby high-traffic screens use `SURFACE_PANEL_CLASS` / `SURFACE_CARD_CLASS` (`RulesModal`, `StoreScreen`, `LobbySettingsScreen`, `ProfileSettingsScreen`; pilot: in-lobby `SettingsScreen` Game Mode block)
+- LAYOUT-001 Phase 4b: lobby screens (`LobbyScreen`, `TeamSetupScreen`, `SettingsScreen`) and lobby components use semantic `text-ui-fg` / `text-ui-fg-muted` / `bg-ui-bg` instead of `currentTheme.textMain/Secondary/bg`; `font-serif` display titles deferred to Phase 5 (3 legacy hits)
+- LAYOUT-001 Phase 4a: menu screens use semantic `text-ui-fg` / `text-ui-fg-muted` / `bg-ui-bg` instead of `currentTheme.textMain/Secondary/bg` on shells and body copy; profile subcomponents drop `themeTextMain/Secondary` props; `font-serif` card titles deferred to Phase 5 (~7 legacy hits remain in menu)
+- LAYOUT-001 Phase 3: `Button` and `AccentFooterCta` use `rounded-theme` instead of `rounded-[var(--theme-radius)]`
+- LAYOUT-001 Phase 1: `ScreenShell` `layout=` preset on MenuScreen and five GameFlow transitional screens (`canonical`, `fullPx6`, `fullPx8`); removed duplicate body `px-*` / `max-w-*` from `contentClassName`
 - Profile surface panels unified: guest/auth benefits list, stats cards, nav rows, and detail panel use `ui-glass-panel` volume (SSOT `profileSurfaceClasses.ts`); inset hairline dividers (`.ui-profile-list`, `.ui-profile-panel-header`) replace full-width `divide-ui-border`; `prefers-reduced-transparency` fallback for `.ui-glass-panel`
 - Browser header back control: liquid glass circular chip (33px) with `ArrowLeft` icon and theme `--ui-*` tokens (`ui-glass-icon-btn`) instead of plain X glyph
 - Screen layout SSOT: `ScreenShell` `layout` preset (`screenLayout.ts`) syncs body padding/max-width with browser `AppHeader` back rail via `ScreenLayoutContext` (through `GlassChromePortal`); migrated all back-button screens
 
 ### Fixed
-- Expired online lobby session (`ROOM_NOT_FOUND` / `PLAYER_NOT_IN_ROOM` after rejoin): auto-reset to main menu, clear `alias_active_session` and rejoin keys — fixes stuck lobby UI after closing Telegram
+- Offline SOLO lobby: `START_GAME` now builds one team per player (mirrors server `GameEngine`) — fixes «В команді немає гравців!» on PreRound despite active start button with ≥2 players (`offlineGameActions.ts`)
 - Browser header overflow menu: `ui-glass-panel` overrode `position: fixed` with `relative`, so the popover stretched full-width and appeared mid-screen; inline `fixed` + `w-max` + `pointer-events-auto` anchor it under the ⋯ chip (`AppHeaderOverflowMenu.tsx`)
 - Lobby exit flow unified: browser `AppHeader` back, TMA `BackButton`, and future hardware back all route through `LobbyExitContext` → `ConfirmationModal` before `leaveRoom` (offline keeps `resetGameMode: false` on confirm)
 - Lobby browser back: wire `onBack` directly to `openExitConfirm` (not context indirection); register TMA handler in `useLayoutEffect` with ref-stable callback; exit modal portaled at screen root; `pointer-events: auto` on header content rail

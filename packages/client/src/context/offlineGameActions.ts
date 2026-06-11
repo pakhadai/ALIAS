@@ -5,7 +5,12 @@ import { initialState } from './gameReducer';
 import type { AppState, Player, Team } from '../types';
 import { GameState, GameMode } from '../types';
 import type { GameSoundId } from '../types';
-import { getTeamColor, getTeamColorToken, shuffleArray } from '@alias/shared';
+import {
+  deriveLobbyReadinessServer,
+  getTeamColor,
+  getTeamColorToken,
+  shuffleArray,
+} from '@alias/shared';
 import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
 import { buildTeamShells } from '../utils/buildTeamShells';
 import { AVATARS } from '../utils/avatars';
@@ -28,6 +33,23 @@ function materializeOfflineTeamsIfNeeded(state: AppState): Team[] {
     teamMode: state.settings.general.teamMode ?? 'TEAMS',
     language: state.settings.general.language,
   });
+}
+
+/** Mirror server GameEngine START_GAME team setup for offline play. */
+function prepareOfflineTeamsForStart(state: AppState): Team[] {
+  const teamMode = state.settings.general.teamMode ?? 'TEAMS';
+  if (teamMode === 'SOLO') {
+    return state.players.map((p, i) => ({
+      id: `team-${i}`,
+      name: p.name,
+      score: 0,
+      color: getTeamColorToken(i),
+      colorHex: getTeamColor(i).hex,
+      players: [p],
+      nextPlayerIndex: 0,
+    }));
+  }
+  return materializeOfflineTeamsIfNeeded(state);
 }
 
 export function applyOfflineGameAction(
@@ -339,14 +361,34 @@ export function applyOfflineGameAction(
       dispatch({ type: 'SET_STATE', payload: { teams: newTeams, gameState: GameState.TEAMS } });
       break;
     }
-    case 'START_GAME':
+    case 'START_GAME': {
+      const teamMode = stateRef.current.settings.general.teamMode ?? 'TEAMS';
+      const teamsForReadiness =
+        teamMode === 'SOLO' ? [] : materializeOfflineTeamsIfNeeded(stateRef.current);
+      const readiness = deriveLobbyReadinessServer({
+        teamMode,
+        playersCount: stateRef.current.players.length,
+        teams: teamsForReadiness,
+        playerIds: stateRef.current.players.map((p) => p.id),
+      });
+      if (!readiness.ok) break;
+
+      const nextTeams = prepareOfflineTeamsForStart(stateRef.current);
+      const startBase = {
+        teams: nextTeams,
+        currentTeamIndex: 0,
+        teamsLocked: true,
+        roundsPlayed: 0,
+        timeUp: false,
+        isPaused: false,
+      };
+
       if (stateRef.current.settings.mode.gameMode === GameMode.QUIZ) {
         dispatch({
           type: 'SET_STATE',
           payload: {
+            ...startBase,
             gameState: GameState.COUNTDOWN,
-            currentTeamIndex: 0,
-            teamsLocked: true,
             currentRoundStats: {
               correct: 0,
               skipped: 0,
@@ -366,8 +408,8 @@ export function applyOfflineGameAction(
         dispatch({
           type: 'SET_STATE',
           payload: {
+            ...startBase,
             gameState: GameState.PRE_ROUND,
-            currentTeamIndex: 0,
             imposterPhase: 'REVEAL',
             imposterPlayerId: imposter?.id,
             revealedPlayerIds: [],
@@ -375,7 +417,6 @@ export function applyOfflineGameAction(
             imposterWord: w,
             imposterSecret: null,
             timeLeft: 0,
-            isPaused: false,
             currentWord: '',
             currentTask: null,
           },
@@ -384,15 +425,14 @@ export function applyOfflineGameAction(
         dispatch({
           type: 'SET_STATE',
           payload: {
+            ...startBase,
             gameState: GameState.PRE_ROUND,
-            currentTeamIndex: 0,
-            teamsLocked: true,
-            roundsPlayed: 0,
             usedWords: [],
           },
         });
       }
       break;
+    }
     case 'NEXT_ROUND':
       if (stateRef.current.teams.length === 0) break;
       dispatch({

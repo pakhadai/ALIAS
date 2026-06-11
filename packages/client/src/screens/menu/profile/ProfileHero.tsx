@@ -10,8 +10,6 @@ export interface ProfileHeroProps {
   avatarId?: string | null;
   avatarUrl?: string | null;
   titleRef?: RefObject<HTMLDivElement | null>;
-  themeTextMain: string;
-  themeTextSecondary: string;
 }
 
 export function ProfileHero({
@@ -21,8 +19,6 @@ export function ProfileHero({
   avatarId,
   avatarUrl,
   titleRef,
-  themeTextMain,
-  themeTextSecondary,
 }: ProfileHeroProps) {
   return (
     <section className="relative flex flex-col items-center pt-3 pb-7 w-full max-w-md mx-auto">
@@ -43,14 +39,10 @@ export function ProfileHero({
         </div>
       </div>
       <div ref={titleRef} className="relative mt-5 w-full flex justify-center px-2">
-        <ScreenTitle as="h1" themeClass={themeTextMain}>
-          {displayName}
-        </ScreenTitle>
+        <ScreenTitle as="h1">{displayName}</ScreenTitle>
       </div>
       {subtitle ? (
-        <p className={`relative ${typographyClass.body} mt-1.5 ${themeTextSecondary}`}>
-          {subtitle}
-        </p>
+        <p className={`relative ${typographyClass.body} mt-1.5 text-ui-fg-muted`}>{subtitle}</p>
       ) : null}
       {badge ? <div className="relative mt-2.5">{badge}</div> : null}
     </section>

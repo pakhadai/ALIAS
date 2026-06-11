@@ -59,7 +59,7 @@ export const Button: React.FC<ButtonProps> = ({
   }, []); // Legitimate: window/document subscription for prefs cache invalidation.
 
   const baseStyles =
-    'inline-flex items-center justify-center rounded-[var(--theme-radius)] transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
+    'inline-flex items-center justify-center rounded-theme transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
   const labelStyles = typographyClass.label;
 
   // Strict theme integration

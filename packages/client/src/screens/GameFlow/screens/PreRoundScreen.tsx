@@ -25,7 +25,8 @@ export const PreRoundScreen = () => {
   if (!activeTeam || activeTeam.players.length === 0) {
     return (
       <ScreenShell
-        className={`${currentTheme.bg} px-8 text-center`}
+        layout="fullPx8"
+        className={`${currentTheme.bg} text-center`}
         contentClassName="justify-center items-center"
       >
         <div className="space-y-8">
@@ -45,7 +46,8 @@ export const PreRoundScreen = () => {
   if (!explainer) {
     return (
       <ScreenShell
-        className={`${currentTheme.bg} px-8 text-center`}
+        layout="fullPx8"
+        className={`${currentTheme.bg} text-center`}
         contentClassName="justify-center items-center"
       >
         <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
@@ -56,7 +58,8 @@ export const PreRoundScreen = () => {
 
   return (
     <ScreenShell
-      className={`${currentTheme.bg} px-8 text-center relative`}
+      layout="fullPx8"
+      className={`${currentTheme.bg} text-center relative`}
       contentClassName="justify-center items-center"
       footer={
         <FixedBottomBar contentClassName="max-w-sm mx-auto">

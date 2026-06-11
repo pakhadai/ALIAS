@@ -9,6 +9,7 @@ import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { AppHeader, ScreenShell } from '../../components/layout';
 import { Button } from '../../components/Button';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { screenBodyPy, stackGap } from '../../constants/spacing';
 import { typographyClass } from '../../constants/typography';
 import { ProfileStatsCards } from './profile/ProfileStatsCards';
 import { PlayerStatsDetailPanel } from './profile/PlayerStatsDetailPanel';
@@ -55,14 +56,14 @@ export const PlayerStatsScreen = () => {
 
   return (
     <ScreenShell
-      className={`relative ${currentTheme.bg} transition-colors duration-500`}
+      className="relative bg-ui-bg transition-colors duration-500"
       layout="narrow"
-      contentClassName="flex flex-col flex-1 py-4 pb-4 gap-4"
+      contentClassName={`flex flex-col flex-1 pb-4 ${screenBodyPy} ${stackGap}`}
       headerFixed
       header={
         <AppHeader
           fixed
-          title={<ScreenTitle themeClass={currentTheme.textMain}>{t.statsScreenTitle}</ScreenTitle>}
+          title={<ScreenTitle>{t.statsScreenTitle}</ScreenTitle>}
           onBack={goBack}
           backAriaLabel={t.goBack}
           data-testid="player-stats-header-title"
@@ -78,7 +79,7 @@ export const PlayerStatsScreen = () => {
         }}
       />
 
-      <div className="relative flex flex-col gap-4">
+      <div className={`relative flex flex-col ${stackGap}`}>
         <ProfileStatsCards
           gamesPlayed={stats.gamesPlayed}
           wordsGuessed={stats.wordsGuessed}
@@ -89,8 +90,6 @@ export const PlayerStatsScreen = () => {
             accuracy: t.profileStatsCardAccuracy,
             tapForDetails: t.profileTapForDetails,
           }}
-          themeTextMain={currentTheme.textMain}
-          themeTextSecondary={currentTheme.textSecondary}
         />
 
         {isEmpty ? (
@@ -98,12 +97,8 @@ export const PlayerStatsScreen = () => {
             className={`w-full px-5 py-6 text-center ${PROFILE_PANEL_CLASS}`}
             data-testid="player-stats-empty"
           >
-            <p className={`${typographyClass.heading} ${currentTheme.textMain}`}>
-              {t.statsEmptyTitle}
-            </p>
-            <p
-              className={`${typographyClass.body} mt-2 leading-relaxed ${currentTheme.textSecondary}`}
-            >
+            <p className={`${typographyClass.heading} text-ui-fg`}>{t.statsEmptyTitle}</p>
+            <p className={`${typographyClass.body} mt-2 leading-relaxed text-ui-fg-muted`}>
               {t.statsEmptyBody}
             </p>
             <Button
@@ -120,14 +115,13 @@ export const PlayerStatsScreen = () => {
           <PlayerStatsDetailPanel
             title={t.statsSectionDetails}
             rows={detailRows}
-            themeTextMain={currentTheme.textMain}
             themeIconColor={currentTheme.iconColor}
           />
         )}
 
         {isAuthenticated ? (
           <div
-            className={`flex items-center justify-center gap-2 ${typographyClass.body} ${currentTheme.textSecondary}`}
+            className={`flex items-center justify-center gap-2 ${typographyClass.body} text-ui-fg-muted`}
             data-testid="player-stats-synced"
           >
             <Cloud size={16} className={currentTheme.iconColor} aria-hidden />

@@ -17,23 +17,15 @@ export interface ProfileBenefitsListProps {
   title: string;
   subtitle?: string;
   items: ProfileBenefitItem[];
-  themeTextSecondary: string;
 }
 
-export function ProfileBenefitsList({
-  title,
-  subtitle,
-  items,
-  themeTextSecondary,
-}: ProfileBenefitsListProps) {
+export function ProfileBenefitsList({ title, subtitle, items }: ProfileBenefitsListProps) {
   return (
     <div className={`w-full max-w-md mx-auto overflow-hidden ${PROFILE_PANEL_CLASS}`}>
       <div className={PROFILE_PANEL_HEADER_CLASS}>
         <p className={`${labelSectionTitleClass} text-ui-fg-muted !opacity-100`}>{title}</p>
         {subtitle ? (
-          <p className={`${typographyClass.body} mt-1 leading-snug ${themeTextSecondary}`}>
-            {subtitle}
-          </p>
+          <p className={`${typographyClass.body} mt-1 leading-snug text-ui-fg-muted`}>{subtitle}</p>
         ) : null}
       </div>
       <ul className={PROFILE_LIST_CLASS}>
@@ -50,7 +42,7 @@ export function ProfileBenefitsList({
                 <p className={`${typographyClass.label} font-sans tracking-[0.16em] text-ui-fg`}>
                   {item.label}
                 </p>
-                <p className={`${typographyClass.body} mt-0.5 leading-snug ${themeTextSecondary}`}>
+                <p className={`${typographyClass.body} mt-0.5 leading-snug text-ui-fg-muted`}>
                   {item.sub}
                 </p>
               </div>

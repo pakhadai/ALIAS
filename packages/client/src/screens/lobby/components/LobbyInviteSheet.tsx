@@ -48,11 +48,7 @@ export function LobbyInviteSheet(props: {
       onBackdropClick={requestClose}
       size="compact"
       ariaLabelledBy="lobby-invite-title"
-      header={
-        <ModalSheetTitle id="lobby-invite-title" themeClass={theme.textMain}>
-          {t.lobbyInvite}
-        </ModalSheetTitle>
-      }
+      header={<ModalSheetTitle id="lobby-invite-title">{t.lobbyInvite}</ModalSheetTitle>}
     >
       <div data-testid="lobby-invite-sheet">
         <div className="space-y-2">

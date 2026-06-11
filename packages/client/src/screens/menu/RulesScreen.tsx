@@ -12,7 +12,7 @@ export const RulesScreen = () => {
   const t = useT();
   return (
     <ScreenShell
-      className={currentTheme.bg}
+      className="bg-ui-bg"
       layout="wideMd"
       contentClassName="justify-center items-center pb-6 md:pb-10"
       headerFixed
@@ -21,12 +21,10 @@ export const RulesScreen = () => {
       }
     >
       <div
-        className={`w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] ${currentTheme.card} overflow-y-auto`}
+        className="w-full max-w-2xl space-y-10 p-8 md:p-12 rounded-[2.5rem] bg-ui-card border border-ui-border shadow-2xl overflow-y-auto"
         style={{ maxHeight: '85vh' }}
       >
-        <ScreenTitle themeClass={currentTheme.textMain} className="mb-6 text-center">
-          {t.infoRules}
-        </ScreenTitle>
+        <ScreenTitle className="mb-6 text-center">{t.infoRules}</ScreenTitle>
         <div className="space-y-5 mb-8">
           {[t.infoRule1, t.infoRule2, t.infoRule3, t.infoRule4, t.infoRule5, t.infoRule6].map(
             (rule: string, i: number) => (
@@ -36,9 +34,7 @@ export const RulesScreen = () => {
                 >
                   {i + 1}
                 </span>
-                <p
-                  className={`${typographyClass.body} tracking-wide font-light ${currentTheme.textSecondary}`}
-                >
+                <p className={`${typographyClass.body} tracking-wide font-light text-ui-fg-muted`}>
                   {rule}
                 </p>
               </div>

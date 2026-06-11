@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
 import { useGame } from '../../../context/GameContext';
+import { footerIslandClassName } from '../../../constants/footerLayout';
 import { useT } from '../../../hooks/useT';
 
 const LADDER_TRACK_PX = 280;
@@ -33,7 +34,7 @@ export const ScoreboardScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar island contentClassName="w-full px-6">
+        <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
           {isHost ? (
             <button
               onClick={handleNextRound}

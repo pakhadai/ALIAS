@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Settings as SettingsIcon,
-  Loader2,
-  Lock,
-  Unlock,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { Loader2, Lock, Unlock, ChevronDown, ChevronUp } from 'lucide-react';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { FixedBottomBar, ScreenShell, AppHeader } from '../../components/layout';
 import { ModalSheet } from '../../components/ModalSheet';
@@ -19,6 +12,7 @@ import { useLobbyExit } from '../../context/LobbyExitContext';
 import { useT } from '../../hooks/useT';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 import { HAPTIC, vibrate } from '../../utils/haptics';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass, systemBannerClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
 import { MAX_PLAYERS } from '../../constants';
@@ -31,12 +25,12 @@ import { PlayersSection } from './components/PlayersSection';
 import { TeamCard } from './components/TeamCard';
 import { UnassignedPool } from './components/UnassignedPool';
 import { OnlineLobbyIntro } from './components/OnlineLobbyIntro';
+import { LobbyRulesSummaryCard } from './components/LobbyRulesSummaryCard';
 import { LobbyPlayModeBar } from './components/LobbyPlayModeBar';
 import { LobbyPlayModeBarSlot } from './components/LobbyPlayModeBarSlot';
 import { LobbyStartPanel } from './components/LobbyStartPanel';
 import { LobbyGuestWaitingCard } from './components/LobbyGuestWaitingCard';
 import { deriveLobbyReadiness } from './deriveLobbyReadiness';
-import { isTelegramMiniApp } from '../../hooks/useTelegramApp';
 
 const MAX_LOBBY_TEAMS = 10;
 
@@ -81,7 +75,6 @@ export const LobbyScreen = () => {
   const general = settings.general;
   const t = useT();
   const haptic = useHapticFeedback();
-  const isTelegram = isTelegramMiniApp();
   const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
 
   // Offline: persist trimmed team list when host lowers team count (UI shells already hide extras).
@@ -361,7 +354,7 @@ export const LobbyScreen = () => {
   return (
     <>
       <ScreenShell
-        className={currentTheme.bg}
+        className="bg-ui-bg"
         layout="fullPx4"
         contentClassName="items-center no-scrollbar"
         headerFixed
@@ -370,26 +363,13 @@ export const LobbyScreen = () => {
           <AppHeader
             fixed
             data-testid="lobby-app-header"
-            title={<ScreenTitle themeClass={currentTheme.textMain}>{t.lobby}</ScreenTitle>}
+            title={<ScreenTitle>{t.lobby}</ScreenTitle>}
             onBack={openExitConfirm}
             backAriaLabel={t.confirmExit ?? 'Exit'}
-            right={
-              isTelegram && gameMode === 'ONLINE' ? undefined : isHost ? (
-                <button
-                  type="button"
-                  data-testid="lobby-header-settings"
-                  onClick={() => setGameState(GameState.SETTINGS)}
-                  className="min-h-11 min-w-11 flex items-center justify-center text-ui-fg-muted hover:text-ui-fg transition-colors active:scale-90"
-                  aria-label={t.settings ?? 'Settings'}
-                >
-                  <SettingsIcon size={20} className={currentTheme.iconColor} />
-                </button>
-              ) : undefined
-            }
           />
         }
         footer={
-          <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
+          <FixedBottomBar island contentClassName={footerIslandClassName('narrow')}>
             {isHost ? (
               <LobbyStartPanel
                 readiness={lobbyReadiness}
@@ -436,7 +416,7 @@ export const LobbyScreen = () => {
             contentClassName="flex flex-col items-center gap-4"
             ariaLabelledBy="qr-modal-title"
             header={
-              <ModalSheetTitle id="qr-modal-title" themeClass={currentTheme.textMain}>
+              <ModalSheetTitle id="qr-modal-title">
                 {t.scanToJoin ?? 'Відскануйте для приєднання'}
               </ModalSheetTitle>
             }
@@ -521,6 +501,18 @@ export const LobbyScreen = () => {
               />
             )}
 
+            {gameMode === 'OFFLINE' && (
+              <LobbyRulesSummaryCard
+                theme={currentTheme}
+                t={t}
+                settings={settings}
+                modeLabel={modeLabel}
+                categoriesPreview={categoriesPreview}
+                isHost={isHost}
+                onOpenSettings={isHost ? () => setGameState(GameState.SETTINGS) : undefined}
+              />
+            )}
+
             <LobbyPlayModeBarSlot open={showPlayModeBar}>
               <LobbyPlayModeBar
                 theme={currentTheme}
@@ -601,9 +593,7 @@ export const LobbyScreen = () => {
             {!isSolo && (
               <div className="w-full max-w-sm space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <ScreenTitle as="h3" themeClass={currentTheme.textMain}>
-                    {t.teams}
-                  </ScreenTitle>
+                  <ScreenTitle as="h3">{t.teams}</ScreenTitle>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {isHost && gameMode === 'OFFLINE' && (
                       <button

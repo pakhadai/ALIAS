@@ -41,7 +41,11 @@ export const CountdownScreen = () => {
   }, [count, startGameplay, playSound, isActualExplainer, isQuiz]);
 
   return (
-    <ScreenShell className={currentTheme.bg} contentClassName="justify-center items-center">
+    <ScreenShell
+      layout="fullPx6"
+      className={currentTheme.bg}
+      contentClassName="justify-center items-center"
+    >
       {count > 0 ? (
         <span
           key={count}

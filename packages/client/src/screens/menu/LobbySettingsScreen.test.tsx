@@ -302,6 +302,9 @@ describe('LobbySettingsScreen', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Yes, reset' })).toBeVisible();
+    });
     await user.click(screen.getByRole('button', { name: 'Yes, reset' }));
 
     await waitFor(() => {
@@ -355,6 +358,9 @@ describe('LobbySettingsScreen', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Yes, reset' })).toBeVisible();
+    });
     await user.click(screen.getByRole('button', { name: 'Yes, reset' }));
 
     await waitFor(() => {

@@ -1,4 +1,14 @@
 import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+afterEach(() => {
+  cleanup();
+  delete document.documentElement.dataset.appHeader;
+  delete document.documentElement.dataset.footerIsland;
+  document.documentElement.style.removeProperty('--footer-island-height');
+  document.getElementById('glass-chrome-portal-root')?.remove();
+});
 
 /** jsdom lacks ResizeObserver — GlassAppHeader measures header height on mount */
 class ResizeObserverPolyfill {

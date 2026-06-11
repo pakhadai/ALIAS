@@ -105,7 +105,7 @@ export function TeamCard(props: {
           </div>
         ) : (
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <p className={`${typographyClass.body} font-semibold ${theme.textMain} truncate`}>
+            <p className={`${typographyClass.body} font-semibold text-ui-fg truncate`}>
               {team.name}
             </p>
             {isHost && (

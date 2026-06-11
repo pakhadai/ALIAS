@@ -9,7 +9,6 @@ describe('PlayerStatsDetailPanel', () => {
       <PlayerStatsDetailPanel
         title="Details"
         rows={[{ label: 'Skipped', value: '4', icon: XCircle }]}
-        themeTextMain="text-ui-fg"
         themeIconColor="text-ui-fg-muted"
       />
     );

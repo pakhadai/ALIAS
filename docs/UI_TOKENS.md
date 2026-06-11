@@ -172,6 +172,92 @@
 
 **Примітка:** `font-serif` у TSX = runtime `--font-heading` (`.font-serif` override), не напряму Playfair з `tailwind.config.ts`. Phase 8 (optional): alias `font-heading`.
 
+## Border radius
+
+**Status:** LAYOUT-001 Phase 3 ✅ (`rounded-theme` utility).  
+**Epic:** [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md)
+
+| Рівень | API | Приклад | Коли |
+|--------|-----|---------|------|
+| **Theme-aware** | `rounded-theme` або `rounded-[var(--theme-radius)]` | `Button`, `AccentFooterCta`, inputs | Primary controls — radius змінюється з темою (`6px` PAPER_LUXE → pill PREMIUM_DARK) |
+| **Fixed glass** | `rounded-2xl` / `rounded-3xl` у `surfaceClasses.ts` | `SURFACE_CARD_CLASS`, `SURFACE_PANEL_CLASS` | Frosted panels — не theme pill |
+| **Sheet** | `--ui-sheet-radius` (`28px`) | `ModalSheet` panel | Bottom sheets only |
+
+### CSS contract
+
+| Змінна | Runtime | `@theme` utility |
+|--------|---------|------------------|
+| `--theme-radius` | `GameContext` ← `ThemeConfig.borderRadius` | `--radius-theme` → `rounded-theme` |
+| `--ui-sheet-radius` | `:root` у `styles.css` | — (CSS var на `.bottom-sheet-panel`) |
+
+**Правило:** нові primary buttons / inputs — `rounded-theme`, не hardcoded `rounded-2xl`. Glass card shells — fixed radius через `SURFACE_*` constants.
+
+## Surface classes
+
+**Status:** LAYOUT-001 Phase 3 ✅ — SSOT `surfaceClasses.ts`; profile aliases у `profileSurfaceClasses.ts`.  
+**Epic:** [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md)
+
+| Константа | Класи (скорочено) | Призначення |
+|-----------|-------------------|-------------|
+| `SURFACE_PANEL_CLASS` | `ui-glass-panel rounded-3xl` | Elevated section panel (benefits, settings block) |
+| `SURFACE_CARD_CLASS` | `ui-glass-panel rounded-2xl` | List row / stat card shell |
+| `SURFACE_NAV_ROW_CLASS` | glass + `rounded-2xl` + nav layout + tap feedback | Full-width nav row (Profile nav list) |
+| `SURFACE_NAV_ACCENT_BTN_CLASS` | `rounded-2xl` + `lobby-start-btn--plain` | Solid accent CTA row (no frosted glass) |
+
+**Profile aliases (backward compat):** `PROFILE_PANEL_CLASS`, `PROFILE_NAV_BTN_CLASS`, `PROFILE_NAV_ACCENT_BTN_CLASS` — re-export з `surfaceClasses.ts`. Profile-only: `PROFILE_LIST_CLASS`, `PROFILE_PANEL_HEADER_CLASS`, `PROFILE_STAT_CARD_CLASS` (`SURFACE_CARD_CLASS` + stat layout).
+
+**Модуль:** `packages/client/src/constants/surfaceClasses.ts` — імпорт для Phase 5 card migration (RulesModal, Store, settings).
+
+## Spacing (vertical rhythm)
+
+**Status:** LAYOUT-001 Phase 6 ✅ (optional) — SSOT `spacing.ts`; pilot на settings + stats екранах.  
+**Epic:** [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md)
+
+| Константа | Tailwind | Коли |
+|-----------|----------|------|
+| `screenBodyPy` | `py-4` | Default `ScreenShell` body vertical padding (settings, lists) |
+| `sectionGap` | `space-y-5` | Compact stacked sections (`MyDecksScreen`, `MyWordPacksScreen`) |
+| `sectionGapLg` | `space-y-6` | Form / sheet inner stacks (`EnterNameSheet`) |
+| `sectionGapXl` | `space-y-8` | Settings pages — avatar, fields, card blocks |
+| `stackGap` | `gap-4` | Flex column stacks (`PlayerStatsScreen`) |
+
+**Правило:** горизонтальний inset лишається в `screenLayout.ts` / `layout=` preset; spacing constants — лише vertical rhythm (`py-*`, `space-y-*`, `gap-*`). Не дублювати `px-*` / `max-w-*` тут.
+
+**Модуль:** `packages/client/src/constants/spacing.ts` — re-export через `constants/index.ts`.
+
+## Screen layout presets
+
+**Status:** LAYOUT-001 Phase 1 ✅ — SSOT `screenLayout.ts`; `ScreenShell` prop `layout=` merges `bodyClassName` + `ScreenLayoutContext` for browser back-rail alignment.  
+**Epic:** [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md) · Layout policy: [`TMA_LAYOUT.md`](./TMA_LAYOUT.md)
+
+| Preset | `bodyClassName` (скорочено) | Коли |
+|--------|----------------------------|------|
+| `canonical` | `max-w-2xl mx-auto px-6 md:px-8` | Profile, Store, settings menu, in-lobby settings |
+| `narrow` | `max-w-md mx-auto px-6 md:px-8` | Player stats |
+| `fullPx4` | `w-full px-4` | Online lobby |
+| `fullPx6` | `w-full px-6` | My decks, scoreboard, game over, countdown |
+| `fullPx8` | `w-full px-8` | Team setup, VS, pre-round, round summary |
+| `wideMd` | `w-full px-6 md:px-10` | Join code, rules |
+
+**Правило:** `contentClassName` на `ScreenShell` — лише vertical layout (`py-*`, `gap-*`, `flex`, `justify-*`); **не** дублювати `px-*` / `max-w-*` коли є `layout=`. Горизонтальний inset — у preset.
+
+**Модуль:** `packages/client/src/constants/screenLayout.ts` — `SCREEN_LAYOUT`, тип `ScreenLayoutPreset`.
+
+## Footer island presets
+
+**Status:** LAYOUT-001 Phase 2 ✅ — SSOT `footerLayout.ts`; island footers через `footerIslandClassName()`.  
+**Epic:** [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md) · [`TMA_LAYOUT.md` — Footer island presets](./TMA_LAYOUT.md#footer-island-layout-presets-layout-001-)
+
+| Preset | Classes | Коли |
+|--------|---------|------|
+| `narrow` | `max-w-sm mx-auto w-full` | Single primary CTA (lobby start, profile logout) |
+| `canonical` | `max-w-2xl mx-auto w-full` | Save bar, store trust strip, settings host footer |
+| `fullBleed` | `w-full px-6` | Full-width CTA row (`MyDecksScreen`, `ScoreboardScreen`, `TeamSetupScreen`) |
+
+**Default `FixedBottomBar` (non-island):** `max-w-sm` — окремий від island presets.
+
+**Модуль:** `packages/client/src/constants/footerLayout.ts` — `FOOTER_ISLAND_LAYOUT`, `footerIslandClassName()`.
+
 ## Safe-area utilities (TMA / PWA)
 
 Визначення padding-ключів: [`packages/client/tailwind.config.ts`](../packages/client/tailwind.config.ts) (`theme.extend.padding`).
@@ -242,7 +328,7 @@
 |--------|--------|-------------|
 | `--app-page-header-height` | measured + CSS fallback | Повна висота sticky header (inset + bar); `GlassAppHeader` пише measured px через `ResizeObserver`; fallback — формула з `tmaLayoutConstants.ts` |
 | `--tma-content-safe-top` | SDK + floor on TMA | Title row min-height; вирівнювання з TG chrome |
-| `--tma-content-top-floor` | `88px` | Baseline content-safe when SDK not ready; synced by `useTelegramApp` |
+| `--tma-content-top-floor` | `104px` | Baseline content-safe when SDK not ready; synced by `useTelegramApp` (`TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX`) |
 | `--tma-banner-top` | inset or header height | `ConnectionStatusBanner` top offset; mirrors toast header rule |
 | `--tma-toast-top` | inset + offset or header + gap | Portal toast position (`ToastNotification`) |
 | `--ui-chrome-glass-opacity-top` | `62%` | SSOT tint біля верху sticky chrome (header + modal top bar) |
@@ -321,6 +407,10 @@ Mask — дзеркально header (feather **вгору**).
 | `packages/client/src/constants/themes.ts` | `THEME_CONFIG` — 5 базових кольорів + optional `elevated` / premium `accentAlt` / `accentWarm` |
 | `packages/client/src/components/typography/ScreenTitle.tsx` | Screen / section heading primitive (TYPO-001 Phase 2) |
 | `packages/client/src/constants/typography.ts` | `typographyClass`, `typographyTokens` (TYPO-001) |
+| `packages/client/src/constants/surfaceClasses.ts` | `SURFACE_PANEL_CLASS`, `SURFACE_CARD_CLASS`, nav row / accent CTA (LAYOUT-001) |
+| `packages/client/src/constants/footerLayout.ts` | Footer island presets: `footerIslandClassName()` (LAYOUT-001) |
+| `packages/client/src/constants/screenLayout.ts` | Screen body layout presets (LAYOUT-001) |
+| `packages/client/src/constants/spacing.ts` | Vertical rhythm fragments: `screenBodyPy`, `sectionGap*` (LAYOUT-001 Phase 6) |
 | `packages/client/src/constants/tmaLayoutConstants.ts` | TMA header/footer SSOT: `HEADER_ROW_MIN_PX`, `TG_CHROME_GUTTER_PX`, `APP_HEADER_BAR_PX`, `--app-page-header-height` helpers |
 | `packages/client/src/types.ts` | `ThemeConfig.tokens` |
 | `.cursor/rules/02-react.mdc` | React + Tailwind стандарти |

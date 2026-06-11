@@ -12,8 +12,6 @@ export interface ProfileStatsCardsProps {
     accuracy: string;
     tapForDetails: string;
   };
-  themeTextMain: string;
-  themeTextSecondary: string;
   /** Omit for read-only summary (e.g. PlayerStatsScreen hero). */
   onPress?: () => void;
 }
@@ -23,8 +21,6 @@ export function ProfileStatsCards({
   wordsGuessed,
   accuracy,
   labels,
-  themeTextMain,
-  themeTextSecondary,
   onPress,
 }: ProfileStatsCardsProps) {
   const cards = [
@@ -37,9 +33,7 @@ export function ProfileStatsCards({
     <div className="grid grid-cols-3 gap-2">
       {cards.map((card) => (
         <div key={card.label} className={PROFILE_STAT_CARD_CLASS}>
-          <span className={`text-xl font-bold font-serif leading-none ${themeTextMain}`}>
-            {card.value}
-          </span>
+          <span className="text-xl font-bold font-serif leading-none text-ui-fg">{card.value}</span>
           <span
             className={`${typographyClass.label} mt-1.5 text-center tracking-[0.14em] text-ui-fg-muted`}
           >
@@ -63,7 +57,7 @@ export function ProfileStatsCards({
     >
       {grid}
       <div
-        className={`mt-2.5 flex items-center justify-center gap-1 ${typographyClass.body} ${themeTextSecondary}`}
+        className={`mt-2.5 flex items-center justify-center gap-1 ${typographyClass.body} text-ui-fg-muted`}
       >
         <span>{labels.tapForDetails}</span>
         <ChevronRight size={14} className="opacity-50" aria-hidden />

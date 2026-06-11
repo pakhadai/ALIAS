@@ -19,6 +19,7 @@ import { useCollapsingHeaderTitle } from '../../hooks/useCollapsingHeaderTitle';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { LogoutConfirmBottomSheet } from '../../components/Auth/LogoutConfirmBottomSheet';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass } from '../../constants/typography';
 import { ProfileHero } from './profile/ProfileHero';
 import { ProfileGuestBenefits } from './profile/ProfileGuestBenefits';
@@ -173,7 +174,7 @@ export const ProfileScreen = () => {
   ) : null;
 
   const sessionEndFooter = !loadingAuth ? (
-    <FixedBottomBar island contentClassName="max-w-sm mx-auto w-full">
+    <FixedBottomBar island contentClassName={footerIslandClassName('narrow')}>
       <AccentFooterCta
         variant="plain"
         buttonTestId={isGuest ? 'profile-guest-reset-btn' : 'profile-logout-btn'}
@@ -190,7 +191,7 @@ export const ProfileScreen = () => {
   return (
     <>
       <ScreenShell
-        className={`relative ${currentTheme.bg} transition-colors duration-500`}
+        className="relative bg-ui-bg transition-colors duration-500"
         layout="canonical"
         contentClassName="flex flex-col flex-1"
         headerFixed
@@ -203,7 +204,6 @@ export const ProfileScreen = () => {
             title={
               <ScreenTitle
                 as="p"
-                themeClass={currentTheme.textMain}
                 className={`truncate max-w-full transition-opacity duration-200 ${
                   showHeaderTitle ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
@@ -232,8 +232,6 @@ export const ProfileScreen = () => {
           avatarId={profile?.avatarId}
           avatarUrl={profile?.avatarId ? null : profile?.avatarUrl}
           titleRef={heroTitleRef}
-          themeTextMain={currentTheme.textMain}
-          themeTextSecondary={currentTheme.textSecondary}
         />
 
         {isGuest ? (
@@ -257,25 +255,19 @@ export const ProfileScreen = () => {
                     {t.loginGoogle}
                   </span>
                 </button>
-                <p className={`${typographyClass.body} text-center ${currentTheme.textSecondary}`}>
+                <p className={`${typographyClass.body} text-center text-ui-fg-muted`}>
                   {t.profileLoginAnchor}
                 </p>
               </div>
             )}
 
             {isTelegram && !loadingAuth && (
-              <p
-                className={`${typographyClass.body} text-center leading-relaxed ${currentTheme.textSecondary}`}
-              >
+              <p className={`${typographyClass.body} text-center leading-relaxed text-ui-fg-muted`}>
                 {t.profileLoginAnchor}
               </p>
             )}
 
-            <ProfileGuestBenefits
-              title={t.profileBenefitsTitle}
-              items={guestBenefits}
-              themeTextSecondary={currentTheme.textSecondary}
-            />
+            <ProfileGuestBenefits title={t.profileBenefitsTitle} items={guestBenefits} />
 
             <button
               type="button"
@@ -287,7 +279,7 @@ export const ProfileScreen = () => {
                 <SlidersHorizontal size={16} className={currentTheme.iconColor} />
                 <div className="text-left min-w-0">
                   <span
-                    className={`${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`}
+                    className={`${typographyClass.label} font-sans tracking-[0.25em] text-ui-fg`}
                   >
                     {t.profileNavLobbySettings}
                   </span>
@@ -310,9 +302,7 @@ export const ProfileScreen = () => {
             >
               <div className="flex items-center gap-3">
                 <ShoppingBag size={16} className={currentTheme.iconColor} />
-                <span
-                  className={`${typographyClass.label} font-sans tracking-[0.25em] ${currentTheme.textMain}`}
-                >
+                <span className={`${typographyClass.label} font-sans tracking-[0.25em] text-ui-fg`}>
                   {t.profileGuestBrowseStore}
                 </span>
               </div>
@@ -331,8 +321,6 @@ export const ProfileScreen = () => {
                 accuracy: t.profileStatsCardAccuracy,
                 tapForDetails: t.profileTapForDetails,
               }}
-              themeTextMain={currentTheme.textMain}
-              themeTextSecondary={currentTheme.textSecondary}
               onPress={goToPlayerStats}
             />
 
@@ -340,11 +328,9 @@ export const ProfileScreen = () => {
               title={t.profilePurchasesTitle}
               subtitle={purchasesSummary}
               items={authBenefits}
-              themeTextSecondary={currentTheme.textSecondary}
             />
 
             <ProfileNavList
-              themeTextMain={currentTheme.textMain}
               themeIconColor={currentTheme.iconColor}
               themeButtonClass={currentTheme.button}
               hasCustomPacks={hasCustomPacks}

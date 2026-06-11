@@ -13,6 +13,9 @@ import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { ProviderBadge } from '../../components/Auth/AccountBadge';
 import { isOAuthAuthProvider, resolvePlayerNameFromProfile } from '../../utils/profilePlayerName';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../constants/footerLayout';
+import { screenBodyPy, sectionGapXl } from '../../constants/spacing';
+import { SURFACE_CARD_CLASS } from '../../constants/surfaceClasses';
 import { typographyClass, formLabelClass } from '../../constants/typography';
 import { useT } from '../../hooks/useT';
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
@@ -137,28 +140,26 @@ export const ProfileSettingsScreen = () => {
 
   const inputCls = `w-full rounded-2xl px-5 py-4 ${typographyClass.bodyInput} outline-none transition-all bg-ui-surface border border-ui-border text-ui-fg placeholder:text-ui-fg-muted focus:border-ui-accent`;
 
+  const sectionCard = `${SURFACE_CARD_CLASS} p-5`;
+
   const providerLabel = provider === 'telegram' ? 'Telegram' : 'Google';
 
   return (
     <ScreenShell
-      className={`relative ${currentTheme.bg} transition-colors duration-500`}
+      className="relative bg-ui-bg transition-colors duration-500"
       layout="canonical"
-      contentClassName="py-4"
+      contentClassName={screenBodyPy}
       headerFixed
       footerFixed
       header={
         <AppHeader
           fixed
-          title={
-            <ScreenTitle themeClass={currentTheme.textMain}>
-              {t.profileNavProfileSettings}
-            </ScreenTitle>
-          }
+          title={<ScreenTitle>{t.profileNavProfileSettings}</ScreenTitle>}
           onBack={() => guardedNavigate(navigateBack)}
         />
       }
       footer={
-        <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full">
+        <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
             type="button"
             size="xl"
@@ -204,7 +205,7 @@ export const ProfileSettingsScreen = () => {
         onStay={closeUnsavedModal}
       />
 
-      <div className="relative space-y-8">
+      <div className={`relative ${sectionGapXl}`}>
         <div className="flex justify-center pt-2">
           <AvatarDisplay
             avatarId={selectedAvatar >= 0 ? String(selectedAvatar) : null}
@@ -253,7 +254,7 @@ export const ProfileSettingsScreen = () => {
         </div>
 
         {showSkipNameToggle && (
-          <div className="rounded-2xl bg-ui-card border border-ui-border p-5 space-y-3">
+          <div className={`${sectionCard} space-y-3`}>
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <p className={`${typographyClass.system} font-medium text-ui-fg`}>
@@ -290,14 +291,12 @@ export const ProfileSettingsScreen = () => {
           </div>
         )}
 
-        <div className="rounded-2xl bg-ui-card border border-ui-border p-5 space-y-3">
+        <div className={`${sectionCard} space-y-3`}>
           <p className={`${formLabelClass} opacity-80`}>{t.profileSettingsAccount}</p>
           {email && (
             <div className="flex justify-between items-center gap-3 min-w-0">
               <span className={`${typographyClass.system} text-ui-fg-muted shrink-0`}>Email</span>
-              <span
-                className={`${typographyClass.system} font-medium min-w-0 truncate ${currentTheme.textMain}`}
-              >
+              <span className={`${typographyClass.system} font-medium min-w-0 truncate text-ui-fg`}>
                 {email}
               </span>
             </div>
@@ -313,7 +312,7 @@ export const ProfileSettingsScreen = () => {
         </div>
 
         {(pushSupported || canInstall) && (
-          <div className="rounded-2xl bg-ui-card border border-ui-border p-5 space-y-4">
+          <div className={`${sectionCard} space-y-4`}>
             <p className={`${formLabelClass} opacity-80`}>{t.profileSettingsNotificationsApp}</p>
             {pushSupported && (
               <div className="flex justify-between items-center">

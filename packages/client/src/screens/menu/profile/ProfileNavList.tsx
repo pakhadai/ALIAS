@@ -12,7 +12,6 @@ import { labelSectionClass, typographyClass } from '../../../constants/typograph
 import { PROFILE_NAV_ACCENT_BTN_CLASS, PROFILE_NAV_BTN_CLASS } from './profileSurfaceClasses';
 
 export interface ProfileNavListProps {
-  themeTextMain: string;
   themeIconColor: string;
   themeButtonClass: string;
   hasCustomPacks: boolean;
@@ -46,7 +45,6 @@ function NavSection({ title }: { title: string }) {
 }
 
 export function ProfileNavList({
-  themeTextMain,
   themeIconColor,
   themeButtonClass,
   hasCustomPacks,
@@ -59,7 +57,7 @@ export function ProfileNavList({
   onStore,
   onAdminPanel,
 }: ProfileNavListProps) {
-  const navLabel = `${typographyClass.label} font-sans tracking-[0.25em] ${themeTextMain}`;
+  const navLabel = `${typographyClass.label} font-sans tracking-[0.25em] text-ui-fg`;
   const accentLock = 'text-[color-mix(in_srgb,var(--ui-accent)_78%,var(--ui-accent-contrast)_22%)]';
 
   return (

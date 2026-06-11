@@ -25,7 +25,7 @@ export function LobbyAvatarStrip(props: {
   onKick: (p: { id: string; name: string }) => void;
 }): React.ReactNode {
   const {
-    theme,
+    theme: _theme,
     t,
     players,
     isHost,
@@ -39,9 +39,7 @@ export function LobbyAvatarStrip(props: {
   return (
     <div className="w-full max-w-sm" data-testid="lobby-avatar-strip">
       <div className="flex items-center justify-between mb-3">
-        <ScreenTitle as="h3" themeClass={theme.textMain}>
-          {t.players}
-        </ScreenTitle>
+        <ScreenTitle as="h3">{t.players}</ScreenTitle>
         <span className={`${typographyClass.label} tracking-wide text-ui-fg-muted`}>
           {players.length}/{MAX_PLAYERS}
         </span>
@@ -132,7 +130,7 @@ export function LobbyAvatarStrip(props: {
               </div>
 
               <span
-                className={`max-w-[56px] truncate ${typographyClass.label} tracking-wide ${theme.textMain}`}
+                className={`max-w-[56px] truncate ${typographyClass.label} tracking-wide text-ui-fg`}
               >
                 {p.name}
               </span>

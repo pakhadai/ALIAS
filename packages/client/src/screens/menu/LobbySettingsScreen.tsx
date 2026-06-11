@@ -25,6 +25,9 @@ import { applyFactoryLobbyDefaults, isEmptySavedLobbySettings } from '../../cont
 import { useResourceLoad } from '../../hooks/useResourceLoad';
 import type { GameSettings } from '../../types';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../constants/footerLayout';
+import { screenBodyPy, sectionGapXl } from '../../constants/spacing';
+import { SURFACE_CARD_CLASS } from '../../constants/surfaceClasses';
 import { labelSectionClass, systemStatusClass, typographyClass } from '../../constants/typography';
 import { useT } from '../../hooks/useT';
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
@@ -200,23 +203,19 @@ export const LobbySettingsScreen = () => {
     onSave: persistSettings,
   });
 
-  const sectionLabel = `${labelSectionClass} ${currentTheme.textMain}`;
+  const sectionLabel = `${labelSectionClass} text-ui-fg`;
 
   return (
     <ScreenShell
-      className={`relative ${currentTheme.bg} transition-colors duration-500`}
+      className="relative bg-ui-bg transition-colors duration-500"
       layout="canonical"
-      contentClassName="py-4"
+      contentClassName={screenBodyPy}
       headerFixed
       footerFixed
       header={
         <AppHeader
           fixed
-          title={
-            <ScreenTitle themeClass={currentTheme.textMain}>
-              {t.profileNavLobbySettings}
-            </ScreenTitle>
-          }
+          title={<ScreenTitle>{t.profileNavLobbySettings}</ScreenTitle>}
           onBack={() => guardedNavigate(navigateBack)}
           right={
             <button
@@ -231,7 +230,7 @@ export const LobbySettingsScreen = () => {
         />
       }
       footer={
-        <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full">
+        <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
             type="button"
             size="xl"
@@ -293,7 +292,7 @@ export const LobbySettingsScreen = () => {
         onStay={closeUnsavedModal}
       />
 
-      <div className="relative space-y-8">
+      <div className={`relative ${sectionGapXl}`}>
         {loading ? (
           <div className="flex justify-center pt-16">
             <Loader2 size={24} className={`animate-spin ${currentTheme.iconColor} opacity-40`} />
@@ -301,7 +300,7 @@ export const LobbySettingsScreen = () => {
         ) : (
           <>
             <div
-              className="rounded-2xl border px-4 py-3 bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_20%,transparent)]"
+              className={`${SURFACE_CARD_CLASS} px-4 py-3 border bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_20%,transparent)]`}
               data-testid="lobby-defaults-info-banner"
             >
               <p className={`${systemStatusClass} text-ui-fg-muted`}>{t.lobbyDefaultsInfoBanner}</p>
@@ -309,7 +308,7 @@ export const LobbySettingsScreen = () => {
 
             {isGuest ? (
               <div
-                className="rounded-2xl border px-5 py-4 bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]"
+                className={`${SURFACE_CARD_CLASS} px-5 py-4 border bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]`}
                 data-testid="lobby-defaults-guest-banner"
               >
                 <p className={`${typographyClass.body} leading-relaxed text-ui-fg`}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, BookOpen, Copy, Loader2, Upload, ShoppingBag, Lock } from 'lucide-react';
+import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass, formLabelClass } from '../../constants/typography';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
@@ -147,18 +148,14 @@ export const MyWordPacksScreen = () => {
         contentClassName="flex flex-col items-center justify-center gap-6 text-center"
         headerFixed
         header={
-          <AppHeader
-            fixed
-            title={<ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>}
-            onBack={goBack}
-          />
+          <AppHeader fixed title={<ScreenTitle>Мої паки слів</ScreenTitle>} onBack={goBack} />
         }
       >
         <div className="w-20 h-20 rounded-full bg-ui-surface flex items-center justify-center border border-ui-border">
           <Lock size={32} className={`${currentTheme.iconColor} opacity-30`} />
         </div>
         <div>
-          <ScreenTitle as="h3" themeClass={currentTheme.textMain} className="mb-2">
+          <ScreenTitle as="h3" className="mb-2">
             Функція заблокована
           </ScreenTitle>
           <p className={`${typographyClass.body} leading-relaxed text-ui-fg-muted opacity-80`}>
@@ -187,14 +184,10 @@ export const MyWordPacksScreen = () => {
         headerFixed
         footerFixed
         header={
-          <AppHeader
-            fixed
-            title={<ScreenTitle themeClass={currentTheme.textMain}>Новий пак</ScreenTitle>}
-            onBack={exitCreateView}
-          />
+          <AppHeader fixed title={<ScreenTitle>Новий пак</ScreenTitle>} onBack={exitCreateView} />
         }
         footer={
-          <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
+          <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
             <button
               type="button"
               onClick={handleCreate}
@@ -271,7 +264,7 @@ export const MyWordPacksScreen = () => {
           fixed
           title={
             <div className="text-center">
-              <ScreenTitle themeClass={currentTheme.textMain}>Мої паки слів</ScreenTitle>
+              <ScreenTitle>Мої паки слів</ScreenTitle>
               <p className={`${typographyClass.label} mt-1 text-ui-fg-muted opacity-70`}>
                 {decks.length} / {MAX_USER_PACKS}
               </p>
@@ -282,7 +275,7 @@ export const MyWordPacksScreen = () => {
       }
       footer={
         decks.length < MAX_USER_PACKS ? (
-          <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full px-6 md:px-8">
+          <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
             <button
               type="button"
               onClick={() => setView('create')}
@@ -303,7 +296,7 @@ export const MyWordPacksScreen = () => {
         <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-4`}>
           <BookOpen size={28} className={`${currentTheme.iconColor} opacity-20`} />
           <p
-            className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-50`}
+            className={`${typographyClass.system} font-sans text-center text-ui-fg-muted opacity-50`}
           >
             Немає паків
           </p>
@@ -319,7 +312,7 @@ export const MyWordPacksScreen = () => {
                   {deck.name}
                 </h3>
                 <p
-                  className={`${typographyClass.label} font-sans mt-1 normal-case ${currentTheme.textSecondary}`}
+                  className={`${typographyClass.label} font-sans mt-1 normal-case text-ui-fg-muted`}
                 >
                   {deck.wordCount} слів
                 </p>
@@ -339,7 +332,7 @@ export const MyWordPacksScreen = () => {
             </div>
             <div className="flex items-center justify-between pt-1">
               <span
-                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? currentTheme.textSecondary}`}
+                className={`${typographyClass.label} tracking-wider ${STATUS_COLORS[deck.status] ?? 'text-ui-fg-muted'}`}
               >
                 {deck.status === 'approved'
                   ? 'Активний'

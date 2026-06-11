@@ -55,11 +55,7 @@ export function AddOfflinePlayerSheet(props: {
       closeAriaLabel={t.close}
       closeIconSize={24}
       ariaLabelledBy="add-player-title"
-      header={
-        <ModalSheetTitle id="add-player-title" themeClass={theme.textMain}>
-          {t.addPlayerTitle}
-        </ModalSheetTitle>
-      }
+      header={<ModalSheetTitle id="add-player-title">{t.addPlayerTitle}</ModalSheetTitle>}
     >
       <div data-testid="add-player-modal" className="space-y-6">
         {atLimit && (

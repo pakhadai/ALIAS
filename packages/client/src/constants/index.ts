@@ -23,3 +23,12 @@ export { THEME_CONFIG } from './themes';
 export { zIndex } from './zIndex';
 export { typographyClass, typographyTokens } from './typography';
 export type { TypographyRole } from './typography';
+export { FOOTER_ISLAND_LAYOUT, footerIslandClassName } from './footerLayout';
+export type { FooterIslandPreset } from './footerLayout';
+export {
+  SURFACE_PANEL_CLASS,
+  SURFACE_CARD_CLASS,
+  SURFACE_NAV_ROW_CLASS,
+  SURFACE_NAV_ACCENT_BTN_CLASS,
+} from './surfaceClasses';
+export { screenBodyPy, sectionGap, sectionGapLg, sectionGapXl, stackGap } from './spacing';

@@ -8,6 +8,8 @@ import { fetchStore, claimFreeItem, type WordPackItem, type ThemeItem } from '..
 import { QuickBuyModal } from '../../components/Store/QuickBuyModal';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../constants/footerLayout';
+import { SURFACE_CARD_CLASS } from '../../constants/surfaceClasses';
 import { typographyClass } from '../../constants/typography';
 import { HEADER_ROW_MIN_PX } from '../../constants/tmaLayoutConstants';
 import { useT } from '../../hooks/useT';
@@ -127,7 +129,7 @@ export const StoreScreen = () => {
       return a.name.localeCompare(b.name);
     });
 
-  const cardBg = 'bg-ui-card border border-ui-border';
+  const cardShell = SURFACE_CARD_CLASS;
   const divider = 'border-ui-border';
   const chipBase = 'border border-ui-border text-ui-fg-muted bg-ui-surface';
   const chipActive =
@@ -142,7 +144,7 @@ export const StoreScreen = () => {
       header={
         <AppHeader
           fixed
-          title={<ScreenTitle themeClass={currentTheme.textMain}>Магазин</ScreenTitle>}
+          title={<ScreenTitle>Магазин</ScreenTitle>}
           onBack={goBack}
           menuItems={storeMenuItems}
           childRowHeightPx={HEADER_ROW_MIN_PX}
@@ -164,7 +166,7 @@ export const StoreScreen = () => {
         </AppHeader>
       }
       footer={
-        <FixedBottomBar island contentClassName="max-w-2xl mx-auto w-full">
+        <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <div className="flex items-center justify-center gap-1.5 border-t border-ui-border pt-4">
             <ShieldCheck size={12} className="text-ui-fg-muted opacity-70" aria-hidden />
             <p className={`${typographyClass.label} tracking-widest text-ui-fg-muted opacity-70`}>
@@ -227,7 +229,7 @@ export const StoreScreen = () => {
             {featurePacks.map((pack) => (
               <div
                 key={pack.id}
-                className={`rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-200 ease-out active:scale-95 ${pack.owned ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]' : 'border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)] to-transparent'}`}
+                className={`${SURFACE_CARD_CLASS} p-5 flex flex-col gap-3 relative overflow-hidden border-2 transition-all duration-200 ease-out active:scale-95 ${pack.owned ? 'bg-[color-mix(in_srgb,var(--ui-success)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-success)_30%,transparent)]' : 'border-[color-mix(in_srgb,var(--ui-accent)_40%,transparent)] bg-linear-to-br from-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)] to-transparent'}`}
               >
                 <div className="flex justify-between items-start z-10">
                   <div className="max-w-[60%]">
@@ -244,7 +246,7 @@ export const StoreScreen = () => {
                       {pack.name}
                     </h3>
                     <p
-                      className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary}`}
+                      className={`${typographyClass.label} font-sans normal-case text-ui-fg-muted`}
                     >
                       {pack.description}
                     </p>
@@ -275,7 +277,7 @@ export const StoreScreen = () => {
             ))}
             {visiblePacks.length === 0 ? (
               <p
-                className={`text-center ${typographyClass.body} pt-12 ${currentTheme.textSecondary} opacity-40`}
+                className={`text-center ${typographyClass.body} pt-12 text-ui-fg-muted opacity-40`}
               >
                 Немає доступних наборів
               </p>
@@ -283,7 +285,7 @@ export const StoreScreen = () => {
               visiblePacks.map((pack) => (
                 <div
                   key={pack.id}
-                  className={`${cardBg} rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden transition-all duration-150 ease-out active:scale-95`}
+                  className={`${cardShell} p-5 flex flex-col gap-3 relative overflow-hidden transition-all duration-150 ease-out active:scale-95`}
                 >
                   <div className="flex justify-between items-start z-10">
                     <div className="max-w-[60%]">
@@ -305,7 +307,7 @@ export const StoreScreen = () => {
                         {pack.name}
                       </h3>
                       <p
-                        className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary}`}
+                        className={`${typographyClass.label} font-sans normal-case text-ui-fg-muted`}
                       >
                         {pack.wordCount} слів{pack.description ? ` • ${pack.description}` : ''}
                       </p>
@@ -358,9 +360,9 @@ export const StoreScreen = () => {
             )}
           </>
         ) : themes.length === 0 ? (
-          <div className={`${cardBg} rounded-2xl px-6 py-12 flex flex-col items-center gap-3 mt-2`}>
+          <div className={`${cardShell} px-6 py-12 flex flex-col items-center gap-3 mt-2`}>
             <p
-              className={`${typographyClass.system} font-sans text-center ${currentTheme.textSecondary} opacity-40`}
+              className={`${typographyClass.system} font-sans text-center text-ui-fg-muted opacity-40`}
             >
               Теми незабаром
             </p>
@@ -377,7 +379,7 @@ export const StoreScreen = () => {
             const isBuiltIn = theme.slug === 'premium-dark' || theme.slug === 'premium-light';
             const alreadyOwned = theme.owned || isBuiltIn;
             return (
-              <div key={theme.id} className={`${cardBg} rounded-2xl overflow-hidden`}>
+              <div key={theme.id} className={`${cardShell} overflow-hidden`}>
                 <div className="flex items-stretch">
                   <div
                     className="w-20 shrink-0 flex flex-col items-center justify-center gap-1.5 p-3"
@@ -414,7 +416,7 @@ export const StoreScreen = () => {
                       )}
                     </div>
                     <p
-                      className={`${typographyClass.label} font-sans normal-case ${currentTheme.textSecondary} opacity-70`}
+                      className={`${typographyClass.label} font-sans normal-case text-ui-fg-muted opacity-70`}
                     >
                       {fontName}
                     </p>

@@ -42,6 +42,9 @@
   --leading-ui-body: var(--ui-text-body-leading);
   --tracking-ui-label: var(--ui-text-label-tracking);
   --tracking-ui-caption-wide: var(--ui-text-caption-tracking-wide);
+
+  /* Theme-aware radius → utility: rounded-theme (runtime --theme-radius from GameContext) */
+  --radius-theme: var(--theme-radius);
 }
 
 /* Keep Material Symbols baseline consistent */
@@ -882,9 +885,6 @@ footer.footer-island.ui-app-footer {
 }
 
 .accent-footer-cta-shell--ready {
-  --accent-footer-cta-bleed: 14px;
-  padding: var(--accent-footer-cta-bleed);
-  margin-inline: calc(-1 * var(--accent-footer-cta-bleed));
   overflow: visible;
 }
 
@@ -895,19 +895,26 @@ footer.footer-island.ui-app-footer {
   border-radius: inherit;
   pointer-events: none;
   background-image: radial-gradient(
-    70px circle at var(--snake-x) var(--snake-y),
+    96px circle at var(--snake-x) var(--snake-y),
     color-mix(in srgb, var(--ui-accent) 40%, white 60%) 0%,
-    var(--ui-accent) 25%,
-    transparent 100%
+    var(--ui-accent) 18%,
+    color-mix(in srgb, var(--ui-accent) 52%, transparent) 42%,
+    transparent 68%
   );
-  animation: accent-cta-snake 3s linear infinite;
+  animation: accent-cta-snake 6s linear infinite;
 }
 
 .accent-footer-cta-shell--ready::before {
   inset: -4px;
-  filter: blur(8px);
+  filter: blur(10px);
   opacity: 0.65;
   z-index: 0;
+  background-image: radial-gradient(
+    112px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 40%, white 60%) 0%,
+    color-mix(in srgb, var(--ui-accent) 65%, transparent) 28%,
+    transparent 72%
+  );
 }
 
 .accent-footer-cta-shell--ready::after {
@@ -933,9 +940,10 @@ footer.footer-island.ui-app-footer {
   /* No ::before/::after snake — full accent CTA without perimeter animation */
 }
 
-.lobby-start-btn {
+button.lobby-start-btn {
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;
+  border: none;
 }
 
 .lobby-start-btn--ready:active {
@@ -946,7 +954,6 @@ footer.footer-island.ui-app-footer {
   cursor: default;
   color: color-mix(in srgb, var(--ui-accent-contrast) 58%, var(--ui-fg-muted) 42%);
   background-color: color-mix(in srgb, var(--ui-accent) 34%, var(--ui-bg) 66%);
-  border: 1px solid color-mix(in srgb, var(--ui-accent) 22%, var(--ui-border) 78%);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--ui-accent) 10%, transparent),
     0 1px 0 color-mix(in srgb, var(--ui-bg) 38%, transparent);
@@ -979,7 +986,7 @@ footer.footer-island.ui-app-footer {
   .lobby-start-btn--ready {
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--ui-accent) 35%, transparent);
+      0 0 20px color-mix(in srgb, var(--ui-accent) 22%, transparent);
   }
 }
 

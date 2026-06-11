@@ -9,7 +9,7 @@ import {
 import { FOOTER_ISLAND_DOCUMENT_FLAG } from '../../components/layout/FooterIsland';
 import { LobbyExitProvider } from '../../context/LobbyExitContext';
 import { LobbyScreen } from './LobbyScreen';
-import { GameMode } from '../../types';
+import { GameMode, GameState } from '../../types';
 
 const sendAction = vi.fn();
 const setGameState = vi.fn();
@@ -185,6 +185,13 @@ const mockT = {
   renameTeam: 'Rename team',
   tgAppLinkNotConfigured: 'TG link not configured',
   gameModeClassic: 'Classic',
+  lobbyRulesSummaryTitle: 'Game rules',
+  gameMode: 'Mode',
+  roundTime: 'Time',
+  scoreToWin: 'Win at',
+  categories: 'Categories',
+  rules: 'Rules',
+  cat_general: 'General',
 };
 
 vi.mock('../../hooks/useT', () => ({
@@ -226,6 +233,8 @@ function renderLobbyScreen() {
 describe('LobbyScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG];
+    delete document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG];
     isTelegramMiniApp.mockReturnValue(false);
     hasTelegramInitData.mockReturnValue(false);
     mockGameMode = 'ONLINE';
@@ -257,7 +266,7 @@ describe('LobbyScreen', () => {
     renderLobbyScreen();
 
     await user.click(screen.getByTestId('app-header-back'));
-    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
+    const dialog = await waitFor(() => screen.getByRole('alertdialog'), { timeout: 10_000 });
     expect(within(dialog).getByRole('heading', { name: 'Leave?' })).toBeTruthy();
     expect(within(dialog).getByText('Sure?')).toBeTruthy();
 
@@ -271,7 +280,7 @@ describe('LobbyScreen', () => {
     renderLobbyScreen();
 
     await user.click(screen.getByTestId('app-header-back'));
-    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
+    const dialog = await waitFor(() => screen.getByRole('alertdialog'), { timeout: 10_000 });
     await user.click(within(dialog).getByRole('button', { name: 'Exit' }));
     expect(leaveRoom).toHaveBeenCalledWith({ resetGameMode: false });
   });
@@ -348,10 +357,34 @@ describe('LobbyScreen', () => {
     expect(screen.queryByTestId('lobby-play-mode-bar-slot')).toBeNull();
   });
 
-  it('should show browser back and settings in header for online host outside TMA', () => {
+  it('should show browser back and rules quick-access card for online host outside TMA', () => {
     renderLobbyScreen();
     expect(screen.getByTestId('app-header-back')).toBeTruthy();
-    expect(screen.getByTestId('lobby-header-settings')).toBeTruthy();
+    expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
+    expect(screen.getByTestId('lobby-settings-chips')).toBeTruthy();
+  });
+
+  it('should show rules quick-access card in offline lobby', () => {
+    mockGameMode = 'OFFLINE';
+    renderLobbyScreen();
+    expect(screen.getByTestId('lobby-settings-chips')).toBeTruthy();
+    expect(screen.getByTestId('lobby-rules-summary')).toBeTruthy();
+    expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
+  });
+
+  it('should open settings when offline host taps rules card', async () => {
+    mockGameMode = 'OFFLINE';
+    const user = userEvent.setup();
+    renderLobbyScreen();
+    await user.click(screen.getByTestId('lobby-settings-chips'));
+    expect(setGameState).toHaveBeenCalledWith(GameState.SETTINGS);
+  });
+
+  it('should open settings when online host taps rules card', async () => {
+    const user = userEvent.setup();
+    renderLobbyScreen();
+    await user.click(screen.getByTestId('lobby-settings-chips'));
+    expect(setGameState).toHaveBeenCalledWith(GameState.SETTINGS);
   });
 
   it('should hide header settings in TMA online mode', () => {

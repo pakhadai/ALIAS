@@ -33,16 +33,18 @@ The goal is to reduce real production risk (not to “game” coverage metrics).
 
 ### Lobby & teams
 - **Team builder** (`TEAM_JOIN`, `TEAM_LEAVE`, `TEAM_LOCK`, shuffle/rename): host and self-assign rules match server (`teamsLocked`, host assign with `playerId`).
-- **Solo (`general.teamMode === 'SOLO'`)**: `START_GAME` produces one team per player; lobby UI hides team pool where applicable.
+- **Solo (`general.teamMode === 'SOLO'`)**: `START_GAME` produces one team per player (server **and** offline client); lobby UI hides team pool where applicable.
+- **Lobby settings UX**: host opens in-lobby settings via **`lobby-settings-chips`** rules card (ONLINE + OFFLINE); header gear removed from `LobbyScreen` (2026-06-11).
+
+### Offline game
+- User can start offline game from Menu and play a complete match.
+- Offline state transitions mirror server authoritative logic where applicable.
+- **SOLO offline start:** `offlineGameActions` `START_GAME` must materialize teams before `PRE_ROUND` (regression: empty teams → «no players in team» on PreRound).
 
 ### IMPOSTER mode
 - **Public state**: `imposterPhase`, `imposterPlayerId`, `revealedPlayerIds` sync via `game:state-sync`; **secret word is never** in that payload.
 - **Per-player secret**: each client receives `imposter:secret` with `{ isImposter, word }` when appropriate; word persisted in Redis (`RedisRoomStore`) separately from room JSON.
 - **Actions**: `IMPOSTER_READY` / `IMPOSTER_END_GAME` allowed per `authorizeGameAction`; game can progress through REVEAL → DISCUSSION → RESULTS.
-
-### Offline game
-- User can start offline game from Menu and play a complete match.
-- Offline state transitions mirror server authoritative logic where applicable.
 
 ### Auth & profile
 - Anonymous token can be created (deviceId validation).
@@ -83,7 +85,8 @@ The goal is to reduce real production risk (not to “game” coverage metrics).
 | `room:exists` ack without join; grace `room:rejoin`; socket NOT_HOST / NOT_EXPLAINER | `packages/server/src/handlers/__tests__/socketHandlers.int.test.ts` |
 | `game:action` pipeline broadcast + KICK + IMPOSTER per-player secret | `packages/server/src/game/__tests__/gameActionPipeline.test.ts` |
 | Cross-node relay timeout, publish unavailable, join/leave/rejoin reply dispatch | `packages/server/src/services/__tests__/RoomActionRelay.test.ts` |
-| Offline START_GAME/CORRECT/SKIP/teams/MAX_PLAYERS | `packages/client/src/context/offlineGameActions.test.ts` |
+| Offline START_GAME/CORRECT/SKIP/teams/MAX_PLAYERS/SOLO team materialize | `packages/client/src/context/offlineGameActions.test.ts` |
+| Lobby rules card + offline/online settings entry | `packages/client/src/screens/lobby/components/LobbyRulesSummaryCard.test.tsx`, `LobbyScreen.test.tsx`, `OnlineLobbyIntro.test.tsx` |
 | GameContext state-sync apply + client nav guard + offline routing | `packages/client/src/context/GameContext.test.tsx` |
 | Session restore edge cases (COUNTDOWN, ROUND_SUMMARY, corrupt JSON) | `packages/client/src/context/gameReducer.test.ts` |
 | TMA Stars `openInvoice` paid/cancelled callbacks | `packages/client/src/components/Store/QuickBuyModal.test.tsx` |

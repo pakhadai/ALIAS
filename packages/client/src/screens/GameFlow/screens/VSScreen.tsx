@@ -31,8 +31,9 @@ export const VSScreen = () => {
 
   return (
     <ScreenShell
+      layout="fullPx8"
       className={currentTheme.bg}
-      contentClassName="px-8 justify-center items-center overflow-hidden"
+      contentClassName="justify-center items-center overflow-hidden"
       footer={
         <FixedBottomBar contentClassName="w-full max-w-sm">
           <div

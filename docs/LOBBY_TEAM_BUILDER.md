@@ -1,16 +1,24 @@
 # Lobby Team Builder
 
 > Канонічний опис стеку та сокетів — **[`README.md`](../README.md)**. Цей файл — **UX лобі та команд** (team builder, Solo).  
-> **Оновлено:** 2026-06-08 (glass lobby chrome + start CTA UX).
+> **Оновлено:** 2026-06-11 (offline lobby parity: rules card + START_GAME SOLO teams).
 
 ## UI: два екрани, одна логіка
 
 | Режим / стан | Екран | Коли |
 |--------------|-------|------|
 | **ONLINE** (типовий шлях) | `LobbyScreen` — inline team builder | `GameState.LOBBY`: unassigned pool, team cards, lock/shuffle, start validation |
-| **OFFLINE** або `GameState.TEAMS` | `TeamSetupScreen` | Офлайн: host tap-to-assign. Онлайн: лише якщо сервер синхронізував `gameState: TEAMS` (напр. після `GENERATE_TEAMS`) |
+| **OFFLINE** | `LobbyScreen` — inline builder + `PlayersSection` | Один пристрій: host додає гравців, assign через team cards / sheet |
+| **OFFLINE** або `GameState.TEAMS` | `TeamSetupScreen` | Legacy/alternate path після `GENERATE_TEAMS` → `GameState.TEAMS` (онлайн — лише якщо сервер синхронізував `TEAMS`) |
 
-**Не плутати:** онлайн-гра **не вимагає** окремого екрану команд — гравці збирають команди прямо в лобі. `TeamSetupScreen` — головним чином **офлайн** (один пристрій, host перетягує гравців між командами).
+**Не плутати:** онлайн-гра **не вимагає** окремого екрану команд — гравці збирають команди прямо в лобі. `TeamSetupScreen` — переважно **legacy TEAMS state**; основний офлайн UX — **`LobbyScreen`**.
+
+### Settings quick access (ONLINE + OFFLINE)
+
+- **`LobbyRulesSummaryCard`** — картка «Правила гри» (режим, час, очки, категорії); host tap → `GameState.SETTINGS`.
+- **ONLINE:** всередині `OnlineLobbyIntro` (під кодом кімнати).
+- **OFFLINE:** окремий блок у `LobbyScreen` (без room code / invite).
+- **Header gear прибрано** з lobby (2026-06-11) — єдиний вхід у налаштування з лобі через rules card (TMA і browser однаково).
 
 ---
 
@@ -29,7 +37,8 @@
 - **Lobby UI**: team builder **прихований** у Solo (`LobbyScreen`).
 - **Settings**: перемикач Teams / Solo; слайдер `teamCount` вимкнено в Solo.
 - **Server `START_GAME`**: одна «команда» на гравця (semantically FFA).
-- **Model**: `teamMode?: 'TEAMS' | 'SOLO'` у `GeneralSettings` (`packages/shared/src/models.ts`), default `TEAMS`.
+- **Offline `START_GAME`**: те саме — `prepareOfflineTeamsForStart()` у `offlineGameActions.ts` (mirror `GameEngine`, 2026-06-11). Без цього `PreRoundScreen` показував «В команді немає гравців!» при активній кнопці старту.
+- **Model**: `teamMode?: 'TEAMS' | 'SOLO'` у `GeneralSettings` (`packages/shared/src/models.ts`); **client default** `SOLO` у `gameReducer` initial state.
 
 ---
 
@@ -46,7 +55,9 @@
 ### OFFLINE / `GameState.TEAMS`
 
 - Логіка в `GameContext` → `offlineGameActions.ts`.
-- `TeamSetupScreen`: host-only edit (`canEdit = isHost && gameMode === 'OFFLINE'`).
+- **`LobbyScreen` (primary):** `PlayersSection`, team cards, `LobbyRulesSummaryCard`, start panel — той самий inline builder що ONLINE (без avatar strip / room code).
+- `TeamSetupScreen`: host-only edit (`canEdit = isHost && gameMode === 'OFFLINE'`) — коли `gameState === TEAMS`.
+- **`START_GAME` (offline):** `deriveLobbyReadinessServer` guard + `prepareOfflineTeamsForStart()` (SOLO → 1 team/player; TEAMS → `materializeOfflineTeamsIfNeeded`).
 - Host assign через `playerId` у actions:
   - `TEAM_JOIN` `{ teamId, playerId }`
   - `TEAM_LEAVE` `{ playerId }`
@@ -88,9 +99,10 @@
 
 | Компонент | Роль |
 |-----------|------|
-| `LobbyScreen.tsx` | ONLINE inline builder + start |
+| `LobbyScreen.tsx` | ONLINE/OFFLINE inline builder + start; OFFLINE rules card |
 | `TeamSetupScreen.tsx` | OFFLINE / `TEAMS` state — assign + shuffle + start |
-| `components/OnlineLobbyIntro.tsx` | Room code, invite trigger, settings chips |
+| `components/LobbyRulesSummaryCard.tsx` | Rules quick-access card (mode/time/score/categories); host tap → settings |
+| `components/OnlineLobbyIntro.tsx` | Room code, invite trigger, rules card (ONLINE) |
 | `components/LobbyInviteSheet.tsx` | Telegram-native invite options (copy code/link, TG share, nested QR) |
 | `components/LobbyPlayModeBar.tsx`, `LobbyPlayModeBarSlot.tsx` | Solo/Teams + team count; animated collapse for guests after team pick |
 | `components/UnassignedPool.tsx`, `TeamCard.tsx`, `AssignPlayerSheet.tsx` | Subcomponents |
@@ -105,8 +117,8 @@
 
 ## Quick test checklist
 
-- **ONLINE:** join/leave, lock, shuffle, start validation, Solo без team UI; guest play-format bar hide after team join.
-- **OFFLINE:** chip → assign sheet, rename, `GENERATE_TEAMS` → `TEAMS`, start when valid.
+- **ONLINE:** join/leave, lock, shuffle, start validation, Solo без team UI; guest play-format bar hide after team join; rules card → settings (no header gear).
+- **OFFLINE:** rules card → settings; SOLO start з ≥2 гравцями → `PRE_ROUND` з командами (не «немає гравців»); chip → assign sheet, rename, `GENERATE_TEAMS` → `TEAMS`, start when valid.
 
 Детальні критерії — [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md).
 
