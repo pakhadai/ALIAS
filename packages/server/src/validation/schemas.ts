@@ -35,10 +35,23 @@ function preprocessAvatarId(v: unknown): unknown {
   return s === '' ? undefined : s;
 }
 
+function preprocessAvatarUrl(v: unknown): unknown {
+  if (v === undefined) return undefined;
+  if (v === null) return null;
+  const s = String(v).trim();
+  return s === '' ? undefined : s.slice(0, 512);
+}
+
+const avatarUrlSchema = z.preprocess(
+  preprocessAvatarUrl,
+  z.union([z.string().url().max(512), z.null()]).optional()
+);
+
 export const roomCreateSchema = z.object({
   playerName: z.preprocess(preprocessPlayerName, z.string().min(1).max(20)),
   avatar: z.preprocess(preprocessAvatar, z.string().min(1).max(12)),
   avatarId: z.preprocess(preprocessAvatarId, z.union([z.string().max(3), z.null()]).optional()),
+  avatarUrl: avatarUrlSchema,
 });
 
 export const roomJoinSchema = z.object({
@@ -49,6 +62,7 @@ export const roomJoinSchema = z.object({
   playerName: z.preprocess(preprocessPlayerName, z.string().min(1).max(20)),
   avatar: z.preprocess(preprocessAvatar, z.string().min(1).max(12)),
   avatarId: z.preprocess(preprocessAvatarId, z.union([z.string().max(3), z.null()]).optional()),
+  avatarUrl: avatarUrlSchema,
 });
 
 export const roomRejoinSchema = z.object({

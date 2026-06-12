@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import {
   AppHeader,
+  AppHeaderOverflowMenu,
   FixedBottomBar,
   ScreenShell,
-  UI_APP_HEADER_SLOT_CLASS,
 } from '../../components/layout';
+import { hasTelegramInitData } from '../../hooks/useTelegramApp';
 import {
   areLobbySettingsEqual,
   CategoryChipGrid,
@@ -32,13 +33,7 @@ import { labelSectionClass, systemStatusClass, typographyClass } from '../../con
 import { useT } from '../../hooks/useT';
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useAuthContext } from '../../context/AuthContext';
-import { useAppLogin } from '../../context/AppLoginContext';
-import {
-  clearGuestLobbyDefaults,
-  loadGuestLobbyDefaults,
-  saveGuestLobbyDefaults,
-  toSyncableLobbySettings,
-} from '../../lib/guestLobbyDefaults';
+import { toSyncableLobbySettings } from '../../lib/lobbyDefaults';
 
 function mergePartialLobbySettings(
   prev: GameSettings,
@@ -62,7 +57,6 @@ export const LobbySettingsScreen = () => {
     showNotification,
   } = useGame();
   const { authState } = useAuthContext();
-  const { requestLogin } = useAppLogin();
   const t = useT();
   const isDark = currentTheme.isDark;
   const isGuest = authState.status === 'anonymous';
@@ -73,7 +67,7 @@ export const LobbySettingsScreen = () => {
   const [saved, setSaved] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [guestLoaded, setGuestLoaded] = useState(!isGuest);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { data: remoteSettings, loading: remoteLoading } = useResourceLoad(
     () => fetchLobbySettings(),
     {
@@ -81,7 +75,7 @@ export const LobbySettingsScreen = () => {
       enabled: !isGuest,
     }
   );
-  const loading = isGuest ? !guestLoaded : remoteLoading;
+  const loading = remoteLoading;
 
   const isDirty = !areLobbySettingsEqual(local, savedBaseline);
 
@@ -92,22 +86,15 @@ export const LobbySettingsScreen = () => {
 
   useEffect(() => {
     if (!isGuest) return;
-    const stored = loadGuestLobbyDefaults();
-    if (isEmptySavedLobbySettings(stored)) {
-      setLocal((prev) => {
-        const factory = applyFactoryLobbyDefaults(prev);
-        setSavedBaseline(factory);
-        return factory;
-      });
-    } else if (stored) {
-      setLocal((prev) => {
-        const merged = mergePartialLobbySettings(prev, stored);
-        setSavedBaseline(merged);
-        return merged;
-      });
-    }
-    setGuestLoaded(true);
-  }, [isGuest]);
+    showNotification(t.lobbyDefaultsAuthRequired, 'info');
+    setGameState(roomCode ? GameState.LOBBY : GameState.PROFILE);
+  }, [isGuest, roomCode, setGameState, showNotification, t.lobbyDefaultsAuthRequired]);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (isGuest || remoteLoading) return;
@@ -136,20 +123,12 @@ export const LobbySettingsScreen = () => {
     setLocal((prev) => ({ ...prev, mode: { ...prev.mode, ...patch } as typeof prev.mode }));
 
   const persistSettings = async () => {
-    if (isGuest) {
-      if (!saveGuestLobbyDefaults(local)) {
-        throw new Error('guest lobby defaults save failed');
-      }
-      setSavedBaseline(local);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-      return;
-    }
     const syncedOnly = toSyncableLobbySettings(local) as Record<string, unknown>;
     await saveLobbySettings(syncedOnly);
     setSavedBaseline(local);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSave = async () => {
@@ -166,12 +145,6 @@ export const LobbySettingsScreen = () => {
   const handleResetConfirm = async () => {
     setResetting(true);
     try {
-      if (isGuest) {
-        clearGuestLobbyDefaults();
-        applyLoadedSettings(applyFactoryLobbyDefaults(local));
-        setShowResetConfirm(false);
-        return;
-      }
       await saveLobbySettings({});
       const fresh = await fetchLobbySettings();
       if (isEmptySavedLobbySettings(fresh)) {
@@ -205,6 +178,24 @@ export const LobbySettingsScreen = () => {
 
   const sectionLabel = `${labelSectionClass} text-ui-fg`;
 
+  const lobbySettingsMenuItems = useMemo(
+    () => [
+      {
+        id: 'reset',
+        label: t.reset,
+        disabled: resetting || loading,
+        onSelect: () => setShowResetConfirm(true),
+      },
+    ],
+    [t.reset, resetting, loading]
+  );
+
+  const isTelegramSession = hasTelegramInitData();
+
+  if (isGuest) {
+    return null;
+  }
+
   return (
     <ScreenShell
       className="relative bg-ui-bg transition-colors duration-500"
@@ -217,15 +208,11 @@ export const LobbySettingsScreen = () => {
           fixed
           title={<ScreenTitle>{t.profileNavLobbySettings}</ScreenTitle>}
           onBack={() => guardedNavigate(navigateBack)}
+          menuItems={isTelegramSession ? undefined : lobbySettingsMenuItems}
           right={
-            <button
-              type="button"
-              onClick={() => setShowResetConfirm(true)}
-              disabled={resetting || loading}
-              className={`${UI_APP_HEADER_SLOT_CLASS} min-h-11 px-2 ${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg active:scale-95 disabled:opacity-40`}
-            >
-              {t.reset}
-            </button>
+            isTelegramSession ? (
+              <AppHeaderOverflowMenu items={lobbySettingsMenuItems} ariaLabel={t.reset} />
+            ) : undefined
           }
         />
       }
@@ -305,26 +292,6 @@ export const LobbySettingsScreen = () => {
             >
               <p className={`${systemStatusClass} text-ui-fg-muted`}>{t.lobbyDefaultsInfoBanner}</p>
             </div>
-
-            {isGuest ? (
-              <div
-                className={`${SURFACE_CARD_CLASS} px-5 py-4 border bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)] border-[color-mix(in_srgb,var(--ui-accent)_25%,transparent)]`}
-                data-testid="lobby-defaults-guest-banner"
-              >
-                <p className={`${typographyClass.body} leading-relaxed text-ui-fg`}>
-                  {t.lobbyDefaultsGuestBannerBody}
-                </p>
-                <Button
-                  type="button"
-                  fullWidth
-                  themeClass={currentTheme.button}
-                  className="mt-4 min-h-[48px] rounded-xl tracking-[0.2em]"
-                  onClick={requestLogin}
-                >
-                  {t.statsGuestBannerCta}
-                </Button>
-              </div>
-            ) : null}
 
             <div className="space-y-3">
               <p className={sectionLabel}>{t.lobbyWordLanguage}</p>

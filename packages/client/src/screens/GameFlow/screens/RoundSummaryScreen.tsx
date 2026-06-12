@@ -21,11 +21,17 @@ export const RoundSummaryScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const processingRef = useRef(false);
 
+  const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
   const rawPoints =
     currentRoundStats.correct - (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
   const points = Math.max(0, rawPoints);
   const activeTeam = teams[currentTeamIndex];
   const scoringTeam = teams.find((team) => team.id === currentRoundStats.teamId) || activeTeam;
+  const explainerName =
+    currentRoundStats.explainerName || scoringTeam?.players[0]?.name || scoringTeam?.name || '';
+  const nextTeam = teams.length > 0 ? teams[(currentTeamIndex + 1) % teams.length] : undefined;
+  const nextPlayerName = nextTeam?.players[0]?.name || nextTeam?.name || '';
+  const showNextUp = isSolo && teams.length > 1 && nextPlayerName.length > 0;
 
   const confirmRoundResults = () => {
     if (!isHost || isSubmitting || processingRef.current) return;
@@ -93,13 +99,32 @@ export const RoundSummaryScreen = () => {
           <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
             {t.timeIsUp}
           </h2>
-          <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
-            <span
-              className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
-            >
-              {t.playedTeam.replace('{0}', scoringTeam?.name || '')}
-            </span>
-          </div>
+          {isSolo ? (
+            <div className="space-y-3">
+              <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
+                <span
+                  className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
+                >
+                  {t.playedBy.replace('{0}', explainerName)}
+                </span>
+              </div>
+              {showNextUp && (
+                <p
+                  className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
+                >
+                  {t.nextUp.replace('{0}', nextPlayerName)}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
+              <span
+                className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
+              >
+                {t.playedTeam.replace('{0}', scoringTeam?.name || '')}
+              </span>
+            </div>
+          )}
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center space-y-12 min-h-[40vh]">

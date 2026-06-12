@@ -23,7 +23,7 @@ import {
   GameUIContextValue,
   GameActionsContextValue,
 } from '../types';
-import { MOCK_WORDS, THEME_CONFIG, ROOM_CODE_LENGTH, DEFAULT_APP_THEME } from '../constants';
+import { MOCK_WORDS, THEME_CONFIG, DEFAULT_APP_THEME } from '../constants';
 import { useAudio } from '../hooks/useAudio';
 import { useSocketConnection } from '../hooks/useSocketConnection';
 import { ToastNotification } from '../components/Shared';
@@ -34,10 +34,7 @@ import {
   PLAYER_ID_KEY,
   ROOM_CODE_KEY,
 } from '../services/api';
-import {
-  loadGuestLobbyDefaults,
-  mergeSavedLobbyDefaultsIntoSettings,
-} from '../lib/guestLobbyDefaults';
+import { mergeSavedLobbyDefaultsIntoSettings } from '../lib/lobbyDefaults';
 import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
 import { shuffleArray } from '@alias/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
@@ -62,6 +59,7 @@ import {
   resolveRoomErrorMessage,
   shouldEjectToMenuOnSessionEnd,
 } from '../utils/roomErrorMessage';
+import { attemptRoomJoin, isValidRoomCode, roomJoinEnterNamePayload } from '../utils/roomJoin';
 
 const GameStateContext = createContext<GameStateContextValue | undefined>(undefined);
 const GameUIContext = createContext<GameUIContextValue | undefined>(undefined);
@@ -107,7 +105,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (stateRef.current.gameState !== GameState.MENU) return;
     const params = new URLSearchParams(window.location.search);
-    const room = params.get('room');
     const purchase = params.get('purchase');
     const deckParam = params.get('deck');
 
@@ -160,14 +157,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
         stripKeys.push('deck');
-      }
-
-      if (room && room.length === ROOM_CODE_LENGTH && /^\d+$/.test(room)) {
-        dispatch({
-          type: 'SET_STATE',
-          payload: { roomCode: room, gameState: GameState.ENTER_NAME },
-        });
-        stripKeys.push('room');
       }
 
       if (stripKeys.length > 0) stripSearchParams(stripKeys);
@@ -531,9 +520,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedPlayer = localStorage.getItem(PLAYER_ID_KEY);
       if (!storedRoom || !storedPlayer) return;
       // Validate before connecting to prevent "INVALID_PAYLOAD" rejoin errors.
-      const ROOM_CODE_RE = /^\d{5}$/;
       const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!ROOM_CODE_RE.test(storedRoom) || !UUID_RE.test(storedPlayer)) {
+      if (!isValidRoomCode(storedRoom) || !UUID_RE.test(storedPlayer)) {
         localStorage.removeItem(ROOM_CODE_KEY);
         localStorage.removeItem(PLAYER_ID_KEY);
         return;
@@ -543,6 +531,47 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       /* ignore */
     }
   }, [socketApi]);
+
+  const deepLinkRoomHandledRef = useRef(false);
+
+  // PWA ?room= bootstrap — requires socket API for existence check (see utils/roomJoin).
+  useEffect(() => {
+    if (deepLinkRoomHandledRef.current) return;
+    if (stateRef.current.gameState !== GameState.MENU) return;
+
+    const room = new URLSearchParams(window.location.search).get('room');
+    if (!room || !isValidRoomCode(room)) return;
+
+    deepLinkRoomHandledRef.current = true;
+
+    const stripRoomParam = () => {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('room');
+      const qs = u.searchParams.toString();
+      window.history.replaceState({}, '', qs ? `${u.pathname}?${qs}` : u.pathname);
+    };
+
+    void (async () => {
+      const result = await attemptRoomJoin(room, {
+        checkRoomExists: socketApi.checkRoomExists,
+        onJoin: (code) => {
+          dispatch({
+            type: 'SET_STATE',
+            payload: roomJoinEnterNamePayload(code),
+          });
+        },
+      });
+
+      stripRoomParam();
+
+      const uiStrings = getUiStrings(stateRef.current.uiLanguage);
+      if (result === 'not_found') {
+        showNotification(uiStrings.roomNotFound.replace('{0}', room), 'error');
+      } else if (result === 'error') {
+        showNotification(uiStrings.tgDeepLinkJoinFailed, 'error');
+      }
+    })();
+  }, [showNotification, socketApi.checkRoomExists]);
 
   const sendGameAction = socketApi.sendGameAction;
   const notifyRoomNotReady = useCallback(() => {
@@ -857,25 +886,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
       createNewRoom: async () => {
         let mergedSettings = stateRef.current.settings;
-        const uiLanguage = stateRef.current.uiLanguage;
 
-        if (isAnonymousSession()) {
-          const guestSaved = loadGuestLobbyDefaults();
-          if (guestSaved && !isEmptySavedLobbySettings(guestSaved)) {
-            mergedSettings = mergeSavedLobbyDefaultsIntoSettings(
-              mergedSettings,
-              guestSaved,
-              uiLanguage
-            );
-          }
-        } else {
+        if (!isAnonymousSession()) {
           try {
             const saved = await fetchLobbySettings();
             if (saved && typeof saved === 'object' && !isEmptySavedLobbySettings(saved)) {
               mergedSettings = mergeSavedLobbyDefaultsIntoSettings(
                 mergedSettings,
-                saved as Partial<GameSettings>,
-                uiLanguage
+                saved as Partial<GameSettings>
               );
             }
           } catch {
@@ -900,7 +918,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: string,
         avatar: string,
         avatarId?: string | null,
-        joinMode?: 'ONLINE' | 'OFFLINE'
+        joinMode?: 'ONLINE' | 'OFFLINE',
+        avatarUrl?: string | null
       ) => {
         const sanitizedName = name
           .replace(/<[^>]*>/g, '')
@@ -950,6 +969,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const avatarIdForServer =
           avatarId != null && String(avatarId).trim() !== '' ? String(avatarId).slice(0, 3) : null;
+        const avatarUrlForServer =
+          avatarIdForServer == null && avatarUrl != null && String(avatarUrl).trim() !== ''
+            ? String(avatarUrl).trim().slice(0, 512)
+            : null;
 
         const effectiveMode =
           joinMode ?? (offlineJoinPendingRef.current ? 'OFFLINE' : stateRef.current.gameMode);
@@ -958,13 +981,19 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const uiLang = stateRef.current.uiLanguage;
           try {
             if (stateRef.current.isHost) {
-              await socketApi.createRoom(sanitizedName, safeAvatar, avatarIdForServer);
+              await socketApi.createRoom(
+                sanitizedName,
+                safeAvatar,
+                avatarIdForServer,
+                avatarUrlForServer
+              );
             } else {
               await socketApi.joinRoom(
                 stateRef.current.roomCode,
                 sanitizedName,
                 safeAvatar,
-                avatarIdForServer
+                avatarIdForServer,
+                avatarUrlForServer
               );
             }
             return true;
@@ -994,6 +1023,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: sanitizedName,
                 avatar: safeAvatar,
                 ...(avatarId != null ? { avatarId } : {}),
+                ...(avatarId == null && avatarUrlForServer
+                  ? { avatarUrl: avatarUrlForServer }
+                  : {}),
                 isHost: true,
                 stats: { explained: 0, guessed: 0 },
               },

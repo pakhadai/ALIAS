@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { ShoppingBag, ChevronRight, SlidersHorizontal, Lock } from 'lucide-react';
 import { AccountBadge, ProviderBadge } from '../../components/Auth/AccountBadge';
 import {
   AccentFooterCta,
@@ -30,7 +30,7 @@ import { countProfilePurchases } from './profile/profilePurchaseCounts';
 import { PROFILE_NAV_BTN_CLASS } from './profile/profileSurfaceClasses';
 
 export const ProfileScreen = () => {
-  const { setGameState, currentTheme } = useGame();
+  const { setGameState, currentTheme, showNotification } = useGame();
   const { authState, profile, logout } = useAuthContext();
   const { requestLogin } = useAppLogin();
   const { isTelegram } = useTelegramApp();
@@ -88,6 +88,11 @@ export const ProfileScreen = () => {
       : undefined;
 
   const goToPlayerStats = useCallback(() => setGameState(GameState.PLAYER_STATS), [setGameState]);
+
+  const handleGuestLobbySettings = useCallback(() => {
+    showNotification(t.lobbyDefaultsAuthRequired, 'info');
+    requestLogin();
+  }, [showNotification, t.lobbyDefaultsAuthRequired, requestLogin]);
 
   const profileMenuItems = useMemo(
     () => [
@@ -271,28 +276,32 @@ export const ProfileScreen = () => {
 
             <button
               type="button"
-              onClick={() => setGameState(GameState.LOBBY_SETTINGS)}
-              className={PROFILE_NAV_BTN_CLASS}
+              onClick={handleGuestLobbySettings}
+              className={`${PROFILE_NAV_BTN_CLASS} opacity-80`}
               data-testid="profile-guest-lobby-settings"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <SlidersHorizontal size={16} className={currentTheme.iconColor} />
+                <SlidersHorizontal size={16} className={`${currentTheme.iconColor} opacity-60`} />
                 <div className="text-left min-w-0">
                   <span
-                    className={`${typographyClass.label} font-sans tracking-[0.25em] text-ui-fg`}
+                    className={`${typographyClass.label} font-sans tracking-[0.25em] text-ui-fg-muted`}
                   >
                     {t.profileNavLobbySettings}
                   </span>
-                  {t.profileNavLobbySettingsSub ? (
+                  {t.profileNavLobbySettingsAuthSub ? (
                     <p
                       className={`${typographyClass.label} mt-0.5 tracking-widest text-ui-fg-muted`}
                     >
-                      {t.profileNavLobbySettingsSub}
+                      {t.profileNavLobbySettingsAuthSub}
                     </p>
                   ) : null}
                 </div>
               </div>
-              <ChevronRight size={16} className={`${currentTheme.iconColor} opacity-30 shrink-0`} />
+              <Lock
+                size={14}
+                className={`${currentTheme.iconColor} opacity-40 shrink-0`}
+                aria-hidden
+              />
             </button>
 
             <button

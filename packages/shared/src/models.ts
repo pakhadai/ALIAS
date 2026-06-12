@@ -8,6 +8,8 @@ export interface Player {
   avatar: string;
   isHost: boolean;
   avatarId?: string | null;
+  /** External photo URL (e.g. Telegram photo_url) when no preset avatarId. */
+  avatarUrl?: string | null;
   /** false = socket offline, grace period or gone; true/undefined = connected (undefined for offline/local). */
   isConnected?: boolean;
   stats: { explained: number; guessed: number };

@@ -42,4 +42,16 @@ describe('FixedBottomBar', () => {
     expect(bar?.className).not.toContain(UI_APP_FOOTER_CLASS);
     expect(bar?.className).toContain('bg-linear-to-t');
   });
+
+  it('should center custom contentClassName overrides horizontally', () => {
+    const { container } = render(
+      <FixedBottomBar contentClassName="max-w-sm space-y-2">
+        <button type="button">Rematch</button>
+      </FixedBottomBar>
+    );
+
+    const content = container.querySelector('.pointer-events-auto');
+    expect(content?.className).toContain('mx-auto');
+    expect(content?.className).toContain('max-w-sm');
+  });
 });

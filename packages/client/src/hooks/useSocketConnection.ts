@@ -14,10 +14,10 @@ import {
   PLAYER_ID_KEY,
   ROOM_CODE_KEY,
 } from '../services/api';
+import { isValidRoomCode, parseTelegramLobbyRoomCode } from '../utils/roomJoin';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-const ROOM_CODE_RE = /^\d{5}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** JWT is read once in `io()` options at mount — after Google login it must be refreshed before handshake. */
@@ -120,9 +120,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
       if (storedRoom && storedPlayer) {
         // Telegram deep-link guard: if `start_param` points to another room, don't auto-rejoin the old one.
         const tgStartParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
-        if (typeof tgStartParam === 'string' && tgStartParam.startsWith('lobby_')) {
-          const deepRoom = tgStartParam.slice('lobby_'.length).trim();
-          if (ROOM_CODE_RE.test(deepRoom) && deepRoom !== storedRoom) {
+        if (typeof tgStartParam === 'string') {
+          const deepRoom = parseTelegramLobbyRoomCode(tgStartParam);
+          if (deepRoom && deepRoom !== storedRoom) {
             localStorage.removeItem(ROOM_CODE_KEY);
             localStorage.removeItem(PLAYER_ID_KEY);
             return;
@@ -130,7 +130,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         }
 
         // Guard against legacy/corrupted localStorage values (avoids noisy "INVALID_PAYLOAD" errors).
-        if (!ROOM_CODE_RE.test(storedRoom) || !UUID_RE.test(storedPlayer)) {
+        if (!isValidRoomCode(storedRoom) || !UUID_RE.test(storedPlayer)) {
           localStorage.removeItem(ROOM_CODE_KEY);
           localStorage.removeItem(PLAYER_ID_KEY);
           return;
@@ -256,7 +256,7 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   }, []);
 
   const createRoom = useCallback(
-    (playerName: string, avatar: string, avatarId?: string | null) => {
+    (playerName: string, avatar: string, avatarId?: string | null, avatarUrl?: string | null) => {
       return new Promise<{ roomCode: string; playerId: string }>((resolve, reject) => {
         const socket = socketRef.current;
         if (!socket) {
@@ -333,6 +333,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
             ...(avatarId != null && String(avatarId).trim() !== ''
               ? { avatarId: String(avatarId).slice(0, 3) }
               : {}),
+            ...(avatarId == null && avatarUrl != null && String(avatarUrl).trim() !== ''
+              ? { avatarUrl: String(avatarUrl).trim().slice(0, 512) }
+              : {}),
           };
           socket.emit('room:create', payload);
         };
@@ -347,7 +350,13 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
   );
 
   const joinRoom = useCallback(
-    (code: string, playerName: string, avatar: string, avatarId?: string | null) => {
+    (
+      code: string,
+      playerName: string,
+      avatar: string,
+      avatarId?: string | null,
+      avatarUrl?: string | null
+    ) => {
       return new Promise<{ roomCode: string; playerId: string }>((resolve, reject) => {
         const socket = socketRef.current;
         if (!socket) {
@@ -421,6 +430,9 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
             avatar,
             ...(avatarId != null && String(avatarId).trim() !== ''
               ? { avatarId: String(avatarId).slice(0, 3) }
+              : {}),
+            ...(avatarId == null && avatarUrl != null && String(avatarUrl).trim() !== ''
+              ? { avatarUrl: String(avatarUrl).trim().slice(0, 512) }
               : {}),
           });
         };

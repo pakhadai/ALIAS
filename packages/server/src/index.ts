@@ -273,7 +273,8 @@ async function handleInboundRoomJoin(msg: RoomJoinRpcInbound): Promise<void> {
       msg.requestingSocketId,
       msg.playerName,
       msg.avatar,
-      msg.avatarId
+      msg.avatarId,
+      msg.avatarUrl
     );
     if (!player) {
       await roomActionRelay.publishReply(msg.replyToInstanceId, {

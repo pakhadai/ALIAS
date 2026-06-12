@@ -1,65 +1,252 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#E2E3DB" />
   <title>ALIAS — Офлайн</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Default PAPER_LUXE first-paint tokens — mirror styles.css :root */
+    :root {
+      --ui-bg: #e2e3db;
+      --ui-fg: #272828;
+      --ui-fg-muted: color-mix(in srgb, #272828 58%, transparent);
+      --ui-card: #ffffff;
+      --ui-border: #272828;
+      --ui-accent: #ee4239;
+      --ui-accent-hover: #f2554d;
+      --ui-accent-contrast: #ffffff;
+      --font-heading: 'Montserrat', 'Inter', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-heading-weight: 900;
+      --font-heading-transform: uppercase;
+      --font-heading-tracking: -0.03em;
+      --ui-text-system: 0.75rem;
+      --ui-text-caption: 0.625rem;
+      --ui-text-caption-tracking-wide: 0.6em;
+      --theme-radius: 6px;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ui-bg: #0a0809;
+        --ui-fg: #f4eff1;
+        --ui-fg-muted: color-mix(in srgb, #f4eff1 58%, transparent);
+        --ui-card: #1f181c;
+        --ui-border: #382a31;
+        --ui-accent: #e11d48;
+        --ui-accent-hover: #f43f5e;
+        --ui-accent-contrast: #ffffff;
+        color-scheme: dark;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      min-height: 100svh;
-      background: #121212;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      min-height: 100dvh;
+      background: var(--ui-bg);
+      color: var(--ui-fg);
+      font-family: var(--font-body);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      padding: 32px;
+      padding: 2rem 2rem max(2rem, env(safe-area-inset-bottom));
+      padding-top: max(2rem, env(safe-area-inset-top));
       text-align: center;
+      overflow: hidden;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
     }
-    .logo {
-      font-family: Georgia, serif;
-      font-size: 48px;
-      font-weight: bold;
-      color: #D4AF6A;
-      letter-spacing: 0.15em;
+
+    .backdrop-glow {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: 0.07;
+      background: radial-gradient(ellipse 70% 45% at 50% 40%, var(--ui-accent) 0%, transparent 70%);
     }
-    .icon { font-size: 56px; }
-    .title {
-      font-size: 20px;
-      font-weight: bold;
-      color: rgba(255,255,255,0.85);
+
+    .backdrop-dots {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image: radial-gradient(var(--ui-fg) 0.5px, transparent 0.5px);
+      background-size: 18px 18px;
     }
-    .sub {
-      font-size: 14px;
-      color: rgba(255,255,255,0.35);
-      max-width: 260px;
-      line-height: 1.6;
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem;
+      width: 100%;
+      max-width: 24rem;
     }
-    .btn {
-      margin-top: 8px;
-      padding: 14px 32px;
-      border-radius: 999px;
-      background: #D4AF6A;
-      color: #000;
-      font-weight: bold;
-      font-size: 12px;
-      letter-spacing: 0.2em;
+
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      transform: scale(0.85);
+      opacity: 0.95;
+    }
+
+    .logo-title {
+      font-family: var(--font-heading);
+      font-weight: var(--font-heading-weight);
+      text-transform: var(--font-heading-transform);
+      letter-spacing: 0.25em;
+      font-size: 4.5rem;
+      line-height: 1;
+      color: var(--ui-fg);
+      margin-bottom: 1rem;
+    }
+
+    .logo-rule {
+      height: 1px;
+      width: 4rem;
+      background: var(--ui-border);
+      margin-bottom: 1.5rem;
+      opacity: 0.35;
+    }
+
+    .logo-caption {
+      font-family: var(--font-body);
+      font-size: var(--ui-text-caption);
+      letter-spacing: var(--ui-text-caption-tracking-wide);
       text-transform: uppercase;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
+      color: var(--ui-fg-muted);
+      opacity: 0.4;
     }
-    .btn:active { opacity: 0.7; }
+
+    .offline-icon {
+      font-size: 3rem;
+      line-height: 1;
+      filter: grayscale(0.2);
+    }
+
+    .copy {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .title {
+      font-size: var(--ui-text-system);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--ui-fg-muted);
+    }
+
+    .sub {
+      font-size: var(--ui-text-system);
+      line-height: 1.5;
+      color: var(--ui-fg-muted);
+      max-width: 18rem;
+    }
+
+    .btn {
+      margin-top: 0.5rem;
+      padding: 0.875rem 2rem;
+      border-radius: var(--theme-radius);
+      background: var(--ui-accent);
+      color: var(--ui-accent-contrast);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--ui-text-system);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--ui-border);
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .btn:hover {
+      background: var(--ui-accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    @keyframes telegram-boot-dot {
+      0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.35;
+      }
+      40% {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+
+    .dots {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .dot {
+      width: 0.375rem;
+      height: 0.375rem;
+      border-radius: 999px;
+      background: var(--ui-accent);
+      animation: telegram-boot-dot 1.1s ease-in-out infinite;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: 160ms;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 320ms;
+    }
   </style>
 </head>
 <body>
-  <div class="logo">ALIAS</div>
-  <div class="icon">📡</div>
-  <p class="title">Немає з'єднання</p>
-  <p class="sub">Перевірте підключення до інтернету і спробуйте знову.</p>
-  <button class="btn" onclick="location.reload()">Спробувати знову</button>
+  <div class="backdrop-glow" aria-hidden="true"></div>
+  <div class="backdrop-dots" aria-hidden="true"></div>
+
+  <main class="content">
+    <div class="logo-block">
+      <h1 class="logo-title">ALIAS</h1>
+      <div class="logo-rule" aria-hidden="true"></div>
+      <p class="logo-caption">Premium Collection</p>
+    </div>
+
+    <div class="offline-icon" aria-hidden="true">📡</div>
+
+    <div class="copy">
+      <p class="title">Немає з'єднання</p>
+      <p class="sub">Перевірте підключення до інтернету і спробуйте знову.</p>
+      <div class="dots" role="presentation" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <button type="button" class="btn" onclick="location.reload()">Спробувати знову</button>
+  </main>
 </body>
 </html>

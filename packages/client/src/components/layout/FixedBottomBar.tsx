@@ -60,7 +60,11 @@ export function FixedBottomBar({
       )}
       style={style}
     >
-      <div className={joinClasses(contentClassName, 'pointer-events-auto')}>{children}</div>
+      <div
+        className={joinClasses('mx-auto w-full min-w-0', contentClassName, 'pointer-events-auto')}
+      >
+        {children}
+      </div>
     </div>
   );
 }

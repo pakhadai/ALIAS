@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import type { Player } from '@alias/shared';
 
 export const PRESET_AVATARS = [
   // Use theme-derived colors (no hardcoded HEX)
@@ -128,4 +129,36 @@ export function AvatarDisplay({
       </svg>
     </div>
   );
+}
+
+type PlayerAvatarSource = Pick<Player, 'avatarId' | 'avatarUrl' | 'avatar' | 'name'>;
+
+/** In-game / lobby avatar: preset → photo URL → emoji fallback. */
+export function PlayerAvatar({
+  player,
+  size = 44,
+  emojiClassName,
+}: {
+  player: PlayerAvatarSource;
+  size?: number;
+  emojiClassName?: string;
+}) {
+  if (player.avatarId != null) {
+    return <AvatarDisplay avatarId={player.avatarId} size={size} name={player.name} />;
+  }
+
+  const url = (player.avatarUrl ?? '').trim();
+  if (url) {
+    return <AvatarDisplay imageUrl={url} size={size} name={player.name} />;
+  }
+
+  if (player.avatar) {
+    return (
+      <span className={emojiClassName} aria-hidden>
+        {player.avatar}
+      </span>
+    );
+  }
+
+  return <AvatarDisplay size={size} name={player.name} />;
 }

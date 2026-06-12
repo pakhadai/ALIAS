@@ -21,7 +21,14 @@ const t = {
   lobbyPlayMode: 'How we play',
   teamModeSolo: 'Solo',
   teamModeTeams: 'Teams',
+  teamModeSoloHint: 'Each player scores alone.',
   lobbyTeamsCount: '{0} teams',
+  teamCount: 'Team count',
+  lobbyAddTeam: 'Add team',
+  lobbyRemoveTeam: 'Remove team',
+  lobbyTeamAssignHint: 'Pick a team below.',
+  lobbyRandomTeams: 'Random shuffle',
+  shuffle: 'Shuffle',
 } as TranslationStrings;
 
 describe('LobbyPlayModeBar', () => {
@@ -54,7 +61,7 @@ describe('LobbyPlayModeBar', () => {
     expect(onTeamModeChange).toHaveBeenCalledWith('SOLO');
   });
 
-  it('should render only the mode toggle for host in teams mode', () => {
+  it('should render team count controls and shuffle for host in teams mode', () => {
     render(
       <LobbyPlayModeBar
         theme={theme}
@@ -72,7 +79,31 @@ describe('LobbyPlayModeBar', () => {
     expect(screen.getByText('How we play')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Solo' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Teams' })).toBeTruthy();
-    expect(screen.queryByText('Random shuffle')).toBeNull();
+    expect(screen.getByText('Team count')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add team' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove team' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Random shuffle' })).toBeTruthy();
+  });
+
+  it('should call onTeamCountChange when host taps add team', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LobbyPlayModeBar
+        theme={theme}
+        t={t}
+        isHost
+        isSolo={false}
+        teamCount={2}
+        onTeamModeChange={onTeamModeChange}
+        onTeamCountChange={onTeamCountChange}
+        onShuffleUnassigned={onShuffleUnassigned}
+        shuffleDisabled={false}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Add team' }));
+    expect(onTeamCountChange).toHaveBeenCalledWith(3);
   });
 
   it('should hide team controls when solo is active', () => {
@@ -91,7 +122,9 @@ describe('LobbyPlayModeBar', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Solo' })).toBeTruthy();
+    expect(screen.getByText('Each player scores alone.')).toBeTruthy();
     expect(screen.queryByText('Random shuffle')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add team' })).toBeNull();
   });
 
   it('should show guest play format without toggle', () => {

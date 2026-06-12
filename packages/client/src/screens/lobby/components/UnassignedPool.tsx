@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Player } from '../../../types';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 
 import type { TranslationStrings } from '../../../hooks/useT';
 import { typographyClass } from '../../../constants/typography';
@@ -36,11 +36,7 @@ export function UnassignedPool(props: {
             }`}
             aria-label={(t.assignPlayerAria ?? 'Assign {0}').replace('{0}', p.name)}
           >
-            {p.avatarId != null ? (
-              <AvatarDisplay avatarId={p.avatarId} size={16} />
-            ) : (
-              <span className="text-sm">{p.avatar}</span>
-            )}
+            <PlayerAvatar player={p} size={16} emojiClassName="text-sm" />
             <span className="max-w-[100px] truncate">{p.name}</span>
           </button>
         ))}

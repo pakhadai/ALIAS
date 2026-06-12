@@ -349,6 +349,34 @@ describe('START_PLAYING', () => {
 // ─── CORRECT / SKIP ──────────────────────────────────────────────────────────
 
 describe('CORRECT', () => {
+  it('should not extend roundEndsAt when advancing to the next word', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'Next',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      currentWord: 'Кіт',
+      currentTask: { id: 'task-cat', prompt: 'Кіт' },
+      currentRoundStats: {
+        correct: 0,
+        skipped: 0,
+        words: [],
+        teamId: 't1',
+        explainerName: 'Alice',
+      },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    const deadlineAfterStart = room.roundEndsAt;
+    expect(deadlineAfterStart).toBeDefined();
+
+    vi.advanceTimersByTime(1500);
+
+    await engine.handleAction(room, { action: 'CORRECT' });
+    expect(room.roundEndsAt).toBe(deadlineAfterStart);
+  });
+
   it('increments correct count and fetches next word', async () => {
     vi.spyOn(wordService, 'nextWord').mockResolvedValue({
       word: 'Next',

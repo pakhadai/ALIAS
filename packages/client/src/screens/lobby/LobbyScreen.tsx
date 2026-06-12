@@ -15,6 +15,7 @@ import { HAPTIC, vibrate } from '../../utils/haptics';
 import { footerIslandClassName } from '../../constants/footerLayout';
 import { typographyClass, systemBannerClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
+import { buildRoomJoinUrl, buildTelegramLobbyInviteUrl } from '../../utils/roomJoin';
 import { MAX_PLAYERS } from '../../constants';
 import QRCode from 'qrcode';
 import type { Player } from '../../types';
@@ -111,7 +112,7 @@ export const LobbyScreen = () => {
   const [teamsExpanded, setTeamsExpanded] = useState(true);
   const userToggledTeamsRef = useRef(false);
 
-  const joinUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?room=${roomCode}`;
+  const joinUrl = useMemo(() => (roomCode ? buildRoomJoinUrl(roomCode) : ''), [roomCode]);
   const prevPlayerIdsRef = useRef<string[]>([]);
   const didInitPlayersRef = useRef(false);
 
@@ -224,16 +225,7 @@ export const LobbyScreen = () => {
       return;
     }
 
-    let shareUrl = '';
-    try {
-      const u = new URL(appLink);
-      u.searchParams.set('startapp', `lobby_${roomCode}`);
-      shareUrl = u.toString();
-    } catch {
-      // Fallback for non-standard URLs (should not happen with a valid https://t.me/... link)
-      const sep = appLink.includes('?') ? '&' : '?';
-      shareUrl = `${appLink}${sep}startapp=lobby_${roomCode}`;
-    }
+    const shareUrl = buildTelegramLobbyInviteUrl(appLink, roomCode);
 
     const text = t.lobbyInviteTelegramText;
     const tgShareUrl =

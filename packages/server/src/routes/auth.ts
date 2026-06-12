@@ -264,7 +264,7 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
 
     const { displayName, avatarId, skipNamePrompt } = req.body as {
       displayName?: string;
-      avatarId?: string;
+      avatarId?: string | null;
       skipNamePrompt?: boolean;
     };
     const data: Record<string, unknown> = {};
@@ -274,8 +274,12 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       if (name) data.displayName = name;
     }
     if (avatarId !== undefined) {
-      const idx = parseInt(String(avatarId));
-      if (!isNaN(idx) && idx >= 0 && idx <= 19) data.avatarId = String(idx);
+      if (avatarId === null) {
+        data.avatarId = null;
+      } else {
+        const idx = parseInt(String(avatarId));
+        if (!isNaN(idx) && idx >= 0 && idx <= 19) data.avatarId = String(idx);
+      }
     }
     if (skipNamePrompt !== undefined) {
       const existing = await prisma.user.findUnique({
@@ -297,11 +301,82 @@ export function createAuthRoutes(prisma: PrismaClient): IRouter {
       res.json({
         displayName: user.displayName,
         avatarId: user.avatarId,
+        avatarUrl: user.avatarUrl,
         skipNamePrompt: user.skipNamePrompt,
       });
     } catch (err) {
       console.error('[Auth] profile update error:', err);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * POST /api/auth/profile/sync-telegram-avatar
+   * Clears preset avatarId and refreshes avatarUrl from Telegram initData.
+   */
+  router.post('/profile/sync-telegram-avatar', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const payload = authService.verifyToken(authHeader.slice(7));
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+
+    const headerInitData = req.headers['x-init-data'];
+    const fromHeader = typeof headerInitData === 'string' ? headerInitData : undefined;
+    const { initData: fromBody } = req.body as { initData?: string };
+    const initData = (fromBody || fromHeader || '').trim();
+    if (!initData) {
+      res.status(400).json({ error: 'initData is required (body.initData or X-Init-Data header)' });
+      return;
+    }
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+    if (!botToken) {
+      res.status(500).json({ error: 'Server misconfigured: TELEGRAM_BOT_TOKEN is not set' });
+      return;
+    }
+
+    try {
+      const existing = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { telegramId: true, authProvider: true },
+      });
+      if (!existing || existing.authProvider !== 'telegram' || !existing.telegramId) {
+        res
+          .status(400)
+          .json({ error: 'Telegram avatar sync is only available for Telegram accounts' });
+        return;
+      }
+
+      const verified = authService.validateTelegramInitData(initData, botToken);
+      const telegramUserId = verified.user?.id;
+      if (!telegramUserId || String(telegramUserId) !== existing.telegramId) {
+        res.status(403).json({ error: 'initData does not match authenticated user' });
+        return;
+      }
+
+      const tgAvatarUrl = verified.user?.photo_url?.trim() || '';
+      const user = await prisma.user.update({
+        where: { id: payload.sub },
+        data: {
+          avatarId: null,
+          ...(tgAvatarUrl ? { avatarUrl: tgAvatarUrl } : {}),
+        },
+      });
+
+      res.json({
+        avatarUrl: user.avatarUrl,
+        avatarId: user.avatarId,
+      });
+    } catch (err) {
+      const msg = (err as Error)?.message || 'Invalid Telegram initData';
+      console.error('[Auth] sync-telegram-avatar failed', { error: msg });
+      res.status(400).json({ error: msg });
     }
   });
 

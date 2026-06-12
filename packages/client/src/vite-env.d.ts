@@ -67,6 +67,7 @@ declare global {
     /** Syncs Telegram wrapper background with the page theme. */
     setBackgroundColor?: (color: string) => void;
     requestFullscreen?: () => void;
+    exitFullscreen?: () => void;
     disableVerticalSwipes?: () => void;
     enableClosingConfirmation?: () => void;
     BackButton?: {

@@ -61,7 +61,7 @@ export function EnterNameSheet(): React.ReactNode {
       if (autoJoinAttemptedRef.current) return undefined;
       autoJoinAttemptedRef.current = true;
       let cancelled = false;
-      const { emoji: avatarEmoji, avatarId } = resolvePlayerAvatarFromProfile(profile);
+      const { emoji: avatarEmoji, avatarId, avatarUrl } = resolvePlayerAvatarFromProfile(profile);
       setIsEntering(true);
       void (async () => {
         try {
@@ -70,7 +70,8 @@ export function EnterNameSheet(): React.ReactNode {
             resolvedName,
             avatarEmoji,
             avatarId,
-            gameMode
+            gameMode,
+            avatarUrl
           );
           if (!cancelled && ok) {
             if (gameMode !== 'OFFLINE') setGameState(GameState.LOBBY);

@@ -4,6 +4,8 @@ export const SCREEN_ACCENT_GLOW_FOCAL = {
   menuHome: '15%',
   /** Profile hero — avatar band below header */
   profileHero: '20%',
+  /** Boot / auth loading — vertically centered hero */
+  bootCenter: '40%',
 } as const;
 
 export type ScreenAccentGlowFocal =

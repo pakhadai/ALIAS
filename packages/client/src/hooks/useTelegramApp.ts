@@ -9,6 +9,14 @@ function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
 }
 
+/** Desktop Telegram clients — keep Mini App in a window, not immersive fullscreen. */
+const TELEGRAM_DESKTOP_PLATFORMS = new Set(['macos', 'tdesktop', 'weba', 'webk', 'web', 'unigram']);
+
+export function isTelegramDesktopPlatform(platform?: string): boolean {
+  if (!platform) return false;
+  return TELEGRAM_DESKTOP_PLATFORMS.has(platform.toLowerCase());
+}
+
 /** Same detection as `useTelegramApp().isTelegram` — use for UI only to avoid duplicate hook effects. */
 export function isTelegramMiniApp(): boolean {
   const webApp = getTelegramWebApp();
@@ -106,14 +114,24 @@ export function syncTelegramLayout(webApp: TelegramWebApp): void {
   applyTelegramSafeAreaCssVars(webApp);
 }
 
-/** Initial mount: always expand per TMA canon. */
+/** Mobile: expand + fullscreen. Desktop: stay in Telegram window (no immersive fullscreen). */
 function bootstrapTelegramViewport(webApp: TelegramWebApp): void {
+  if (isTelegramDesktopPlatform(webApp.platform)) {
+    safeTelegramCall(() => webApp.exitFullscreen?.());
+    return;
+  }
   safeTelegramCall(() => webApp.expand());
   safeTelegramCall(() => webApp.requestFullscreen?.());
 }
 
-/** Re-expand after viewport changes when the SDK reports a collapsed WebView. */
+/** Re-expand after viewport changes when the SDK reports a collapsed WebView (mobile only). */
 export function ensureTelegramExpanded(webApp: TelegramWebApp): void {
+  if (isTelegramDesktopPlatform(webApp.platform)) {
+    if (webApp.isFullscreen === true) {
+      safeTelegramCall(() => webApp.exitFullscreen?.());
+    }
+    return;
+  }
   if (webApp.isExpanded !== true) {
     safeTelegramCall(() => webApp.expand());
     safeTelegramCall(() => webApp.requestFullscreen?.());

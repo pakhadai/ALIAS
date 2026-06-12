@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'react';
 import type { Language } from '@alias/shared';
 import { GameState } from '../types';
-import { ROOM_CODE_LENGTH } from '../constants';
 import { getUiStrings } from './useT';
+import {
+  TELEGRAM_LOBBY_START_PREFIX,
+  attemptRoomJoin,
+  parseTelegramLobbyRoomCode,
+} from '../utils/roomJoin';
 
 type UseTelegramLobbyDeepLinkArgs = {
   isAuthenticated: boolean;
@@ -33,28 +37,29 @@ export function useTelegramLobbyDeepLink({
     if (!startParam) return;
     if (consumedStartParamRef.current === startParam) return;
     if (gameState !== GameState.MENU) return;
-    if (!startParam.startsWith('lobby_')) return;
+    if (!startParam.startsWith(TELEGRAM_LOBBY_START_PREFIX)) return;
 
-    const roomCode = startParam.slice('lobby_'.length).trim();
     consumedStartParamRef.current = startParam;
-
     const t = getUiStrings(uiLanguage);
+    const roomCode = parseTelegramLobbyRoomCode(startParam);
 
-    if (roomCode.length !== ROOM_CODE_LENGTH || !/^\d+$/.test(roomCode)) {
+    if (!roomCode) {
       showNotification(t.tgDeepLinkInvalidCode, 'error');
       return;
     }
 
     void (async () => {
-      try {
-        const exists = await checkRoomExists(roomCode);
-        if (!exists) {
-          showNotification(t.tgDeepLinkRoomNotFound.replace('{0}', roomCode), 'error');
-          return;
-        }
-        setRoomCode(roomCode);
-        setGameState(GameState.ENTER_NAME);
-      } catch {
+      const result = await attemptRoomJoin(roomCode, {
+        checkRoomExists,
+        onJoin: (code) => {
+          setRoomCode(code);
+          setGameState(GameState.ENTER_NAME);
+        },
+      });
+
+      if (result === 'not_found') {
+        showNotification(t.tgDeepLinkRoomNotFound.replace('{0}', roomCode), 'error');
+      } else if (result === 'error') {
         showNotification(t.tgDeepLinkJoinFailed, 'error');
       }
     })();

@@ -1,6 +1,6 @@
 # Current Focus — Alias Master
 
-**Last updated:** 2026-06-11 (session: offline lobby parity — SOLO START_GAME + rules card ✅)  
+**Last updated:** 2026-06-12 (session: lobby defaults auth-only + language merge fix ✅)  
 **Active branch:** `main`
 
 ## What's in progress
@@ -10,6 +10,15 @@
 
 ## What was just completed
 
+- **Lobby defaults auth-only (2026-06-12):**
+  - Guest profile nav: lock + login CTA; `LobbySettingsScreen` redirects guests with toast
+  - Removed guest `localStorage` path; `guestLobbyDefaults.ts` → `lobbyDefaults.ts`
+  - Fixed saved word language overwritten by UI language on `createNewRoom`
+  - Tests: `lobbyDefaults.test.ts`, `LobbySettingsScreen.test.tsx`; CHANGELOG [Unreleased]
+- **Telegram / preset avatars (2026-06-12):**
+  - `Player.avatarUrl` у shared + room join/create; `PlayerAvatar` у lobby/GameFlow
+  - Profile Settings: «Синхронізувати з Telegram» (`POST /api/auth/profile/sync-telegram-avatar`)
+  - Docs: `README.md` (Socket + REST + User), `CHANGELOG.md` [Unreleased]
 - **Offline lobby parity (2026-06-11):**
   - `offlineGameActions` `START_GAME` — SOLO/TEAMS team materialize (mirror `GameEngine`); fixes PreRound «немає гравців»
   - `LobbyRulesSummaryCard` — rules quick-access для OFFLINE + ONLINE; header gear прибрано з lobby
@@ -23,7 +32,7 @@
 2. [ ] **Manual TMA @375px** — LAYOUT-001 QA checklist
 3. [ ] **Мікро A** (Profile epic) — avatar preview + email overflow
 4. [ ] **Мікро B** (Profile epic) — in-lobby `SettingsScreen` header → `ScreenTitle`
-5. [ ] Push — лише на явний запит власника
+5. [x] Push — 2026-06-12 (verify: typecheck + 724 unit + 36 E2E pass)
 
 ## Known issues / blockers
 

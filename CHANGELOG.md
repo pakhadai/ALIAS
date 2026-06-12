@@ -30,14 +30,27 @@
 
 ## [Unreleased]
 
+### Changed
+- Round summary in SOLO mode: show who played and who's next instead of team label; total score still revealed on scoreboard (`RoundSummaryScreen.tsx`, `translations.ts`)
+- Unified room join flow: shared `roomJoin` utils (`buildRoomJoinUrl`, `buildTelegramLobbyInviteUrl`, `attemptRoomJoin`); PWA `?room=` now verifies room exists before `ENTER_NAME` (aligned with Telegram deep links)
+- Lobby defaults (`LobbySettingsScreen`) require sign-in: guest profile nav shows lock + login CTA; direct navigation redirects to profile with toast; removed guest `localStorage` defaults path (`lobbyDefaults.ts`)
+- Game over screen UX: sticky `FixedBottomBar` footer (rematch + change settings + leave room), share as icon beside results header, 600ms delayed footer reveal, winner card highlight and badge; new i18n keys `winnerBadge`, `gameOverChangeSettings`, `gameOverLeaveRoom` (`GameOverScreen.tsx`, `translations.ts`)
+
+### Fixed
+- Round timer no longer gains up to ~1s per CORRECT/SKIP: `nextWord` no longer resets `roundEndsAt` from ceil'd `timeLeft` (`GameEngine.ts`)
+- Saved lobby default word language (e.g. DE) no longer overwritten by UI language when creating a new room (`mergeSavedLobbyDefaultsIntoSettings`)
+- Telegram Desktop / macOS / Web: Mini App opens in a window instead of immersive fullscreen — skip `expand`/`requestFullscreen` and call `exitFullscreen` on desktop platforms (`useTelegramApp.ts`)
+
 ### Added
-- `LobbyRulesSummaryCard.test.tsx` — rules card host/guest UX + `rulesTimeRow` mode variants (CLASSIC/QUIZ/IMPOSTER)
+- Telegram avatar in game: `Player.avatarUrl` synced on join; `PlayerAvatar` component (preset → photo URL → emoji); lobby and GameFlow screens use unified display
+- `POST /api/auth/profile/sync-telegram-avatar` — restore Telegram photo (clears preset `avatarId`, refreshes `avatarUrl` from validated `initData`); button in Profile Settings for Telegram accounts
 - LAYOUT-001 Phase 3: theme-aware `rounded-theme` utility (`--radius-theme` in `@theme`); surface SSOT `surfaceClasses.ts` (`SURFACE_PANEL_CLASS`, `SURFACE_CARD_CLASS`, nav row/accent); `profileSurfaceClasses.ts` re-exports aliases
 - LAYOUT-001 Phase 2: footer island layout presets (`footerLayout.ts` — `narrow`, `canonical`, `fullBleed`); island footers on menu/lobby/scoreboard screens use `footerIslandClassName()`
 - LAYOUT-001 epic plan: `docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` — screen layout presets, footer island SSOT, radius/surface classes; session prompts 0–7 + micro A–B
 - Browser `AppHeader` overflow menu: liquid glass ⋯ chip (`GlassIconButton`) always in the header rail (like back); `ui-glass-panel` popover portaled below the chip without layout shift; `menuItems` API; demo stubs on Profile, Store, and lobby Settings; hidden in TMA (native chrome)
 
 ### Changed
+- Boot loading UI unified: shared `BootLoading.tsx` (`ScreenAccentGlow`, TMA viewport height) for Telegram auth + lazy routes; PWA `offline.html` aligned with PAPER_LUXE tokens, fonts, and boot backdrop
 - Offline lobby: «Правила гри» quick-access card (mode, time, score, categories) — same as online; tap opens settings; header gear removed from lobby (`LobbyRulesSummaryCard.tsx`, `LobbyScreen.tsx`)
 - Docs/tests: `LOBBY_TEAM_BUILDER.md`, `TESTING_ACCEPTANCE.md`, E2E `openLobbySettings` → rules card only; unit tests for `LobbyRulesSummaryCard`, offline SOLO/TEAMS `START_GAME`
 - LAYOUT-001 Phase 5: menu/lobby high-traffic screens use `SURFACE_PANEL_CLASS` / `SURFACE_CARD_CLASS` (`RulesModal`, `StoreScreen`, `LobbySettingsScreen`, `ProfileSettingsScreen`; pilot: in-lobby `SettingsScreen` Game Mode block)

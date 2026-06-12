@@ -1,7 +1,7 @@
 import React from 'react';
 import { Crown, X } from 'lucide-react';
 import type { Player, ThemeConfig } from '../../../types';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { MAX_PLAYERS } from '../../../constants';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
@@ -74,17 +74,13 @@ export function LobbyAvatarStrip(props: {
                   aria-label={showKickMenu ? `${p.name}, ${t.more}` : p.name}
                   aria-expanded={showKickMenu ? kickMenuOpen : undefined}
                 >
-                  {p.avatarId != null ? (
-                    <AvatarDisplay avatarId={p.avatarId} size={44} />
-                  ) : (
-                    <span
-                      className={`flex h-11 w-11 items-center justify-center rounded-full border border-ui-border bg-ui-surface text-2xl ${
-                        !online ? 'text-ui-fg-muted' : ''
-                      }`}
-                    >
-                      {p.avatar}
-                    </span>
-                  )}
+                  <PlayerAvatar
+                    player={p}
+                    size={44}
+                    emojiClassName={`flex h-11 w-11 items-center justify-center rounded-full border border-ui-border bg-ui-surface text-2xl ${
+                      !online ? 'text-ui-fg-muted' : ''
+                    }`}
+                  />
                 </button>
                 <span
                   className={`pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-ui-bg ${

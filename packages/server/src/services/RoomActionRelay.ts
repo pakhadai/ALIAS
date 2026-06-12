@@ -25,6 +25,7 @@ export type RoomJoinRpcInbound = {
   playerName: string;
   avatar: string;
   avatarId?: string | null;
+  avatarUrl?: string | null;
   replyToInstanceId: string;
   requestId: string;
 };

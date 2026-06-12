@@ -133,7 +133,8 @@ export function registerSocketHandlers(
         socket.id,
         data.playerName,
         data.avatar,
-        data.avatarId
+        data.avatarId,
+        data.avatarUrl
       );
       if (!player) {
         roomManager.deleteRoom(room.code); // Clean up the zombie room
@@ -182,6 +183,7 @@ export function registerSocketHandlers(
           playerName: data.playerName,
           avatar: data.avatar,
           avatarId: data.avatarId,
+          avatarUrl: data.avatarUrl,
           replyToInstanceId: selfId,
           requestId,
         });
@@ -218,7 +220,8 @@ export function registerSocketHandlers(
           socket.id,
           data.playerName,
           data.avatar,
-          data.avatarId
+          data.avatarId,
+          data.avatarUrl
         );
         if (!player) {
           socket.emit('room:error', roomError('ROOM_FULL', 'Room is full'));

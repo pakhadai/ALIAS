@@ -1,11 +1,20 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
-import { FixedBottomBar, ScreenShell } from '../../../components/layout';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
-import { GameState } from '../../../types';
+import { ConfirmationModal } from '../../../components/ConfirmationModal';
+import {
+  AppHeader,
+  AppHeaderOverflowMenu,
+  FixedBottomBar,
+  ScreenShell,
+} from '../../../components/layout';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
+import { ScreenTitle } from '../../../components/typography/ScreenTitle';
+import { footerIslandClassName } from '../../../constants/footerLayout';
+import { useBackNavigationGuard } from '../../../context/BackNavigationGuardContext';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
+import { hasTelegramInitData } from '../../../hooks/useTelegramApp';
+import { GameState } from '../../../types';
 
 export const PreRoundScreen = () => {
   const {
@@ -18,9 +27,56 @@ export const PreRoundScreen = () => {
     myPlayerId,
     gameMode,
     leaveRoom,
+    settings,
   } = useGame();
   const t = useT();
+  const { registerGuard } = useBackNavigationGuard();
+  const isTelegramSession = hasTelegramInitData();
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const pendingLeaveRef = useRef<(() => void) | null>(null);
+  const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
   const activeTeam = teams[currentTeamIndex];
+
+  const openExitConfirm = useCallback(() => {
+    setShowExitConfirm(true);
+  }, []);
+
+  const requestLeave = useCallback((proceed: () => void) => {
+    pendingLeaveRef.current = proceed;
+    setShowExitConfirm(true);
+  }, []);
+
+  useEffect(() => {
+    registerGuard({
+      isDirty: true,
+      requestLeave,
+    });
+    return () => registerGuard(null);
+  }, [registerGuard, requestLeave]);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitConfirm(false);
+    const proceed = pendingLeaveRef.current;
+    pendingLeaveRef.current = null;
+    if (proceed) proceed();
+    else leaveRoom();
+  }, [leaveRoom]);
+
+  const handleCancelExit = useCallback(() => {
+    setShowExitConfirm(false);
+    pendingLeaveRef.current = null;
+  }, []);
+
+  const menuItems = useMemo(
+    () => [
+      {
+        id: 'main-menu',
+        label: t.toMainMenu,
+        onSelect: openExitConfirm,
+      },
+    ],
+    [openExitConfirm, t.toMainMenu]
+  );
 
   if (!activeTeam || activeTeam.players.length === 0) {
     return (
@@ -57,65 +113,33 @@ export const PreRoundScreen = () => {
   const isActualExplainer = explainer.id === myPlayerId;
 
   return (
-    <ScreenShell
-      layout="fullPx8"
-      className={`${currentTheme.bg} text-center relative`}
-      contentClassName="justify-center items-center"
-      footer={
-        <FixedBottomBar contentClassName="max-w-sm mx-auto">
-          <Button
-            themeClass={currentTheme.button}
-            variant="outline"
-            fullWidth
-            icon={<X size={18} />}
-            onClick={() => leaveRoom()}
-          >
-            {t.toMainMenu}
-          </Button>
-        </FixedBottomBar>
-      }
-    >
-      <div className="flex flex-col justify-center items-center w-full max-w-sm">
-        <div className="space-y-8 animate-pop-in w-full max-w-sm">
-          <h2
-            className={`text-[10px] font-sans font-bold uppercase tracking-[0.6em] ${currentTheme.textSecondary}`}
-          >
-            {t.playingNow}
-          </h2>
-          <div className="inline-block px-8 py-3 rounded-full border border-ui-border bg-ui-surface">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${activeTeam.color}`} />
-              <span className={`font-serif text-3xl ${currentTheme.textMain}`}>
-                {activeTeam.name}
-              </span>
-            </div>
-          </div>
-
-          <div className="pt-12 space-y-4 flex flex-col items-center">
-            <div className="mb-1">
-              {explainer.avatarId != null ? (
-                <AvatarDisplay avatarId={explainer.avatarId} size={64} />
-              ) : (
-                <span className="text-6xl">{explainer.avatar}</span>
-              )}
-            </div>
-            <p className={`text-5xl font-serif ${currentTheme.textMain}`}>{explainer.name}</p>
-            <p
-              className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
-            >
-              {t.explains}
-            </p>
-          </div>
-
-          {gameMode === 'OFFLINE' && (
-            <div
-              className={`pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.3em] ${currentTheme.textSecondary}`}
-            >
-              {t.passPhoneTo.replace('{0}', explainer.name)}
-            </div>
-          )}
-
-          <div className={gameMode === 'OFFLINE' ? 'pt-6' : 'pt-12'}>
+    <>
+      <ScreenShell
+        layout="fullPx8"
+        className={`${currentTheme.bg} text-center relative`}
+        contentClassName="justify-center items-center"
+        headerFixed
+        footerFixed
+        header={
+          <AppHeader
+            fixed
+            title={
+              !isSolo ? (
+                <ScreenTitle themeClass={currentTheme.textMain}>{t.playingNow}</ScreenTitle>
+              ) : undefined
+            }
+            onBack={openExitConfirm}
+            backAriaLabel={t.toMainMenu}
+            menuItems={isTelegramSession ? undefined : menuItems}
+            right={
+              isTelegramSession ? (
+                <AppHeaderOverflowMenu items={menuItems} ariaLabel={t.toMainMenu} />
+              ) : undefined
+            }
+          />
+        }
+        footer={
+          <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
             {gameMode === 'OFFLINE' || isActualExplainer ? (
               <Button
                 themeClass={currentTheme.button}
@@ -132,9 +156,58 @@ export const PreRoundScreen = () => {
                 {t.waitAdmin}
               </p>
             )}
+          </FixedBottomBar>
+        }
+      >
+        <div className="flex flex-col justify-center items-center w-full max-w-sm text-center">
+          <div className="space-y-8 animate-pop-in w-full max-w-sm flex flex-col items-center">
+            {!isSolo && (
+              <div className="inline-block px-8 py-3 rounded-full border border-ui-border bg-ui-surface">
+                <div className="flex items-center justify-center gap-3">
+                  <div className={`w-3 h-3 rounded-full shrink-0 ${activeTeam.color}`} />
+                  <span className={`font-serif text-3xl ${currentTheme.textMain}`}>
+                    {activeTeam.name}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div
+              className={`space-y-4 flex flex-col items-center text-center ${isSolo ? '' : 'pt-4'}`}
+            >
+              <div className="mb-1">
+                <PlayerAvatar player={explainer} size={64} emojiClassName="text-6xl" />
+              </div>
+              <p className={`text-5xl font-serif ${currentTheme.textMain}`}>{explainer.name}</p>
+              <p
+                className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
+              >
+                {t.explains}
+              </p>
+            </div>
+
+            {gameMode === 'OFFLINE' && (
+              <div
+                className={`pt-4 text-[10px] font-sans font-bold uppercase tracking-[0.3em] ${currentTheme.textSecondary}`}
+              >
+                {t.passPhoneTo.replace('{0}', explainer.name)}
+              </div>
+            )}
           </div>
         </div>
-      </div>
-    </ScreenShell>
+      </ScreenShell>
+
+      <ConfirmationModal
+        isOpen={showExitConfirm}
+        title={t.leaveLobbyConfirm}
+        message={t.leaveLobbyMsg}
+        isDanger
+        theme={currentTheme}
+        onCancel={handleCancelExit}
+        onConfirm={handleConfirmExit}
+        confirmText={t.confirmExit}
+        cancelText={t.goBack}
+      />
+    </>
   );
 };

@@ -7,7 +7,7 @@ import { UnsavedChangesModal } from '../../components/Settings';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
-import { updateProfile } from '../../services/api';
+import { updateProfile, syncTelegramAvatar } from '../../services/api';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { ProviderBadge } from '../../components/Auth/AccountBadge';
@@ -19,6 +19,7 @@ import { SURFACE_CARD_CLASS } from '../../constants/surfaceClasses';
 import { typographyClass, formLabelClass } from '../../constants/typography';
 import { useT } from '../../hooks/useT';
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
+import { useTelegramApp } from '../../hooks/useTelegramApp';
 
 type ProfileFormBaseline = {
   name: string;
@@ -53,10 +54,12 @@ export const ProfileSettingsScreen = () => {
     unsubscribe: pushUnsubscribe,
   } = usePushNotifications();
   const { canInstall, install } = useInstallPrompt();
+  const { initData } = useTelegramApp();
 
   const [name, setName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<number>(-1);
   const [skipNamePrompt, setSkipNamePrompt] = useState(false);
+  const [syncingAvatar, setSyncingAvatar] = useState(false);
   const [savedBaseline, setSavedBaseline] = useState<ProfileFormBaseline>({
     name: '',
     avatarId: -1,
@@ -143,6 +146,26 @@ export const ProfileSettingsScreen = () => {
   const sectionCard = `${SURFACE_CARD_CLASS} p-5`;
 
   const providerLabel = provider === 'telegram' ? 'Telegram' : 'Google';
+  const showTelegramAvatarSync = provider === 'telegram';
+
+  const handleSyncTelegramAvatar = async () => {
+    if (!initData) {
+      showNotification(t.profileSettingsSyncTelegramUnavailable, 'error');
+      return;
+    }
+    setSyncingAvatar(true);
+    try {
+      await syncTelegramAvatar(initData);
+      await refreshProfile();
+      setSelectedAvatar(-1);
+      setSavedBaseline((prev) => ({ ...prev, avatarId: -1 }));
+      showNotification(t.profileSettingsSyncTelegramSuccess, 'success');
+    } catch {
+      showNotification(t.profileSettingsSyncTelegramFailed, 'error');
+    } finally {
+      setSyncingAvatar(false);
+    }
+  };
 
   return (
     <ScreenShell
@@ -240,6 +263,21 @@ export const ProfileSettingsScreen = () => {
               </button>
             ))}
           </div>
+          {showTelegramAvatarSync && (
+            <button
+              type="button"
+              onClick={() => void handleSyncTelegramAvatar()}
+              disabled={syncingAvatar}
+              className={`mx-auto flex items-center justify-center gap-2 rounded-full border border-ui-border bg-ui-surface px-4 py-2.5 ${typographyClass.label} font-medium normal-case text-ui-fg transition-all active:scale-[0.98] disabled:opacity-50`}
+            >
+              {syncingAvatar ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+              ) : (
+                <span className="material-symbols-outlined text-[18px]! opacity-80">sync</span>
+              )}
+              {t.profileSettingsSyncTelegramAvatar}
+            </button>
+          )}
         </div>
 
         <div className="space-y-2">

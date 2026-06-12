@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../../../components/Button';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
@@ -93,13 +93,9 @@ export const VSScreen = () => {
                           el.type === 'player' ? el.team.colorHex || undefined : undefined,
                       }}
                     />
-                    {el.type === 'player' && el.player?.avatarId != null ? (
-                      <AvatarDisplay avatarId={el.player.avatarId} size={56} />
-                    ) : (
-                      <span className="text-5xl">
-                        {el.type === 'player' ? el.player?.avatar : null}
-                      </span>
-                    )}
+                    {el.type === 'player' && el.player ? (
+                      <PlayerAvatar player={el.player} size={56} emojiClassName="text-5xl" />
+                    ) : null}
                     <span
                       className={`text-3xl font-serif font-bold tracking-wide ${currentTheme.textMain}`}
                     >
@@ -113,13 +109,9 @@ export const VSScreen = () => {
                     >
                       {el.type === 'player' ? el.player?.name : null}
                     </span>
-                    {el.type === 'player' && el.player?.avatarId != null ? (
-                      <AvatarDisplay avatarId={el.player.avatarId} size={56} />
-                    ) : (
-                      <span className="text-5xl">
-                        {el.type === 'player' ? el.player?.avatar : null}
-                      </span>
-                    )}
+                    {el.type === 'player' && el.player ? (
+                      <PlayerAvatar player={el.player} size={56} emojiClassName="text-5xl" />
+                    ) : null}
                     <div
                       className="w-4 h-4 rounded-full shrink-0"
                       style={{

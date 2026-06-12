@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, Trophy } from 'lucide-react';
+import { Check, Loader2, Share2, Trophy } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Confetti } from '../../../components/Shared';
-import { ScreenShell } from '../../../components/layout';
+import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { usePlayerStats } from '../../../hooks/usePlayerStats';
 import type { Player, Team } from '../../../types';
+
+const FOOTER_ACTIONS_DELAY_MS = 600;
 
 type PlayerWithTeamName = Player & { teamName: string };
 type CanvasRenderingContext2DWithRoundRect = CanvasRenderingContext2D & {
@@ -45,6 +47,7 @@ export const GameOverScreen = () => {
   const winner = sorted[0];
   const [copied, setCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const statsTrackedRef = useRef(false);
   const gameStats = usePlayerStats();
 
@@ -55,6 +58,11 @@ export const GameOverScreen = () => {
       void gameStats.flush();
     }
   }, [gameStats]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowActions(true), FOOTER_ACTIONS_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Collect top guessers across all teams
   const allPlayers = teams.flatMap((team: Team) =>
@@ -254,9 +262,72 @@ export const GameOverScreen = () => {
 
   const medals = ['🥇', '🥈', '🥉'];
   const cardBg = 'bg-ui-card border-ui-border';
+  const winnerCardBg = 'bg-ui-accent/5 border-ui-accent/30 ring-1 ring-ui-accent/20';
+
+  const shareAriaLabel = copied ? t.shareCopied : t.shareResults;
 
   return (
-    <ScreenShell layout="fullPx6" className={currentTheme.bg} contentClassName="items-center pb-4">
+    <ScreenShell
+      layout="fullPx6"
+      className={currentTheme.bg}
+      contentClassName="items-center"
+      footer={
+        <FixedBottomBar contentClassName="max-w-sm space-y-2">
+          <div
+            className={`space-y-2 transition-all duration-500 ${
+              showActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            {isHost ? (
+              <>
+                <Button
+                  themeClass={currentTheme.button}
+                  fullWidth
+                  size="xl"
+                  onClick={rematch}
+                  data-testid="game-over-rematch"
+                >
+                  {t.rematch}
+                </Button>
+                <Button
+                  themeClass={currentTheme.button}
+                  variant="ghost"
+                  fullWidth
+                  size="lg"
+                  onClick={resetGame}
+                >
+                  {t.gameOverChangeSettings}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => leaveRoom()}
+                  className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} active:text-ui-fg transition-colors`}
+                >
+                  {t.gameOverLeaveRoom}
+                </button>
+              </>
+            ) : (
+              <>
+                <p
+                  className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
+                >
+                  {t.waitAdmin}
+                </p>
+                <Button
+                  themeClass={currentTheme.button}
+                  variant="ghost"
+                  fullWidth
+                  size="lg"
+                  onClick={() => leaveRoom()}
+                >
+                  {t.gameOverLeaveRoom}
+                </Button>
+              </>
+            )}
+          </div>
+        </FixedBottomBar>
+      }
+    >
       <Confetti />
 
       {/* Winner banner */}
@@ -270,38 +341,66 @@ export const GameOverScreen = () => {
 
       {/* Team leaderboard */}
       <div className="w-full max-w-sm space-y-2 animate-fade-in">
-        <p
-          className={`text-[10px] uppercase tracking-widest font-bold mb-3 ${currentTheme.textSecondary}`}
-        >
-          {t.finalResults}
-        </p>
-        {sorted.map((team, i) => (
-          <div
-            key={team.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${cardBg}`}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <p
+            className={`text-[10px] uppercase tracking-widest font-bold ${currentTheme.textSecondary}`}
           >
-            <span className="text-xl w-7 text-center">{medals[i] ?? `${i + 1}`}</span>
-            <div className="flex-1 min-w-0">
-              <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{team.name}</p>
-              {team.players.length > 0 && (
-                <p className={`text-[10px] truncate ${currentTheme.textSecondary}`}>
-                  {team.players.map((p: Player) => p.name).join(', ')}
-                </p>
-              )}
-            </div>
-            <span
-              className={`font-bold text-base tabular-nums ${i === 0 ? 'text-ui-accent' : currentTheme.textMain}`}
+            {t.finalResults}
+          </p>
+          <button
+            type="button"
+            onClick={() => void handleShare()}
+            disabled={isSharing}
+            aria-label={shareAriaLabel}
+            aria-busy={isSharing}
+            className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted active:bg-ui-surface-hover active:text-ui-fg transition-colors disabled:pointer-events-none disabled:opacity-70"
+          >
+            {isSharing ? (
+              <Loader2 size={18} className="animate-spin shrink-0" aria-hidden />
+            ) : copied ? (
+              <Check size={18} className="shrink-0 text-ui-accent" aria-hidden />
+            ) : (
+              <Share2 size={18} className="shrink-0" aria-hidden />
+            )}
+          </button>
+        </div>
+        {sorted.map((team, i) => {
+          const isWinner = i === 0;
+          return (
+            <div
+              key={team.id}
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${
+                isWinner ? winnerCardBg : cardBg
+              }`}
             >
-              {team.score}{' '}
-              <span className={`text-[10px] ${currentTheme.textSecondary}`}>{t.pts}</span>
-            </span>
-          </div>
-        ))}
+              <span className="text-xl w-7 text-center">{medals[i] ?? `${i + 1}`}</span>
+              <div className="flex-1 min-w-0">
+                <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{team.name}</p>
+                {isWinner && (
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-ui-accent">
+                    {t.winnerBadge}
+                  </p>
+                )}
+                {team.players.length > 0 && (
+                  <p className={`text-[10px] truncate ${currentTheme.textSecondary}`}>
+                    {team.players.map((p: Player) => p.name).join(', ')}
+                  </p>
+                )}
+              </div>
+              <span
+                className={`font-bold text-base tabular-nums ${isWinner ? 'text-ui-accent' : currentTheme.textMain}`}
+              >
+                {team.score}{' '}
+                <span className={`text-[10px] ${currentTheme.textSecondary}`}>{t.pts}</span>
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Top guessers podium */}
       {topGuessers.length > 0 && (
-        <div className="w-full max-w-sm mt-8 space-y-2 animate-fade-in">
+        <div className="w-full max-w-sm mt-8 space-y-2 animate-fade-in pb-4">
           <p
             className={`text-[10px] uppercase tracking-widest font-bold mb-3 ${currentTheme.textSecondary}`}
           >
@@ -313,11 +412,7 @@ export const GameOverScreen = () => {
               className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${cardBg}`}
             >
               <span className="text-xl w-7 text-center">{medals[i] ?? `${i + 1}`}</span>
-              {p.avatarId != null ? (
-                <AvatarDisplay avatarId={p.avatarId} size={32} />
-              ) : (
-                <span className="text-2xl">{p.avatar}</span>
-              )}
+              <PlayerAvatar player={p} size={32} emojiClassName="text-2xl" />
               <div className="flex-1 min-w-0">
                 <p className={`font-bold text-sm truncate ${currentTheme.textMain}`}>{p.name}</p>
                 <p className={`text-[10px] truncate ${currentTheme.textSecondary}`}>{p.teamName}</p>
@@ -336,75 +431,6 @@ export const GameOverScreen = () => {
           ))}
         </div>
       )}
-
-      {/* Actions */}
-      <div className="w-full max-w-sm space-y-3 pt-6 pb-2">
-        <button
-          type="button"
-          onClick={handleShare}
-          disabled={isSharing}
-          aria-busy={isSharing}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover transition-all text-[12px] font-bold uppercase tracking-widest disabled:pointer-events-none disabled:opacity-70"
-        >
-          {isSharing ? (
-            <>
-              <Loader2 size={18} className="animate-spin shrink-0" aria-hidden />
-              <span>{t.shareResults}</span>
-            </>
-          ) : copied ? (
-            t.shareCopied
-          ) : (
-            t.shareResults
-          )}
-        </button>
-
-        {isHost ? (
-          <>
-            <Button
-              themeClass={currentTheme.button}
-              fullWidth
-              size="xl"
-              onClick={rematch}
-              data-testid="game-over-rematch"
-            >
-              {t.rematch}
-            </Button>
-            <Button
-              themeClass={currentTheme.button}
-              variant="ghost"
-              fullWidth
-              size="lg"
-              onClick={resetGame}
-            >
-              {t.toLobby}
-            </Button>
-            <button
-              type="button"
-              onClick={() => leaveRoom()}
-              className={`w-full py-3 text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary} hover:text-ui-fg transition-colors`}
-            >
-              {t.toMainMenu}
-            </button>
-          </>
-        ) : (
-          <div className="space-y-3">
-            <p
-              className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${currentTheme.textSecondary}`}
-            >
-              {t.waitAdmin}
-            </p>
-            <Button
-              themeClass={currentTheme.button}
-              variant="ghost"
-              fullWidth
-              size="lg"
-              onClick={() => leaveRoom()}
-            >
-              {t.toMainMenu}
-            </Button>
-          </div>
-        )}
-      </div>
     </ScreenShell>
   );
 };

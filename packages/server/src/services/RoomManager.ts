@@ -344,7 +344,8 @@ export class RoomManager {
     socketId: string,
     name: string,
     avatar: string,
-    avatarId?: string | null
+    avatarId?: string | null,
+    avatarUrl?: string | null
   ): Player | null {
     const room = this.rooms.get(roomCode);
     if (!room) return null;
@@ -352,11 +353,16 @@ export class RoomManager {
 
     const playerId = uuidv4();
     const isHostSocket = socketId === room.hostSocketId;
+    const safeAvatarUrl =
+      avatarId == null && avatarUrl != null && String(avatarUrl).trim() !== ''
+        ? String(avatarUrl).trim().slice(0, 512)
+        : undefined;
     const player: Player = {
       id: playerId,
       name: name.replace(/<[^>]*>/g, '').slice(0, 20),
       avatar,
       ...(avatarId != null ? { avatarId } : {}),
+      ...(safeAvatarUrl ? { avatarUrl: safeAvatarUrl } : {}),
       isHost: isHostSocket,
       isConnected: true,
       stats: { explained: 0, guessed: 0 },

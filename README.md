@@ -431,9 +431,9 @@ isGameOver = isLastTeam && hasWinner
 
 | Подія | Payload | Опис |
 |-------|---------|------|
-| `room:create` | `{ playerName, avatar, avatarId? }` | Створити кімнату |
+| `room:create` | `{ playerName, avatar, avatarId?, avatarUrl? }` | Створити кімнату |
 | `room:exists` | `{ roomCode }`, ack `({ exists: boolean })` | Перевірка коду кімнати без join |
-| `room:join` | `{ roomCode, playerName, avatar, avatarId? }` | Приєднатися до кімнати |
+| `room:join` | `{ roomCode, playerName, avatar, avatarId?, avatarUrl? }` | Приєднатися до кімнати |
 | `room:leave` | - | Покинути кімнату |
 | `room:rejoin` | `{ roomCode, playerId }` | Перепідключення (auto-rejoin при reconnect) |
 | `game:action` | `GameActionPayload` | Будь-яка ігрова дія |
@@ -463,7 +463,7 @@ interface GameSyncState {
   gameState: GameState;
   settings: GameSettings;       // { general, mode } — див. models.ts
   roomCode: string;
-  players: Player[];           // Player: див. models.ts (у т.ч. isConnected?)
+  players: Player[];           // Player: див. models.ts (avatarId?, avatarUrl?, isConnected?)
   teams: Team[];
   currentTeamIndex: number;
   currentWord: string;
@@ -519,7 +519,8 @@ interface GameSyncState {
 | `GET` | `/api/auth/me` | Профіль + `purchases` + **`playerStats`** (ігри, вгадано, пропущено, `lastPlayed`). Bearer token. |
 | `POST` | `/api/auth/player-stats/delta` | Атомарні інкременти лічильників. Body: `{ gamesPlayed?, wordsGuessed?, wordsSkipped? }` (≥0). |
 | `POST` | `/api/auth/player-stats/merge-local` | Одноразовий імпорт легасі-об’єкта з клієнта (сума до профілю). |
-| `PATCH` | `/api/auth/profile` | Оновити displayName / avatarId. |
+| `PATCH` | `/api/auth/profile` | Оновити `displayName`, preset `avatarId` (0–19 або `null` для скидання), `skipNamePrompt`. |
+| `POST` | `/api/auth/profile/sync-telegram-avatar` | Telegram only: body/header `initData` → скидає `avatarId`, оновлює `avatarUrl` з `photo_url`. Bearer token. |
 | `GET` | `/api/auth/lobby-settings` | Отримати збережені налаштування лобі. |
 | `PUT` | `/api/auth/lobby-settings` | Зберегти налаштування лобі як дефолтні. |
 
@@ -607,11 +608,14 @@ interface GameSyncState {
 | `email` | String? | Email (Google OAuth) |
 | `authProvider` | String | `"anonymous"` або `"google"` |
 | `displayName` | String? | Ігрове ім'я |
-| `avatarId` | String? | Індекс аватара (0-19) |
+| `avatarUrl` | String? | Зовнішнє фото (напр. Telegram `photo_url`); використовується, якщо `avatarId` не задано |
+| `avatarId` | String? | Індекс preset-аватара (0–19); має пріоритет над `avatarUrl` |
 | `defaultSettings` | Json? | Збережені налаштування лобі |
 | `statsGamesPlayed` / `statsWordsGuessed` / `statsWordsSkipped` | Int | Агрегована статистика на акаунті |
 | `statsLastPlayedAt` | DateTime? | Час останньої зафіксованої активності в іграх |
 | `isAdmin` | Boolean | Адмін-доступ (перевіряється в БД для `/api/admin/*`) |
+
+**Аватари (профіль і гра):** пріоритет відображення — preset `avatarId` (0–19) → `avatarUrl` (Telegram) → emoji при join / перша літера імені. Preset у налаштуваннях не видаляє збережений `avatarUrl`; кнопка sync у Profile Settings відновлює фото Telegram.
 
 ### WordPack
 Набір слів певної мови та категорії.

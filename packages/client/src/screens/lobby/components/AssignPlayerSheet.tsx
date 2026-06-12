@@ -3,7 +3,7 @@ import type { Player, Team, GameActionPayload } from '../../../types';
 import { Button } from '../../../components/Button';
 import { ModalSheet } from '../../../components/ModalSheet';
 import { ModalSheetTitle } from '../../../components/Shared';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { typographyClass } from '../../../constants/typography';
 
@@ -33,11 +33,7 @@ export function AssignPlayerSheet(props: {
       ariaLabelledBy={titleId}
     >
       <div className="flex items-center gap-3 mb-4">
-        {target.avatarId != null ? (
-          <AvatarDisplay avatarId={target.avatarId} size={36} />
-        ) : (
-          <span className="text-2xl">{target.avatar}</span>
-        )}
+        <PlayerAvatar player={target} size={36} emojiClassName="text-2xl" />
         <div className="min-w-0">
           <ModalSheetTitle id={titleId}>{target.name}</ModalSheetTitle>
           <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.assignPlayerSheetHint}</p>

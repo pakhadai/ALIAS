@@ -914,7 +914,8 @@ export class GameEngine {
     if (deckReshuffled && room.currentRoundStats.words.length > 0) {
       this.notificationBroadcast?.(room, '🔄 Всі слова показано — колода перемішана!', 'info');
     }
-    this.refreshRoundEndsAt(room);
+    // Do not refresh roundEndsAt here — the round deadline must not move on each word.
+    // refreshRoundEndsAt uses ceil(timeLeft) and would add up to ~1s per CORRECT/SKIP.
   }
 
   private startTimer(room: Room): void {

@@ -14,7 +14,7 @@ import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import { AppLoginProvider } from './context/AppLoginContext';
 import { BackNavigationGuardProvider } from './context/BackNavigationGuardContext';
 import { LobbyExitProvider } from './context/LobbyExitContext';
-import { ScreenShell } from './components/layout/ScreenShell';
+import { EmbeddedBootLoading } from './components/BootLoading';
 import { typographyClass } from './constants/typography';
 import {
   MenuScreen,
@@ -51,12 +51,8 @@ const RulesScreen = React.lazy(() =>
   import('./screens/menu/RulesScreen').then((mod) => ({ default: mod.RulesScreen }))
 );
 
-/** Suspense placeholder — same viewport + safe-area padding as {@link ScreenShell} without chrome. */
-const LazyRouteFallback = () => (
-  <ScreenShell contentClassName="flex flex-1 items-center justify-center px-6">
-    <p className={`${typographyClass.body} text-ui-fg-muted`}>Завантаження…</p>
-  </ScreenShell>
-);
+/** Suspense placeholder — branded boot UI with safe-area padding via {@link ScreenShell}. */
+const LazyRouteFallback = () => <EmbeddedBootLoading message="Завантаження…" />;
 
 const LazyRoute = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<LazyRouteFallback />}>{children}</Suspense>

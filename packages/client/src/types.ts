@@ -144,7 +144,8 @@ export interface GameContextType extends AppState {
     avatar: string,
     avatarId?: string | null,
     /** Prefer UI `gameMode` — avoids stale ref right after `startOfflineGame`. */
-    joinMode?: 'ONLINE' | 'OFFLINE'
+    joinMode?: 'ONLINE' | 'OFFLINE',
+    avatarUrl?: string | null
   ) => Promise<boolean>;
   sendAction: (action: GameActionPayload) => void;
   playSound: (soundId: GameSoundId) => void;

@@ -158,12 +158,28 @@ export interface UserProfile {
 /** Update display name and/or avatar preset */
 export async function updateProfile(payload: {
   displayName?: string;
-  avatarId?: string;
+  avatarId?: string | null;
   skipNamePrompt?: boolean;
-}): Promise<{ displayName: string | null; avatarId: string | null; skipNamePrompt: boolean }> {
+}): Promise<{
+  displayName: string | null;
+  avatarId: string | null;
+  avatarUrl: string | null;
+  skipNamePrompt: boolean;
+}> {
   return apiFetch('/api/auth/profile', {
     method: 'PATCH',
     body: JSON.stringify(payload),
+  });
+}
+
+/** Restore Telegram photo as avatar (clears preset avatarId). */
+export async function syncTelegramAvatar(initData: string): Promise<{
+  avatarUrl: string | null;
+  avatarId: string | null;
+}> {
+  return apiFetch('/api/auth/profile/sync-telegram-avatar', {
+    method: 'POST',
+    body: JSON.stringify({ initData }),
   });
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, PencilLine } from 'lucide-react';
 import type { GameActionPayload, Player, Team, ThemeConfig } from '../../../types';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import { HAPTIC, vibrate } from '../../../utils/haptics';
 import type { TranslationStrings } from '../../../hooks/useT';
@@ -148,11 +148,7 @@ export function TeamCard(props: {
                 p.id === myPlayerId ? 'ring-2 ring-ui-accent-ring' : ''
               } ${canHostAssignOffline ? 'hover:bg-ui-surface-hover' : ''}`}
             >
-              {p.avatarId != null ? (
-                <AvatarDisplay avatarId={p.avatarId} size={16} />
-              ) : (
-                <span className="text-sm">{p.avatar}</span>
-              )}
+              <PlayerAvatar player={p} size={16} emojiClassName="text-sm" />
               <span className="max-w-[80px] truncate">{p.name}</span>
             </button>
           ))

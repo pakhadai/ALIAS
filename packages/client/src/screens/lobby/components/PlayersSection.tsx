@@ -1,7 +1,7 @@
 import React from 'react';
 import { Crown, Minus, MoreHorizontal, Plus, X } from 'lucide-react';
 import type { Player, ThemeConfig } from '../../../types';
-import { AvatarDisplay } from '../../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { MAX_PLAYERS } from '../../../constants';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
@@ -64,11 +64,7 @@ export function PlayersSection(props: {
                   : ''
               } ${justJoined ? 'motion-safe:animate-fade-in' : ''}`}
             >
-              {p.avatarId != null ? (
-                <AvatarDisplay avatarId={p.avatarId} size={36} />
-              ) : (
-                <span className="text-2xl">{p.avatar}</span>
-              )}
+              <PlayerAvatar player={p} size={36} emojiClassName="text-2xl" />
 
               <div className="ml-4 flex flex-col min-w-0 flex-1">
                 <span

@@ -13,9 +13,9 @@ import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
 import { hasTelegramInitData, isTelegramMiniApp } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
-import { ROOM_CODE_LENGTH } from '../../constants';
 import { HEADER_ROW_MIN_PX, HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
 import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
+import { attemptRoomJoin, isValidRoomCode } from '../../utils/roomJoin';
 
 export const MenuScreen = () => {
   const {
@@ -72,20 +72,23 @@ export const MenuScreen = () => {
   ].join(' ');
 
   const showProfileBadge = !isAuthenticated;
-  const canQuickJoin = quickJoinCode.length === ROOM_CODE_LENGTH && /^\d+$/.test(quickJoinCode);
+  const canQuickJoin = isValidRoomCode(quickJoinCode);
   const quickJoinLabel = useMemo(() => t.joinGame, [t.joinGame]);
 
   const handleQuickJoin = async () => {
     if (!canQuickJoin || quickJoinChecking) return;
     setQuickJoinChecking(true);
     try {
-      const exists = await checkRoomExists(quickJoinCode);
-      if (!exists) {
+      const result = await attemptRoomJoin(quickJoinCode, {
+        checkRoomExists,
+        onJoin: (code) => {
+          setRoomCode(code);
+          setGameState(GameState.ENTER_NAME);
+        },
+      });
+      if (result === 'not_found') {
         showNotification(t.roomNotFound.replace('{0}', quickJoinCode), 'error');
-        return;
       }
-      setRoomCode(quickJoinCode);
-      setGameState(GameState.ENTER_NAME);
     } finally {
       setQuickJoinChecking(false);
     }

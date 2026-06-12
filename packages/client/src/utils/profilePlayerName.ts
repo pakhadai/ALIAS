@@ -39,12 +39,14 @@ export function canSkipNamePrompt(authState: AuthState, profile: UserProfile | n
 export function resolvePlayerAvatarFromProfile(profile: UserProfile): {
   emoji: string;
   avatarId: string | null;
+  avatarUrl: string | null;
 } {
   const defaultAvatar = AVATARS[0] ?? '🙂';
   if (profile.avatarId != null) {
     const idx = parseInt(profile.avatarId, 10);
     const emoji = PRESET_AVATARS[idx]?.emoji ?? defaultAvatar;
-    return { emoji, avatarId: profile.avatarId };
+    return { emoji, avatarId: profile.avatarId, avatarUrl: null };
   }
-  return { emoji: defaultAvatar, avatarId: null };
+  const url = (profile.avatarUrl ?? '').trim();
+  return { emoji: defaultAvatar, avatarId: null, avatarUrl: url || null };
 }

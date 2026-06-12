@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { PencilLine, Check, MoveRight } from 'lucide-react';
 import { Button } from '../../components/Button';
-import { AvatarDisplay } from '../../components/AvatarDisplay';
+import { PlayerAvatar } from '../../components/AvatarDisplay';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
@@ -232,11 +232,7 @@ export const TeamSetupScreen = () => {
                         : ''
                     } ${isSelected ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]' : ''}`}
                   >
-                    {p.avatarId != null ? (
-                      <AvatarDisplay avatarId={p.avatarId} size={20} />
-                    ) : (
-                      <span>{p.avatar}</span>
-                    )}
+                    <PlayerAvatar player={p} size={20} />
                     <span className={`${typographyClass.label} tracking-widest text-ui-fg-muted`}>
                       {p.name}
                     </span>

@@ -19,6 +19,11 @@ function renderLobbySettings() {
   );
 }
 
+async function openResetFromHeaderMenu(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByTestId('app-header-menu'));
+  await user.click(screen.getByTestId('app-header-menu-item-reset'));
+}
+
 const setGameState = vi.fn();
 const showNotification = vi.fn();
 const requestLogin = vi.fn();
@@ -52,8 +57,7 @@ vi.mock('../../context/AppLoginContext', () => ({
 vi.mock('../../hooks/useT', () => ({
   useT: () => ({
     profileNavLobbySettings: 'Lobby settings',
-    lobbyDefaultsGuestBannerBody: 'Settings are saved on this device. Sign in to sync.',
-    statsGuestBannerCta: 'Sign in',
+    lobbyDefaultsAuthRequired: 'Lobby defaults require sign-in',
     lobbyDefaultsInfoBanner:
       'Default settings for new games. Applied when you create a room; the current game is not changed.',
     lobbyDefaultsSave: 'Save as defaults',
@@ -223,10 +227,10 @@ describe('LobbySettingsScreen', () => {
     renderLobbySettings();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Reset' })).toBeEnabled();
+      expect(screen.getByTestId('app-header-menu')).toBeEnabled();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await openResetFromHeaderMenu(user);
 
     expect(screen.getByRole('alertdialog')).toBeVisible();
     expect(screen.getByText('Reset lobby defaults?')).toBeVisible();
@@ -267,51 +271,18 @@ describe('LobbySettingsScreen', () => {
     expect(setGameState).not.toHaveBeenCalled();
   });
 
-  it('guest saves to localStorage without calling saveLobbySettings', async () => {
-    const user = userEvent.setup();
+  it('redirects guest away from lobby defaults screen', async () => {
     authContextValue.authState = { status: 'anonymous', userId: 'guest-1', profile: null };
 
     renderLobbySettings();
 
     await waitFor(() => {
-      expect(screen.getByTestId('lobby-defaults-guest-banner')).toBeVisible();
+      expect(showNotification).toHaveBeenCalledWith('Lobby defaults require sign-in', 'info');
+      expect(setGameState).toHaveBeenCalledWith('PROFILE');
       expect(fetchLobbySettings).not.toHaveBeenCalled();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Save as defaults' }));
-
-    expect(saveLobbySettings).not.toHaveBeenCalled();
-    const raw = localStorage.getItem('alias_guest_lobby_defaults_v1');
-    expect(raw).toBeTruthy();
-    const parsed = JSON.parse(raw!) as { general?: { theme?: string } };
-    expect(parsed.general?.theme).toBeUndefined();
-  });
-
-  it('guest reset clears localStorage without API', async () => {
-    const user = userEvent.setup();
-    authContextValue.authState = { status: 'anonymous', userId: 'guest-1', profile: null };
-    localStorage.setItem(
-      'alias_guest_lobby_defaults_v1',
-      JSON.stringify({ general: { scoreToWin: 55 }, mode: { classicRoundTime: 120 } })
-    );
-
-    renderLobbySettings();
-
-    await waitFor(() => {
-      expect(screen.getByText('55')).toBeVisible();
-    });
-
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Yes, reset' })).toBeVisible();
-    });
-    await user.click(screen.getByRole('button', { name: 'Yes, reset' }));
-
-    await waitFor(() => {
-      expect(localStorage.getItem('alias_guest_lobby_defaults_v1')).toBeNull();
-      expect(saveLobbySettings).not.toHaveBeenCalled();
-      expect(screen.getByText('30')).toBeVisible();
-    });
+    expect(screen.queryByText('Lobby settings')).not.toBeInTheDocument();
   });
 
   it('should use viewport-fixed liquid glass header and footer island', async () => {
@@ -357,7 +328,7 @@ describe('LobbySettingsScreen', () => {
       expect(screen.getByText('40')).toBeVisible();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await openResetFromHeaderMenu(user);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Yes, reset' })).toBeVisible();
     });

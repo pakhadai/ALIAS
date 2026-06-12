@@ -13,6 +13,7 @@ import {
 } from '../../hooks/useVisualViewportBottomInset';
 import { typographyClass } from '../../constants/typography';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
+import { attemptRoomJoin } from '../../utils/roomJoin';
 
 export const JoinInputScreen = () => {
   const { setGameState, currentTheme, setRoomCode, checkRoomExists, showNotification } = useGame();
@@ -26,13 +27,16 @@ export const JoinInputScreen = () => {
     if (checking) return;
     setChecking(true);
     try {
-      const exists = await checkRoomExists(code);
-      if (!exists) {
+      const result = await attemptRoomJoin(code, {
+        checkRoomExists,
+        onJoin: (joinedCode) => {
+          setRoomCode(joinedCode);
+          setGameState(GameState.ENTER_NAME);
+        },
+      });
+      if (result === 'not_found') {
         showNotification(t.roomNotFound.replace('{0}', code), 'error');
-        return;
       }
-      setRoomCode(code);
-      setGameState(GameState.ENTER_NAME);
     } finally {
       setChecking(false);
     }

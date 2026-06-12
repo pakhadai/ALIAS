@@ -6,7 +6,9 @@ import {
 } from '../constants/tmaLayoutConstants';
 import {
   bootstrapTelegramMiniApp,
+  ensureTelegramExpanded,
   hasTelegramInitData,
+  isTelegramDesktopPlatform,
   resetTelegramBootstrapForTests,
   useTelegramApp,
 } from './useTelegramApp';
@@ -21,6 +23,7 @@ describe('useTelegramApp', () => {
     ready: vi.fn(),
     expand: vi.fn(),
     requestFullscreen: vi.fn(),
+    exitFullscreen: vi.fn(),
     disableVerticalSwipes: vi.fn(),
     enableClosingConfirmation: vi.fn(),
     onEvent: vi.fn((eventType: string, handler: () => void) => {
@@ -36,6 +39,7 @@ describe('useTelegramApp', () => {
     viewportHeight: 800,
     viewportStableHeight: 800,
     isExpanded: true,
+    isFullscreen: false,
   };
 
   beforeEach(() => {
@@ -52,6 +56,7 @@ describe('useTelegramApp', () => {
     document.documentElement.style.removeProperty('--tg-viewport-height');
     document.documentElement.style.removeProperty('--tg-viewport-stable-height');
     mockWebApp.isExpanded = true;
+    mockWebApp.isFullscreen = false;
     Object.defineProperty(window, 'Telegram', {
       configurable: true,
       writable: true,
@@ -171,5 +176,35 @@ describe('useTelegramApp', () => {
     eventHandlers.get('viewportChanged')?.();
 
     expect(mockWebApp.expand).not.toHaveBeenCalled();
+  });
+
+  it('should detect desktop Telegram platforms', () => {
+    expect(isTelegramDesktopPlatform('tdesktop')).toBe(true);
+    expect(isTelegramDesktopPlatform('macos')).toBe(true);
+    expect(isTelegramDesktopPlatform('ios')).toBe(false);
+    expect(isTelegramDesktopPlatform('android')).toBe(false);
+  });
+
+  it('should not expand or request fullscreen on desktop bootstrap', () => {
+    mockWebApp.platform = 'tdesktop';
+
+    bootstrapTelegramMiniApp();
+
+    expect(mockWebApp.expand).not.toHaveBeenCalled();
+    expect(mockWebApp.requestFullscreen).not.toHaveBeenCalled();
+    expect(mockWebApp.exitFullscreen).toHaveBeenCalledTimes(1);
+  });
+
+  it('should exit fullscreen on desktop when viewport collapses', () => {
+    mockWebApp.platform = 'tdesktop';
+    mockWebApp.isFullscreen = true;
+    bootstrapTelegramMiniApp();
+    mockWebApp.exitFullscreen.mockClear();
+
+    ensureTelegramExpanded(mockWebApp as never);
+
+    expect(mockWebApp.expand).not.toHaveBeenCalled();
+    expect(mockWebApp.requestFullscreen).not.toHaveBeenCalled();
+    expect(mockWebApp.exitFullscreen).toHaveBeenCalledTimes(1);
   });
 });
