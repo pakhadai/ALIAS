@@ -10,6 +10,10 @@ WORKDIR /app
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY tsconfig.base.json ./
 
+# Pre-build: client `build` runs scripts/sync-logo.mjs (needs logo/ assets + sharp from root devDeps)
+COPY scripts/sync-logo.mjs scripts/
+COPY logo/ logo/
+
 # Copy only packages needed for client build
 COPY packages/shared/ packages/shared/
 COPY packages/client/ packages/client/
