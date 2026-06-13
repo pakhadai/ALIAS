@@ -141,7 +141,7 @@ describe('ScreenShell', () => {
     expect(scrollColumn?.querySelector('[data-testid="header"]')).toBeNull();
   });
 
-  it('should render fixed footer outside scroll with island stack padding', () => {
+  it('should render fixed footer outside scroll with in-flow spacer clearance', () => {
     const { container } = render(
       <ScreenShell footerFixed footer={<div data-testid="footer">Footer</div>}>
         <div data-testid="content">Scrollable body</div>
@@ -155,8 +155,9 @@ describe('ScreenShell', () => {
     expect(footer.parentElement).toBe(portalRoot);
     expect(footer.closest('[data-screen-shell-scroll]')).toBeNull();
     expect(container.querySelector('[data-testid="footer"]')).toBeNull();
-    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(scrollColumn?.className).not.toContain('pb-[var(--footer-island-scroll-padding)]');
     expect(scrollColumn?.className).not.toContain('pb-safe-bottom');
+    expect(scrollColumn?.querySelector('[data-screen-shell-footer-spacer]')).toBeTruthy();
     expect(scrollColumn?.querySelector('[data-testid="footer"]')).toBeNull();
   });
 });

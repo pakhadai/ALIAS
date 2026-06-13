@@ -59,7 +59,12 @@ import {
   resolveRoomErrorMessage,
   shouldEjectToMenuOnSessionEnd,
 } from '../utils/roomErrorMessage';
-import { attemptRoomJoin, isValidRoomCode, roomJoinEnterNamePayload } from '../utils/roomJoin';
+import {
+  attemptRoomJoin,
+  getStoredRejoinSession,
+  isValidRoomCode,
+  roomJoinEnterNamePayload,
+} from '../utils/roomJoin';
 import { useAuthContext } from './AuthContext';
 import { useTelegramLobbyDeepLink } from '../hooks/useTelegramLobbyDeepLink';
 
@@ -553,6 +558,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const qs = u.searchParams.toString();
       window.history.replaceState({}, '', qs ? `${u.pathname}?${qs}` : u.pathname);
     };
+
+    // Reload with persisted session: auto-rejoin handles restore — skip join flow.
+    if (getStoredRejoinSession(room)) {
+      stripRoomParam();
+      return;
+    }
 
     void (async () => {
       const result = await attemptRoomJoin(room, {

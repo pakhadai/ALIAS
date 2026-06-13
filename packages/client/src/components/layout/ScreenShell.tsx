@@ -27,6 +27,20 @@ export interface ScreenShellProps {
 
 /** Fixed viewport height so the scroll column can shrink (`min-h-0`) and scroll. */
 const SHELL_OUTER = 'flex flex-col h-full max-h-full w-full min-h-0 overflow-x-hidden';
+
+function joinClasses(...parts: Array<string | false | undefined>): string {
+  return parts.filter(Boolean).join(' ');
+}
+
+/** Body below sticky header — keeps header full width; `contentClassName` applies here only. */
+const CONTENT_WRAP_BASE = 'flex w-full min-w-0 flex-1 flex-col';
+
+/** Without `flex-1` so scroll height follows content + footer spacer (fixed island screens). */
+const CONTENT_WRAP_SCROLL_BASE = 'flex w-full min-w-0 flex-col';
+
+const contentWrapClass = (footerFixed: boolean, bodyClassName: string) =>
+  joinClasses(footerFixed ? CONTENT_WRAP_SCROLL_BASE : CONTENT_WRAP_BASE, bodyClassName);
+
 /** Scroll column — vertical only; clip decorative bleed (start CTA ring, -mx strips). */
 const scrollColumnClass = (
   hasHeader: boolean,
@@ -41,20 +55,20 @@ const scrollColumnClass = (
       : headerFixed
         ? 'pt-[var(--app-page-header-height)]'
         : 'pt-safe-top',
-    hasFooter && !footerFixed
-      ? null
-      : footerFixed
-        ? 'pb-[var(--footer-island-stack)]'
-        : 'pb-safe-bottom',
+    hasFooter && !footerFixed ? null : footerFixed ? null : 'pb-safe-bottom',
   ]
     .filter(Boolean)
     .join(' ');
 
-/** Body below sticky header — keeps header full width; `contentClassName` applies here only. */
-const CONTENT_WRAP_BASE = 'flex w-full min-w-0 flex-1 flex-col';
-
-function joinClasses(...parts: Array<string | false | undefined>): string {
-  return parts.filter(Boolean).join(' ');
+/** iOS/TMA WebView: padding-bottom on overflow containers is flaky — use an in-flow spacer. */
+function FixedFooterScrollSpacer(): ReactNode {
+  return (
+    <div
+      aria-hidden
+      data-screen-shell-footer-spacer=""
+      className="w-full shrink-0 pointer-events-none h-[var(--footer-island-scroll-padding)]"
+    />
+  );
 }
 
 /** Viewport-fixed chrome — portal escapes transformed ancestors for backdrop-filter. */
@@ -88,7 +102,10 @@ export function ScreenShell({
         data-screen-shell-scroll=""
       >
         {headerFixed ? null : header}
-        <div className={joinClasses(CONTENT_WRAP_BASE, bodyClassName)}>{children}</div>
+        <div className={contentWrapClass(footerFixed, bodyClassName)}>
+          {children}
+          {footerFixed ? <FixedFooterScrollSpacer /> : null}
+        </div>
         {footerFixed ? null : footer}
       </div>
       {footerFixed ? renderFixedChrome(footer) : null}
@@ -102,16 +119,13 @@ export function ScreenShell({
           : headerFixed
             ? 'pt-[var(--app-page-header-height)]'
             : 'pt-safe-top',
-        hasFooter && !footerFixed
-          ? undefined
-          : footerFixed
-            ? 'pb-[var(--footer-island-stack)]'
-            : 'pb-safe-bottom'
+        hasFooter && !footerFixed ? undefined : footerFixed ? undefined : 'pb-safe-bottom'
       )}
     >
       {headerFixed ? renderFixedChrome(header) : header}
       <div className={joinClasses('flex min-h-0 flex-1 flex-col overflow-hidden', bodyClassName)}>
         {children}
+        {footerFixed ? <FixedFooterScrollSpacer /> : null}
       </div>
       {footerFixed ? renderFixedChrome(footer) : footer}
     </div>

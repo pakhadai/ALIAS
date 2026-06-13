@@ -209,7 +209,7 @@ describe('ProfileSettingsScreen', () => {
 
     const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
     expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
-    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(scrollColumn?.querySelector('[data-screen-shell-footer-spacer]')).toBeTruthy();
     expect(header?.closest('[data-screen-shell-scroll]')).toBeNull();
 
     const footerIsland = document.body.querySelector('footer.footer-island');

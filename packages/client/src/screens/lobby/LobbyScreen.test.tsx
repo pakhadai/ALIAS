@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   APP_HEADER_DOCUMENT_FLAG,
@@ -237,6 +237,7 @@ function renderLobbyScreen() {
 describe('LobbyScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete (window as { Telegram?: unknown }).Telegram;
     delete document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG];
     delete document.documentElement.dataset[FOOTER_ISLAND_DOCUMENT_FLAG];
     isTelegramMiniApp.mockReturnValue(false);
@@ -269,12 +270,14 @@ describe('LobbyScreen', () => {
     const user = userEvent.setup();
     renderLobbyScreen();
 
-    await user.click(screen.getByTestId('app-header-back'));
-    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
-    expect(within(dialog).getByRole('heading', { name: 'Leave?' })).toBeTruthy();
-    expect(within(dialog).getByText('Sure?')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('app-header-back'));
+    expect(screen.getByRole('alertdialog')).toBeVisible();
+    expect(
+      within(screen.getByRole('alertdialog')).getByRole('heading', { name: 'Leave?' })
+    ).toBeTruthy();
+    expect(within(screen.getByRole('alertdialog')).getByText('Sure?')).toBeTruthy();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Exit' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Exit' }));
     expect(leaveRoom).toHaveBeenCalledWith(undefined);
   });
 
@@ -423,7 +426,7 @@ describe('LobbyScreen', () => {
 
     const scrollColumn = container.querySelector('[data-screen-shell-scroll]');
     expect(scrollColumn?.className).toContain('pt-[var(--app-page-header-height)]');
-    expect(scrollColumn?.className).toContain('pb-[var(--footer-island-stack)]');
+    expect(scrollColumn?.querySelector('[data-screen-shell-footer-spacer]')).toBeTruthy();
     expect(header?.closest('[data-screen-shell-scroll]')).toBeNull();
 
     const footerIsland = document.body.querySelector('footer.footer-island');

@@ -26,10 +26,24 @@
   --glass-header-border: rgba(255, 255, 255, 0.15);
 
   --footer-island-min-height: 68px;
-  --footer-island-height: 68px;
+  /** Fallback until {@link FooterIsland} ResizeObserver — feather + CTA band */
+  --footer-island-height: calc(
+    var(--footer-island-min-height) + var(--ui-app-footer-feather-height, 48px)
+  );
   --footer-island-bottom-gap: 12px;
-  --footer-island-stack: calc(
-    var(--footer-island-height) - var(--ui-app-footer-feather-height, 48px)
+  /** Scroll bottom inset — measured footer + negative-margin feather overlap + gap (see `.footer-island` margin-top) */
+  --footer-island-scroll-padding: calc(
+    var(--footer-island-height) + var(--ui-app-footer-feather-height, 48px) +
+      var(--footer-island-bottom-gap)
+  );
+  /** Scroll clearance below fixed header — content may pass under the feather blur zone. */
+  --app-page-header-stack: max(
+    0px,
+    calc(var(--app-page-header-height) - var(--ui-app-header-feather-height, 48px))
+  );
+  --footer-island-stack: max(
+    var(--footer-island-min-height),
+    calc(var(--footer-island-height) - var(--ui-app-footer-feather-height, 48px))
   );
 
   /* --z-liquid-chrome: canonical value in styles.css :root (30 — above header, below banner/modals) */
@@ -306,6 +320,7 @@
 /** Scroll clearance when a fixed footer island is mounted */
 html[data-footer-island] {
   --app-footer-island-stack: var(--footer-island-stack);
+  --app-footer-island-scroll-padding: var(--footer-island-scroll-padding);
 }
 
 /* ── Accessibility: OS «Reduce transparency» — opaque chrome, no blur ── */
@@ -360,7 +375,8 @@ html[data-telegram-desktop] .footer-island::before {
 html[data-telegram-desktop] .ui-app-header::after,
 html[data-telegram-desktop] .ui-app-footer::after,
 html[data-telegram-desktop] .footer-island::after {
-  background: var(--ui-elevated, var(--ui-card));
+  /* Match page shell — elevated/card is often #fff and reads as a white band over --ui-bg */
+  background: var(--ui-bg);
   mask-image: none;
   -webkit-mask-image: none;
 }

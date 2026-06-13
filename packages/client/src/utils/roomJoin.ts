@@ -1,5 +1,26 @@
 import { ROOM_CODE_LENGTH } from '../constants';
+import { PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import { GameState } from '../types';
+
+const STORED_PLAYER_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export type StoredRejoinSession = { roomCode: string; playerId: string };
+
+/** Valid persisted `room:rejoin` keys from localStorage (optional room filter). */
+export function getStoredRejoinSession(targetRoomCode?: string): StoredRejoinSession | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const roomCode = localStorage.getItem(ROOM_CODE_KEY);
+    const playerId = localStorage.getItem(PLAYER_ID_KEY);
+    if (!roomCode || !playerId) return null;
+    if (!isValidRoomCode(roomCode) || !STORED_PLAYER_UUID_RE.test(playerId)) return null;
+    if (targetRoomCode != null && roomCode !== targetRoomCode) return null;
+    return { roomCode, playerId };
+  } catch {
+    return null;
+  }
+}
 
 /** Telegram Mini App invite prefix (`startapp=lobby_<code>`). */
 export const TELEGRAM_LOBBY_START_PREFIX = 'lobby_';

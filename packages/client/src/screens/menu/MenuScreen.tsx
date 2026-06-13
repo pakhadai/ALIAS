@@ -182,27 +182,29 @@ export const MenuScreen = () => {
         <main
           aria-hidden={isEnterName ? true : undefined}
           className={[
-            'relative flex flex-1 flex-col items-center justify-center w-full max-w-xs mx-auto pb-20 min-h-0',
+            'relative flex flex-1 flex-col items-center w-full max-w-xs mx-auto pb-20 min-h-0',
             frozenChromeClass,
           ]
             .filter(Boolean)
             .join(' ')}
           style={{ paddingTop: HOME_CARD_TOP_GAP_PX }}
         >
-          <div className="scale-[0.85] origin-top">
-            <Logo theme={currentTheme} tagline={t.homeTagline} />
+          <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-8">
+            <div className="scale-[0.85] shrink-0">
+              <Logo theme={currentTheme} tagline={t.homeTagline} />
+            </div>
+
+            {connectionError && (
+              <div className="p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake shrink-0">
+                <AlertCircle className="text-ui-danger" size={20} />
+                <p className={`${systemBannerClass} tracking-wide text-ui-danger`}>
+                  Server Error: {connectionError}
+                </p>
+              </div>
+            )}
           </div>
 
-          {connectionError && (
-            <div className="mt-8 p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake">
-              <AlertCircle className="text-ui-danger" size={20} />
-              <p className={`${systemBannerClass} tracking-wide text-ui-danger`}>
-                Server Error: {connectionError}
-              </p>
-            </div>
-          )}
-
-          <div className="w-full space-y-3 flex flex-col items-center mt-10 animate-slide-up">
+          <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up">
             <AccentFooterCta
               themeButtonClass={currentTheme.button}
               onClick={() => void handleCreateRoom()}

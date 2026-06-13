@@ -5,6 +5,7 @@ import { getUiStrings } from './useT';
 import {
   TELEGRAM_LOBBY_START_PREFIX,
   attemptRoomJoin,
+  getStoredRejoinSession,
   parseTelegramLobbyRoomCode,
 } from '../utils/roomJoin';
 
@@ -47,6 +48,12 @@ export function useTelegramLobbyDeepLink({
     if (!roomCode) {
       consumedStartParamRef.current = startParam;
       showNotification(t.tgDeepLinkInvalidCode, 'error');
+      return;
+    }
+
+    // Reload with persisted session for this room — connect effect will room:rejoin.
+    if (getStoredRejoinSession(roomCode)) {
+      consumedStartParamRef.current = startParam;
       return;
     }
 

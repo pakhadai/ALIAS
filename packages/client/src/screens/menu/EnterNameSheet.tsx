@@ -16,6 +16,7 @@ import {
   resolvePlayerAvatarFromProfile,
   resolvePlayerNameFromProfile,
 } from '../../utils/profilePlayerName';
+import { getStoredRejoinSession } from '../../utils/roomJoin';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -30,7 +31,7 @@ const generateUUID = () => {
 
 /** Name + avatar sheet over menu canvas — mount when `GameState.ENTER_NAME`. */
 export function EnterNameSheet(): React.ReactNode {
-  const { setGameState, currentTheme, handleJoin, gameMode, leaveRoom } = useGame();
+  const { setGameState, currentTheme, handleJoin, gameMode, leaveRoom, roomCode } = useGame();
   const { authState, profile } = useAuthContext();
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0] ?? '🙂');
@@ -59,6 +60,8 @@ export function EnterNameSheet(): React.ReactNode {
 
     if (shouldAutoJoin && profile && resolvedName) {
       if (autoJoinAttemptedRef.current) return undefined;
+      // Persisted session for this room — auto-rejoin is in flight; avoid duplicate room:join.
+      if (gameMode !== 'OFFLINE' && getStoredRejoinSession(roomCode)) return undefined;
       autoJoinAttemptedRef.current = true;
       let cancelled = false;
       const { emoji: avatarEmoji, avatarId, avatarUrl } = resolvePlayerAvatarFromProfile(profile);
@@ -95,6 +98,7 @@ export function EnterNameSheet(): React.ReactNode {
     profile?.skipNamePrompt,
     profile?.authProvider,
     gameMode,
+    roomCode,
   ]);
 
   const handleSubmit = async () => {

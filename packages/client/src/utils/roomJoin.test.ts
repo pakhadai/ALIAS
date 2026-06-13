@@ -4,11 +4,13 @@ import {
   attemptRoomJoin,
   buildRoomJoinUrl,
   buildTelegramLobbyInviteUrl,
+  getStoredRejoinSession,
   isValidRoomCode,
   normalizeTelegramAppLink,
   parseTelegramLobbyRoomCode,
   roomJoinEnterNamePayload,
 } from './roomJoin';
+import { PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
 import { GameState } from '../types';
 
 describe('roomJoin', () => {
@@ -131,6 +133,30 @@ describe('roomJoin', () => {
     expect(roomJoinEnterNamePayload('12345')).toEqual({
       roomCode: '12345',
       gameState: GameState.ENTER_NAME,
+    });
+  });
+
+  describe('getStoredRejoinSession', () => {
+    const playerId = '11111111-1111-1111-8111-111111111111';
+
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it('returns session when keys are valid', () => {
+      localStorage.setItem(ROOM_CODE_KEY, '12345');
+      localStorage.setItem(PLAYER_ID_KEY, playerId);
+      expect(getStoredRejoinSession()).toEqual({ roomCode: '12345', playerId });
+      expect(getStoredRejoinSession('12345')).toEqual({ roomCode: '12345', playerId });
+    });
+
+    it('returns null when room filter mismatches or keys are invalid', () => {
+      localStorage.setItem(ROOM_CODE_KEY, '12345');
+      localStorage.setItem(PLAYER_ID_KEY, playerId);
+      expect(getStoredRejoinSession('99999')).toBeNull();
+
+      localStorage.setItem(PLAYER_ID_KEY, 'not-a-uuid');
+      expect(getStoredRejoinSession()).toBeNull();
     });
   });
 });

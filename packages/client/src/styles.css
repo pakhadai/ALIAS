@@ -260,11 +260,11 @@ html[data-browser-shell] footer.footer-island.ui-app-footer {
   --ui-accent-ring: #ee423966;
 }
 
-/** Screens with in-flow GlassAppHeader — toast sits below measured header, not over controls */
+/** Screens with in-flow GlassAppHeader — toast sits below title row, not in the feather gap */
 html[data-app-header] {
-  --tma-toast-offset-header: var(--app-page-header-height);
-  --tma-toast-top: calc(var(--app-page-header-height) + 0.75rem);
-  --tma-banner-top: var(--app-page-header-height);
+  --tma-toast-offset-header: var(--app-page-header-stack);
+  --tma-toast-top: calc(var(--app-page-header-stack) + 0.75rem);
+  --tma-banner-top: var(--app-page-header-stack);
 }
 
 .font-serif {
@@ -396,7 +396,9 @@ html[data-app-header] {
   /** Theme-adaptive chrome ink — fg/bg blend (dark theme → light ink, light → dark) */
   --ui-sheet-chrome-mix: color-mix(in srgb, var(--ui-fg) 52%, var(--ui-bg) 48%);
   --ui-sheet-glass-inset: 2px;
-  --ui-sheet-glass-blur: 34px;
+  /** Lower blur + near-neutral saturate — avoid diffusing/amplifying footer accent glow through sheet glass */
+  --ui-sheet-glass-blur: 22px;
+  --ui-sheet-glass-saturate: 1.05;
   --ui-sheet-handle: color-mix(in srgb, var(--ui-sheet-chrome-mix) 72%, transparent);
   /** Sheet chrome — title + close (theme fg; muted close, full fg on hover) */
   --ui-sheet-header-fg: var(--ui-fg);
@@ -964,32 +966,33 @@ footer.footer-island.ui-app-footer {
   border-radius: inherit;
   pointer-events: none;
   background-image: radial-gradient(
-    96px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 40%, white 60%) 0%,
-    var(--ui-accent) 18%,
-    color-mix(in srgb, var(--ui-accent) 52%, transparent) 42%,
-    transparent 68%
+    128px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 72%, white 28%) 0%,
+    color-mix(in srgb, var(--ui-accent) 88%, transparent) 22%,
+    color-mix(in srgb, var(--ui-accent) 45%, transparent) 48%,
+    transparent 72%
   );
   animation: accent-cta-snake 6s linear infinite;
 }
 
 .accent-footer-cta-shell--ready::before {
   inset: -4px;
-  filter: blur(10px);
-  opacity: 0.65;
+  filter: blur(16px);
+  opacity: 0.48;
   z-index: 0;
   background-image: radial-gradient(
-    112px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 40%, white 60%) 0%,
-    color-mix(in srgb, var(--ui-accent) 65%, transparent) 28%,
-    transparent 72%
+    140px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 68%, white 32%) 0%,
+    color-mix(in srgb, var(--ui-accent) 55%, transparent) 32%,
+    transparent 76%
   );
 }
 
 .accent-footer-cta-shell--ready::after {
   inset: -1px;
-  padding: 2px;
-  opacity: 0.9;
+  padding: 1.5px;
+  opacity: 0.55;
+  filter: blur(0.75px);
   z-index: 1;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -1034,8 +1037,8 @@ button.lobby-start-btn {
 
 .lobby-start-btn--ready {
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-    0 0 20px color-mix(in srgb, var(--ui-accent) 22%, transparent);
+    inset 0 1px 2px 0 color-mix(in srgb, white 9%, transparent),
+    0 0 24px color-mix(in srgb, var(--ui-accent) 16%, transparent);
 }
 
 .lobby-start-btn--plain:active {
@@ -1054,8 +1057,8 @@ button.lobby-start-btn {
 
   .lobby-start-btn--ready {
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-      0 0 20px color-mix(in srgb, var(--ui-accent) 22%, transparent);
+      inset 0 1px 2px 0 color-mix(in srgb, white 9%, transparent),
+      0 0 24px color-mix(in srgb, var(--ui-accent) 16%, transparent);
   }
 }
 
@@ -1101,7 +1104,14 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--ui-overlay-dim);
+  /** Stronger neutral wash toward the bottom — tames accent CTA / footer glow before it hits sheet glass */
+  background: linear-gradient(
+    to bottom,
+    var(--ui-overlay-dim) 0%,
+    var(--ui-overlay-dim) 38%,
+    color-mix(in srgb, var(--ui-bg) 38%, var(--ui-overlay-dim) 62%) 68%,
+    color-mix(in srgb, var(--ui-bg) 52%, transparent) 100%
+  );
   opacity: 0;
   transition: opacity 0s;
 }
@@ -1149,8 +1159,8 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   border-radius: inherit;
   pointer-events: none;
   z-index: 0;
-  backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(1.95);
-  -webkit-backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(1.95);
+  backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(var(--ui-sheet-glass-saturate));
+  -webkit-backdrop-filter: blur(var(--ui-sheet-glass-blur)) saturate(var(--ui-sheet-glass-saturate));
 }
 
 .bottom-sheet-panel::after {
@@ -1162,9 +1172,9 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   z-index: 0;
   background: linear-gradient(
     165deg,
-    color-mix(in srgb, var(--ui-card) 93%, var(--ui-elevated) 7%) 0%,
-    color-mix(in srgb, var(--ui-card) 88%, transparent) 44%,
-    color-mix(in srgb, var(--ui-card) 86%, var(--ui-bg) 14%) 100%
+    color-mix(in srgb, var(--ui-card) 96%, var(--ui-elevated) 4%) 0%,
+    color-mix(in srgb, var(--ui-card) 94%, transparent) 44%,
+    var(--ui-card) 100%
   );
   /**
    * Feather opaque fill below header band — top bar glass blurs backdrop, not solid card.
@@ -1398,7 +1408,8 @@ html[data-telegram-desktop] .bottom-sheet-backdrop::before {
 }
 
 html[data-telegram-desktop] .bottom-sheet-panel {
-  background: var(--ui-card);
+  /* Theme surface — not --ui-card/--ui-elevated (often #fff on Warm Paper) */
+  background: var(--ui-surface);
 }
 
 html[data-telegram-desktop] .bottom-sheet-panel::before {
@@ -1406,7 +1417,7 @@ html[data-telegram-desktop] .bottom-sheet-panel::before {
 }
 
 html[data-telegram-desktop] .bottom-sheet-panel::after {
-  background: var(--ui-card);
+  background: var(--ui-surface);
   mask-image: none;
   -webkit-mask-image: none;
 }
@@ -1416,14 +1427,14 @@ html[data-telegram-desktop] .bottom-sheet-top-bar::before {
 }
 
 html[data-telegram-desktop] .bottom-sheet-top-bar::after {
-  background: var(--ui-elevated, var(--ui-card));
+  background: var(--ui-surface);
   mask-image: none;
   -webkit-mask-image: none;
 }
 
 html[data-telegram-desktop] .ui-glass-panel,
 html[data-telegram-desktop] .lobby-start-glass {
-  background: var(--ui-card);
+  background: var(--ui-surface);
 }
 
 html[data-telegram-desktop] .ui-glass-panel::before,

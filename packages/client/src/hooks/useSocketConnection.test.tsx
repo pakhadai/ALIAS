@@ -252,4 +252,46 @@ describe('useSocketConnection', () => {
     expect(joinIdx).toBeGreaterThan(leaveIdx);
     expect(result.current.roomCode).toBe('88802');
   });
+
+  test('joinRoom: uses room:rejoin when stored session matches target room', async () => {
+    localStorage.setItem(ROOM_CODE_KEY, '12345');
+    localStorage.setItem(PLAYER_ID_KEY, '11111111-1111-1111-8111-111111111111');
+
+    const { useSocketConnection } = await import('./useSocketConnection');
+    const { result } = renderHook(() =>
+      useSocketConnection({
+        onStateSync: vi.fn(),
+        onPlayerJoined: vi.fn(),
+        onPlayerLeft: vi.fn(),
+        onKicked: vi.fn(),
+        onError: vi.fn(),
+        onNotification: vi.fn(),
+      })
+    );
+
+    fakeSocket.emit.mockImplementation((event: unknown) => {
+      if (event === 'room:rejoin') {
+        queueMicrotask(() =>
+          fakeSocket.trigger('room:rejoined', {
+            roomCode: '12345',
+            playerId: '11111111-1111-1111-8111-111111111111',
+          })
+        );
+      }
+      return fakeSocket;
+    });
+
+    await act(async () => {
+      const p = result.current.joinRoom('12345', 'Guest', '🙂');
+      await new Promise<void>((r) => setTimeout(r, 0));
+      await p;
+    });
+
+    expect(fakeSocket.emit).toHaveBeenCalledWith('room:rejoin', {
+      roomCode: '12345',
+      playerId: '11111111-1111-1111-8111-111111111111',
+    });
+    expect(fakeSocket.emit).not.toHaveBeenCalledWith('room:join', expect.anything());
+    expect(result.current.roomCode).toBe('12345');
+  });
 });

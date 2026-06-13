@@ -348,7 +348,7 @@ export const LobbyScreen = () => {
       <ScreenShell
         className="bg-ui-bg"
         layout="fullPx4"
-        contentClassName="items-center no-scrollbar"
+        contentClassName="flex flex-col items-center min-h-0"
         headerFixed
         footerFixed
         header={

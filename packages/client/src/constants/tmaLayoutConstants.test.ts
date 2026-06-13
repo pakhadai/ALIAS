@@ -3,6 +3,7 @@ import {
   APP_HEADER_BAR_PX,
   APP_HEADER_BAR_REM,
   CSS_VAR_APP_PAGE_HEADER_HEIGHT,
+  CSS_VAR_APP_PAGE_HEADER_STACK,
   HEADER_ROW_MIN_PX,
   HOME_CARD_TOP_GAP_PX,
   resolveTelegramContentTopFloorPx,
@@ -27,6 +28,7 @@ describe('tmaLayoutConstants', () => {
     expect(TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX).toBe(104);
     expect(HOME_CARD_TOP_GAP_PX).toBe(16);
     expect(CSS_VAR_APP_PAGE_HEADER_HEIGHT).toBe('--app-page-header-height');
+    expect(CSS_VAR_APP_PAGE_HEADER_STACK).toBe('--app-page-header-stack');
   });
 
   it('should convert bar height to rem', () => {

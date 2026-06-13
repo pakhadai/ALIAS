@@ -42,13 +42,14 @@ describe('ToastNotification', () => {
       :root {
         --tma-toast-offset-header: 0px;
         --app-page-header-height: 148px;
-        --tma-banner-top: var(--app-page-header-height);
+        --app-page-header-stack: 100px;
+        --tma-banner-top: var(--app-page-header-stack);
         --tma-toast-top: calc(max(0.75rem, var(--tma-inset-top)) + var(--tma-toast-offset-header));
       }
       html[data-app-header] {
-        --tma-toast-offset-header: var(--app-page-header-height);
-        --tma-toast-top: calc(var(--app-page-header-height) + 0.75rem);
-        --tma-banner-top: var(--app-page-header-height);
+        --tma-toast-offset-header: var(--app-page-header-stack);
+        --tma-toast-top: calc(var(--app-page-header-stack) + 0.75rem);
+        --tma-banner-top: var(--app-page-header-stack);
       }
     `;
     document.head.appendChild(style);
@@ -89,9 +90,9 @@ describe('ToastNotification', () => {
     );
 
     expect(document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG]).toBe('true');
-    expect(readToastOffsetHeader()).toBe('var(--app-page-header-height)');
-    expect(readToastTop()).toBe('calc(var(--app-page-header-height) + 0.75rem)');
-    expect(readBannerTop()).toBe('var(--app-page-header-height)');
+    expect(readToastOffsetHeader()).toBe('var(--app-page-header-stack)');
+    expect(readToastTop()).toBe('calc(var(--app-page-header-stack) + 0.75rem)');
+    expect(readBannerTop()).toBe('var(--app-page-header-stack)');
   });
 
   it('should position ConnectionStatusBanner with --tma-banner-top', () => {

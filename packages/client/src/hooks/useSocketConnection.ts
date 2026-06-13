@@ -14,7 +14,11 @@ import {
   PLAYER_ID_KEY,
   ROOM_CODE_KEY,
 } from '../services/api';
-import { isValidRoomCode, parseTelegramLobbyRoomCode } from '../utils/roomJoin';
+import {
+  getStoredRejoinSession,
+  isValidRoomCode,
+  parseTelegramLobbyRoomCode,
+} from '../utils/roomJoin';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -365,6 +369,72 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
         }
 
         setIsReconnecting(false);
+        const storedRejoin = getStoredRejoinSession(code);
+        if (storedRejoin) {
+          let detached = false;
+          const tid: { current?: number } = {};
+          const onRejoinedRef: {
+            current?: (d: { roomCode: string; playerId: string }) => void;
+          } = {};
+          const onErrRef: { current?: (p: RoomErrorPayload) => void } = {};
+
+          const detach = () => {
+            if (detached) return;
+            detached = true;
+            if (tid.current !== undefined) clearTimeout(tid.current);
+            if (onRejoinedRef.current) socket.off('room:rejoined', onRejoinedRef.current);
+            if (onErrRef.current) socket.off('room:error', onErrRef.current);
+          };
+
+          const onRejoined = ({
+            roomCode: joinedCode,
+            playerId,
+          }: {
+            roomCode: string;
+            playerId: string;
+          }) => {
+            detach();
+            setIsReconnecting(false);
+            myPlayerIdRef.current = playerId;
+            setMyPlayerId(playerId);
+            setRoomCode(joinedCode);
+            roomCodeRef.current = joinedCode;
+            resolve({ roomCode: joinedCode, playerId });
+          };
+
+          const onErr = (payload: RoomErrorPayload) => {
+            detach();
+            setIsReconnecting(false);
+            reject(Object.assign(new Error(payload.message), { code: payload.code }));
+          };
+          onRejoinedRef.current = onRejoined;
+          onErrRef.current = onErr;
+
+          tid.current = window.setTimeout(() => {
+            detach();
+            setIsReconnecting(false);
+            reject(new Error('ROOM_OPERATION_TIMEOUT'));
+          }, 45_000);
+
+          const doRejoin = () => {
+            setIsReconnecting(true);
+            socket.removeAllListeners('room:rejoined');
+            socket.on('room:rejoined', onRejoined);
+            socket.on('room:error', onErr);
+            socket.emit('room:rejoin', {
+              roomCode: storedRejoin.roomCode,
+              playerId: storedRejoin.playerId,
+            });
+          };
+
+          scheduleEmitAfterHandshakeConnect(doRejoin, (err) => {
+            detach();
+            setIsReconnecting(false);
+            reject(err);
+          });
+          return;
+        }
+
         // Same as createRoom: ensure we're not bound to a previous room.
         const existingRoom = roomCodeRef.current;
         if (existingRoom) {
