@@ -315,25 +315,25 @@ Acceptance:
 
 ## Мікро-сесії
 
-### A — Avatar preview + email overflow
+### A — Avatar preview + email overflow ✅ 2026-06-13
 
 **Швидко:** `Мікро A з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ```
-1. AvatarDisplay — name з локального state (name.trim()), не лише profile.displayName.
-2. Email row — truncate/min-w-0 для 375px.
-3. Avatar grid tap targets ≥44px (grid-cols-5 або gap якщо треба).
+1. AvatarDisplay — name з локального state (name.trim()), не лише profile.displayName. ✅
+2. Email row — truncate/min-w-0 для 375px. ✅
+3. Avatar grid tap targets ≥44px (grid-cols-5 + min-h-11 min-w-11). ✅
 
-Файл: ProfileSettingsScreen.tsx | pnpm --filter @movli/client test
+Файл: ProfileSettingsScreen.tsx | ProfileSettingsScreen.test.tsx (7 cases)
 ```
 
-### B — In-lobby SettingsScreen header
+### B — In-lobby SettingsScreen header ✅ 2026-06-13
 
 **Швидко:** `Мікро B з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ```
-SettingsScreen.tsx: header title → ScreenTitle (як menu settings), замість label + tracking-[0.4em].
-Game logic без змін. pnpm typecheck + client tests.
+SettingsScreen.tsx: AppHeader title → <ScreenTitle>{t.settings}</ScreenTitle> (як ProfileSettingsScreen). ✅
+Game logic без змін. SettingsScreen.test.tsx — heading typography guard (6 cases).
 ```
 
 ### C — Guest lobby defaults (product)

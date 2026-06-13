@@ -43,8 +43,9 @@ export const CountdownScreen = () => {
   return (
     <ScreenShell
       layout="fullPx6"
+      scroll={false}
       className={currentTheme.bg}
-      contentClassName="justify-center items-center"
+      contentClassName="flex flex-1 flex-col justify-center items-center"
     >
       {count > 0 ? (
         <span

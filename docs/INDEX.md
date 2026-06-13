@@ -32,6 +32,7 @@
 | [`PRISMA_WORD_DATA.md`](./PRISMA_WORD_DATA.md) | Seed, JSON, `WordConcept` / `WordTranslation` |
 | [`LOBBY_TEAM_BUILDER.md`](./LOBBY_TEAM_BUILDER.md) | Лобі, команди, Solo, `LobbyScreen` vs `TeamSetupScreen` |
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
+| [`TEST_COVERAGE_EXPANSION_PROMPTS.md`](./TEST_COVERAGE_EXPANSION_PROMPTS.md) | **TEST-COV-001 ✅** — аудит покриття, gap matrix, session prompts 0–11 (implemented 2026-06-13) |
 | [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
 | [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
 | [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, glass header/footer, **Desktop TMA** (`data-telegram-desktop`), safe-area, owner QA |
@@ -78,5 +79,5 @@
 | Уніфікація шрифтів / розмірів | `TYPOGRAPHY_UNIFICATION.md` |
 | Layout / footer / radius / surfaces (промти) | `LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
 | Деплoy / 502 | README Docker → `VPS-INFRASTRUCTURE.md.example` |
-| Тести | `TESTING_ACCEPTANCE.md` + `pnpm verify` |
+| Тести / покриття | `TESTING_ACCEPTANCE.md` + `TEST_COVERAGE_EXPANSION_PROMPTS.md` + `pnpm verify` |
 | Кінець сесії | `docs/daily/YYYY-MM-DD.md` + `CHANGELOG` `[Unreleased]` |

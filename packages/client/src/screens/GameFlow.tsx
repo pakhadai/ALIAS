@@ -48,9 +48,9 @@ export function GameFlow() {
         );
       }
       return (
-        <div key="countdown" className="animate-page-in">
+        <PageTransition key="countdown">
           <CountdownScreen />
-        </div>
+        </PageTransition>
       );
     case GameState.PLAYING:
       if (isImposter) {

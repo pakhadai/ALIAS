@@ -249,7 +249,7 @@ export const ProfileSettingsScreen = () => {
                 key={idx}
                 type="button"
                 onClick={() => setSelectedAvatar(idx)}
-                className={`relative flex items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${selectedAvatar === idx ? 'ring-2 ring-ui-accent scale-105' : 'opacity-70 hover:opacity-100'}`}
+                className={`relative flex min-h-11 min-w-11 items-center justify-center rounded-xl aspect-square transition-all active:scale-95 ${selectedAvatar === idx ? 'ring-2 ring-ui-accent scale-105' : 'opacity-70 hover:opacity-100'}`}
                 style={{
                   background: `color-mix(in_srgb, var(--ui-accent) ${av.mix}%, var(--ui-bg))`,
                 }}
@@ -329,7 +329,7 @@ export const ProfileSettingsScreen = () => {
           </div>
         )}
 
-        <div className={`${sectionCard} space-y-3`}>
+        <div className={`${sectionCard} min-w-0 space-y-3`}>
           <p className={`${formLabelClass} opacity-80`}>{t.profileSettingsAccount}</p>
           {email && (
             <div className="flex justify-between items-center gap-3 min-w-0">

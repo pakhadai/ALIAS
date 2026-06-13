@@ -185,18 +185,29 @@ describe('ProfileSettingsScreen', () => {
   });
 
   it('should truncate long email on narrow layouts', () => {
+    authContextValue.authState = {
+      status: 'authenticated',
+      email: 'very.long.email.address.for.overflow@example.com',
+      provider: '',
+    };
+
     renderProfileSettings();
 
-    const emailEl = screen.getByText('player@example.com');
+    const emailEl = screen.getByText('very.long.email.address.for.overflow@example.com');
     expect(emailEl).toHaveClass('truncate');
     expect(emailEl).toHaveClass('min-w-0');
   });
 
-  it('should use 5-column avatar grid for 44px tap targets', () => {
+  it('should use 5-column avatar grid with 44px tap targets', () => {
     renderProfileSettings();
 
     const section = screen.getByText('Choose avatar').parentElement;
-    expect(section?.querySelector('.grid-cols-5')).not.toBeNull();
+    const grid = section?.querySelector('.grid-cols-5');
+    expect(grid).not.toBeNull();
+
+    const firstAvatarBtn = grid?.querySelector('button');
+    expect(firstAvatarBtn?.className).toMatch(/min-h-11/);
+    expect(firstAvatarBtn?.className).toMatch(/min-w-11/);
   });
 
   it('should use viewport-fixed liquid glass header and footer island', () => {

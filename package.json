@@ -23,6 +23,7 @@
     "format": "prettier --write \"packages/**/*.{ts,tsx,json,css,mjs}\" \"eslint.config.mjs\" \"tsconfig.base.json\" \"turbo.json\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,json,css,mjs}\" \"eslint.config.mjs\" \"tsconfig.base.json\" \"turbo.json\"",
     "test:server": "pnpm --filter @movli/server test",
+    "test:client": "pnpm --filter @movli/client test",
     "test:e2e": "pnpm --filter @movli/e2e run test",
     "test:e2e:multiplayer": "pnpm --filter @movli/e2e run test -- tests/multiplayer.spec.ts --project=chromium",
     "test:e2e:ui": "pnpm --filter @movli/e2e run test:ui",

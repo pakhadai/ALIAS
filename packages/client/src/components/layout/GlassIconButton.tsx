@@ -23,7 +23,7 @@ export const GlassIconButton = forwardRef<HTMLButtonElement, GlassIconButtonProp
         type="button"
         data-testid={testId}
         onClick={onClick}
-        className={`${UI_APP_HEADER_SLOT_CLASS} flex min-h-11 min-w-11 shrink-0 touch-manipulation items-center ${
+        className={`${UI_APP_HEADER_SLOT_CLASS} pointer-events-auto relative z-[2] flex min-h-11 min-w-11 shrink-0 touch-manipulation items-center ${
           align === 'end' ? 'justify-end' : 'justify-start'
         } transition-transform duration-150 ease-out active:scale-95`}
         aria-label={ariaLabel}

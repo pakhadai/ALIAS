@@ -1134,6 +1134,18 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   pointer-events: none;
 }
 
+/**
+ * Login prompt on menu — dimmed overlay must not steal taps from fixed header chrome
+ * (profile / settings / rules). Panel stays interactive; backdrop dismiss is off anyway.
+ */
+.bottom-sheet-backdrop--chrome-pass-through[data-open='true'] {
+  pointer-events: none;
+}
+
+.bottom-sheet-backdrop--chrome-pass-through[data-open='true'] .bottom-sheet-panel {
+  pointer-events: auto;
+}
+
 .bottom-sheet-panel {
   position: relative;
   z-index: 2;

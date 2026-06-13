@@ -53,4 +53,11 @@ describe('LoginModal', () => {
     expect(screen.getByText('Sign in')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Continue without signing in' })).toBeTruthy();
   });
+
+  it('should pass header taps through the login backdrop while the sheet is open', () => {
+    render(<LoginModal open onDismiss={vi.fn()} />);
+
+    const backdrop = document.querySelector('[data-bottom-sheet-backdrop]');
+    expect(backdrop?.className).toContain('bottom-sheet-backdrop--chrome-pass-through');
+  });
 });

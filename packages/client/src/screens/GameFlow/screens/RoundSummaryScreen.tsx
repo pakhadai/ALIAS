@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Confetti, MilestoneNotification } from '../../../components/Shared';
 import { FixedBottomBar, ScreenShell } from '../../../components/layout';
+import { footerIslandClassName } from '../../../constants/footerLayout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
 
@@ -58,7 +59,7 @@ export const RoundSummaryScreen = () => {
   };
 
   return (
-    <div data-testid="round-summary" className="relative">
+    <div data-testid="round-summary" className="relative h-full min-h-0 flex w-full flex-col">
       {milestone && (
         <MilestoneNotification
           points={milestone.points}
@@ -73,8 +74,10 @@ export const RoundSummaryScreen = () => {
       <ScreenShell
         layout="fullPx8"
         className={currentTheme.bg}
+        footerFixed
+        contentClassName="flex flex-col min-h-[calc(100dvh-var(--footer-island-scroll-padding))]"
         footer={
-          <FixedBottomBar contentClassName="w-full">
+          <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
             {isHost ? (
               <Button
                 themeClass={currentTheme.button}

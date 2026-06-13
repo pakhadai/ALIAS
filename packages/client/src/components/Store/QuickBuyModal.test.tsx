@@ -47,7 +47,14 @@ async function renderQuickBuyModal(props: {
   vi.resetModules();
   vi.stubEnv('VITE_STRIPE_PUBLIC_KEY', 'pk_test_mock');
   const { QuickBuyModal } = await import('./QuickBuyModal');
-  return render(<QuickBuyModal {...props} />);
+  const view = render(<QuickBuyModal {...props} />);
+  await waitFor(
+    () => {
+      expect(screen.getByRole('button', { name: /Telegram Stars/i })).toBeInTheDocument();
+    },
+    { timeout: 10_000 }
+  );
+  return view;
 }
 
 describe('QuickBuyModal', () => {
@@ -82,9 +89,7 @@ describe('QuickBuyModal', () => {
       onSuccess: vi.fn(),
     });
 
-    expect(
-      await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Telegram Stars/i })).toBeInTheDocument();
   });
 
   it('should call openInvoice with invoiceUrl and invoke onSuccess when paid', async () => {
@@ -104,8 +109,6 @@ describe('QuickBuyModal', () => {
     });
 
     const user = userEvent.setup();
-    await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 });
-
     await user.click(screen.getByRole('button', { name: /Telegram Stars/i }));
 
     await waitFor(() => {
@@ -132,8 +135,6 @@ describe('QuickBuyModal', () => {
     });
 
     const user = userEvent.setup();
-    await screen.findByRole('button', { name: /Telegram Stars/i }, { timeout: 10_000 });
-
     await user.click(screen.getByRole('button', { name: /Telegram Stars/i }));
 
     await waitFor(() => {

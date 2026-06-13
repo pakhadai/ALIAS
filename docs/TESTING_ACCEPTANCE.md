@@ -1,9 +1,26 @@
 # Testing acceptance criteria (must-not-break)
 
 > Product architecture and APIs: **[`README.md`](../README.md)**. This file lists **what tests must guard**.
+> **План розширення (TEST-COV-001):** [`TEST_COVERAGE_EXPANSION_PROMPTS.md`](./TEST_COVERAGE_EXPANSION_PROMPTS.md).
 
 This document defines **critical user flows** and **non-negotiable invariants** that our automated tests must cover.
 The goal is to reduce real production risk (not to “game” coverage metrics).
+
+## Baseline (2026-06-13, TEST-COV-001 ✅)
+
+| Пакет | Тести | Coverage | CI |
+|-------|-------|----------|-----|
+| `@movli/server` | **402** | **75.63%** stmts (floor 67%) | `test:coverage` |
+| `@movli/client` | **480** | 45.38%+ stmts (no floor) | `vitest run` |
+| `@movli/shared` | **36** | pure utils + contracts | `vitest run` |
+| `@movli/e2e` | 36 pass / 4 skip | — | `@smoke`, `@core`; `@extended` optional |
+
+## Optional follow-ups (post epic)
+
+| Flow / module | Status | Notes |
+|---------------|--------|-------|
+| Client vitest coverage floor | відкладено | окремий epic |
+| QuizModeHandler / client utils | backlog | мікро A–B у `TEST_COVERAGE_EXPANSION_PROMPTS.md` |
 
 ## Core user flows
 
@@ -48,13 +65,22 @@ The goal is to reduce real production risk (not to “game” coverage metrics).
 
 ### Auth & profile
 - Anonymous token can be created (deviceId validation).
-- Profile endpoints require JWT.
-- Lobby settings persist only validated fields (schema-validated JSON).
+- Profile endpoints require JWT (`GET /me`, `PATCH /profile`, lobby settings).
+- `PATCH /profile` strips HTML tags from `displayName`.
+- Lobby settings persist only schema-validated JSON (`PUT /lobby-settings`).
+- Telegram avatar sync (`POST /profile/sync-telegram-avatar`) requires JWT + valid initData HMAC for matching Telegram account.
 
 ### Store & purchases
 - Store loads catalog.
 - Checkout/payment endpoints require auth.
 - Stripe webhook rejects invalid signatures (and does not crash the server).
+- Stripe webhook `checkout.session.completed` / `payment_intent.succeeded` complete pending purchases; unknown event types are no-ops; duplicate webhook delivery is idempotent (`updateMany` count 0).
+- Stripe webhook `checkout.session.expired` / `payment_intent.canceled` abandon pending purchases.
+- Checkout returns 409 when item already purchased; free claim is idempotent.
+
+### Admin
+- Admin routes require IP whitelist (when configured) + JWT or `x-admin-key`.
+- Word pack CRUD (create, read, update, delete, bulk add words).
 
 ### Custom decks
 - Upload / create custom deck.
@@ -77,22 +103,39 @@ The goal is to reduce real production risk (not to “game” coverage metrics).
 | IMPOSTER REVEAL→DISCUSSION→RESULTS, team builder, QUIZ scoring | `packages/server/src/services/__tests__/GameEngine.test.ts` |
 | Reconnect grace, rejoin, host migration, Redis restore | `packages/server/src/services/__tests__/RoomManager.test.ts` |
 | Store catalog + buy-stars auth/TMA | `packages/server/src/routes/__tests__/store.routes.test.ts` |
-| Stripe checkout auth + webhook signature | `packages/server/src/routes/__tests__/purchases.routes.test.ts` |
+| Stripe checkout auth + webhook (signature, completed, idempotency, abandon, unknown events) | `packages/server/src/routes/__tests__/purchases.routes.test.ts` |
 | Custom decks create/upload/access code | `packages/server/src/routes/__tests__/custom-decks.routes.test.ts` |
 | Push vapid-key / subscribe / unsubscribe | `packages/server/src/routes/__tests__/push.routes.test.ts` |
-| Admin IP whitelist + double auth gate | `packages/server/src/routes/__tests__/admin.routes.test.ts` |
+| Admin IP whitelist + double auth gate + word pack CRUD | `packages/server/src/routes/__tests__/admin.routes.test.ts` |
 | JWT expiry + Telegram initData HMAC | `packages/server/src/services/__tests__/AuthService.test.ts` |
-| `room:exists` ack without join; grace `room:rejoin`; socket NOT_HOST / NOT_EXPLAINER | `packages/server/src/handlers/__tests__/socketHandlers.int.test.ts` |
+| Auth REST (anonymous, /me, profile sanitize, lobby settings, sync-telegram-avatar, /telegram HMAC) | `packages/server/src/routes/__tests__/auth.routes.test.ts` |
+| Lobby readiness (SOLO, min players, unassigned/empty team edge cases) | `packages/shared/src/__tests__/lobbyReadiness.test.ts` |
+| `ROOM_ERROR_CODES` drift guard (incl. `RELAY_*`) | `packages/shared/src/__tests__/events.test.ts` |
+| Legacy `NetworkMessage` envelope types | `packages/shared/src/__tests__/network.test.ts` |
+| `room:exists` ack; grace `room:rejoin` / post-grace `PLAYER_NOT_IN_ROOM`; `ROOM_FULL`; duplicate names; host migration; `hostUserId` on auth create; relay `RELAY_*` | `packages/server/src/handlers/__tests__/socketHandlers.int.test.ts` |
+| Socket NOT_HOST / NOT_EXPLAINER / INVALID_STATE / LOBBY_NOT_READY | `packages/server/src/handlers/__tests__/socketHandlers.int.test.ts` |
 | `game:action` pipeline broadcast + KICK + IMPOSTER per-player secret | `packages/server/src/game/__tests__/gameActionPipeline.test.ts` |
 | Cross-node relay timeout, publish unavailable, join/leave/rejoin reply dispatch | `packages/server/src/services/__tests__/RoomActionRelay.test.ts` |
 | Offline START_GAME/CORRECT/SKIP/teams/MAX_PLAYERS/SOLO team materialize | `packages/client/src/context/offlineGameActions.test.ts` |
+| GameFlow round lifecycle smoke (explainer/guesser, host CTA, IMPOSTER phase labels) | `packages/client/src/screens/GameFlow/screens/*.test.tsx` |
+| App `GameRouter` state → screen mapping (≥8 states, lazy routes) | `packages/client/src/App.test.tsx` |
+| In-game `GameFlow` router (CLASSIC vs IMPOSTER mode branches) | `packages/client/src/screens/GameFlow.test.tsx` |
 | Lobby rules card + offline/online settings entry | `packages/client/src/screens/lobby/components/LobbyRulesSummaryCard.test.tsx`, `LobbyScreen.test.tsx`, `OnlineLobbyIntro.test.tsx` |
-| GameContext state-sync apply + client nav guard + offline routing | `packages/client/src/context/GameContext.test.tsx` |
+| GameContext state-sync apply + client nav guard + offline routing + `?room=` deep link | `packages/client/src/context/GameContext.test.tsx` |
 | Session restore edge cases (COUNTDOWN, ROUND_SUMMARY, corrupt JSON) | `packages/client/src/context/gameReducer.test.ts` |
 | TMA Stars `openInvoice` paid/cancelled callbacks | `packages/client/src/components/Store/QuickBuyModal.test.tsx` |
+| Profile menu: guest login CTA, lobby-settings gate, auth stats + settings nav | `packages/client/src/screens/menu/ProfileScreen.test.tsx` |
+| Store catalog render, guest buy gate, QuickBuy modal open | `packages/client/src/screens/menu/StoreScreen.test.tsx` |
+| My word packs: locked gate + unlocked list/create | `packages/client/src/screens/menu/MyWordPacksScreen.test.tsx` |
+| Client REST: `fetchProfile`, `saveLobbySettings`, `buyWithStars` error paths + auth header | `packages/client/src/services/api.test.ts` |
+| In-lobby settings: host `UPDATE_SETTINGS` dispatch, guest read-only, save → LOBBY | `packages/client/src/screens/lobby/SettingsScreen.test.tsx` |
 | `shuffleArray`, `getTeamColor`, shared limits/constants | `packages/shared/src/__tests__/utils.test.ts` |
 | E2E smoke: create → join → CORRECT → ROUND_SUMMARY | `packages/e2e/tests/smoke-round.spec.ts` |
 | E2E core: host migration, team lock, IMPOSTER secret, offline SCOREBOARD, rematch | `packages/e2e/tests/core-acceptance.spec.ts` |
+| E2E extended: profile settings save, store QuickBuy sheet, guest buy gate | `packages/e2e/tests/extended-profile.spec.ts`, `extended-store.spec.ts` (`@extended`, optional CI) |
+
+**Запуск `@extended` (не в CI за замовчуванням):** `pnpm --filter @movli/e2e run test:extended`  
+Локально E2E використовує порти **3002/5175** (щоб не конфліктувати з Docker `alias-app` на 3001/5173); CI лишає **3001/5173**.
 - **State sync**: server is authoritative; clients apply full sync without merging corrupt state.
 - **Input sanitization**: player names are sanitized (no HTML), trimmed, length-limited.
 

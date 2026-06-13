@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { shuffleArray } from '../utils';
+import { AppTheme } from '../enums';
 import {
+  DEFAULT_APP_THEME,
   getTeamColor,
   getTeamColorToken,
   TEAM_COLORS,
@@ -9,7 +11,9 @@ import {
   DEFAULT_ROUND_TIME,
   TIME_UP_IDLE_FALLBACK_MS,
   WINNING_SCORE,
+  MOCK_WORDS,
 } from '../constants';
+import { Language, Category } from '../enums';
 
 describe('shuffleArray', () => {
   afterEach(() => {
@@ -61,6 +65,10 @@ describe('getTeamColor', () => {
     expect(getTeamColor(len + 2)).toEqual(TEAM_COLORS[2]);
   });
 
+  it('should throw for negative indices (JS modulo does not wrap negatives)', () => {
+    expect(() => getTeamColor(-1)).toThrow('TEAM_COLORS must not be empty');
+  });
+
   it('should expose stable hex and optional CSS var names for all team slots', () => {
     for (let i = 0; i < TEAM_COLORS.length; i += 1) {
       const color = getTeamColor(i);
@@ -85,7 +93,17 @@ describe('shared constants', () => {
     expect(WINNING_SCORE).toBe(30);
   });
 
+  it('should default app theme to PAPER_LUXE', () => {
+    expect(DEFAULT_APP_THEME).toBe(AppTheme.PAPER_LUXE);
+  });
+
   it('should keep TEAM_COLORS non-empty for getTeamColor', () => {
     expect(TEAM_COLORS.length).toBeGreaterThan(0);
+  });
+
+  it('should provide fallback MOCK_WORDS for each supported language', () => {
+    for (const lang of [Language.UA, Language.DE, Language.EN]) {
+      expect(MOCK_WORDS[lang][Category.GENERAL]?.length).toBeGreaterThan(0);
+    }
   });
 });

@@ -72,9 +72,9 @@
 
 ---
 
-**Last updated:** 2026-06-08 (TMA Header Unification Phase 6)
+**Last updated:** 2026-06-13 (TEST-COV-001 Session 11 — epic closed)
 
-**Open issues:** 0 🔴; 2 🟡 deferred (manual TMA device pass, LobbyScreen `act()` warnings)
+**Open issues:** 0 🔴; 1 🟡 deferred (manual TMA device pass)
 
 ## Блок H: Lobby Fix (2026-06-08 audit)
 
@@ -115,7 +115,7 @@
 | ID | Sev | Status | Опис |
 |----|-----|--------|------|
 | I-13 | 🟡 | ⏳ DEFERRED | Manual TMA @375px checklist (Part F) — no device in CI; owner pass pending |
-| I-14 | 🟢 | ⏳ DEFERRED | `LobbyScreen.test.tsx` React `act(...)` warnings — test hygiene only, no prod regression |
+| I-14 | 🟢 | ✅ RESOLVED | `LobbyScreen.test.tsx` / `QuickBuyModal.test.tsx` React `act(...)` warnings — TEST-COV-001 Session 10 (`waitFor`, sync `ResizeObserver` in `test/setup.ts`) |
 
 **Architecture invariants (Part B):** `teamsLocked` sync ✅; theme/sound local merge ✅ (`GameContext.tsx:327-337`); `CLIENT_NAV_STATES` SETTINGS overlay ✅; offline `sendAction` → `handleGameAction` ✅; online `ADD_OFFLINE_PLAYER` server no-op ✅ (`socketHandlers.ts:381-383`). No circular imports (`buildTeamShells` in `utils/`). No new 🔴 regressions.
 
@@ -134,5 +134,25 @@
 | J-7 | 🟢 | ✅ RESOLVED | E2E `smoke-round` settings-close — `backTestId` + `forceBrowserChromeMode` (`game-ui.ts`) |
 
 **Phases 0–6:** ✅ complete. Canon: `ScreenShell` + sticky `AppHeader` in scroll; exceptions: `PlayingScreen`, `ImposterScreen`, `AdminApp`.
+
+## Блок K: Test coverage expansion (TEST-COV-001, 2026-06-13)
+
+**Verifier:** `pnpm verify` ✅ · server **402** · client **480** · shared **36** · server coverage **75.63%** (floor 67% OK).
+
+| ID | Sev | Status | Опис |
+|----|-----|--------|------|
+| K-1 | 🟠 | ✅ RESOLVED | Server `auth.ts` REST integration — **58.89%** stmts (`auth.routes.test.ts`, Session 1) |
+| K-2 | 🟠 | ✅ RESOLVED | `socketHandlers.ts` room lifecycle + relay — **70.8%** stmts (`socketHandlers.int.test.ts`, Session 2) |
+| K-3 | 🟡 | ✅ RESOLVED | `purchases.ts` + `admin.ts` webhook/CRUD branches — **~49%** each (Session 3) |
+| K-4 | 🟠 | ✅ RESOLVED | Client GameFlow RTL smoke — 6 screens **~55%** folder coverage (Session 4) |
+| K-5 | 🟡 | ✅ RESOLVED | `GameRouter` + `GameContext` guards — `App.test.tsx`, `GameFlow.test.tsx` (Sessions 5) |
+| K-6 | 🟡 | ✅ RESOLVED | Profile / Store / MyWordPacks RTL smoke (Session 6) |
+| K-7 | 🟡 | ✅ RESOLVED | Client `api.ts` **~47%** + in-lobby `SettingsScreen` host/guest (Session 7) |
+| K-8 | 🟢 | ✅ RESOLVED | `@movli/shared` **36** tests — `events`, `network`, lobby readiness (Session 8) |
+| K-9 | 🟢 | ✅ RESOLVED | E2E `@extended` store/profile specs + optional `test:extended` (Session 9) |
+| K-10 | 🟢 | ✅ RESOLVED | act() hygiene + root `test:client` script (Session 10) |
+| K-11 | 🟢 | ✅ RESOLVED | Docs canon + full verify closure (Session 11); epic `implemented` |
+
+**Epic canon:** `docs/TEST_COVERAGE_EXPANSION_PROMPTS.md`, guard matrix `docs/TESTING_ACCEPTANCE.md`.
 
 **Bootstrap note:** детальні знімки stack/docs/arch audit консолідовано тут; окремі `.cursor/*_AUDIT.md` видалено як дублікати.

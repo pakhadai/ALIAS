@@ -366,21 +366,44 @@ interface LogoProps {
   theme: ThemeConfig;
   /** Localized home tagline — defaults to EN when boot context has no UI language. */
   tagline?: string;
+  /** `mark` / `tagline` — render one part for split home layout. */
+  variant?: 'full' | 'mark' | 'tagline';
 }
 
-export const Logo: React.FC<LogoProps> = ({ theme, tagline = DEFAULT_HOME_TAGLINE }) => {
+export const Logo: React.FC<LogoProps> = ({
+  theme,
+  tagline = DEFAULT_HOME_TAGLINE,
+  variant = 'full',
+}) => {
+  const mark = (
+    <h1
+      className={`w-full max-w-[min(100%,20rem)] ${variant === 'full' ? 'mb-3' : ''} ${theme.textMain}`}
+      aria-label="MOVLI"
+    >
+      <MovliLogoMark className="block h-auto w-full" />
+    </h1>
+  );
+
+  const taglineRow = (
+    <div className="flex w-full max-w-[min(100%,20rem)] items-center justify-center gap-2.5">
+      <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
+      <p className={`shrink-0 opacity-50 ${brandCaptionClass} ${theme.textSecondary}`}>{tagline}</p>
+      <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
+    </div>
+  );
+
+  if (variant === 'mark') {
+    return <div className="flex w-full flex-col items-center">{mark}</div>;
+  }
+
+  if (variant === 'tagline') {
+    return <div className="flex w-full flex-col items-center">{taglineRow}</div>;
+  }
+
   return (
     <div className="flex flex-col items-center w-full">
-      <h1 className={`mb-3 w-full max-w-[min(100%,20rem)] ${theme.textMain}`} aria-label="MOVLI">
-        <MovliLogoMark className="block h-auto w-full" />
-      </h1>
-      <div className="flex w-full max-w-[min(100%,20rem)] items-center justify-center gap-2.5">
-        <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
-        <p className={`shrink-0 opacity-50 ${brandCaptionClass} ${theme.textSecondary}`}>
-          {tagline}
-        </p>
-        <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
-      </div>
+      {mark}
+      {taglineRow}
     </div>
   );
 };

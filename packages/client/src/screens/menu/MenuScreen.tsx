@@ -189,19 +189,29 @@ export const MenuScreen = () => {
             .join(' ')}
           style={{ paddingTop: HOME_CARD_TOP_GAP_PX }}
         >
-          <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-8">
-            <div className="scale-[0.85] shrink-0">
-              <Logo theme={currentTheme} tagline={t.homeTagline} />
+          <div className="flex min-h-0 w-full flex-1 flex-col">
+            <div className="flex min-h-0 w-full flex-1 items-end justify-center">
+              <div className="scale-[0.85] shrink-0 pb-3">
+                <Logo theme={currentTheme} variant="mark" />
+              </div>
             </div>
 
-            {connectionError && (
-              <div className="p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake shrink-0">
-                <AlertCircle className="text-ui-danger" size={20} />
-                <p className={`${systemBannerClass} tracking-wide text-ui-danger`}>
-                  Server Error: {connectionError}
-                </p>
+            <div className="flex min-h-0 w-full flex-1 items-start justify-center">
+              <div className="scale-[0.85] shrink-0">
+                <Logo theme={currentTheme} tagline={t.homeTagline} variant="tagline" />
               </div>
-            )}
+            </div>
+
+            <div className="flex min-h-0 w-full flex-1 items-center justify-center px-1">
+              {connectionError ? (
+                <div className="p-4 bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_25%,transparent)] rounded-2xl flex items-center gap-4 animate-shake shrink-0 w-full">
+                  <AlertCircle className="text-ui-danger shrink-0" size={20} />
+                  <p className={`${systemBannerClass} tracking-wide text-ui-danger`}>
+                    Server Error: {connectionError}
+                  </p>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up">

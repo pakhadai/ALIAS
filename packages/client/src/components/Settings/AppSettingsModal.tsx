@@ -42,6 +42,7 @@ export function AppSettingsModal({ onClose }: Props) {
       open={open}
       onClose={handleClose}
       onExited={onClose}
+      zLayer="modalNested"
       size="tall"
       showClose
       closeAriaLabel={t.close}

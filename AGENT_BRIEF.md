@@ -17,29 +17,32 @@ MOVLI Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 **Останній аудит:** 2026-06-07 — Block G (G-1…G-8) ✅, деталі в `AUDIT_RESULTS.md`  
 **Відкритих issues:** 0
 
-**Test baseline (2026-06-10):**
+**Test baseline (2026-06-13, TEST-COV-001 ✅):**
 
-| Пакет | Тести | Примітка |
-|-------|-------|----------|
-| `@movli/server` | **341** | unit + integration |
-| `@movli/client` | **376** | incl. TMA desktop layout + Liquid Glass tests (66 files) |
-| `@movli/shared` | **12** | `utils.test.ts` |
+| Пакет | Тести | Coverage (stmts) | Примітка |
+|-------|-------|------------------|----------|
+| `@movli/server` | **402** | **75.63%** (floor 67% CI) | 21 test files |
+| `@movli/client` | **480** | **45.38%** (no floor) | 82 test files; GameFlow **~55%** smoke |
+| `@movli/shared` | **36** | — | `utils`, `lobbyReadiness`, `events`, `network` |
+| `@movli/e2e` | **36 pass** / 4 skip | — | `@smoke` + `@core`; `@extended` optional |
 
-**Coverage floor** (`packages/server/vitest.config.ts`, measured after Phases 1–7): **67%** stmts/lines, **71%** branches, **89%** functions. Core modules: GameEngine ~92%, RoomManager ~89%.
+**Coverage floor** (`packages/server/vitest.config.ts`): **67%** stmts/lines. Post-epic: `routes/` **56%**, `handlers/socketHandlers.ts` **71%**, services **89%**, GameEngine **92%**.
 
-**Verify:** `pnpm verify` green (typecheck, lint, format, server coverage, client + shared tests).
+**Verify:** `pnpm verify` = typecheck + lint + format; unit: `pnpm test:server`, `pnpm test:client`, `pnpm --filter @movli/shared test`.
+
+**Epic plan (closed):** [`docs/TEST_COVERAGE_EXPANSION_PROMPTS.md`](./docs/TEST_COVERAGE_EXPANSION_PROMPTS.md) — sessions 0–11 ✅.
 
 **E2E:** `packages/e2e/tests/smoke-round.spec.ts` (`@smoke`), `core-acceptance.spec.ts` (`@core`); helpers у `helpers/game-ui.ts`. Локально потрібен Postgres (`docker compose up -d postgres`); CI — chromium + mobile-chrome.
 
-## Post test-gap backlog (optional, не блокери)
+## Post test-gap backlog (optional micro-sessions)
 
-| Область | Зараз | Наступний крок |
-|---------|-------|----------------|
-| `routes/` (auth, admin, purchases) | ~18–40% coverage | integration-тести при зміні API |
-| `handlers/socketHandlers.ts` | ~48% | relay / multi-node сценарії |
-| client | 44 тести | розширювати лише з новими фічаx |
-| D-4 deferred | `useSocketConnection`, `GameContext` deep-link rejoin, auth bootstrap | рефактор за потреби |
-| C-1 bundle | main 305 KB gzip OK | діяти лише якщо знову росте main/styles |
+| Область | Сесія / примітка |
+|---------|------------------|
+| QuizModeHandler edge cases | мікро A |
+| `gameTask.ts` / `haptics.ts` unit tests | мікро B |
+| D-4 deferred | deep-link rejoin, auth bootstrap — за потреби |
+| C-1 bundle | main 305 KB gzip OK — діяти лише якщо знову росте main/styles |
+| Client vitest coverage floor | відкладено до окремого epic |
 
 ## Критичні файли — знай напам'ять
 
@@ -91,8 +94,8 @@ pnpm typecheck                              # перевірка типів (0 �
 pnpm lint                                   # ESLint
 pnpm test:server                            # unit тести сервера
 pnpm --filter @movli/server test:coverage   # server tests + coverage thresholds
-pnpm --filter @movli/client test            # unit тести клієнта (44)
-pnpm --filter @movli/shared test            # shared utils (12)
+pnpm --filter @movli/client test            # unit тести клієнта (398)
+pnpm --filter @movli/shared test            # shared utils (17)
 pnpm --filter @movli/server db:migrate      # нова міграція Prisma
 pnpm --filter @movli/server db:seed         # seed БД
 pnpm build                                  # production build через Turbo

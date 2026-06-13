@@ -317,6 +317,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     <ModalSheet
       open={isOpen}
       onClose={handleClose}
+      zLayer="modalNested"
       size="tall"
       showClose
       closeAriaLabel={t.close}

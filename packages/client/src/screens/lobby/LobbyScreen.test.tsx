@@ -226,12 +226,16 @@ vi.mock('../../hooks/useTelegramApp', async (importOriginal) => {
   };
 });
 
-function renderLobbyScreen() {
-  return render(
+async function renderLobbyScreen() {
+  const view = render(
     <LobbyExitProvider>
       <LobbyScreen />
     </LobbyExitProvider>
   );
+  await waitFor(() => {
+    expect(document.documentElement.dataset[APP_HEADER_DOCUMENT_FLAG]).toBe('true');
+  });
+  return view;
 }
 
 describe('LobbyScreen', () => {
@@ -268,7 +272,7 @@ describe('LobbyScreen', () => {
 
   it('should open leave confirmation when browser back is tapped and leave room on confirm', async () => {
     const user = userEvent.setup();
-    renderLobbyScreen();
+    await renderLobbyScreen();
 
     fireEvent.click(screen.getByTestId('app-header-back'));
     expect(screen.getByRole('alertdialog')).toBeVisible();
@@ -284,7 +288,7 @@ describe('LobbyScreen', () => {
   it('should leave offline lobby without resetting gameMode after confirm', async () => {
     const user = userEvent.setup();
     mockGameMode = 'OFFLINE';
-    renderLobbyScreen();
+    await renderLobbyScreen();
 
     await user.click(screen.getByTestId('app-header-back'));
     const dialog = await waitFor(() => screen.getByRole('alertdialog'), { timeout: 10_000 });
@@ -292,49 +296,49 @@ describe('LobbyScreen', () => {
     expect(leaveRoom).toHaveBeenCalledWith({ resetGameMode: false });
   });
 
-  it('should show avatar strip instead of full players list in ONLINE mode', () => {
-    renderLobbyScreen();
+  it('should show avatar strip instead of full players list in ONLINE mode', async () => {
+    await renderLobbyScreen();
     expect(screen.getByTestId('lobby-avatar-strip')).toBeTruthy();
     expect(screen.queryByTestId('lobby-players-section')).toBeNull();
   });
 
-  it('should show full players section in OFFLINE mode', () => {
+  it('should show full players section in OFFLINE mode', async () => {
     mockGameMode = 'OFFLINE';
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.getByTestId('lobby-players-section')).toBeTruthy();
     expect(screen.queryByTestId('lobby-avatar-strip')).toBeNull();
   });
 
-  it('should hide start validation line above button when teams incomplete', () => {
-    renderLobbyScreen();
+  it('should hide start validation line above button when teams incomplete', async () => {
+    await renderLobbyScreen();
     expect(screen.queryByTestId('lobby-start-validation')).toBeNull();
     expect(screen.queryByTestId('lobby-readiness-bar')).toBeNull();
   });
 
-  it('should mark start as unavailable but still tappable for hint toast', () => {
-    renderLobbyScreen();
+  it('should mark start as unavailable but still tappable for hint toast', async () => {
+    await renderLobbyScreen();
     const startBtn = screen.getByTestId('lobby-start-btn');
     expect(startBtn).toHaveAttribute('aria-disabled', 'true');
     expect(startBtn).not.toBeDisabled();
     expect(startBtn).toHaveClass('lobby-start-btn--blocked');
   });
 
-  it('should show guest waiting card for online guests', () => {
+  it('should show guest waiting card for online guests', async () => {
     mockIsHost = false;
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.getByTestId('lobby-guest-waiting')).toBeTruthy();
     expect(screen.getByText('Pick a team')).toBeTruthy();
     expect(screen.getByText('Waiting for start')).toBeTruthy();
   });
 
-  it('should show unassigned pool when a player has no team', () => {
-    renderLobbyScreen();
+  it('should show unassigned pool when a player has no team', async () => {
+    await renderLobbyScreen();
     expect(screen.getByText('Unassigned (1)')).toBeTruthy();
   });
 
-  it('should show play mode bar for online guest without a team', () => {
+  it('should show play mode bar for online guest without a team', async () => {
     mockIsHost = false;
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.getByTestId('lobby-play-mode-bar')).toBeTruthy();
   });
 
@@ -360,20 +364,20 @@ describe('LobbyScreen', () => {
         nextPlayerIndex: 0,
       },
     ];
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.queryByTestId('lobby-play-mode-bar-slot')).toBeNull();
   });
 
-  it('should show browser back and rules quick-access card for online host outside TMA', () => {
-    renderLobbyScreen();
+  it('should show browser back and rules quick-access card for online host outside TMA', async () => {
+    await renderLobbyScreen();
     expect(screen.getByTestId('app-header-back')).toBeTruthy();
     expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
     expect(screen.getByTestId('lobby-settings-chips')).toBeTruthy();
   });
 
-  it('should show rules quick-access card in offline lobby', () => {
+  it('should show rules quick-access card in offline lobby', async () => {
     mockGameMode = 'OFFLINE';
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.getByTestId('lobby-settings-chips')).toBeTruthy();
     expect(screen.getByTestId('lobby-rules-summary')).toBeTruthy();
     expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
@@ -382,29 +386,29 @@ describe('LobbyScreen', () => {
   it('should open settings when offline host taps rules card', async () => {
     mockGameMode = 'OFFLINE';
     const user = userEvent.setup();
-    renderLobbyScreen();
+    await renderLobbyScreen();
     await user.click(screen.getByTestId('lobby-settings-chips'));
     expect(setGameState).toHaveBeenCalledWith(GameState.SETTINGS);
   });
 
   it('should open settings when online host taps rules card', async () => {
     const user = userEvent.setup();
-    renderLobbyScreen();
+    await renderLobbyScreen();
     await user.click(screen.getByTestId('lobby-settings-chips'));
     expect(setGameState).toHaveBeenCalledWith(GameState.SETTINGS);
   });
 
-  it('should hide header settings in TMA online mode', () => {
+  it('should hide header settings in TMA online mode', async () => {
     isTelegramMiniApp.mockReturnValue(true);
     hasTelegramInitData.mockReturnValue(true);
-    renderLobbyScreen();
+    await renderLobbyScreen();
     expect(screen.queryByTestId('lobby-header-settings')).toBeNull();
     expect(screen.queryByTestId('app-header-back')).toBeNull();
   });
 
   it('should open invite sheet when invite button is tapped', async () => {
     const user = userEvent.setup();
-    renderLobbyScreen();
+    await renderLobbyScreen();
 
     await user.click(screen.getByTestId('lobby-invite-button'));
 
@@ -416,8 +420,8 @@ describe('LobbyScreen', () => {
     expect(screen.getByText('QR')).toBeTruthy();
   });
 
-  it('should use viewport-fixed liquid glass header and footer island', () => {
-    const { container } = renderLobbyScreen();
+  it('should use viewport-fixed liquid glass header and footer island', async () => {
+    const { container } = await renderLobbyScreen();
 
     const header = document.body.querySelector('header');
     expect(header?.className).toContain(UI_APP_HEADER_FIXED_CLASS);

@@ -86,6 +86,17 @@ export default async function globalSetup(): Promise<void> {
         stdio: 'inherit',
         env: { ...process.env, DATABASE_URL: databaseUrl },
       });
+      const e2eAuthOut = path.join(repoRoot, 'packages', 'e2e', '.e2e-auth.json');
+      execSync('pnpm exec tsx scripts/seed-e2e-auth-user.ts', {
+        cwd: serverDir,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          DATABASE_URL: databaseUrl,
+          JWT_SECRET: process.env.E2E_JWT_SECRET ?? 'dev-secret-change-me',
+          E2E_AUTH_OUTPUT: e2eAuthOut,
+        },
+      });
       return;
     } catch (err) {
       if (i >= attempts) throw err;

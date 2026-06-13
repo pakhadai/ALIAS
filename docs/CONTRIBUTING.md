@@ -24,7 +24,7 @@
 | `pnpm verify` | `typecheck` + `lint` + `format:check` |
 | `pnpm lint` / `pnpm format:check` | ESLint / Prettier |
 | `pnpm test:server` | Vitest сервер |
-| `pnpm --filter @movli/client test` | Vitest клієнт |
+| `pnpm test:client` | Vitest клієнт |
 | `pnpm test:e2e` | Playwright (`@smoke` / `@core` у CI) |
 
 **Сервер / Prisma** (`@movli/server`):

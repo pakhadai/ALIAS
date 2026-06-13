@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Button } from '../../../components/Button';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
 import { useGame } from '../../../context/GameContext';
@@ -36,14 +37,9 @@ export const ScoreboardScreen = () => {
       footer={
         <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
           {isHost ? (
-            <button
-              onClick={handleNextRound}
-              className="w-full h-14 rounded-full flex items-center justify-center transition-all active:scale-[0.98] shadow-soft hover:shadow-lg group bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed"
-            >
-              <span className="font-sans font-medium text-sm uppercase tracking-[0.2em] group-hover:tracking-[0.25em] transition-all">
-                {t.nextRound}
-              </span>
-            </button>
+            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={handleNextRound}>
+              {t.nextRound}
+            </Button>
           ) : (
             <p
               className={`text-center text-[10px] uppercase tracking-widest animate-pulse ${subTextColor}`}

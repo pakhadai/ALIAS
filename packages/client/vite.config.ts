@@ -29,6 +29,10 @@ const PWA_THEME = '#1A1A1A';
  */
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim();
 
+/** E2E / local override: `VITE_SERVER_URL` sets dev proxy target (see `packages/e2e/playwright.config.ts`). */
+const devProxyTarget = (process.env.VITE_SERVER_URL || 'http://127.0.0.1:3001').replace(/\/+$/, '');
+const devPort = parseInt(process.env.VITE_DEV_PORT || '5173', 10);
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
@@ -118,19 +122,19 @@ export default defineConfig({
     // Same-origin API + Socket.IO in dev (mirrors nginx gateway in prod). Without this,
     // getApiBaseUrl() → window.location.origin sends sockets to Vite HMR, not the game server.
     proxy: {
-      '/api': { target: 'http://127.0.0.1:3001', changeOrigin: true },
-      '/socket.io': { target: 'http://127.0.0.1:3001', ws: true },
-      '/health': { target: 'http://127.0.0.1:3001', changeOrigin: true },
+      '/api': { target: devProxyTarget, changeOrigin: true },
+      '/socket.io': { target: devProxyTarget, ws: true },
+      '/health': { target: devProxyTarget, changeOrigin: true },
     },
-    // Fail fast if 5173 is taken — avoids silent drift to 5174/5175 from orphan Vite instances.
+    // Fail fast if the dev port is taken — avoids silent drift to another port.
     strictPort: true,
     // Ensure HMR websocket binds to localhost on the expected port
     host: 'localhost',
-    port: 5173,
+    port: devPort,
     hmr: {
       protocol: 'ws',
       host: 'localhost',
-      port: 5173,
+      port: devPort,
     },
   },
   resolve: {

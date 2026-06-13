@@ -1,12 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { ConfirmationModal } from '../../../components/ConfirmationModal';
-import {
-  AppHeader,
-  AppHeaderOverflowMenu,
-  FixedBottomBar,
-  ScreenShell,
-} from '../../../components/layout';
+import { AppHeader, FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { PlayerAvatar } from '../../../components/AvatarDisplay';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
 import { footerIslandClassName } from '../../../constants/footerLayout';
@@ -117,7 +112,7 @@ export const PreRoundScreen = () => {
       <ScreenShell
         layout="fullPx8"
         className={`${currentTheme.bg} text-center relative`}
-        contentClassName="justify-center items-center"
+        contentClassName="flex flex-col justify-center items-center min-h-[calc(100dvh-var(--app-page-header-height,0px)-var(--footer-island-scroll-padding))]"
         headerFixed
         footerFixed
         header={
@@ -131,11 +126,6 @@ export const PreRoundScreen = () => {
             onBack={openExitConfirm}
             backAriaLabel={t.toMainMenu}
             menuItems={isTelegramSession ? undefined : menuItems}
-            right={
-              isTelegramSession ? (
-                <AppHeaderOverflowMenu items={menuItems} ariaLabel={t.toMainMenu} />
-              ) : undefined
-            }
           />
         }
         footer={

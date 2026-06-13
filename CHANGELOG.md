@@ -30,7 +30,25 @@
 
 ## [Unreleased]
 
+### Added
+- TEST-COV-001 epic closure (Session 11): full verify green; server **402** / client **480** / shared **36**; server coverage **75.63%**; docs canon sync (`TESTING_ACCEPTANCE`, `AGENT_BRIEF`, `AUDIT_RESULTS` Block K, `INDEX`)
+- Root `test:client` script — parity with `test:server` (TEST-COV-001 Session 10)
+- E2E `@extended` store/profile flows (TEST-COV-001 Session 9): `extended-profile.spec.ts`, `extended-store.spec.ts`, `auth-session` + `menu-ui` helpers, `seed-e2e-auth-user.ts`; optional `pnpm --filter @movli/e2e run test:extended`
+- `@movli/shared` contract tests (TEST-COV-001 Session 8): `events.test.ts` — `ROOM_ERROR_CODES` drift guard incl. `RELAY_*`; `network.test.ts` — legacy `NetworkMessage` types; expanded `lobbyReadiness.test.ts` (0 players, SOLO edge cases) + `utils.test.ts` (`DEFAULT_APP_THEME`, `MOCK_WORDS`); shared **36** tests
+- Client `api.ts` + in-lobby `SettingsScreen` tests (TEST-COV-001 Session 7): `api.test.ts` — `fetchProfile`, `saveLobbySettings`, `buyWithStars` 401/500/200, lobby cache, auth events; `SettingsScreen.test.tsx` — host `UPDATE_SETTINGS`, guest read-only, save → LOBBY; `api.ts` **~47%**; client **480** tests
+- Client Profile + Store screens RTL smoke (TEST-COV-001 Session 6): `ProfileScreen.test.tsx` (guest login CTA, lobby-settings gate, auth stats + settings nav), `StoreScreen.test.tsx` (catalog render, guest buy gate, QuickBuy modal), `MyWordPacksScreen.test.tsx` (locked gate, unlocked list/create); client **460** tests `App.test.tsx` table-driven `GameRouter` (22 cases), `GameFlow.test.tsx` CLASSIC/IMPOSTER branches (11 cases), `GameContext.test.tsx` +4 — online socket `CORRECT`, offline sync ignore, `?room=` deep link; client **452** tests
+- Client GameFlow Vitest smoke (TEST-COV-001 Session 4): `PreRoundScreen`, `CountdownScreen`, `PlayingScreen`, `RoundSummaryScreen`, `ScoreboardScreen`, `ImposterScreen` RTL tests + `gameFlowFixtures.ts`; GameFlow folder **~55%** coverage (client **415** tests)
+- Server purchases + admin routes integration tests (TEST-COV-001 Session 3): `purchases.routes.test.ts` — webhook branches (`checkout.session.completed`, `payment_intent.succeeded`, expired/canceled abandon), idempotency, already-purchased 409, free claim; `admin.routes.test.ts` — word pack CRUD, JWT/anonymous 401; `purchases.ts` **~49%**, `admin.ts` **~50%** (server **402** tests)
+- Server socketHandlers integration tests (TEST-COV-001 Session 2): `socketHandlers.int.test.ts` — `ROOM_FULL`, grace expiry rejoin, host migration, auth `hostUserId`, relay `RELAY_TIMEOUT` / `RELAY_UNAVAILABLE`; `socketHandlers.ts` coverage **~71%** (server **383** tests)
+- Server auth routes integration tests (TEST-COV-001 Session 1): `auth.routes.test.ts` — `/me`, profile HTML sanitize, lobby settings, `sync-telegram-avatar`, `/telegram` HMAC; `auth.ts` coverage **~59%** (server **370** tests)
+
+### Changed
+- E2E Playwright: local dev uses ports 3002/5175 and `reuseExistingServer: false` to avoid Docker stack conflicts; Vite dev proxy reads `VITE_SERVER_URL` / `VITE_DEV_PORT`
+
 ### Fixed
+- Profile settings Micro A: avatar preview reflects trimmed in-game name; long email truncates at 375px; avatar picker enforces 44px tap targets
+- In-lobby settings header uses `ScreenTitle` (consistent with menu profile settings)
+- Client test act() hygiene (TEST-COV-001 Session 10): `QuickBuyModal.test.tsx` async settle via `waitFor`; `LobbyScreen.test.tsx` awaits layout effects; sync `ResizeObserver` polyfill in `test/setup.ts` — 0 act warnings in target files
 - E2E: dismiss anonymous login sheet before menu interactions (`gotoHome`, `guestJoinByCode`); fixes bottom-sheet backdrop blocking clicks after rebrand login prompt
 - E2E: playing-state assertions use `correctRe` / `guestGuessRe` (strict mode when timer + button both visible); CI `E2E_DATABASE_URL` db name `movli` (was `alias`)
 - Client unit test `LazyRouteFallback.test.tsx` aligned with `EmbeddedBootLoading` + `ScreenShell` `h-full` contract
@@ -40,6 +58,7 @@
 - Home screen `HomeWordRain` was hidden behind opaque `ScreenShell` (`bg-ui-bg`); menu shell is now transparent so ambient words render above the page background
 
 ### Changed
+- TEST-COV-001 Session 0: baseline re-verified (357/398/17 unit green); docs sync — `AGENT_BRIEF`, `TESTING_ACCEPTANCE` guard rows, epic status `in progress`
 - Home menu buttons unified with design system: `AccentFooterCta` (Create), `Button` secondary/tertiary (Join/Offline), `GlassIconButton` header actions; new `Button` variant `tertiary`; button taxonomy in `docs/UI_TOKENS.md`
 - **Rebrand ALIAS → MOVLI:** npm scope `@movli/*`, Redis key prefix `movli:`, localStorage keys `movli_*`, UI/PWA/admin copy, deploy defaults `~/apps/MOVLI`, Postgres user/db `movli`; component `MovliLogoMark`; steward skill `movli-master` / `movli-steward`
 - Home screen: localized tagline (`homeTagline` — «Говори · Вгадуй» / «Speak · Guess» / «Sag · Rate») replaces hardcoded "Premium Collection"; ambient multilingual `HomeWordRain` on menu (`Logo`, `MenuScreen`, `translations.ts`)
@@ -62,6 +81,7 @@
 - Telegram Desktop / macOS / Web: Mini App opens in a window instead of immersive fullscreen — skip `expand`/`requestFullscreen` and call `exitFullscreen` on desktop platforms (`useTelegramApp.ts`)
 
 ### Added
+- Test coverage audit and phased plan — `docs/TEST_COVERAGE_EXPANSION_PROMPTS.md` (TEST-COV-001, sessions 0–11); baseline sync in `AGENT_BRIEF`, `TESTING_ACCEPTANCE`, `docs/INDEX`
 - Telegram avatar in game: `Player.avatarUrl` synced on join; `PlayerAvatar` component (preset → photo URL → emoji); lobby and GameFlow screens use unified display
 - `POST /api/auth/profile/sync-telegram-avatar` — restore Telegram photo (clears preset `avatarId`, refreshes `avatarUrl` from validated `initData`); button in Profile Settings for Telegram accounts
 - LAYOUT-001 Phase 3: theme-aware `rounded-theme` utility (`--radius-theme` in `@theme`); surface SSOT `surfaceClasses.ts` (`SURFACE_PANEL_CLASS`, `SURFACE_CARD_CLASS`, nav row/accent); `profileSurfaceClasses.ts` re-exports aliases

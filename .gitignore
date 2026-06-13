@@ -38,6 +38,7 @@ packages/server/prisma/*.db
 packages/e2e/playwright-report/
 packages/e2e/test-results/
 packages/e2e/debug-*.png
+packages/e2e/.e2e-auth.json
 
 # Vitest coverage artifacts
 packages/server/coverage/

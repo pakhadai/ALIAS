@@ -100,6 +100,9 @@ describe('RulesModal', () => {
     const panel = screen.getByRole('dialog');
     expect(panel.className).toContain('bottom-sheet-panel--size-tall');
     expect(document.querySelector('[data-sheet-scroll]')).toBeTruthy();
+    expect(document.querySelector('[data-bottom-sheet-backdrop]')?.className).toContain(
+      'z-[var(--z-modal-nested)]'
+    );
     expect(screen.getByRole('heading', { name: 'Rules' })).toBeTruthy();
 
     await user.click(screen.getByRole('tab', { name: 'FAQ' }));

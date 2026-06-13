@@ -19,20 +19,19 @@ class ResizeObserverPolyfill {
   }
 
   observe(target: Element): void {
-    queueMicrotask(() => {
-      this.callback(
-        [
-          {
-            target,
-            contentRect: target.getBoundingClientRect(),
-            borderBoxSize: [],
-            contentBoxSize: [],
-            devicePixelContentBoxSize: [],
-          } as ResizeObserverEntry,
-        ],
-        this as unknown as ResizeObserver
-      );
-    });
+    // Sync callback — runs during useEffect inside RTL render act(), avoids act() stderr noise.
+    this.callback(
+      [
+        {
+          target,
+          contentRect: target.getBoundingClientRect(),
+          borderBoxSize: [],
+          contentBoxSize: [],
+          devicePixelContentBoxSize: [],
+        } as ResizeObserverEntry,
+      ],
+      this as unknown as ResizeObserver
+    );
   }
 
   disconnect(): void {}

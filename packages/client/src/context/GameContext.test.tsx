@@ -20,6 +20,7 @@ type SocketHandlers = {
 
 let socketHandlers: SocketHandlers | null = null;
 const sendGameAction = vi.fn();
+const checkRoomExists = vi.fn();
 const createRoom = vi.fn();
 const leaveRoom = vi.fn(() => {
   mockSocketApi.roomCode = '';
@@ -42,7 +43,7 @@ vi.mock('../hooks/useSocketConnection', () => ({
       joinRoom: vi.fn(),
       leaveRoom,
       sendGameAction,
-      checkRoomExists: vi.fn(),
+      checkRoomExists,
       get isConnected() {
         return mockSocketApi.isConnected;
       },
@@ -107,6 +108,9 @@ function Probe() {
       </button>
       <button type="button" onClick={() => game.handleCorrect()}>
         correct
+      </button>
+      <button type="button" onClick={() => game.handleSkip()}>
+        skip
       </button>
       <span data-testid="score-to-win">{game.settings.general.scoreToWin}</span>
       <span data-testid="game-mode">{game.gameMode}</span>
@@ -200,6 +204,7 @@ describe('GameProvider', () => {
   beforeEach(() => {
     socketHandlers = null;
     sendGameAction.mockReset();
+    checkRoomExists.mockReset();
     createRoom.mockReset();
     mockSocketApi.isConnected = false;
     mockSocketApi.isReconnecting = false;
@@ -207,6 +212,7 @@ describe('GameProvider', () => {
     mockSocketApi.myPlayerId = 'p-host';
     leaveRoom.mockClear();
     localStorage.clear();
+    window.history.replaceState({}, '', '/');
   });
 
   it('should apply full game:state-sync payload from socket handler', async () => {
@@ -338,6 +344,88 @@ describe('GameProvider', () => {
     });
 
     expect(sendGameAction).not.toHaveBeenCalled();
+  });
+
+  it('should route handleSkip to offline reducer without socket when gameMode is OFFLINE', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      screen.getByText('start-offline').click();
+      screen.getByText('set-playing').click();
+    });
+
+    await act(async () => {
+      screen.getByText('skip').click();
+    });
+
+    expect(sendGameAction).not.toHaveBeenCalled();
+  });
+
+  it('should send CORRECT to socket when online room is ready', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      socketHandlers?.onRejoined('12345', 'p-host');
+      socketHandlers?.onStateSync(baseSync({ gameState: GameState.PLAYING }));
+    });
+
+    mockSocketApi.isConnected = true;
+    mockSocketApi.roomCode = '12345';
+
+    await act(async () => {
+      screen.getByText('correct').click();
+    });
+
+    expect(sendGameAction).toHaveBeenCalledWith({ action: 'CORRECT' });
+  });
+
+  it('should ignore socket state-sync when gameMode is OFFLINE', async () => {
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      screen.getByText('start-offline').click();
+      screen.getByText('set-playing').click();
+    });
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.PLAYING);
+
+    await act(async () => {
+      socketHandlers?.onStateSync(baseSync({ gameState: GameState.LOBBY }));
+    });
+
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.PLAYING);
+    expect(sendGameAction).not.toHaveBeenCalled();
+  });
+
+  it('should navigate to ENTER_NAME when ?room= deep link finds a valid room', async () => {
+    checkRoomExists.mockResolvedValue(true);
+    window.history.replaceState({}, '', '/?room=12345');
+
+    render(
+      <GameProvider>
+        <Probe />
+      </GameProvider>
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(checkRoomExists).toHaveBeenCalledWith('12345');
+    expect(screen.getByTestId('game-state').textContent).toBe(GameState.ENTER_NAME);
+    expect(screen.getByTestId('room-code').textContent).toBe('12345');
+    expect(window.location.search).toBe('');
   });
 
   it('should join offline lobby via handleJoin without createRoom', async () => {

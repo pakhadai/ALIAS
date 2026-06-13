@@ -2,7 +2,7 @@
 
 Цей файл — **стислий, але глибший архітектурний аудит** монорепозиторію: фактичні `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig*`, `docker-compose.yml`, `packages/server/prisma/schema.prisma` та пайплайни **GitHub Actions**. Детальні протоколи Socket.IO, ігрові правила, env і деплой — у канонічному [`README.md`](./README.md).
 
-**Оновлено:** 2026-06-13 (verify pass: rebrand docs sync, E2E login dismiss, Postgres `movli` credentials).
+**Оновлено:** 2026-06-13 (TEST-COV-001 epic closed: verify green, server 402 / client 480 / shared 36, coverage 75.63%).
 
 ---
 
@@ -18,7 +18,7 @@
 | Node (вимоги) | Корінь: `engines.node` **>=20**; **CI** (`.github/workflows/ci.yml`) і **Dockerfile** — **Node 20** |
 | ESLint | `eslint.config.mjs` у корені + devDeps ESLint 9 / typescript-eslint |
 
-**Кореневі скрипти** (узгоджені з README): `dev` (паралельно client+server), `build` (Turbo), `typecheck`, `verify`, `lint` / `format:*`, `test:server`, `test:e2e`, `build:shared`, `build:pnpm` тощо.
+**Кореневі скрипти** (узгоджені з README): `dev` (паралельно client+server), `build` (Turbo), `typecheck`, `verify`, `lint` / `format:*`, `test:server`, `test:client`, `test:e2e`, `build:shared`, `build:pnpm` тощо.
 
 ---
 

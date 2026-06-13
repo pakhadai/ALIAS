@@ -71,6 +71,7 @@ export function LoginModal({ open, onDismiss }: LoginModalProps) {
       open={open}
       onClose={onDismiss}
       onBackdropClick={() => undefined}
+      backdropClassName="bottom-sheet-backdrop--chrome-pass-through"
       zLayer="modal"
       size="default"
       showClose
