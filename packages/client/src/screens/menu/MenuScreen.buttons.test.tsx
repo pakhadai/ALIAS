@@ -96,10 +96,14 @@ vi.mock('../../hooks/useT', () => ({
   }),
 }));
 
-vi.mock('../../hooks/useTelegramApp', () => ({
-  isTelegramMiniApp: () => false,
-  hasTelegramInitData: () => false,
-}));
+vi.mock('../../hooks/useTelegramApp', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/useTelegramApp')>();
+  return {
+    ...actual,
+    isTelegramMiniApp: () => false,
+    hasTelegramInitData: () => false,
+  };
+});
 
 vi.mock('../../utils/fullscreen', () => ({
   toggleFullscreen: vi.fn().mockResolvedValue('entered'),

@@ -270,7 +270,7 @@ describe('LobbyScreen', () => {
     renderLobbyScreen();
 
     await user.click(screen.getByTestId('app-header-back'));
-    const dialog = await waitFor(() => screen.getByRole('alertdialog'), { timeout: 10_000 });
+    const dialog = await waitFor(() => screen.getByRole('alertdialog'));
     expect(within(dialog).getByRole('heading', { name: 'Leave?' })).toBeTruthy();
     expect(within(dialog).getByText('Sure?')).toBeTruthy();
 
