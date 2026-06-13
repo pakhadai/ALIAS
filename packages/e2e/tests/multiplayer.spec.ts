@@ -1,15 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
   closeTwoPlayerSession,
+  correctRe,
   createTwoPlayerLobby,
   GUEST_NAME,
-  HOST_NAME,
   guestJoinByCode,
   playingNowRe,
   readRoomCode,
   startRoundToPlaying,
   submitName,
   createGameRe,
+  gotoHome,
+  installE2eBrowserSession,
+  guestGuessRe,
+  HOST_NAME,
 } from './helpers/game-ui';
 
 test.describe.configure({ mode: 'serial' });
@@ -37,9 +41,14 @@ test.describe('Multiplayer (2 players)', () => {
     try {
       await startRoundToPlaying(session.host, session.guest);
 
-      await expect(session.host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+      await expect(session.host.getByRole('button', { name: correctRe })).toBeVisible({
+        timeout: 90_000,
+      });
       await expect(
-        session.guest.getByText(playingNowRe).or(session.guest.getByText(/\d{1,2}:\d{2}/))
+        session.guest
+          .getByText(guestGuessRe)
+          .or(session.guest.getByText(playingNowRe))
+          .or(session.guest.getByRole('button', { name: correctRe }))
       ).toBeVisible({ timeout: 30_000 });
     } finally {
       await closeTwoPlayerSession(session);
@@ -55,7 +64,8 @@ test.describe('Multiplayer (2 players)', () => {
     const guestPage = await guestContext.newPage();
 
     try {
-      await hostPage.goto('/');
+      await installE2eBrowserSession(hostPage);
+      await gotoHome(hostPage);
       await hostPage.getByRole('button', { name: createGameRe }).click();
       await submitName(hostPage, HOST_NAME);
       const roomCode = await readRoomCode(hostPage);

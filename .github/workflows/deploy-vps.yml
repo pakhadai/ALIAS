@@ -4,14 +4,14 @@
 #   VPS_HOST              — IP або hostname сервера
 #   VPS_USER              — SSH-користувач (наприклад ubuntu, deploy)
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
-#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: alias ≠ ALIAS). Якщо не задано — $HOME/apps/ALIAS
+#   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: movli ≠ MOVLI). Якщо не задано — $HOME/apps/MOVLI
 #
 # Опційно:
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
 #   VPS_COMPOSE_FILE      — compose-файл у корені клону. Якщо не задано: спочатку docker-compose.npm.yml (якщо є), інакше docker-compose.prod.yml
 #   VPS_ENV_FILE          — env для compose (default: .env.prod)
-#   VPS_COMPOSE_PROJECT   — опційно: docker compose -p (наприклад alias), щоб імена контейнерів збігалися з VPS
+#   VPS_COMPOSE_PROJECT   — опційно: docker compose -p (наприклад movli), щоб імена контейнерів збігалися з VPS
 #
 # На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
 #   - `.env.prod` у корені клону (з `.env.prod.example`), НЕ в git
@@ -74,7 +74,7 @@ jobs:
 
       # Prisma Client must exist before `tsc` (postinstall runs prisma generate; explicit step if cache skipped).
       - name: Prisma generate
-        run: pnpm --filter @alias/server exec prisma generate
+        run: pnpm --filter @movli/server exec prisma generate
 
       - name: Typecheck
         run: pnpm typecheck
@@ -86,10 +86,10 @@ jobs:
         run: pnpm format:check
 
       - name: Server tests + coverage thresholds
-        run: pnpm --filter @alias/server test:coverage
+        run: pnpm --filter @movli/server test:coverage
 
       - name: Client tests
-        run: pnpm --filter @alias/client test
+        run: pnpm --filter @movli/client test
 
   deploy:
     name: Deploy to VPS
@@ -125,7 +125,7 @@ jobs:
             DEPLOY_PATH="${DEPLOY_PATH%/}"
             while [[ "$DEPLOY_PATH" == */ ]]; do DEPLOY_PATH="${DEPLOY_PATH%/}"; done
             if [ -z "$DEPLOY_PATH" ]; then
-              DEPLOY_PATH="$HOME/apps/ALIAS"
+              DEPLOY_PATH="$HOME/apps/MOVLI"
               echo "VPS_DEPLOY_PATH not set — using default: $DEPLOY_PATH"
             fi
             COMPOSE_FILE="${{ secrets.VPS_COMPOSE_FILE }}"

@@ -153,8 +153,8 @@
   .ui-app-header::after {
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 82%, transparent) 0%,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 54%, transparent) 62%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 90%, transparent) 0%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 68%, transparent) 62%,
       transparent 100%
     );
     mask-image: none;
@@ -294,8 +294,8 @@
   .footer-island::after {
     background: linear-gradient(
       to top,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 82%, transparent) 0%,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 54%, transparent) 62%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 90%, transparent) 0%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 68%, transparent) 62%,
       transparent 100%
     );
     mask-image: none;
@@ -340,4 +340,27 @@ html[data-footer-island] {
     -webkit-mask-image: none;
     box-shadow: none;
   }
+}
+
+/* ── Desktop TMA — opaque header/footer chrome (no backdrop-filter dependency) ── */
+
+html[data-telegram-desktop] .ui-app-header,
+html[data-telegram-desktop] .ui-app-footer,
+html[data-telegram-desktop] .footer-island {
+  --ui-app-header-feather-height: 0px;
+  --ui-app-footer-feather-height: 0px;
+}
+
+html[data-telegram-desktop] .ui-app-header::before,
+html[data-telegram-desktop] .ui-app-footer::before,
+html[data-telegram-desktop] .footer-island::before {
+  display: none;
+}
+
+html[data-telegram-desktop] .ui-app-header::after,
+html[data-telegram-desktop] .ui-app-footer::after,
+html[data-telegram-desktop] .footer-island::after {
+  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 92%, transparent);
+  mask-image: none;
+  -webkit-mask-image: none;
 }

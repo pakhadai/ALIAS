@@ -12,6 +12,8 @@ export const enterRoomRe = /Увійти|Enter|Eintreten/i;
 export const startGameRe = /^(Почати гру|Start|Starten)$/i;
 export const imReadyRe = /Я ГОТОВИЙ|I'M READY|ICH BIN BEREIT/i;
 export const playingNowRe = /Зараз грає|Playing|Spielt gerade/i;
+/** Non-explainer view during PLAYING (`GuesserFeedback`). */
+export const guestGuessRe = /Ви відгадуєте|You guess|Ihr ratet/i;
 export const correctRe = /Вгадано|Correct|Richtig/i;
 export const continueRe = /Далі|Continue|Weiter/i;
 export const roundSummaryRe = /Час вийшов|Time's up|Zeit um/i;
@@ -60,6 +62,23 @@ export type TwoPlayerSession = {
 
 const dismissLoginRe =
   /Продовжити без входу|Continue without signing in|Ohne Anmeldung fortfahren/i;
+
+const LOGIN_DISMISSED_STORAGE_KEY = 'movli_login_dismissed';
+
+/**
+ * Per-page E2E bootstrap: strip TMA detection and skip auto login sheet on menu.
+ * Call before the first navigation on each Page (safe to repeat).
+ */
+export async function installE2eBrowserSession(page: Page): Promise<void> {
+  await neuterTelegramMiniAppDetection(page);
+  await page.addInitScript((storageKey: string) => {
+    try {
+      sessionStorage.setItem(storageKey, '1');
+    } catch {
+      /* noop — private mode */
+    }
+  }, LOGIN_DISMISSED_STORAGE_KEY);
+}
 
 /**
  * Telegram Web App SDK loads in `index.html` for all browsers — strip detection fields so
@@ -122,9 +141,26 @@ export function lobbyStartButton(page: Page): Locator {
 /** Anonymous web app shows a login sheet on the menu — dismiss before game flows. */
 export async function dismissLoginModalIfOpen(page: Page): Promise<void> {
   const btn = page.getByRole('button', { name: dismissLoginRe });
-  if (await btn.isVisible().catch(() => false)) {
+  const visible = await btn
+    .waitFor({ state: 'visible', timeout: 8_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (visible) {
     await btn.click();
+    await expect(page.locator('[data-bottom-sheet-backdrop][data-open="true"]')).toHaveCount(0, {
+      timeout: 10_000,
+    });
   }
+}
+
+/** Navigate to home and dismiss the anonymous login sheet when present. */
+export async function gotoHome(page: Page): Promise<void> {
+  await installE2eBrowserSession(page);
+  await page.goto('/');
+  await dismissLoginModalIfOpen(page);
+  await expect(page.locator('[data-bottom-sheet-backdrop][data-open="true"]')).toHaveCount(0, {
+    timeout: 5_000,
+  });
 }
 
 export async function submitName(page: Page, name: string): Promise<void> {
@@ -153,6 +189,7 @@ export async function guestJoinByCode(
   name = GUEST_NAME
 ): Promise<void> {
   await guest.goto('/');
+  await dismissLoginModalIfOpen(guest);
   await guest.getByTestId('menu-join-game').click();
   await guest.getByTestId('menu-quick-join-code').fill(roomCode);
   await guest.getByTestId('menu-quick-join-submit').click();
@@ -228,11 +265,10 @@ export async function createTwoPlayerLobby(browser: Browser): Promise<TwoPlayerS
   const host = await hostContext.newPage();
   const guest = await guestContext.newPage();
 
-  await neuterTelegramMiniAppDetection(host);
-  await neuterTelegramMiniAppDetection(guest);
+  await installE2eBrowserSession(host);
+  await installE2eBrowserSession(guest);
 
-  await host.goto('/');
-  await dismissLoginModalIfOpen(host);
+  await gotoHome(host);
   await host.getByTestId('menu-create-game').click();
   await submitName(host, HOST_NAME);
   const roomCode = await readRoomCode(host);
@@ -261,12 +297,18 @@ export async function startFromLobby(host: Page): Promise<void> {
 
 export async function startRoundToPlaying(host: Page, guest?: Page): Promise<void> {
   await startFromLobby(host);
-  await expect(host.getByRole('button', { name: imReadyRe })).toBeVisible({ timeout: 45_000 });
-  await host.getByRole('button', { name: imReadyRe }).click();
-  await expect(host.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+  const readyBtn = host.getByRole('button', { name: imReadyRe });
+  await expect(readyBtn).toBeVisible({ timeout: 45_000 });
+  await clickFixedChrome(readyBtn);
+  await expect(host.getByRole('button', { name: correctRe })).toBeVisible({ timeout: 90_000 });
   if (guest) {
-    // Opposing-team players stay on PreRound (no countdown) while another team explains.
-    await expect(guest.getByText(playingNowRe).or(guest.getByText(/\d{1,2}:\d{2}/))).toBeVisible({
+    // Opposing-team guest: guesser UI or (if still on pre-round) playing-now title.
+    await expect(
+      guest
+        .getByText(guestGuessRe)
+        .or(guest.getByText(playingNowRe))
+        .or(guest.getByRole('button', { name: correctRe }))
+    ).toBeVisible({
       timeout: 30_000,
     });
   }
@@ -377,9 +419,7 @@ export async function assignOfflinePlayerToTeam(
 }
 
 export async function startOfflineLobby(page: Page, hostName = 'Offline Host'): Promise<void> {
-  await neuterTelegramMiniAppDetection(page);
-  await page.goto('/');
-  await dismissLoginModalIfOpen(page);
+  await gotoHome(page);
   await page.getByTestId('menu-offline').click();
   await submitName(page, hostName);
   await addOfflinePlayer(page, 'Offline Guest');
@@ -405,6 +445,7 @@ export async function setMinimumRoundTime(host: Page): Promise<void> {
 }
 
 export async function lowerScoreToWin(host: Page, target = 10): Promise<void> {
+  const clampedTarget = Math.max(10, target);
   await openLobbySettingsRulesTab(host);
   const basics = host.getByRole('button', { name: lobbyRulesBasicsRe });
   const scoreInput = host.locator('input[type="number"]').last();
@@ -413,12 +454,11 @@ export async function lowerScoreToWin(host: Page, target = 10): Promise<void> {
   }
   await expect(scoreInput).toBeVisible({ timeout: 10_000 });
   const minusBtn = scoreInput.locator('xpath=..').getByRole('button', { name: '−' });
-  // Server default scoreToWin is 30; stepper uses ±5 (SettingsScreen).
-  while (Number(await scoreInput.inputValue()) > target) {
+  while (Number(await scoreInput.inputValue()) > clampedTarget) {
     await minusBtn.click();
   }
-  await expect(scoreInput).toHaveValue(String(target));
-  await expect(host.getByTestId('settings-score-to-win')).toHaveText(String(target), {
+  await expect(scoreInput).toHaveValue(String(clampedTarget));
+  await expect(host.getByTestId('settings-score-to-win')).toHaveText(String(clampedTarget), {
     timeout: 10_000,
   });
   await closeLobbySettings(host);

@@ -73,8 +73,8 @@ import type {
   InterServerEvents,
   SocketData,
   GameSyncState,
-} from '@alias/shared';
-import { GameState } from '@alias/shared';
+} from '@movli/shared';
+import { GameState } from '@movli/shared';
 
 type AppServer = IOServer<
   ClientToServerEvents,
@@ -457,7 +457,7 @@ describe('Socket handlers (integration)', () => {
     try {
       const mockStore = (globalThis as unknown as { __redisMockStore?: Map<string, string> })
         .__redisMockStore;
-      mockStore?.set('alias:room:writer:54321', 'stale-writer-instance');
+      mockStore?.set('movli:room:writer:54321', 'stale-writer-instance');
 
       const probe = createClient(redisUrl);
       redisClients.push(probe);

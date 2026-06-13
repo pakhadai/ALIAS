@@ -1,12 +1,12 @@
-# AGENT BRIEF — Alias Master
+# AGENT BRIEF — MOVLI Master
 
 > Цей файл — живий контекст для AI агента. Оновлюється після кожної сесії.
 > НЕ замінює README.md — доповнює його оперативним контекстом.
 
 ## TL;DR проєкту
 
-Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App.
-Монорепо: `@alias/shared` (типи) | `@alias/server` (Express+Socket.IO+Prisma+Redis) | `@alias/client` (React 19 PWA) | `@alias/e2e` (Playwright).
+MOVLI Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App.
+Монорепо: `@movli/shared` (типи) | `@movli/server` (Express+Socket.IO+Prisma+Redis) | `@movli/client` (React 19 PWA) | `@movli/e2e` (Playwright).
 Сервер авторитетний. Клієнт — thin display. Full state sync через `game:state-sync`.
 
 ## Поточний стан розробки
@@ -21,9 +21,9 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 
 | Пакет | Тести | Примітка |
 |-------|-------|----------|
-| `@alias/server` | **341** | unit + integration |
-| `@alias/client` | **285** | incl. Liquid Glass layout/TMA tests (59 files) |
-| `@alias/shared` | **12** | `utils.test.ts` |
+| `@movli/server` | **341** | unit + integration |
+| `@movli/client` | **376** | incl. TMA desktop layout + Liquid Glass tests (66 files) |
+| `@movli/shared` | **12** | `utils.test.ts` |
 
 **Coverage floor** (`packages/server/vitest.config.ts`, measured after Phases 1–7): **67%** stmts/lines, **71%** branches, **89%** functions. Core modules: GameEngine ~92%, RoomManager ~89%.
 
@@ -60,8 +60,9 @@ Alias Master = онлайн multiplayer гра (Taboo/Alias) + Telegram Mini App
 3. **teamsLocked** — блокує self-switch гравців, але не перешкоджає HOST перетасуванню
 4. **wordDeck in sync** — клієнт отримує shuffled deck але не показує гравцям (для офлайн режиму)
 5. **Relay** — якщо ROOM_ACTION_RELAY=0, крос-нодова relay вимкнена, single-node only
-6. **Prisma drift** — після змін schema.prisma завжди `pnpm --filter @alias/server db:migrate`
-7. **shared build** — після змін у @alias/shared завжди `pnpm build:shared` перед тестами
+6. **Prisma drift** — після змін schema.prisma завжди `pnpm --filter @movli/server db:migrate`
+7. **shared build** — після змін у @movli/shared завжди `pnpm build:shared` перед тестами
+8. **TMA desktop vs mobile** — layout overrides через `html[data-telegram-desktop]`, не media queries; mobile floor **104px** і gutter **80px** не зменшувати; canon `docs/TMA_LAYOUT.md#desktop-tma`
 
 ## Архітектурні рішення (зафіксовані)
 
@@ -89,14 +90,14 @@ pnpm verify                                 # typecheck + lint + format + covera
 pnpm typecheck                              # перевірка типів (0 помилок = норма)
 pnpm lint                                   # ESLint
 pnpm test:server                            # unit тести сервера
-pnpm --filter @alias/server test:coverage   # server tests + coverage thresholds
-pnpm --filter @alias/client test            # unit тести клієнта (44)
-pnpm --filter @alias/shared test            # shared utils (12)
-pnpm --filter @alias/server db:migrate      # нова міграція Prisma
-pnpm --filter @alias/server db:seed         # seed БД
+pnpm --filter @movli/server test:coverage   # server tests + coverage thresholds
+pnpm --filter @movli/client test            # unit тести клієнта (44)
+pnpm --filter @movli/shared test            # shared utils (12)
+pnpm --filter @movli/server db:migrate      # нова міграція Prisma
+pnpm --filter @movli/server db:seed         # seed БД
 pnpm build                                  # production build через Turbo
 pnpm test:e2e                               # Playwright (@smoke / @core у CI)
-pnpm --filter @alias/e2e run test -- --grep "@smoke"  # smoke E2E only
+pnpm --filter @movli/e2e run test -- --grep "@smoke"  # smoke E2E only
 ```
 
 ## Відкриті питання / ToDo для мене (власника)

@@ -2,7 +2,7 @@
 
 **Status:** `implemented` (Phases 0–7 ✅, 2026-06-11)  
 **Epic:** Уніфікація screen layout presets, footer width, border radius, surface patterns і поступова міграція `currentTheme.*` legacy  
-**Scope:** `packages/client` only (без `@alias/shared` / server, якщо не вказано явно)  
+**Scope:** `packages/client` only (без `@movli/shared` / server, якщо не вказано явно)  
 **Пов’язано:** [`UI_TOKENS.md`](./UI_TOKENS.md), [`TMA_LAYOUT.md`](./TMA_LAYOUT.md), [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md), [`PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`](./PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md)
 
 ---
@@ -109,8 +109,8 @@ Profile constants **реекспортують** з `surfaceClasses.ts` (backwar
 
 ```
 Перед змінами: .cursor/CURRENT_FOCUS.md, AUDIT_RESULTS.md, docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md (секція сесії).
-Після: pnpm typecheck, pnpm --filter @alias/client test (релевантні describe), CHANGELOG [Unreleased] якщо user-visible.
-Мінімальний diff. Не чіпати GameSyncState / @alias/shared без явного запиту.
+Після: pnpm typecheck, pnpm --filter @movli/client test (релевантні describe), CHANGELOG [Unreleased] якщо user-visible.
+Мінімальний diff. Не чіпати GameSyncState / @movli/shared без явного запиту.
 Не рефакторити поза scope сесії. Після UI — grep gates з секції сесії.
 ```
 
@@ -128,15 +128,15 @@ Profile constants **реекспортують** з `surfaceClasses.ts` (backwar
 
 | # | Швидкий промт |
 |---|---------------|
-| **0** | `@alias-steward Виконай сесію 0 з docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md (pre-flight + baseline grep).` |
-| **1** | `@alias-steward Сесія 1: ScreenShell layout= rollout — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **2** | `@alias-steward Сесія 2: footer island SSOT — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **3** | `@alias-steward Сесія 3: radius + surfaceClasses foundation — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **4a** | `@alias-steward Сесія 4a: theme legacy menu screens — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **4b** | `@alias-steward Сесія 4b: theme legacy lobby/settings — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **5** | `@alias-steward Сесія 5: surface migration incremental — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **6** | `@alias-steward Сесія 6 (optional): spacing tokens — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
-| **7** | `@alias-steward Сесія 7: verification + doc sync — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **0** | `@movli-steward Виконай сесію 0 з docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md (pre-flight + baseline grep).` |
+| **1** | `@movli-steward Сесія 1: ScreenShell layout= rollout — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **2** | `@movli-steward Сесія 2: footer island SSOT — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **3** | `@movli-steward Сесія 3: radius + surfaceClasses foundation — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **4a** | `@movli-steward Сесія 4a: theme legacy menu screens — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **4b** | `@movli-steward Сесія 4b: theme legacy lobby/settings — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **5** | `@movli-steward Сесія 5: surface migration incremental — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **6** | `@movli-steward Сесія 6 (optional): spacing tokens — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
+| **7** | `@movli-steward Сесія 7: verification + doc sync — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
 | **A** | `Мікро A: MenuScreen layout=canonical only — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
 | **B** | `Мікро B: game transitional layout presets — docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md` |
 
@@ -183,7 +183,7 @@ flowchart LR
 2. Запустити:
    ```bash
    pnpm typecheck
-   pnpm --filter @alias/client test
+   pnpm --filter @movli/client test
    ```
 3. Зафіксувати grep baseline у `docs/daily/YYYY-MM-DD.md`:
    ```bash
@@ -204,12 +204,12 @@ flowchart LR
 ### Повний промт
 
 ```
-@alias-steward Pre-flight: LAYOUT-001 Phase 0 — layout/surface unification baseline.
+@movli-steward Pre-flight: LAYOUT-001 Phase 0 — layout/surface unification baseline.
 
 Контекст: docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md (аудит 2026-06-11).
 Задача:
 1. Прочитай CURRENT_FOCUS, AUDIT_RESULTS, screenLayout.ts, ScreenShell.tsx.
-2. pnpm typecheck && pnpm --filter @alias/client test — зафіксуй результат.
+2. pnpm typecheck && pnpm --filter @movli/client test — зафіксуй результат.
 3. Запусти grep gates з секції «Сесія 0» цього doc; скопіюй counts у docs/daily/YYYY-MM-DD.md.
 4. Онови .cursor/CURRENT_FOCUS.md — LAYOUT-001 planned, next Phase 1.
 5. НЕ змінюй TSX/CSS у цій сесії.
@@ -260,7 +260,7 @@ rg "ScreenShell" packages/client/src/screens --glob "*.tsx" -l | while read f; d
 rg "ScreenShell[\s\S]{0,200}px-[468]" packages/client/src/screens --glob "*.tsx"
 
 pnpm typecheck
-pnpm --filter @alias/client test screenLayout ScreenShell
+pnpm --filter @movli/client test screenLayout ScreenShell
 ```
 
 ### Acceptance
@@ -272,7 +272,7 @@ pnpm --filter @alias/client test screenLayout ScreenShell
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 1 — ScreenShell layout= rollout.
+@movli-steward LAYOUT-001 Phase 1 — ScreenShell layout= rollout.
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 1 ПОВНІСТЮ перед кодом.
 
@@ -293,9 +293,9 @@ Prerequisite: Phase 0 baseline задокументований.
 2. contentClassName лишає vertical-only класи (flex, gap, py, justify, items).
 3. НЕ змінюй header/footer slots, game actions, sendAction, GameState transitions.
 4. Онови/додай unit tests для preset merge.
-5. Запусти grep gates §1; pnpm typecheck; pnpm --filter @alias/client test screenLayout ScreenShell.
+5. Запусти grep gates §1; pnpm typecheck; pnpm --filter @movli/client test screenLayout ScreenShell.
 
-Заборонено: PlayingScreen, ImposterScreen, @alias/shared, drive-by refactors інших екранів.
+Заборонено: PlayingScreen, ImposterScreen, @movli/shared, drive-by refactors інших екранів.
 Після: CHANGELOG [Unreleased] Changed (1 рядок), CURRENT_FOCUS.md, daily note.
 ```
 
@@ -351,7 +351,7 @@ rg "island contentClassName=" packages/client/src/screens --glob "*.tsx"
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 2 — footer island SSOT.
+@movli-steward LAYOUT-001 Phase 2 — footer island SSOT.
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 2.
 
@@ -365,7 +365,7 @@ rg "island contentClassName=" packages/client/src/screens --glob "*.tsx"
 
 НЕ змінюй FixedBottomBar default prop. НЕ чіпай non-island footers (PreRound gradient).
 
-Verify: grep gate §2, pnpm typecheck, pnpm --filter @alias/client test footerLayout.
+Verify: grep gate §2, pnpm typecheck, pnpm --filter @movli/client test footerLayout.
 CHANGELOG [Unreleased] Added: footer island layout presets.
 ```
 
@@ -406,7 +406,7 @@ rg "rounded-theme|rounded-\[var\(--theme-radius\)\]" packages/client/src/compone
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 3 — radius utility + surfaceClasses SSOT.
+@movli-steward LAYOUT-001 Phase 3 — radius utility + surfaceClasses SSOT.
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 3 і docs/UI_TOKENS.md.
 
@@ -418,7 +418,7 @@ rg "rounded-theme|rounded-\[var\(--theme-radius\)\]" packages/client/src/compone
 6. Онови docs/UI_TOKENS.md — Border radius + Surface classes tables.
 
 Scope: НЕ мігруй StoreScreen/RulesModal cards у цій сесії (Phase 5).
-pnpm typecheck && pnpm --filter @alias/client test surfaceClasses typography
+pnpm typecheck && pnpm --filter @movli/client test surfaceClasses typography
 ```
 
 ---
@@ -457,7 +457,7 @@ rg "currentTheme\.(textMain|textSecondary)" packages/client/src/screens/menu --g
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 4a — theme legacy migration (menu screens).
+@movli-steward LAYOUT-001 Phase 4a — theme legacy migration (menu screens).
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 4a.
 
@@ -470,7 +470,7 @@ Rules:
 - НЕ чіпай font-serif text-lg card titles без явної заміни — defer sub-heading до Phase 5.
 - Збережи всі data-testid / aria labels.
 
-Verify: grep gate 4a, pnpm typecheck, pnpm --filter @alias/client test menu profile
+Verify: grep gate 4a, pnpm typecheck, pnpm --filter @movli/client test menu profile
 CHANGELOG [Unreleased] Changed: menu screens use semantic ui color classes.
 ```
 
@@ -496,7 +496,7 @@ CHANGELOG [Unreleased] Changed: menu screens use semantic ui color classes.
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 4b — theme legacy migration (lobby).
+@movli-steward LAYOUT-001 Phase 4b — theme legacy migration (lobby).
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 4b.
 
@@ -505,8 +505,8 @@ Scope: packages/client/src/screens/lobby/** (exclude *.test.tsx).
 Rules: ті самі mapping rules що 4a. SettingsScreen.tsx — color class migration ONLY, no section reorder.
 OnlineLobbyIntro, TeamCard, LobbyPlayModeBar — textSecondary → text-ui-fg-muted де це body/status copy.
 
-Verify: pnpm typecheck, pnpm --filter @alias/client test lobby
-Не чіпай RoomManager, @alias/shared, server.
+Verify: pnpm typecheck, pnpm --filter @movli/client test lobby
+Не чіпай RoomManager, @movli/shared, server.
 ```
 
 ---
@@ -544,7 +544,7 @@ rg "ui-glass-panel rounded" packages/client/src/screens/menu --glob "*.tsx" -c
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 5 — incremental surface migration.
+@movli-steward LAYOUT-001 Phase 5 — incremental surface migration.
 
 Прочитай docs/LAYOUT_SURFACE_UNIFICATION_PROMPTS.md § Сесія 5.
 
@@ -584,7 +584,7 @@ export const stackGap = 'gap-4';
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 6 (optional) — spacing constants.
+@movli-steward LAYOUT-001 Phase 6 (optional) — spacing constants.
 
 Створи packages/client/src/constants/spacing.ts з 4–6 named Tailwind fragment constants (див. §6).
 Мігруй ProfileSettingsScreen, LobbySettingsScreen, PlayerStatsScreen contentClassName/inner wrappers.
@@ -638,7 +638,7 @@ pnpm verify
 ### Повний промт
 
 ```
-@alias-steward LAYOUT-001 Phase 7 — verification + doc sync.
+@movli-steward LAYOUT-001 Phase 7 — verification + doc sync.
 
 1. Запусти всі grep gates з § Сесія 7. Виправ мінімально якщо fail.
 2. Синхронізуй TMA_LAYOUT.md floor 88→104, додай footer preset table.
@@ -662,7 +662,7 @@ LAYOUT-001 Micro A: MenuScreen.tsx only.
 layout="canonical" на ScreenShell.
 Прибрати max-w-2xl mx-auto w-full з contentClassName — залишити flex/min-h-0 класи.
 Перевір: AppHeader back rail alignment з body (ScreenLayoutContext).
-pnpm --filter @alias/client test MenuScreen
+pnpm --filter @movli/client test MenuScreen
 Не чіпати інші файли.
 ```
 
@@ -701,7 +701,7 @@ pnpm typecheck + client tests
 
 ```bash
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 # після Phase 1+ UI:
 rg "layout=" packages/client/src/screens/menu/MenuScreen.tsx
 ```

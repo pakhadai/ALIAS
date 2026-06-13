@@ -9,7 +9,15 @@ import { PREFS_KEY } from '../context/gameReducer';
 const PREFS_PARSE_COOLDOWN_MS = 800;
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'dangerSolid' | 'success' | 'outline' | 'ghost';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'danger'
+    | 'dangerSolid'
+    | 'success'
+    | 'outline'
+    | 'ghost';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   icon?: React.ReactNode;
@@ -77,6 +85,8 @@ export const Button: React.FC<ButtonProps> = ({
         return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':
         return 'bg-ui-surface text-ui-fg-muted hover:text-ui-fg border border-ui-border hover:bg-ui-surface-hover';
+      case 'tertiary':
+        return 'bg-transparent border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface/40 active:bg-ui-surface/40';
       case 'ghost':
         return 'bg-transparent text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover';
       default:

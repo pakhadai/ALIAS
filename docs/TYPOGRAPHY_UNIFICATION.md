@@ -2,7 +2,7 @@
 
 **Status:** `implemented` ✅ (Phases 0–7 complete, 2026-06-08); epic **closed**  
 **Epic:** Semantic typography tokens + міграція захардкоджених `text-[Npx]`  
-**Scope:** `packages/client` (без змін `@alias/shared` / server)  
+**Scope:** `packages/client` (без змін `@movli/shared` / server)  
 **Пов’язано:** [`UI_TOKENS.md`](./UI_TOKENS.md), [`TMA_LAYOUT.md`](./TMA_LAYOUT.md), [`.cursor/rules/08-typography.mdc`](../.cursor/rules/08-typography.mdc)
 
 ---
@@ -65,7 +65,7 @@
 | `text-[9px]`…`text-[11px]` labels | `text-ui-label` |
 | `text-[10px]` CTA на кнопках (не `Button`) | `text-ui-label` або `Button` size |
 | `text-xs` banners / status | `text-ui-system` |
-| `text-7xl` ALIAS | **без змін** |
+| `text-7xl` MOVLI | **без змін** |
 
 ### Font loading (після Phase 6)
 
@@ -114,14 +114,14 @@
 ### Verification
 
 ```bash
-pnpm --filter @alias/client test typography
+pnpm --filter @movli/client test typography
 pnpm typecheck
 ```
 
 ### Session prompt — Phase 1
 
 ```
-@alias-steward Pre-flight: TYPO-001 Phase 1 — typography token foundation.
+@movli-steward Pre-flight: TYPO-001 Phase 1 — typography token foundation.
 
 Контекст: docs/TYPOGRAPHY_UNIFICATION.md (цільова шкала 5 ролей).
 Задача:
@@ -163,7 +163,7 @@ pnpm typecheck
 ```bash
 rg "font-serif text-(2xl|3xl|\[26px\])" packages/client/src/screens/menu packages/client/src/screens/admin --glob "*.tsx"
 # Має зменшитись до 0 або лише // escape
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 pnpm typecheck
 ```
 

@@ -36,7 +36,7 @@ export function loadE2eEnvFile(): void {
  * DB URL for E2E. Prefer explicit env so we never pick a wrong `packages/server/.env` URL
  * (common when local Postgres differs from `docker compose` postgres).
  *
- * Order: E2E_DATABASE_URL → DATABASE_URL → docker-compose.yml default (alias / alias_dev).
+ * Order: E2E_DATABASE_URL → DATABASE_URL → docker-compose.yml default (movli / movli_dev).
  */
 export function resolveDatabaseUrl(): string {
   if (process.env.E2E_DATABASE_URL?.trim()) {
@@ -45,5 +45,5 @@ export function resolveDatabaseUrl(): string {
   if (process.env.DATABASE_URL?.trim()) {
     return process.env.DATABASE_URL.trim();
   }
-  return 'postgresql://alias:alias_dev@127.0.0.1:5432/alias?schema=public';
+  return 'postgresql://movli:movli_dev@127.0.0.1:5432/movli?schema=public';
 }

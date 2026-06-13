@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Language } from '@alias/shared';
+import type { Language } from '@movli/shared';
 import { GameState } from '../types';
 import { getUiStrings } from './useT';
 import {

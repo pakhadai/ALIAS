@@ -1,5 +1,5 @@
 import type { MutableRefObject, Dispatch } from 'react';
-import type { GameActionPayload } from '@alias/shared';
+import type { GameActionPayload } from '@movli/shared';
 import type { Action } from './gameReducer';
 import { initialState } from './gameReducer';
 import type { AppState, Player, Team } from '../types';
@@ -10,7 +10,7 @@ import {
   getTeamColor,
   getTeamColorToken,
   shuffleArray,
-} from '@alias/shared';
+} from '@movli/shared';
 import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
 import { buildTeamShells } from '../utils/buildTeamShells';
 import { AVATARS } from '../utils/avatars';
@@ -619,7 +619,7 @@ export function applyOfflineGameAction(
           imposterWord: null,
         },
       });
-      localStorage.removeItem('alias_active_session');
+      localStorage.removeItem('movli_active_session');
       break;
     case 'REMATCH': {
       const remTeams = stateRef.current.teams.map((t) => ({

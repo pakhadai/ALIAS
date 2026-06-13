@@ -14,7 +14,11 @@ vi.mock('../../services/api', () => ({
 }));
 
 vi.mock('../../hooks/useHapticFeedback', () => ({
-  useHapticFeedback: () => ({ notificationOccurred }),
+  useHapticFeedback: () => ({
+    notificationOccurred,
+    pattern: vi.fn(),
+    impactOccurred: vi.fn(),
+  }),
 }));
 
 vi.mock('../ModalSheet', () => ({

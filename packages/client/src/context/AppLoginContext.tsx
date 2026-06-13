@@ -5,7 +5,7 @@ import { useAuthContext } from './AuthContext';
 import { useGame } from './GameContext';
 import { shouldShowLoginModal } from './loginModalVisibility';
 
-const SESSION_DISMISSED_KEY = 'alias_login_dismissed';
+const SESSION_DISMISSED_KEY = 'movli_login_dismissed';
 
 interface AppLoginContextType {
   /** Re-open the app login sheet (e.g. from profile or gated features). */

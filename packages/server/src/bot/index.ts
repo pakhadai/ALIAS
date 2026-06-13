@@ -7,7 +7,7 @@ import type {
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from '@alias/shared';
+} from '@movli/shared';
 
 let botSingleton: Telegraf | null = null;
 let prismaSingleton: PrismaClient | null = null;
@@ -47,7 +47,7 @@ function buildStartMessage(): string {
   return [
     '👋 <b>Привіт!</b>',
     '',
-    'Ласкаво просимо в <b>Alias</b> — гру, де команда пояснює слова, не називаючи їх напряму.',
+    'Ласкаво просимо в <b>MOVLI</b> — гру, де команда пояснює слова, не називаючи їх напряму.',
     '',
     '<b>Як грати:</b>',
     '• Створюй кімнату або приєднуйся за кодом',

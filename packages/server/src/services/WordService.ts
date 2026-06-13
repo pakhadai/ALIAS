@@ -1,9 +1,9 @@
-import { Category, MOCK_WORDS, shuffleArray } from '@alias/shared';
+import { Category, MOCK_WORDS, shuffleArray } from '@movli/shared';
 // Absolute minimum fallback — shown only if the DB is down AND MOCK_WORDS is empty
 const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'Вода', 'Сонце', 'Книга', 'Місяць'];
-import type { GameSettings } from '@alias/shared';
+import type { GameSettings } from '@movli/shared';
 import type { PrismaClient } from '@prisma/client';
-import { GameMode } from '@alias/shared';
+import { GameMode } from '@movli/shared';
 
 export class WordService {
   private prisma: PrismaClient | null = null;
@@ -246,7 +246,7 @@ export class WordService {
     }
 
     const word = currentDeck.pop() ?? '';
-    const emergencyWord = EMERGENCY_WORDS[0] ?? 'Alias';
+    const emergencyWord = EMERGENCY_WORDS[0] ?? 'MOVLI';
     return {
       word: word || emergencyWord,
       deck: currentDeck,

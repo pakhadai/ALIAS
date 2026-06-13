@@ -7,7 +7,7 @@ export {
   MAX_PLAYERS,
   TEAM_COLORS,
   MOCK_WORDS,
-} from '@alias/shared';
+} from '@movli/shared';
 
 export const ACTION_DEBOUNCE_MS = 250;
 
@@ -18,6 +18,8 @@ export const UI_THEME_IDS = (Object.values(AppTheme) as AppTheme[]).filter(
 
 export type { TranslationValue } from './translations';
 export { TRANSLATIONS } from './translations';
+export { DEFAULT_HOME_TAGLINE, HOME_WORD_RAIN_WORDS, buildHomeWordRainItems } from './homeBrand';
+export type { HomeWordRainItem } from './homeBrand';
 export { TEAM_NAMES } from './team-names';
 export { THEME_CONFIG } from './themes';
 export { zIndex } from './zIndex';

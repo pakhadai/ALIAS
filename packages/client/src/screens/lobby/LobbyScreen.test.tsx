@@ -217,10 +217,14 @@ const isTelegramMiniApp = vi.fn(() => false);
 
 const hasTelegramInitData = vi.fn(() => false);
 
-vi.mock('../../hooks/useTelegramApp', () => ({
-  isTelegramMiniApp: () => isTelegramMiniApp(),
-  hasTelegramInitData: () => hasTelegramInitData(),
-}));
+vi.mock('../../hooks/useTelegramApp', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/useTelegramApp')>();
+  return {
+    ...actual,
+    isTelegramMiniApp: () => isTelegramMiniApp(),
+    hasTelegramInitData: () => hasTelegramInitData(),
+  };
+});
 
 function renderLobbyScreen() {
   return render(

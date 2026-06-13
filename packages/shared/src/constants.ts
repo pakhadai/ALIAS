@@ -2,6 +2,8 @@ import { AppTheme, Category, Language } from './enums';
 
 export const DEFAULT_APP_THEME = AppTheme.PAPER_LUXE;
 export const DEFAULT_ROUND_TIME = 60;
+/** Classic mode: auto-finish round after main timer if explainer is idle (ms). */
+export const TIME_UP_IDLE_FALLBACK_MS = 30_000;
 export const WINNING_SCORE = 30;
 export const ROOM_CODE_LENGTH = 5;
 export const MAX_PLAYERS = 20;

@@ -1,5 +1,5 @@
 // Re-export shared types and enums
-export { GameState, Language, Category, AppTheme, SoundPreset, GameMode } from '@alias/shared';
+export { GameState, Language, Category, AppTheme, SoundPreset, GameMode } from '@movli/shared';
 
 export type {
   Player,
@@ -12,7 +12,7 @@ export type {
   GameActionType,
   NetworkActionType,
   RoomErrorCode,
-} from '@alias/shared';
+} from '@movli/shared';
 
 /** In-game UI sound keys (see `playSoundEffect` in utils/audio) */
 export type GameSoundId = 'correct' | 'skip' | 'start' | 'end' | 'tick' | 'win' | 'click';
@@ -28,7 +28,7 @@ import type {
   GameTask,
   RoundStats,
   GameActionPayload,
-} from '@alias/shared';
+} from '@movli/shared';
 
 export type ImposterPhase = 'REVEAL' | 'DISCUSSION' | 'RESULTS';
 

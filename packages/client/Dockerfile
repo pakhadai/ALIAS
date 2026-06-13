@@ -21,12 +21,14 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # Build-time env vars injected by docker-compose build args
 ARG VITE_SERVER_URL=http://localhost:3001
 ARG VITE_GOOGLE_CLIENT_ID=
+ARG VITE_TG_APP_LINK=
 ENV VITE_SERVER_URL=$VITE_SERVER_URL
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_TG_APP_LINK=$VITE_TG_APP_LINK
 
 # Build shared first, then client
-RUN pnpm --filter @alias/shared build
-RUN pnpm --filter @alias/client build
+RUN pnpm --filter @movli/shared build
+RUN pnpm --filter @movli/client build
 
 # Production stage — nginx serving static files
 FROM nginx:1.27-alpine

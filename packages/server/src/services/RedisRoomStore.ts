@@ -1,18 +1,18 @@
 import Redis from 'ioredis';
-import type { GameSyncState } from '@alias/shared';
+import type { GameSyncState } from '@movli/shared';
 import { config } from '../config';
 
 const ROOM_TTL = 7200; // 2 hours
-const ROOM_PREFIX = 'alias:room:';
+const ROOM_PREFIX = 'movli:room:';
 /** Last process that persisted room JSON — ops hint for multi-instance (sticky session debugging). */
-const ROOM_WRITER_PREFIX = 'alias:room:writer:';
-const SOCKET_KEY_PREFIX = 'alias:socket:';
+const ROOM_WRITER_PREFIX = 'movli:room:writer:';
+const SOCKET_KEY_PREFIX = 'movli:socket:';
 /**
  * Separate prefix for the IMPOSTER secret word.
- * Intentionally NOT under `alias:room:` so the SCAN in getLiveStats never counts it.
+ * Intentionally NOT under `movli:room:` so the SCAN in getLiveStats never counts it.
  * The word is never included in GameSyncState (it's secret from all clients).
  */
-const IMPOSTER_WORD_PREFIX = 'alias:imposter:';
+const IMPOSTER_WORD_PREFIX = 'movli:imposter:';
 
 /** Older Redis snapshots may omit fields added in newer releases. */
 function normalizeGameSyncState(raw: unknown): GameSyncState | null {

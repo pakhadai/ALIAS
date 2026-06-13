@@ -32,7 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prisma generate
-        run: pnpm --filter @alias/server exec prisma generate
+        run: pnpm --filter @movli/server exec prisma generate
 
       - name: Typecheck
         run: pnpm typecheck
@@ -44,10 +44,10 @@ jobs:
         run: pnpm format:check
 
       - name: Server tests + coverage thresholds
-        run: pnpm --filter @alias/server test:coverage
+        run: pnpm --filter @movli/server test:coverage
 
       - name: Client tests
-        run: pnpm --filter @alias/client test
+        run: pnpm --filter @movli/client test
 
   e2e_smoke:
     name: E2E smoke (Playwright)
@@ -57,13 +57,13 @@ jobs:
       postgres:
         image: public.ecr.aws/docker/library/postgres:16-alpine
         env:
-          POSTGRES_DB: alias
-          POSTGRES_USER: alias
-          POSTGRES_PASSWORD: alias_dev
+          POSTGRES_DB: movli
+          POSTGRES_USER: movli
+          POSTGRES_PASSWORD: movli_dev
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U alias -d alias"
+          --health-cmd "pg_isready -U movli -d movli"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -77,7 +77,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      E2E_DATABASE_URL: postgresql://alias:alias_dev@127.0.0.1:5432/alias?schema=public
+      E2E_DATABASE_URL: postgresql://movli:movli_dev@127.0.0.1:5432/movli?schema=public
       REDIS_URL: redis://127.0.0.1:6379
     steps:
       - name: Checkout
@@ -97,13 +97,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm --filter @alias/e2e run install:browsers
+        run: pnpm --filter @movli/e2e run install:browsers
 
       - name: Build shared package (required by server runtime)
-        run: pnpm --filter @alias/shared build
+        run: pnpm --filter @movli/shared build
 
       - name: Run smoke tests only
-        run: pnpm --filter @alias/e2e run test -- --grep "@smoke"
+        run: pnpm --filter @movli/e2e run test -- --grep "@smoke"
 
       - name: Upload Playwright report (always)
         if: always()
@@ -129,13 +129,13 @@ jobs:
       postgres:
         image: public.ecr.aws/docker/library/postgres:16-alpine
         env:
-          POSTGRES_DB: alias
-          POSTGRES_USER: alias
-          POSTGRES_PASSWORD: alias_dev
+          POSTGRES_DB: movli
+          POSTGRES_USER: movli
+          POSTGRES_PASSWORD: movli_dev
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U alias -d alias"
+          --health-cmd "pg_isready -U movli -d movli"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -149,7 +149,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      E2E_DATABASE_URL: postgresql://alias:alias_dev@127.0.0.1:5432/alias?schema=public
+      E2E_DATABASE_URL: postgresql://movli:movli_dev@127.0.0.1:5432/movli?schema=public
       REDIS_URL: redis://127.0.0.1:6379
     steps:
       - name: Checkout
@@ -169,17 +169,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm --filter @alias/e2e run install:browsers
+        run: pnpm --filter @movli/e2e run install:browsers
 
       - name: Build shared package (required by server runtime)
-        run: pnpm --filter @alias/shared build
+        run: pnpm --filter @movli/shared build
 
       # Run @core suite for each project separately (faster feedback / clearer failures).
       - name: Run @core on Desktop Chrome
-        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project=chromium
+        run: pnpm --filter @movli/e2e run test -- --grep "@core" --project=chromium
 
       - name: Run @core on Mobile Chrome (Pixel 5)
-        run: pnpm --filter @alias/e2e run test -- --grep "@core" --project=mobile-chrome
+        run: pnpm --filter @movli/e2e run test -- --grep "@core" --project=mobile-chrome
 
       - name: Upload Playwright report (always)
         if: always()

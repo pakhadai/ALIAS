@@ -6,7 +6,7 @@ import { OnlineLobbyIntro } from './OnlineLobbyIntro';
 import { GameMode } from '../../../types';
 import type { GameSettings, ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
-import { Category, Language, AppTheme, SoundPreset } from '@alias/shared';
+import { Category, Language, AppTheme, SoundPreset } from '@movli/shared';
 
 vi.mock('../../../hooks/useHapticFeedback', () => ({
   useHapticFeedback: () => ({

@@ -199,20 +199,24 @@ export function QuickBuyModal({
       ) : (
         <div className="flex flex-col gap-5">
           {canUseStars && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              fullWidth
+              size="lg"
               onClick={handleBuyStars}
               disabled={starsLoading}
-              className={`w-full rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover active:scale-[0.98] transition-all py-4 font-bold ${typographyClass.body} flex items-center justify-center gap-2 disabled:opacity-50`}
+              className="font-sans normal-case tracking-normal"
             >
               {starsLoading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" /> Відкриваємо оплату…
-                </>
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" aria-hidden />
+                  Відкриваємо оплату…
+                </span>
               ) : (
                 <>⭐ Купити за Telegram Stars</>
               )}
-            </button>
+            </Button>
           )}
 
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>

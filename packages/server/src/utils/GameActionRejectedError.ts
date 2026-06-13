@@ -1,4 +1,4 @@
-import type { RoomErrorPayload } from '@alias/shared';
+import type { RoomErrorPayload } from '@movli/shared';
 
 /** Thrown by GameEngine when an action must abort without mutating room state. */
 export class GameActionRejectedError extends Error {

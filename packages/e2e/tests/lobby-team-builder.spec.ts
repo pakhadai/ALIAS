@@ -3,6 +3,7 @@ import {
   closeTwoPlayerSession,
   createTwoPlayerLobby,
   guestJoinByCode,
+  gotoHome,
   HOST_NAME,
   imReadyRe,
   joinTeam,
@@ -34,7 +35,7 @@ test.describe('@core Lobby team builder', () => {
     const guest = await guestContext.newPage();
 
     try {
-      await host.goto('/');
+      await gotoHome(host);
       await host.getByTestId('menu-create-game').click();
       await submitName(host, HOST_NAME);
       const roomCode = await readRoomCode(host);

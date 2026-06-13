@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { GameTask, GameActionPayload } from '@alias/shared';
+import type { GameTask, GameActionPayload } from '@movli/shared';
 import type { ThemeConfig } from '../../../types';
 import { HAPTIC } from '../../../utils/haptics';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';

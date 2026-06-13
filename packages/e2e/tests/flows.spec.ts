@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { dismissLoginModalIfOpen, submitName } from './helpers/game-ui';
+import { gotoHome, submitName } from './helpers/game-ui';
 
 test.describe('@core Game flows', () => {
   test('create online room -> enter name -> lobby shows room code', async ({ page }) => {
-    await page.goto('/');
-    await dismissLoginModalIfOpen(page);
+    await gotoHome(page);
 
     await page.getByTestId('menu-create-game').click();
     await submitName(page, 'Tester');
@@ -16,7 +15,7 @@ test.describe('@core Game flows', () => {
   });
 
   test('open join flow (menu -> join input) and can type code', async ({ page }) => {
-    await page.goto('/');
+    await gotoHome(page);
     await page.getByTestId('menu-join-game').click();
 
     const input = page.getByTestId('menu-quick-join-code');
@@ -26,8 +25,7 @@ test.describe('@core Game flows', () => {
   });
 
   test('offline mode starts and reaches name entry screen', async ({ page }) => {
-    await page.goto('/');
-    await dismissLoginModalIfOpen(page);
+    await gotoHome(page);
     await page.getByTestId('menu-offline').click();
 
     await expect(page.getByTestId('enter-name')).toBeVisible();
@@ -41,8 +39,7 @@ test.describe('@extended Multiplayer-ish flows', () => {
     const host = await hostCtx.newPage();
     const guest = await guestCtx.newPage();
 
-    await host.goto('/');
-    await dismissLoginModalIfOpen(host);
+    await gotoHome(host);
     await host.getByTestId('menu-create-game').click();
     await submitName(host, 'Host');
 
@@ -51,8 +48,7 @@ test.describe('@extended Multiplayer-ish flows', () => {
     const roomCode = (await code.textContent())?.trim() ?? '';
     expect(roomCode).toMatch(/^\d{5}$/);
 
-    await guest.goto('/');
-    await dismissLoginModalIfOpen(guest);
+    await gotoHome(guest);
     await guest.getByTestId('menu-join-game').click();
     await guest.getByTestId('menu-quick-join-code').fill(roomCode);
     await guest.getByTestId('menu-quick-join-submit').click();

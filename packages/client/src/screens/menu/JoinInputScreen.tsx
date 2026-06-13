@@ -61,7 +61,7 @@ export const JoinInputScreen = () => {
           <AppHeader fixed onBack={() => setGameState(GameState.MENU)} backAriaLabel={t.cancel} />
         }
       >
-        <Logo theme={currentTheme} />
+        <Logo theme={currentTheme} tagline={t.homeTagline} />
         <div className="w-full max-w-2xl mt-12 space-y-12 p-8 md:p-12 rounded-[2.5rem] bg-ui-card border border-ui-border shadow-2xl">
           <div className="text-center space-y-4">
             <ScreenTitle>{t.joinTitle}</ScreenTitle>

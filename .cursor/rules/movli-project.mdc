@@ -1,9 +1,9 @@
 ---
-description: Alias Master monorepo — language, doc canon, shared contracts, steward workflow
+description: MOVLI Master monorepo — language, doc canon, shared contracts, steward workflow
 alwaysApply: true
 ---
 
-# Alias Master (project)
+# MOVLI Master (project)
 
 ## Documentation canon
 
@@ -26,6 +26,6 @@ alwaysApply: true
 ## AI
 
 - ECC generic agents: `.cursor/AGENTS.md`.
-- Project steward: `@alias-steward` / `.cursor/agents/alias-steward.md`.
-- Checklists: `.cursor/skills/alias-master/SKILL.md`.
+- Project steward: `@movli-steward` / `.cursor/agents/movli-steward.md`.
+- Checklists: `.cursor/skills/movli-master/SKILL.md`.
 - Commits/push only on explicit user request; conventional commits `feat|fix|docs|…`.

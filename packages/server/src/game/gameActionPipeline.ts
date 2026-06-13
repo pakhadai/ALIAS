@@ -5,7 +5,7 @@ import type {
   InterServerEvents,
   SocketData,
   GameActionPayload,
-} from '@alias/shared';
+} from '@movli/shared';
 import type { RoomManager, Room } from '../services/RoomManager';
 import type { GameEngine } from '../services/GameEngine';
 import { cancelGraceRemoval } from '../services/disconnectGrace';

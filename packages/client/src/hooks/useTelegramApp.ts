@@ -1,23 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   CSS_VAR_TMA_CONTENT_TOP_FLOOR,
+  isTelegramDesktopPlatform,
+  resolveTelegramContentTopFloorPx,
+  TELEGRAM_DESKTOP_DOCUMENT_FLAG,
   TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
 } from '../constants/tmaLayoutConstants';
 import { applyGlassTheme } from '../lib/glassTheme';
 
+export { isTelegramDesktopPlatform } from '../constants/tmaLayoutConstants';
+
 function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
 }
-
-/** Desktop Telegram clients — keep Mini App in a window, not immersive fullscreen. */
-const TELEGRAM_DESKTOP_PLATFORMS = new Set(['macos', 'tdesktop', 'weba', 'webk', 'web', 'unigram']);
-
-export function isTelegramDesktopPlatform(platform?: string): boolean {
-  if (!platform) return false;
-  return TELEGRAM_DESKTOP_PLATFORMS.has(platform.toLowerCase());
-}
-
-/** Same detection as `useTelegramApp().isTelegram` — use for UI only to avoid duplicate hook effects. */
 export function isTelegramMiniApp(): boolean {
   const webApp = getTelegramWebApp();
   return Boolean(webApp && (webApp.initData || webApp.platform || webApp.initDataUnsafe));
@@ -146,16 +141,24 @@ let tmaBootstrapDone = false;
  */
 export function bootstrapTelegramMiniApp(): boolean {
   const webApp = getTelegramWebApp();
-  if (!webApp || !isTelegramMiniApp()) return false;
+  if (!webApp || !hasTelegramInitData()) return false;
   if (tmaBootstrapDone) return true;
 
   tmaBootstrapDone = true;
 
+  const contentTopFloorPx = resolveTelegramContentTopFloorPx(webApp.platform);
+  const isDesktop = isTelegramDesktopPlatform(webApp.platform);
+
   document.documentElement.setAttribute('data-telegram-app', 'true');
   document.documentElement.style.setProperty(
     CSS_VAR_TMA_CONTENT_TOP_FLOOR,
-    `${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`
+    `${contentTopFloorPx}px`
   );
+  if (isDesktop) {
+    document.documentElement.dataset[TELEGRAM_DESKTOP_DOCUMENT_FLAG] = 'true';
+  } else {
+    delete document.documentElement.dataset[TELEGRAM_DESKTOP_DOCUMENT_FLAG];
+  }
 
   safeTelegramCall(() => webApp.ready());
   bootstrapTelegramViewport(webApp);
@@ -190,10 +193,8 @@ export type UseTelegramAppResult = {
 
 export function useTelegramApp(): UseTelegramAppResult {
   const webApp = getTelegramWebApp();
-  /** Mini App: almost always has initData; still init UX when object exists (e.g. dev / delayed init). */
-  const isTelegram = Boolean(
-    webApp && (webApp.initData || webApp.platform || webApp.initDataUnsafe)
-  );
+  /** Real Telegram session only — plain browser loads SDK stub with empty initData. */
+  const isTelegram = hasTelegramInitData();
   const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || null;
 
   const [themeParams, setThemeParams] = useState<TelegramWebAppThemeParams | null>(
@@ -205,7 +206,7 @@ export function useTelegramApp(): UseTelegramAppResult {
 
   // Event subscriptions + late layout sync — bootstrap runs sync in index.tsx / bootstrapTelegramMiniApp().
   useEffect(() => {
-    if (!webApp || !isTelegram) return;
+    if (!webApp || !hasTelegramInitData()) return;
 
     bootstrapTelegramMiniApp();
 

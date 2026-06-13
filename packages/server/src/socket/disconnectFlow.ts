@@ -4,7 +4,7 @@ import type {
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from '@alias/shared';
+} from '@movli/shared';
 import type { RoomManager } from '../services/RoomManager';
 import type { PerRoomQueue } from '../services/PerRoomQueue';
 import { scheduleGraceRemoval } from '../services/disconnectGrace';

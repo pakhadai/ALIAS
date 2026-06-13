@@ -2,7 +2,7 @@
 
 Цей файл — **стислий, але глибший архітектурний аудит** монорепозиторію: фактичні `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig*`, `docker-compose.yml`, `packages/server/prisma/schema.prisma` та пайплайни **GitHub Actions**. Детальні протоколи Socket.IO, ігрові правила, env і деплой — у канонічному [`README.md`](./README.md).
 
-**Оновлено:** 2026-06-06 (docs sync: GameSyncState, lobby builder, INDEX, steward files).
+**Оновлено:** 2026-06-13 (verify pass: rebrand docs sync, E2E login dismiss, Postgres `movli` credentials).
 
 ---
 
@@ -10,10 +10,10 @@
 
 | Елемент | Факт у репо |
 |--------|-------------|
-| Ім’я пакета (корінь) | `alias-master-monorepo` (`package.json`) |
-| Версія workspace-пакетів | **0.6.4** (`@alias/client`, `@alias/server`, `@alias/shared`, `@alias/e2e`) |
+| Ім’я пакета (корінь) | `movli-master-monorepo` (`package.json`) |
+| Версія workspace-пакетів | **0.6.5** (`@movli/client`, `@movli/server`, `@movli/shared`, `@movli/e2e`) |
 | Менеджер пакетів | **pnpm 9.0.0** — зафіксовано в `packageManager` кореневого `package.json` |
-| Воркспейси | `pnpm-workspace.yaml` — один рядок: `packages/*` → `@alias/shared`, `@alias/client`, `@alias/server`, `@alias/e2e` |
+| Воркспейси | `pnpm-workspace.yaml` — один рядок: `packages/*` → `@movli/shared`, `@movli/client`, `@movli/server`, `@movli/e2e` |
 | Оркестрація збірки | **Turbo** `^2.9.3` — `turbo.json`: задачі `build` (з `dependsOn: ["^build"]`, артефакти `dist/**`) та `typecheck` |
 | Node (вимоги) | Корінь: `engines.node` **>=20**; **CI** (`.github/workflows/ci.yml`) і **Dockerfile** — **Node 20** |
 | ESLint | `eslint.config.mjs` у корені + devDeps ESLint 9 / typescript-eslint |
@@ -24,30 +24,30 @@
 
 ## 2. Пакети: роль, збірка, залежності
 
-### `@alias/shared` (`packages/shared`)
+### `@movli/shared` (`packages/shared`)
 
 - **Призначення:** єдине джерело правди для enum-ів, моделей стану, `GameAction*`, контрактів Socket.IO (`events.ts`), констант.
 - **Збірка:** `tsc` → `dist/` з **`module: CommonJS`**, `moduleResolution: node` (`packages/shared/tsconfig.json`).
 - **Runtime-залежності:** немає; лише `typescript` (dev).
 
-### `@alias/server` (`packages/server`)
+### `@movli/server` (`packages/server`)
 
 - **Призначення:** Express (HTTP), Socket.IO, Prisma, Redis (знімки кімнат, адаптер, relay, IMPOSTER secret), Stripe, JWT/Google, Web Push, Sentry.
 - **Збірка:** `tsc` → `dist/` (CommonJS).
 - **Entry:** `src/index.ts` (`dev`: `tsx watch`, `start`: `node dist/index.js`).
 - **Prisma:** `postinstall` → `prisma generate`; скрипти `db:migrate` (**`migrate dev`** — для локальної розробки), `db:push`, `db:seed`.
 - **Ключові runtime-залежності (діапазони з `package.json`):** `express` ^4.21, `socket.io` ^4.8, `@socket.io/redis-adapter` ^8.3, `ioredis` ^5.4, `prisma` / `@prisma/client` ^6.19, `zod` ^4.3, `stripe` ^20.3, `jsonwebtoken` ^9, `express-rate-limit` ^8.2, `@sentry/node` ^10.47, `google-auth-library` ^10.5, `web-push` ^3.6 тощо.
-- **Typecheck:** окремий `tsconfig.typecheck.json` — `noEmit: true` + **`paths`: `@alias/shared` → `../shared/src/index.ts`**, щоб перевіряти типи без попередньої збірки shared.
+- **Typecheck:** окремий `tsconfig.typecheck.json` — `noEmit: true` + **`paths`: `@movli/shared` → `../shared/src/index.ts`**, щоб перевіряти типи без попередньої збірки shared.
 
-### `@alias/client` (`packages/client`)
+### `@movli/client` (`packages/client`)
 
 - **Призначення:** React PWA (`"type": "module"`), Vite 7, Tailwind 4, `socket.io-client`, REST, Sentry (runtime + Vite plugin), Stripe Elements.
 - **Збірка:** `vite build`; PWA — `vite-plugin-pwa` з `injectManifest`, entry **`src/sw.ts`**.
-- **Typecheck:** `paths` у `tsconfig.json` — `@alias/shared` → **`../shared/src/index.ts`** (швидкий цикл у монорепо без обов’язкового `dist` shared).
+- **Typecheck:** `paths` у `tsconfig.json` — `@movli/shared` → **`../shared/src/index.ts`** (швидкий цикл у монорепо без обов’язкового `dist` shared).
 - **Тести:** Vitest (`packages/client/src/**/*.test.ts(x)` поруч із кодом).
 - **Ключові залежності:** `react` / `react-dom` ^19.2, `vite` ^7.3, `socket.io-client` ^4.8, `@sentry/react` ^10.47, `@sentry/vite-plugin` ^5.1, `tailwindcss` ^4.2, `@stripe/*`, workbox ^7.4.
 
-### `@alias/e2e` (`packages/e2e`)
+### `@movli/e2e` (`packages/e2e`)
 
 - **Призначення:** Playwright; `test` → `node run-playwright.mjs`; `install:browsers` — Chromium.
 
@@ -58,7 +58,7 @@
 `docker-compose.yml` (корінь):
 
 - **Redis:** образ `redis:7-alpine`, AOF.
-- **PostgreSQL:** `postgres:16-alpine`, БД/користувач `alias`, пароль dev з compose-файлу.
+- **PostgreSQL:** `postgres:16-alpine`, БД/користувач **`movli`**, пароль dev **`movli_dev`** (з compose-файлу). Після ребрендингу з `alias` — при P1000 скиньте volume: `docker compose down postgres && docker volume rm alias_postgres-data && docker compose up -d postgres`.
 - Опційний сервіс **`server`** — збірка з `packages/server/Dockerfile`, залежить від redis/postgres.
 
 Це узгоджується з таблицею стеку в README (PostgreSQL 16, Redis 7).
@@ -103,7 +103,7 @@
 ### 5.4. Кластер / кілька інстансів
 
 - **Socket.IO Redis adapter** — pub/sub між нодами.
-- **Room writer** (`alias:room:writer:{roomCode}`) + **RoomActionRelay** — пересилання **`game:action`**, **`room:join`**, **`room:leave`**, **`room:rejoin`** на ноду-власника стану; помилки relay — `room:error` з кодами на кшталт `RELAY_*` (див. README).
+- **Room writer** (`movli:room:writer:{roomCode}`) + **RoomActionRelay** — пересилання **`game:action`**, **`room:join`**, **`room:leave`**, **`room:rejoin`** на ноду-власника стану; помилки relay — `room:error` з кодами на кшталт `RELAY_*` (див. README).
 - Вимкнення relay: змінна **`ROOM_ACTION_RELAY`** (`0` / `false` / `no`).
 
 ### 5.5. REST (паралельно)
@@ -134,7 +134,7 @@
 
 Індекси в схемі підтримують фільтрацію паків, аналітику покупок/сесій та адмінські вибірки за датою.
 
-**Продакшен-міграції:** у контейнері / VPS застосовується **`prisma migrate deploy`** (див. README → Docker / GitHub Actions). Локальний скрипт **`pnpm --filter @alias/server db:migrate`** викликає **`prisma migrate dev`**.
+**Продакшен-міграції:** у контейнері / VPS застосовується **`prisma migrate deploy`** (див. README → Docker / GitHub Actions). Локальний скрипт **`pnpm --filter @movli/server db:migrate`** викликає **`prisma migrate dev`**.
 
 ---
 
@@ -142,8 +142,8 @@
 
 Файл **`.github/workflows/ci.yml`** (скорочено):
 
-1. **quality** — `pnpm install --frozen-lockfile` → `prisma generate` (server) → **`pnpm typecheck`** → **`pnpm lint`** → **`pnpm format:check`** → **`pnpm --filter @alias/server test:coverage`** → **`pnpm --filter @alias/client test`**.
-2. **e2e_smoke** / **e2e_core** — збірка **`@alias/shared`**, Playwright з фільтрами **`@smoke`** та **`@core`** (окремі `--project=chromium` / `mobile-chrome` у `e2e_core` — див. workflow).
+1. **quality** — `pnpm install --frozen-lockfile` → `prisma generate` (server) → **`pnpm typecheck`** → **`pnpm lint`** → **`pnpm format:check`** → **`pnpm --filter @movli/server test:coverage`** → **`pnpm --filter @movli/client test`**.
+2. **e2e_smoke** / **e2e_core** — збірка **`@movli/shared`**, Playwright з фільтрами **`@smoke`** та **`@core`** (окремі `--project=chromium` / `mobile-chrome` у `e2e_core` — див. workflow).
 
 Також у репозиторії: **`deploy-vps.yml`**, **`secret-scan.yml`** — згадані в README у структурі каталогів.
 
@@ -178,7 +178,7 @@
 
 - [`README.md`](./README.md) — протоколи, стани гри, REST, Redis, запуск, Docker, VPS (без таблиць версій — вони тут).
 - [`docs/INDEX.md`](./docs/INDEX.md) — карта всіх docs; [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) — workflow.
-- [`AGENTS.md`](./AGENTS.md) — інструкції ШІ; steward: `.cursor/agents/alias-steward.md`, rules `.cursor/rules/00–06`.
+- [`AGENTS.md`](./AGENTS.md) — інструкції ШІ; steward: `.cursor/agents/movli-steward.md`, rules `.cursor/rules/00–06`.
 - [`AGENT_BRIEF.md`](./AGENT_BRIEF.md), [`AUDIT_RESULTS.md`](./AUDIT_RESULTS.md) — оперативний контекст і відкриті issues.
 - [`docs/daily/`](./docs/daily/) — щоденний журнал; [`CHANGELOG.md`](./CHANGELOG.md) — релізи.
 - Тематично: [`docs/PRISMA_WORD_DATA.md`](./docs/PRISMA_WORD_DATA.md), [`docs/LOBBY_TEAM_BUILDER.md`](./docs/LOBBY_TEAM_BUILDER.md), [`docs/TESTING_ACCEPTANCE.md`](./docs/TESTING_ACCEPTANCE.md), [`docs/ROOM_MANAGEMENT_FIXES.md`](./docs/ROOM_MANAGEMENT_FIXES.md), [`docs/TELEGRAM_SKILL.md`](./docs/TELEGRAM_SKILL.md), [`docs/VIRAL_INVITES_PHASE7.md`](./docs/VIRAL_INVITES_PHASE7.md).

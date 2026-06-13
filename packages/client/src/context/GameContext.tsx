@@ -35,8 +35,8 @@ import {
   ROOM_CODE_KEY,
 } from '../services/api';
 import { mergeSavedLobbyDefaultsIntoSettings } from '../lib/lobbyDefaults';
-import type { GameSyncState, RoomErrorPayload } from '@alias/shared';
-import { shuffleArray } from '@alias/shared';
+import type { GameSyncState, RoomErrorPayload } from '@movli/shared';
+import { shuffleArray, TIME_UP_IDLE_FALLBACK_MS } from '@movli/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
 import { bestTextOnColor } from '../utils/color';
 import { buildOfflineTask } from '../utils/gameTask';
@@ -609,7 +609,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  /** Mirror server `scheduleTimeUpFallback`: auto-finish idle overtime after 5s. */
+  /** Mirror server `scheduleTimeUpFallback`: auto-finish idle overtime after TIME_UP_IDLE_FALLBACK_MS. */
   useEffect(() => {
     if (state.gameMode !== 'OFFLINE') {
       clearOfflineTimeUpFallback();
@@ -636,7 +636,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ) {
         handleGameAction({ action: 'TIME_UP' });
       }
-    }, 5000);
+    }, TIME_UP_IDLE_FALLBACK_MS);
 
     return () => {
       clearOfflineTimeUpFallback();
@@ -942,7 +942,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         let playerData: { persistentId?: string; name?: string; avatar?: string } = {};
         try {
-          const raw = localStorage.getItem('alias_player');
+          const raw = localStorage.getItem('movli_player');
           if (raw) {
             const parsed = JSON.parse(raw) as unknown;
             if (parsed && typeof parsed === 'object') {
@@ -958,7 +958,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         playerData.name = sanitizedName;
         playerData.avatar = safeAvatar;
         try {
-          localStorage.setItem('alias_player', JSON.stringify(playerData));
+          localStorage.setItem('movli_player', JSON.stringify(playerData));
         } catch {
           showNotification(
             getUiStrings(stateRef.current.uiLanguage).enterNameRequired ?? 'Storage error',

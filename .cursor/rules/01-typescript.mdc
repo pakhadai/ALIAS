@@ -17,7 +17,7 @@ alwaysApply: true
 - Async/await, не callbacks, не .then().catch() (виняток: Promise.all та power-user patterns)
 
 ## Типи
-- Не дублюй типи між пакетами — import із @alias/shared
+- Не дублюй типи між пакетами — import із @movli/shared
 - Discriminated union замість optional fields де можливо
 - Zod schema → infer type, не дублювати вручну
 - `satisfies` оператор для config objects

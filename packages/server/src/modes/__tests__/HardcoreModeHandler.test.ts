@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { GameSettings, GameTask } from '@alias/shared';
-import { GameMode, Language, Category, AppTheme, SoundPreset } from '@alias/shared';
+import type { GameSettings, GameTask } from '@movli/shared';
+import { GameMode, Language, Category, AppTheme, SoundPreset } from '@movli/shared';
 import type { ActionContext } from '../IGameModeHandler';
 import type { Room } from '../../services/RoomManager';
 import { HardcoreModeHandler } from '../HardcoreModeHandler';

@@ -1,11 +1,11 @@
 import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import type { Socket } from 'socket.io';
-import type { GameActionPayload, Player, RoomErrorPayload } from '@alias/shared';
+import type { GameActionPayload, Player, RoomErrorPayload } from '@movli/shared';
 import { config } from '../config';
 import { roomError } from '../utils/roomError';
 
-export const RPC_CHANNEL_PREFIX = 'alias:rpc:to:';
+export const RPC_CHANNEL_PREFIX = 'movli:rpc:to:';
 
 export type GameActionRpcInbound = {
   v: 1;
@@ -80,7 +80,7 @@ export type RpcMessage = RpcInbound | GameActionRpcReply;
 export type GameActionRpcMessage = RpcMessage;
 
 /**
- * Cross-node forwarding: each instance subscribes to `alias:rpc:to:{INSTANCE_ID}`.
+ * Cross-node forwarding: each instance subscribes to `movli:rpc:to:{INSTANCE_ID}`.
  * Room writer executes mutations and broadcasts via Socket.IO (Redis adapter).
  */
 export class RoomActionRelay {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScreenShell } from '../../../components/layout';
 import { useGame } from '../../../context/GameContext';
-import { GameMode as ModeEnum } from '@alias/shared';
+import { GameMode as ModeEnum } from '@movli/shared';
 
 export const CountdownScreen = () => {
   const {

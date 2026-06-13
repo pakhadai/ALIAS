@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "paths": {
-      "@alias/shared": ["../shared/src/index.ts"]
+      "@movli/shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src", "test", "prisma/seed.ts", "prisma/data/**/*.json", "vitest.config.ts"]

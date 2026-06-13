@@ -20,7 +20,7 @@ vi.mock('../../config', async (importOriginal) => {
       vapid: {
         publicKey: 'BPUBLIC_TEST_KEY',
         privateKey: 'BPRIVATE_TEST_KEY',
-        email: 'mailto:test@alias.app',
+        email: 'mailto:test@movli.app',
       },
     },
   };

@@ -5,11 +5,15 @@ import {
   CSS_VAR_APP_PAGE_HEADER_HEIGHT,
   HEADER_ROW_MIN_PX,
   HOME_CARD_TOP_GAP_PX,
+  resolveTelegramContentTopFloorPx,
+  TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX,
+  TELEGRAM_DESKTOP_DOCUMENT_FLAG,
   TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
   TG_CHROME_GUTTER_PX,
   appPageHeaderHeightFallbackCss,
   appPageHeaderHeightInsetFallbackCss,
   appHomeCardTopCss,
+  isTelegramDesktopPlatform,
   pxToRem,
   titleRowHeightCss,
   tmaInsetTopCss,
@@ -55,5 +59,20 @@ describe('tmaLayoutConstants', () => {
     expect(tmaInsetTopCss()).toBe(
       'var(--tma-content-safe-top, var(--tma-content-top-floor, 104px))'
     );
+  });
+
+  it('should resolve content top floor by platform', () => {
+    expect(TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX).toBe(0);
+    expect(TELEGRAM_DESKTOP_DOCUMENT_FLAG).toBe('telegramDesktop');
+    expect(resolveTelegramContentTopFloorPx('tdesktop')).toBe(0);
+    expect(resolveTelegramContentTopFloorPx('ios')).toBe(104);
+    expect(resolveTelegramContentTopFloorPx(undefined)).toBe(104);
+  });
+
+  it('should detect desktop Telegram platforms', () => {
+    expect(isTelegramDesktopPlatform('tdesktop')).toBe(true);
+    expect(isTelegramDesktopPlatform('macos')).toBe(true);
+    expect(isTelegramDesktopPlatform('ios')).toBe(false);
+    expect(isTelegramDesktopPlatform('android')).toBe(false);
   });
 });

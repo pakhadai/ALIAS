@@ -19,11 +19,11 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
 # Generate Prisma client
-RUN pnpm --filter @alias/server exec prisma generate
+RUN pnpm --filter @movli/server exec prisma generate
 
 # Build shared and server
-RUN pnpm --filter @alias/shared build
-RUN pnpm --filter @alias/server build
+RUN pnpm --filter @movli/shared build
+RUN pnpm --filter @movli/server build
 
 # Production stage
 FROM node:20-alpine
@@ -41,7 +41,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --store-dir=/pnpm/store
 
 # Generate Prisma client in prod
-RUN pnpm --filter @alias/server exec prisma generate
+RUN pnpm --filter @movli/server exec prisma generate
 
 # Copy built files
 COPY --from=builder /app/packages/shared/dist/ packages/shared/dist/

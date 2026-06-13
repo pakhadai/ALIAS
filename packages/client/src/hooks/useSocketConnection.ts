@@ -6,7 +6,7 @@ import type {
   GameSyncState,
   Player,
   RoomErrorPayload,
-} from '@alias/shared';
+} from '@movli/shared';
 import {
   clearAuthToken,
   getAuthToken,

@@ -1,4 +1,4 @@
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 import { useGameState } from '../context/GameContext';
 import { TRANSLATIONS } from '../constants';
 

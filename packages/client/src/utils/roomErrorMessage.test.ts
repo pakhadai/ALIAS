@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 import {
   canEmitOnlineGameAction,
   isSessionEndedRoomError,

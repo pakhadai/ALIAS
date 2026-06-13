@@ -25,7 +25,7 @@ import type {
 import { PerRoomQueue } from './services/PerRoomQueue';
 import { authorizeGameAction } from './game/authorizeGameAction';
 import { executeGameActionPipeline, broadcastRoomState } from './game/gameActionPipeline';
-import { GameState } from '@alias/shared';
+import { GameState } from '@movli/shared';
 import { GameActionRejectedError } from './utils/GameActionRejectedError';
 import { wireGraceAfterMarkDisconnected } from './socket/disconnectFlow';
 import { socketAuthMiddleware } from './middleware/socketAuth';
@@ -48,7 +48,7 @@ import type {
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from '@alias/shared';
+} from '@movli/shared';
 import { roomError } from './utils/roomError';
 import { initServerSentry, registerExpressSentryErrorHandler } from './sentry/bootstrap';
 import {
@@ -506,7 +506,7 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(config.port, () => {
-  console.warn(`[Server] Alias server running on port ${config.port} (${config.nodeEnv})`);
+  console.warn(`[Server] MOVLI server running on port ${config.port} (${config.nodeEnv})`);
   if (config.nodeEnv !== 'production') {
     console.warn(`[Server] Instance: ${config.serverInstanceId}`);
     console.warn(`[Server] Google OAuth: ${config.google.clientId ? 'configured ✓' : 'NOT SET ✗'}`);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { Player } from '@alias/shared';
+import type { Player } from '@movli/shared';
 
 export const PRESET_AVATARS = [
   // Use theme-derived colors (no hardcoded HEX)

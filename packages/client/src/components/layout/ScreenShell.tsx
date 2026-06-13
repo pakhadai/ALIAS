@@ -26,8 +26,7 @@ export interface ScreenShellProps {
 }
 
 /** Fixed viewport height so the scroll column can shrink (`min-h-0`) and scroll. */
-const SHELL_OUTER =
-  'flex flex-col h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full min-h-0 overflow-x-hidden';
+const SHELL_OUTER = 'flex flex-col h-full max-h-full w-full min-h-0 overflow-x-hidden';
 /** Scroll column — vertical only; clip decorative bleed (start CTA ring, -mx strips). */
 const scrollColumnClass = (
   hasHeader: boolean,

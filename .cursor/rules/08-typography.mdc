@@ -46,7 +46,7 @@ Import map: `packages/client/src/constants/typography.ts`.
 rg "text-\[[0-9]+px\]" packages/client/src --glob "*.tsx" --glob "!**/GameFlow/**"
 
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 ```
 
 ## `font-serif` у TSX

@@ -1,10 +1,11 @@
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 
 export type TranslationValue = string;
 
 export const TRANSLATIONS = {
   [Language.UA]: {
     slogan: 'Говори швидко, грай яскраво.',
+    homeTagline: 'Говори · Вгадуй',
     createGame: 'Створити гру',
     joinGame: 'Приєднатися',
     playOffline: 'Офлайн режим',
@@ -39,7 +40,7 @@ export const TRANSLATIONS = {
     gameModeQuiz: 'Квіз',
     gameModeHardcore: 'Хардкор',
     gameModeImposter: 'Імпостер',
-    gameModeHintClassic: 'Класичний Alias: пояснювач бачить слово, команда вгадує.',
+    gameModeHintClassic: 'Класичний MOVLI: пояснювач бачить слово, команда вгадує.',
     gameModeHintTranslation:
       'У колоді використовуйте «Слово|Переклад» (власні слова через кому або імпорт словника).',
     gameModeHintQuiz: 'Усі гравці бачать варіанти; хто перший натиснув правильний — +1 команді.',
@@ -147,9 +148,9 @@ export const TRANSLATIONS = {
       'Покупки/помилки: оплати проходять через Stripe; помилки можуть надсилатись у Sentry (якщо ввімкнено).',
     helpImpressumTitle: 'Імпресум',
     helpImpressumBody:
-      'ALIAS — веб-додаток для гри в пояснення слів. Якщо ви розгорнули цю інстанцію самостійно — ви є її оператором.',
+      'MOVLI — веб-додаток для гри в пояснення слів. Якщо ви розгорнули цю інстанцію самостійно — ви є її оператором.',
     helpImpressumHost: 'Поточний хост',
-    helpImpressumRepoHint: 'Репозиторій: github.com/pakhadai/ALIAS',
+    helpImpressumRepoHint: 'Репозиторій: github.com/pakhadai/MOVLI',
     helpAgbTitle: 'AGB / Умови',
     helpAgbIntro: 'Короткі умови використання для комфортної та чесної гри.',
     helpAgbP1:
@@ -252,7 +253,7 @@ export const TRANSLATIONS = {
     lobbyInviteCopyLink: 'Скопіювати посилання',
     lobbyInviteTelegram: 'Запросити в Telegram',
     lobbyInviteQr: 'QR-код',
-    lobbyInviteTelegramText: 'Приєднуйся до моєї гри в Alias!',
+    lobbyInviteTelegramText: 'Приєднуйся до моєї гри в MOVLI!',
     lobbyStartMinPlayers: 'Потрібно мінімум 2 гравці',
     lobbyStartUnassigned: 'Розподіліть усіх гравців по командах',
     lobbyStartEmptyTeam: 'У кожній команді має бути гравець',
@@ -478,6 +479,7 @@ export const TRANSLATIONS = {
   },
   [Language.DE]: {
     slogan: 'Erkläre schnell, spiel brillant.',
+    homeTagline: 'Sag · Rate',
     createGame: 'Spiel erstellen',
     joinGame: 'Beitreten',
     playOffline: 'Offline-Modus',
@@ -512,7 +514,7 @@ export const TRANSLATIONS = {
     gameModeQuiz: 'Quiz',
     gameModeHardcore: 'Hardcore',
     gameModeImposter: 'Impostor',
-    gameModeHintClassic: 'Klassisches Alias: Erklärer sieht das Wort, Team rät.',
+    gameModeHintClassic: 'Klassisches MOVLI: Erklärer sieht das Wort, Team rät.',
     gameModeHintTranslation: 'Im Deck Format «Wort|Übersetzung» (eigene Wörter oder Import).',
     gameModeHintQuiz: 'Alle sehen Optionen; wer zuerst richtig tippt, +1 fürs Team.',
     gameModeHintSynonyms: 'Vorerst wie Klassik; Synonym-Deck folgt.',
@@ -618,9 +620,9 @@ export const TRANSLATIONS = {
       'Käufe/Fehler: Zahlungen über Stripe; Fehlerberichte können an Sentry gehen (falls aktiviert).',
     helpImpressumTitle: 'Impressum',
     helpImpressumBody:
-      'ALIAS ist eine Web-App zum Wörter-Erklären. Wenn du diese Instanz selbst betreibst, bist du der Betreiber.',
+      'MOVLI ist eine Web-App zum Wörter-Erklären. Wenn du diese Instanz selbst betreibst, bist du der Betreiber.',
     helpImpressumHost: 'Aktueller Host',
-    helpImpressumRepoHint: 'Repository: github.com/pakhadai/ALIAS',
+    helpImpressumRepoHint: 'Repository: github.com/pakhadai/MOVLI',
     helpAgbTitle: 'AGB / Bedingungen',
     helpAgbIntro: 'Kurze Nutzungsbedingungen für faires Spielen.',
     helpAgbP1:
@@ -724,7 +726,7 @@ export const TRANSLATIONS = {
     lobbyInviteCopyLink: 'Link kopieren',
     lobbyInviteTelegram: 'In Telegram einladen',
     lobbyInviteQr: 'QR-Code',
-    lobbyInviteTelegramText: 'Komm in mein Alias-Spiel!',
+    lobbyInviteTelegramText: 'Komm in mein MOVLI-Spiel!',
     lobbyStartMinPlayers: 'Mindestens 2 Spieler nötig',
     lobbyStartUnassigned: 'Weise alle Spieler Teams zu',
     lobbyStartEmptyTeam: 'Jedes Team braucht mindestens einen Spieler',
@@ -951,6 +953,7 @@ export const TRANSLATIONS = {
   },
   [Language.EN]: {
     slogan: 'Think fast, play bold.',
+    homeTagline: 'Speak · Guess',
     createGame: 'Create Game',
     joinGame: 'Join Game',
     playOffline: 'Offline Mode',
@@ -985,7 +988,7 @@ export const TRANSLATIONS = {
     gameModeQuiz: 'Quiz',
     gameModeHardcore: 'Hardcore',
     gameModeImposter: 'Impostor',
-    gameModeHintClassic: 'Classic Alias: explainer sees the word, team guesses.',
+    gameModeHintClassic: 'Classic MOVLI: explainer sees the word, team guesses.',
     gameModeHintTranslation: 'Use «Word|Translation» in the deck (custom words or imported list).',
     gameModeHintQuiz: 'Everyone sees options; first correct tap scores +1 for the team.',
     gameModeHintSynonyms: 'Same as classic for now; dedicated synonym decks later.',
@@ -1092,9 +1095,9 @@ export const TRANSLATIONS = {
       'Purchases/errors: payments are handled by Stripe; error reports may be sent to Sentry (if enabled).',
     helpImpressumTitle: 'Impressum',
     helpImpressumBody:
-      'ALIAS is a web app for word-explaining gameplay. If you self-host this instance, you are its operator.',
+      'MOVLI is a web app for word-explaining gameplay. If you self-host this instance, you are its operator.',
     helpImpressumHost: 'Current host',
-    helpImpressumRepoHint: 'Repository: github.com/pakhadai/ALIAS',
+    helpImpressumRepoHint: 'Repository: github.com/pakhadai/MOVLI',
     helpAgbTitle: 'AGB / Terms',
     helpAgbIntro: 'Short terms for a comfortable and fair game.',
     helpAgbP1: 'The app is provided “as is” without guarantees of uninterrupted availability.',
@@ -1195,7 +1198,7 @@ export const TRANSLATIONS = {
     lobbyInviteCopyLink: 'Copy link',
     lobbyInviteTelegram: 'Invite via Telegram',
     lobbyInviteQr: 'QR code',
-    lobbyInviteTelegramText: 'Join my Alias game!',
+    lobbyInviteTelegramText: 'Join my MOVLI game!',
     lobbyStartMinPlayers: 'At least 2 players required',
     lobbyStartUnassigned: 'Assign all players to teams',
     lobbyStartEmptyTeam: 'Each team needs at least one player',

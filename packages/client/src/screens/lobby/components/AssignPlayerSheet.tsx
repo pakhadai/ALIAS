@@ -42,9 +42,13 @@ export function AssignPlayerSheet(props: {
 
       <div className="space-y-2">
         {teamShells.map((team) => (
-          <button
+          <Button
             key={team.id}
             type="button"
+            variant="secondary"
+            fullWidth
+            size="md"
+            className="justify-between font-sans normal-case tracking-normal"
             onClick={() => {
               sendAction({
                 action: 'TEAM_JOIN',
@@ -52,7 +56,6 @@ export function AssignPlayerSheet(props: {
               });
               dismiss();
             }}
-            className="w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] flex items-center justify-between px-4"
           >
             <span className="inline-flex items-center gap-2 min-w-0">
               <span
@@ -66,19 +69,22 @@ export function AssignPlayerSheet(props: {
             <span className={`${typographyClass.body} font-bold text-ui-fg-muted tabular-nums`}>
               {team.players.length}
             </span>
-          </button>
+          </Button>
         ))}
 
-        <button
+        <Button
           type="button"
+          variant="tertiary"
+          fullWidth
+          size="md"
+          className="font-sans normal-case tracking-wide text-ui-fg-muted"
           onClick={() => {
             sendAction({ action: 'TEAM_LEAVE', data: { playerId: target.id } });
             dismiss();
           }}
-          className={`w-full py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] ${typographyClass.label} tracking-wide text-ui-fg-muted`}
         >
           {t.makeUnassigned}
-        </button>
+        </Button>
       </div>
 
       <Button variant="ghost" fullWidth size="lg" className="mt-4" onClick={dismiss}>

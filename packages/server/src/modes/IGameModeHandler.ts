@@ -1,4 +1,4 @@
-import type { GameActionPayload, GameSettings, GameTask } from '@alias/shared';
+import type { GameActionPayload, GameSettings, GameTask } from '@movli/shared';
 import type { Room } from '../services/RoomManager';
 
 export interface ActionContext {

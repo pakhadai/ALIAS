@@ -1,11 +1,11 @@
-# Участь у розробці Alias Master
+# Участь у розробці MOVLI Master
 
 > Люди та ШІ працюють за одними правилами. Канон продукту — [`README.md`](../README.md); карта файлів — [`INDEX.md`](./INDEX.md).
 
 ## Перед початком
 
 1. Прочитай релевантний розділ [`README.md`](../README.md) або тематичний `docs/*.md` (див. [`INDEX.md`](./INDEX.md)).
-2. Для нетривіальних змін — **pre-flight** через агента **alias-steward** (див. [`AGENTS.md`](../AGENTS.md)).
+2. Для нетривіальних змін — **pre-flight** через агента **movli-steward** (див. [`AGENTS.md`](../AGENTS.md)).
 3. Локально: `pnpm install`, кореневий **`.env.prod`** з [`.env.prod.example`](../.env.prod.example) (не комітити секрети).
 
 ## Гілки та коміти
@@ -24,16 +24,16 @@
 | `pnpm verify` | `typecheck` + `lint` + `format:check` |
 | `pnpm lint` / `pnpm format:check` | ESLint / Prettier |
 | `pnpm test:server` | Vitest сервер |
-| `pnpm --filter @alias/client test` | Vitest клієнт |
+| `pnpm --filter @movli/client test` | Vitest клієнт |
 | `pnpm test:e2e` | Playwright (`@smoke` / `@core` у CI) |
 
-**Сервер / Prisma** (`@alias/server`):
+**Сервер / Prisma** (`@movli/server`):
 
 | Команда | Коли |
 |---------|------|
-| `pnpm --filter @alias/server db:migrate` | Локально: **`prisma migrate dev`** |
-| `pnpm --filter @alias/server db:push` | Швидкий прототип схеми (обережно) |
-| `pnpm --filter @alias/server db:seed` | Після міграцій / оновлення JSON даних |
+| `pnpm --filter @movli/server db:migrate` | Локально: **`prisma migrate dev`** |
+| `pnpm --filter @movli/server db:push` | Швидкий прототип схеми (обережно) |
+| `pnpm --filter @movli/server db:seed` | Після міграцій / оновлення JSON даних |
 | `prisma migrate deploy` | **Тільки** prod / Docker / VPS (не через `db:migrate`) |
 
 Перед PR: **`pnpm verify`** і релевантні тести (див. [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md)).
@@ -57,7 +57,7 @@
 
 Не відновлювати `CODE_REFERENCE.md`. Не дублювати ECC skills у проєктних файлах — посилання на [`.cursor/AGENTS.md`](../.cursor/AGENTS.md).
 
-## Контракти (`@alias/shared`)
+## Контракти (`@movli/shared`)
 
 Будь-яка зміна Socket.IO, `GameAction`, `GameMode`, `GameSyncState`:
 
@@ -74,12 +74,12 @@
 
 | Роль | Де |
 |------|-----|
-| Проєкт | [`AGENTS.md`](../AGENTS.md), [`AGENT_BRIEF.md`](../AGENT_BRIEF.md), rules **`.cursor/rules/00-identity.mdc`** … **`06-tma.mdc`**, **`.cursor/rules/alias-project.mdc`**, skill **`alias-master`** |
-| Steward (доки + узгодженість) | `.cursor/agents/alias-steward.md` — `@alias-steward` у промпті |
+| Проєкт | [`AGENTS.md`](../AGENTS.md), [`AGENT_BRIEF.md`](../AGENT_BRIEF.md), rules **`.cursor/rules/00-identity.mdc`** … **`06-tma.mdc`**, **`.cursor/rules/movli-project.mdc`**, skill **`movli-master`** |
+| Steward (доки + узгодженість) | `.cursor/agents/movli-steward.md` — `@movli-steward` у промпті |
 | Відкриті issues | [`AUDIT_RESULTS.md`](../AUDIT_RESULTS.md) |
 | Загальні агенти (TDD, security, architect) | `.cursor/AGENTS.md` (ECC) |
 
-**Делегування:** architect / tdd-guide / code-reviewer / security-reviewer — за сценарієм у `AGENTS.md`; фінальну узгодженість доків перевіряє **alias-steward**.
+**Делегування:** architect / tdd-guide / code-reviewer / security-reviewer — за сценарієм у `AGENTS.md`; фінальну узгодженість доків перевіряє **movli-steward**.
 
 ### Денний журнал (обов’язково після сесії з кодом/docs)
 

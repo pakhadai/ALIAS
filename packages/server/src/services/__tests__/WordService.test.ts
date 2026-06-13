@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WordService } from '../WordService';
-import { Language, Category, SoundPreset, AppTheme, GameMode, MOCK_WORDS } from '@alias/shared';
-import type { GameSettings } from '@alias/shared';
+import { Language, Category, SoundPreset, AppTheme, GameMode, MOCK_WORDS } from '@movli/shared';
+import type { GameSettings } from '@movli/shared';
 import type { PrismaClient } from '@prisma/client';
 
 const baseSettings: GameSettings = {

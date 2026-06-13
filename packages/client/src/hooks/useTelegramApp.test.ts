@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import {
   CSS_VAR_TMA_CONTENT_TOP_FLOOR,
+  TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX,
+  TELEGRAM_DESKTOP_DOCUMENT_FLAG,
   TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX,
 } from '../constants/tmaLayoutConstants';
 import {
@@ -47,6 +49,7 @@ describe('useTelegramApp', () => {
     eventHandlers.clear();
     resetTelegramBootstrapForTests();
     document.documentElement.removeAttribute('data-telegram-app');
+    document.documentElement.removeAttribute('data-telegram-desktop');
     document.documentElement.removeAttribute('data-theme');
     document.documentElement.style.removeProperty(CSS_VAR_TMA_CONTENT_TOP_FLOOR);
     for (const side of ['top', 'right', 'bottom', 'left'] as const) {
@@ -71,6 +74,20 @@ describe('useTelegramApp', () => {
       value: undefined,
     });
     resetTelegramBootstrapForTests();
+  });
+
+  it('should not bootstrap when SDK stub has platform but empty initData', () => {
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: '', platform: 'unknown' } },
+    });
+
+    const ok = bootstrapTelegramMiniApp();
+
+    expect(ok).toBe(false);
+    expect(document.documentElement.getAttribute('data-telegram-app')).toBeNull();
+    expect(mockWebApp.ready).not.toHaveBeenCalled();
   });
 
   it('should call ready and expand synchronously from bootstrapTelegramMiniApp', () => {
@@ -206,5 +223,40 @@ describe('useTelegramApp', () => {
     expect(mockWebApp.expand).not.toHaveBeenCalled();
     expect(mockWebApp.requestFullscreen).not.toHaveBeenCalled();
     expect(mockWebApp.exitFullscreen).toHaveBeenCalledTimes(1);
+  });
+
+  it('should set desktop floor 0 and data-telegram-desktop on tdesktop bootstrap', () => {
+    mockWebApp.platform = 'tdesktop';
+
+    bootstrapTelegramMiniApp();
+
+    expect(document.documentElement.style.getPropertyValue(CSS_VAR_TMA_CONTENT_TOP_FLOOR)).toBe(
+      `${TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX}px`
+    );
+    expect(document.documentElement.dataset[TELEGRAM_DESKTOP_DOCUMENT_FLAG]).toBe('true');
+    expect(document.documentElement.getAttribute('data-telegram-desktop')).toBe('true');
+  });
+
+  it('should set mobile floor 104 and omit data-telegram-desktop on ios bootstrap', () => {
+    mockWebApp.platform = 'ios';
+
+    bootstrapTelegramMiniApp();
+
+    expect(document.documentElement.style.getPropertyValue(CSS_VAR_TMA_CONTENT_TOP_FLOOR)).toBe(
+      `${TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX}px`
+    );
+    expect(document.documentElement.dataset[TELEGRAM_DESKTOP_DOCUMENT_FLAG]).toBeUndefined();
+    expect(document.documentElement.getAttribute('data-telegram-desktop')).toBeNull();
+  });
+
+  it('should not floor desktop SDK content-safe top inset to mobile minimum', () => {
+    mockWebApp.platform = 'tdesktop';
+    mockWebApp.contentSafeAreaInset = { top: 28, bottom: 0, left: 0, right: 0 };
+
+    renderHook(() => useTelegramApp());
+
+    expect(
+      document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
+    ).toBe('28px');
   });
 });

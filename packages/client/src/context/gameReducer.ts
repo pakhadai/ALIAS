@@ -2,8 +2,8 @@ import { GameState, Language, Category, SoundPreset, GameMode } from '../types';
 import { DEFAULT_APP_THEME } from '../constants';
 import type { AppState, Player, GameSettings } from '../types';
 
-export const SESSION_KEY = 'alias_active_session';
-export const PREFS_KEY = 'alias_preferences';
+export const SESSION_KEY = 'movli_active_session';
+export const PREFS_KEY = 'movli_preferences';
 
 // States that are safe to restore (no active timers/countdowns)
 export const SAVABLE_STATES = new Set([

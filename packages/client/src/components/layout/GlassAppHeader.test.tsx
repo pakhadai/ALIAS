@@ -65,9 +65,22 @@ function readAppPageHeaderHeight(): string {
 
 const hasTelegramInitData = vi.fn(() => false);
 
-vi.mock('../../hooks/useTelegramApp', () => ({
-  hasTelegramInitData: () => hasTelegramInitData(),
-}));
+function stubTelegramWebApp(platform: string): void {
+  window.Telegram = {
+    WebApp: {
+      platform,
+      initData: 'stub',
+    },
+  } as typeof window.Telegram;
+}
+
+vi.mock('../../hooks/useTelegramApp', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/useTelegramApp')>();
+  return {
+    ...actual,
+    hasTelegramInitData: () => hasTelegramInitData(),
+  };
+});
 
 describe('GlassAppHeader', () => {
   beforeEach(() => {
@@ -166,10 +179,12 @@ describe('AppHeader', () => {
     MockResizeObserver.instances = [];
     vi.stubGlobal('ResizeObserver', MockResizeObserver);
     hasTelegramInitData.mockReturnValue(false);
+    delete window.Telegram;
   });
 
   afterEach(() => {
     document.documentElement.style.removeProperty(CSS_VAR_APP_PAGE_HEADER_HEIGHT);
+    delete window.Telegram;
     vi.unstubAllGlobals();
   });
 
@@ -232,13 +247,25 @@ describe('AppHeader', () => {
     expect(screen.getByTestId('app-header-back')).toBeTruthy();
   });
 
-  it('should hide browser back button in TMA and apply tg gutter', () => {
+  it('should hide browser back button in TMA and apply tg gutter on mobile', () => {
     hasTelegramInitData.mockReturnValue(true);
+    stubTelegramWebApp('ios');
 
     const { container } = render(<AppHeader title="Lobby" onBack={vi.fn()} />);
 
     expect(screen.queryByTestId('app-header-back')).toBeNull();
     expect(container.querySelector('header')?.getAttribute('data-tg-gutter')).toBe('true');
+  });
+
+  it('should omit tg gutter on Telegram Desktop even with initData', () => {
+    hasTelegramInitData.mockReturnValue(true);
+    stubTelegramWebApp('tdesktop');
+
+    const { container } = render(<AppHeader title="Lobby" onBack={vi.fn()} />);
+
+    expect(screen.queryByTestId('app-header-back')).toBeNull();
+    expect(container.querySelector('header')?.getAttribute('data-tg-gutter')).toBeNull();
+    expect(document.querySelector(`.${UI_APP_HEADER_CONTENT_RAIL_CLASS}`)).toBeTruthy();
   });
 
   it('should respect showBackInBrowser=false outside TMA', () => {

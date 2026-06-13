@@ -30,13 +30,33 @@
 
 ## [Unreleased]
 
+### Fixed
+- E2E: dismiss anonymous login sheet before menu interactions (`gotoHome`, `guestJoinByCode`); fixes bottom-sheet backdrop blocking clicks after rebrand login prompt
+- E2E: playing-state assertions use `correctRe` / `guestGuessRe` (strict mode when timer + button both visible); CI `E2E_DATABASE_URL` db name `movli` (was `alias`)
+- Client unit test `LazyRouteFallback.test.tsx` aligned with `EmbeddedBootLoading` + `ScreenShell` `h-full` contract
+- ESLint: Node globals for `scripts/**/*.mjs` (sync-logo, rebrand helpers)
+- PWA/tab favicon and iOS home-screen icon: use square app mark PNGs (`favicon-32`, `apple-touch-icon` 180×180) instead of 16×16 wordmark `.ico` and unsupported `apple-touch-icon` `.ico`
+- Docker client build now passes `VITE_TG_APP_LINK` from `.env.prod` into Vite — lobby Telegram invites no longer show "link not configured" after deploy
+- Home screen `HomeWordRain` was hidden behind opaque `ScreenShell` (`bg-ui-bg`); menu shell is now transparent so ambient words render above the page background
+
 ### Changed
+- Home menu buttons unified with design system: `AccentFooterCta` (Create), `Button` secondary/tertiary (Join/Offline), `GlassIconButton` header actions; new `Button` variant `tertiary`; button taxonomy in `docs/UI_TOKENS.md`
+- **Rebrand ALIAS → MOVLI:** npm scope `@movli/*`, Redis key prefix `movli:`, localStorage keys `movli_*`, UI/PWA/admin copy, deploy defaults `~/apps/MOVLI`, Postgres user/db `movli`; component `MovliLogoMark`; steward skill `movli-master` / `movli-steward`
+- Home screen: localized tagline (`homeTagline` — «Говори · Вгадуй» / «Speak · Guess» / «Sag · Rate») replaces hardcoded "Premium Collection"; ambient multilingual `HomeWordRain` on menu (`Logo`, `MenuScreen`, `translations.ts`)
+- Docs: `TMA_LAYOUT.md` — **Desktop TMA** section (detection, CSS policy, owner QA checklist); epic `TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md` Sessions 0–9 complete
+- Classic `timeUp` idle fallback increased from 5s to 30s (`TIME_UP_IDLE_FALLBACK_MS` in `@movli/shared`; server + offline client)
 - Round summary in SOLO mode: show who played and who's next instead of team label; total score still revealed on scoreboard (`RoundSummaryScreen.tsx`, `translations.ts`)
 - Unified room join flow: shared `roomJoin` utils (`buildRoomJoinUrl`, `buildTelegramLobbyInviteUrl`, `attemptRoomJoin`); PWA `?room=` now verifies room exists before `ENTER_NAME` (aligned with Telegram deep links)
 - Lobby defaults (`LobbySettingsScreen`) require sign-in: guest profile nav shows lock + login CTA; direct navigation redirects to profile with toast; removed guest `localStorage` defaults path (`lobbyDefaults.ts`)
 - Game over screen UX: sticky `FixedBottomBar` footer (rematch + change settings + leave room), share as icon beside results header, 600ms delayed footer reveal, winner card highlight and badge; new i18n keys `winnerBadge`, `gameOverChangeSettings`, `gameOverLeaveRoom` (`GameOverScreen.tsx`, `translations.ts`)
 
 ### Fixed
+- Glass `@supports not (backdrop-filter)` fallback: opaque modal backdrop/panel and header/footer tint (≥90%) when blur unavailable — all platforms, mirrors `prefers-reduced-transparency` (`styles.css`, `glass.css`)
+- TMA desktop modals: opaque bottom-sheet backdrop (85–90% tint), panel and top bar solid fill — no backdrop blur on `tdesktop`/`macos`/web clients; mobile liquid glass unchanged (`styles.css`)
+- TMA desktop header/footer: opaque chrome (92% fill, no backdrop blur) on `tdesktop`/`macos`/web clients — feather disabled, mobile liquid glass unchanged (`glass.css`)
+- TMA desktop modals: bottom-sheet backdrop no longer applies mobile 104px `padding-top` — sheets start at WebView top on `tdesktop`/`macos`/web clients (`styles.css`)
+- TMA desktop AppHeader: skip 80px TG chrome gutter on `tdesktop`/`macos`/web clients — title row uses content rail instead of `data-tg-gutter` (`GlassAppHeader.tsx`)
+- TMA desktop header inset: separate content-top floor (0px) for `tdesktop`/`macos`/web clients, `data-telegram-desktop` bootstrap flag, CSS `--tma-content-safe-top` without 104px mobile clamp (`tmaLayoutConstants.ts`, `useTelegramApp.ts`, `styles.css`)
 - Round timer no longer gains up to ~1s per CORRECT/SKIP: `nextWord` no longer resets `roundEndsAt` from ceil'd `timeLeft` (`GameEngine.ts`)
 - Saved lobby default word language (e.g. DE) no longer overwritten by UI language when creating a new room (`mergeSavedLobbyDefaultsIntoSettings`)
 - Telegram Desktop / macOS / Web: Mini App opens in a window instead of immersive fullscreen — skip `expand`/`requestFullscreen` and call `exitFullscreen` on desktop platforms (`useTelegramApp.ts`)
@@ -132,7 +152,7 @@
 - **ModalSheet unification (Phases 0–5):** `size` presets, glass visuals, 16 consumers migrated
 - **Test coverage (Phases 1–8):** server **341**, client **44**, shared **12**; E2E `@smoke` / `@core`
 - **Theme `PAPER_LUXE`:** default app theme; **OAuth `skipNamePrompt`**; **`AppLoginProvider`** for anonymous PWA
-- **Doc harness (2026-06-06):** `docs/INDEX.md`, `CONTRIBUTING`, `alias-steward`, `alias-master` skill, `daily-log-reminder` hook
+- **Doc harness (2026-06-06):** `docs/INDEX.md`, `CONTRIBUTING`, `movli-steward`, `movli-master` skill, `daily-log-reminder` hook
 
 ### Changed
 - **TMA headers & safe area:** sticky in-scroll chrome; Telegram back matrix; `--tma-inset-top` content-safe floor
@@ -165,7 +185,7 @@
 
 ### Release
 
-- **Версія застосунку / пакетів:** **0.6.2** (`@alias/client`, `@alias/server`, `@alias/shared`, `@alias/e2e`, клієнтські `src/version.json` та `public/version.json`).
+- **Версія застосунку / пакетів:** **0.6.2** (`@movli/client`, `@movli/server`, `@movli/shared`, `@movli/e2e`, клієнтські `src/version.json` та `public/version.json`).
 
 ## [2026-04-12] — Документація: один канонічний README
 
@@ -206,7 +226,7 @@
 
 ### Added
 
-- **Telegram bot (Telegraf)** у `@alias/server`: `/start`, payments (`pre_checkout_query`, `successful_payment`) та продакшен **webhook** з `secret_token`.
+- **Telegram bot (Telegraf)** у `@movli/server`: `/start`, payments (`pre_checkout_query`, `successful_payment`) та продакшен **webhook** з `secret_token`.
   - Файли: `packages/server/src/bot/index.ts`, `packages/server/src/index.ts`
 - **Telegram Mini App SDK** у клієнті + ініціалізація `ready()/expand()` + нативні UX фічі (fullscreen, disable vertical swipes, closing confirmation).
   - Файли: `packages/client/index.html`, `packages/client/src/hooks/useTelegramApp.ts`, `packages/client/src/styles.css`
@@ -220,12 +240,12 @@
 
 - **Native UX у Telegram**: вимкнено PWA install prompt, додано Telegram haptics у базові кнопки/ігрові дії, BackButton інтегрований зі state-machine роутингом.
   - Файли: `packages/client/src/hooks/useInstallPrompt.ts`, `packages/client/src/hooks/useHapticFeedback.ts`, `packages/client/src/components/Button.tsx`, `packages/client/src/App.tsx`, `packages/client/src/screens/GameFlow/screens/PlayingScreen.tsx`, `packages/client/src/screens/GameFlow/modes/QuizUI.tsx`
-- **Server build consistency**: `@alias/server build` тепер резолвить `@alias/shared` через `paths`, як і typecheck.
+- **Server build consistency**: `@movli/server build` тепер резолвить `@movli/shared` через `paths`, як і typecheck.
   - Файл: `packages/server/tsconfig.json`
 
 ### Fixed
 
-- **Server build** падав через розбіжність резолву типів `@alias/shared` між `tsconfig` та `tsconfig.typecheck`.
+- **Server build** падав через розбіжність резолву типів `@movli/shared` між `tsconfig` та `tsconfig.typecheck`.
 - **Telegram auth** міг ламатись у монорепо, якщо `TELEGRAM_BOT_TOKEN` був заданий лише в кореневому `.env`: сервер читав тільки package-local env. Тепер джерело істини — кореневий `.env`.
   - Файли: `packages/server/src/config.ts`, `packages/server/src/routes/auth.ts`, `packages/client/src/App.tsx`
   - Додано діагностичні логи (клієнт/сервер) без виводу raw `initData`.
@@ -299,7 +319,7 @@
 
 - **`showNotification` — накопичення таймерів:** кожен виклик у `context/GameContext.tsx` створював новий `setTimeout` без очищення попереднього. Старий таймер міг очистити нове повідомлення достроково. Виправлено через `notifTimerRef` + `clearTimeout` перед кожним новим таймером + cleanup на unmount.
 
-- **`imposterWord` губився після рестарту сервера:** `room.imposterWord` виключений з `GameSyncState` (секрет). `restoreRoomFromRedis()` не відновлював його, тому `RESULTS` показував `null`. Вирішено через окремий Redis-ключ `alias:imposter:<code>` — `persistRoom` зберігає/видаляє, `restoreRoomFromRedis` завантажує паралельно із станом кімнати. **Бонус:** виправлено також відсутність відновлення `imposterPhase`, `imposterPlayerId`, `revealedPlayerIds`.
+- **`imposterWord` губився після рестарту сервера:** `room.imposterWord` виключений з `GameSyncState` (секрет). `restoreRoomFromRedis()` не відновлював його, тому `RESULTS` показував `null`. Вирішено через окремий Redis-ключ `movli:imposter:<code>` — `persistRoom` зберігає/видаляє, `restoreRoomFromRedis` завантажує паралельно із станом кімнати. **Бонус:** виправлено також відсутність відновлення `imposterPhase`, `imposterPlayerId`, `revealedPlayerIds`.
 
 - **Google sign-in “не завжди відкриває” (критично):** додано завантаження Google Identity Services (`https://accounts.google.com/gsi/client`) у `packages/client/index.html` і переведено логін з `prompt()` на офіційну кнопку через `google.accounts.id.renderButton()` у `LoginModal`/`ProfileModal` (прибирає флейки і проблему “білий квадрат” під шітом). Файли: `packages/client/index.html`, `packages/client/src/components/Auth/LoginModal.tsx`, `packages/client/src/components/Auth/ProfileModal.tsx`, `packages/client/src/utils/googleIdentity.ts`.
 
@@ -346,7 +366,7 @@
   - `AdminApp.tsx` — auth gate + layout + Toast + ConfirmModal
   - `adminApi.ts` — typed API layer з `AdminAuthError`
   - `tabs/StatsTab.tsx`, `tabs/DecksTab.tsx`, `tabs/PacksTab.tsx`, `tabs/ThemesTab.tsx`
-  - **Auth:** JWT auto-detect з `alias_auth_token` → `/api/auth/me` → `isAdmin`. Без API-ключів.
+  - **Auth:** JWT auto-detect з `movli_auth_token` → `/api/auth/me` → `isAdmin`. Без API-ключів.
   - **Toast notifications** замість `alert()`; **ConfirmModal** замість `confirm()`
   - **`Set<string>`** для незалежного відстеження стану окремих операцій
   - Таби кешують дані — немає перезавантаження при переключенні
@@ -528,9 +548,9 @@
 - **Prisma / User:** поля агрегованої статистики `statsGamesPlayed`, `statsWordsGuessed`, `statsWordsSkipped`, `statsLastPlayedAt`; міграція `20260405120000_user_player_stats`.
 - **Auth API:** `POST /api/auth/player-stats/delta` (атомарні інкременти), `POST /api/auth/player-stats/merge-local` (імпорт легасі з localStorage); у відповіді `GET /api/auth/me` додано `playerStats`; при Google-логіні з `deviceId` — мердж **статистики** з анонімного користувача на цільовий (разом з покупками/колодами).
 - **Утиліта сервера:** `packages/server/src/utils/playerStats.ts` — `parseNonNegInt`, `maxDate`.
-- **Admin API:** `GET /api/admin/live` — з Redis: кількість ключів кімнат (`alias:room:*` без `alias:room:writer:*`) та прив’язок сокетів (`alias:socket:*`); у відповіді `asOf`, `redisConnected`.
+- **Admin API:** `GET /api/admin/live` — з Redis: кількість ключів кімнат (`movli:room:*` без `movli:room:writer:*`) та прив’язок сокетів (`movli:socket:*`); у відповіді `asOf`, `redisConnected`.
 - **RedisRoomStore:** `getLiveStats()`; префікс ключів сокетів `SOCKET_KEY_PREFIX`.
-- **Клієнт:** `postPlayerStatsDelta`, `mergeLocalPlayerStats`, `PlayerStatsPayload` у `api.ts`; переписаний `usePlayerStats` (pending + flush на сервер, debounce, міграція `alias_player_stats_v1` → сервер, `syncPlayerStatsFromProfile`, `flushPlayerStats`); `useAuth` викликає гідратацію/міграцію після профілю.
+- **Клієнт:** `postPlayerStatsDelta`, `mergeLocalPlayerStats`, `PlayerStatsPayload` у `api.ts`; переписаний `usePlayerStats` (pending + flush на сервер, debounce, міграція `movli_player_stats_v1` → сервер, `syncPlayerStatsFromProfile`, `flushPlayerStats`); `useAuth` викликає гідратацію/міграцію після профілю.
 - **UI (статистика та логін):** компактна статистика та «Детальна статистика» в `ProfileModal`; `PlayerStatsScreen` з перекладами, банером для гостя + `LoginModal`; оновлені тексти `LoginModal` і ключі в `TRANSLATIONS` (UA/DE/EN); `index.html` / `admin.html` — meta `mobile-web-app-capable`.
 - **AdminPanel:** блок Live (Redis), опитування `GET /api/admin/live` кожні 15 с на вкладці «Статистика».
 
@@ -549,9 +569,9 @@
 ## [2026-03-31] — Режими гри (GameMode), GameTask, патерн Стратегія на сервері та модульний UI гри
 
 ### Added
-- **@alias/shared**: enum `GameMode` (`CLASSIC`, `TRANSLATION`, `SYNONYMS`, `QUIZ`); інтерфейс `GameTask` (`id`, `prompt`, `answer?`, `options?`); у `GameSettings` — `gameMode?`, `targetLanguage?`; дія `GUESS_OPTION` з `data.selectedOption`; у `RoundStats.words` — `taskId?`, результат `guessed`; у `GameSyncState` — `currentTask` (поряд із `currentWord` для сумісності).
-- **@alias/server**: каталог `src/modes/` — `IGameModeHandler`, `ClassicModeHandler`, `TranslationModeHandler` (формат `Слово|Переклад`), `QuizModeHandler` (4 варіанти, перший коректний відповідь через `room.currentTaskAnswered`), `ModeFactory.getHandler`; `GameEngine` делегує `generateTask` / `handleAction`; валідація `GUESS_OPTION` у `schemas.ts`; socket: `GUESS_OPTION` доступна всім гравцям, не лише пояснювачу.
-- **@alias/client**: `PlayingScreen` як оболонка; `GameFlow/modes/ClassicUI` (`ClassicWordCard`, `ClassicActionFooter`), `QuizUI` (сітка 2×2); синхронізація `currentTask` з сервера; офлайн `buildOfflineTask` + `sendGuessOption`; хук `useHapticFeedback`, розширення `HAPTIC` (`quizCorrect`, `quizWrong`); легка вібрація на базовій `Button`; модальне вікно QR у лобі (більше біле поле для сканування); семантичні `--ui-*` у елементах таймера/гри замість жорсткого `text-white` на екрані гри.
+- **@movli/shared**: enum `GameMode` (`CLASSIC`, `TRANSLATION`, `SYNONYMS`, `QUIZ`); інтерфейс `GameTask` (`id`, `prompt`, `answer?`, `options?`); у `GameSettings` — `gameMode?`, `targetLanguage?`; дія `GUESS_OPTION` з `data.selectedOption`; у `RoundStats.words` — `taskId?`, результат `guessed`; у `GameSyncState` — `currentTask` (поряд із `currentWord` для сумісності).
+- **@movli/server**: каталог `src/modes/` — `IGameModeHandler`, `ClassicModeHandler`, `TranslationModeHandler` (формат `Слово|Переклад`), `QuizModeHandler` (4 варіанти, перший коректний відповідь через `room.currentTaskAnswered`), `ModeFactory.getHandler`; `GameEngine` делегує `generateTask` / `handleAction`; валідація `GUESS_OPTION` у `schemas.ts`; socket: `GUESS_OPTION` доступна всім гравцям, не лише пояснювачу.
+- **@movli/client**: `PlayingScreen` як оболонка; `GameFlow/modes/ClassicUI` (`ClassicWordCard`, `ClassicActionFooter`), `QuizUI` (сітка 2×2); синхронізація `currentTask` з сервера; офлайн `buildOfflineTask` + `sendGuessOption`; хук `useHapticFeedback`, розширення `HAPTIC` (`quizCorrect`, `quizWrong`); легка вібрація на базовій `Button`; модальне вікно QR у лобі (більше біле поле для сканування); семантичні `--ui-*` у елементах таймера/гри замість жорсткого `text-white` на екрані гри.
 
 ### Changed
 - Документація: `README.md` (новий підрозділ про GameMode/GameTask/Стратегія, оновлені таблиці дій і `GameSyncState`, структура репо, Quick Reference, примітки для розробників); окремий довідник по модулях (тоді `CODE_REFERENCE.md`, з 2026-04-12 — розділ у `README.md`); цей запис у `CHANGELOG.md`.
@@ -676,7 +696,7 @@
 ### Fixed
 - Розширено `MOCK_WORDS` для EN/DE, щоб офлайн-раунд не вичерпував колоду надто швидко.
 - Які файли змінено: `packages/shared/src/constants.ts`.
-- Чому: стабільніший офлайн-режим; виконано `pnpm --filter @alias/shared build`.
+- Чому: стабільніший офлайн-режим; виконано `pnpm --filter @movli/shared build`.
 
 ### Changed
 - Розширено `MOCK_WORDS[UA][GENERAL]` до **~520+** слів; у README зафіксовано розмір fallback і поведінку **без повторів слова в межах одного циклу колоди** (`usedWords`, `WordService.nextWord`).
@@ -757,17 +777,17 @@
 
 ---
 
-## [2026-03-29] — Deploy: alias vs ALIAS, compose/npm, trim шляху
+## [2026-03-29] — Deploy: alias vs MOVLI, compose/npm, trim шляху
 
 ### Fixed
-- Регістр шляху на Linux: дефолт **`~/apps/ALIAS`**; обрізання завершального `/` у `VPS_DEPLOY_PATH`.
+- Регістр шляху на Linux: дефолт **`~/apps/MOVLI`**; обрізання завершального `/` у `VPS_DEPLOY_PATH`.
 
 ### Added
 - Опційні secrets **`VPS_COMPOSE_FILE`**, **`VPS_ENV_FILE`** (наприклад `docker-compose.npm.yml` та `.env` на VPS за NPM).
 
 ---
 
-## [2026-03-29] — Deploy: auto-clone якщо ~/apps/ALIAS немає
+## [2026-03-29] — Deploy: auto-clone якщо ~/apps/MOVLI немає
 
 ### Changed
 - [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): якщо каталог `DEPLOY_PATH` відсутній — `mkdir -p` батьківської теки та `git clone` (branch `main`, shallow). Для **приватного** репозиторію клон на сервері треба налаштувати вручну або через deploy key.
@@ -775,7 +795,7 @@
 
 ---
 
-## [2026-03-29] — VPS-нотатки лише локально + дефолт ~/apps/ALIAS
+## [2026-03-29] — VPS-нотатки лише локально + дефолт ~/apps/MOVLI
 
 ### Security
 - [`docs/VPS-INFRASTRUCTURE.md`](./docs/VPS-INFRASTRUCTURE.md) додано в [`.gitignore`](./.gitignore) — реальні IP, домени та топологія не комітяться.
@@ -784,7 +804,7 @@
 - [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example): шаблон для копії в локальний `VPS-INFRASTRUCTURE.md`.
 
 ### Changed
-- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): дефолтний каталог деплою **`$HOME/apps/ALIAS`**.
+- [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml): дефолтний каталог деплою **`$HOME/apps/MOVLI`**.
 - [`README.md`](./README.md): деплой, secrets, посилання на `.example` замість чутливого файлу.
 
 ---
@@ -830,7 +850,7 @@
 - `GameContextType.handleJoin` у `packages/client/src/types.ts`: додано опційний параметр `avatarId`, як у реалізації `GameContext`.
 
 ### Added
-- Файл `CODE_REFERENCE.md` (з **2026-04-12** видалено; зміст перенесено в розділ **«Довідник модулів (код)»** у [`README.md`](./README.md)): структурований опис пакетів `@alias/shared`, `@alias/server`, `@alias/client`, `@alias/e2e`; таблиці зовнішніх бібліотек; перелік класів і методів (`GameEngine`, `RoomManager`, `WordService`, `RedisRoomStore`, `AuthService`); функції роутів, middleware, валідації, socket handlers; експорти React (екрани, компоненти, хуки, `api.ts`, `audio.ts`); моделі Prisma; покриття існуючими Vitest-файлами; рекомендації для наступних тестів.
+- Файл `CODE_REFERENCE.md` (з **2026-04-12** видалено; зміст перенесено в розділ **«Довідник модулів (код)»** у [`README.md`](./README.md)): структурований опис пакетів `@movli/shared`, `@movli/server`, `@movli/client`, `@movli/e2e`; таблиці зовнішніх бібліотек; перелік класів і методів (`GameEngine`, `RoomManager`, `WordService`, `RedisRoomStore`, `AuthService`); функції роутів, middleware, валідації, socket handlers; експорти React (екрани, компоненти, хуки, `api.ts`, `audio.ts`); моделі Prisma; покриття існуючими Vitest-файлами; рекомендації для наступних тестів.
 - У [`README.md`](./README.md) додано посилання на зовнішній довідник та `CHANGELOG.md` (на початку та в змісті).
 
 ---
@@ -838,9 +858,9 @@
 ## [2026-03-29] — Аудит: збірка, тести, claim soundPack, офлайн-гравець
 
 ### Fixed
-- **Кореневий `pnpm run build`** не запускав збірку клієнта/сервера: `pnpm run --parallel build:client build:server` інтерпретувався як рекурсивний запуск скриптів у workspace і падав з `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`. Замінено на `pnpm --parallel --filter @alias/client --filter @alias/server run build`. Файл: `package.json`.
+- **Кореневий `pnpm run build`** не запускав збірку клієнта/сервера: `pnpm run --parallel build:client build:server` інтерпретувався як рекурсивний запуск скриптів у workspace і падав з `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`. Замінено на `pnpm --parallel --filter @movli/client --filter @movli/server run build`. Файл: `package.json`.
 - **`POST /api/purchases/claim` для `soundPack`**: для `itemType === 'soundPack'` поле `isFree` лишалось `false`, тому завжди поверталось `400 Item is not free`, хоча API дозволяв тип у тілі запиту. Додано завантаження `SoundPack` з Prisma і перевірку `isFree`. Файл: `packages/server/src/routes/purchases.ts`.
-- **Офлайн-гравець (`ADD_OFFLINE_PLAYER`)**: об’єкт `Player` створювався з `stats: { explained: 0 }` без `guessed`, що суперечить контракту `Player` у `@alias/shared`. Додано `guessed: 0`. Файл: `packages/client/src/context/GameContext.tsx`.
+- **Офлайн-гравець (`ADD_OFFLINE_PLAYER`)**: об’єкт `Player` створювався з `stats: { explained: 0 }` без `guessed`, що суперечить контракту `Player` у `@movli/shared`. Додано `guessed: 0`. Файл: `packages/client/src/context/GameContext.tsx`.
 
 ### Changed
 - **Тести `RoomManager.handleDisconnect`**: очікування `null` при відключенні не-хоста не відповідало реалізації та JSDoc (повертається `{ roomCode, removedPlayerId }` для broadcast у `index.ts`). Тест оновлено під фактичну поведінку. Файл: `packages/server/src/services/__tests__/RoomManager.test.ts`.
@@ -871,6 +891,6 @@
 ## Попередній стан проекту (до документації)
 
 Проект на момент створення документації:
-- **Client**: v0.2.3 (@alias/client)
-- **Server**: v0.3.0 (@alias/server)
+- **Client**: v0.2.3 (@movli/client)
+- **Server**: v0.3.0 (@movli/server)
 - **Функціональність**: повноцінна онлайн/офлайн гра Alias з 3 мовами, 5 темами, 3 звуковими пакетами, 15 наборами слів (~200 слів кожен), Google OAuth, Stripe інтеграцією, PWA, push-нотифікаціями, адмін-панеллю, кастомними колодами

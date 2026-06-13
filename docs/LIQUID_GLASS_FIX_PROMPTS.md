@@ -26,8 +26,8 @@
 
 ```
 Перед змінами: .cursor/CURRENT_FOCUS.md, docs/LIQUID_GLASS_FIX_PROMPTS.md (секція сесії нижче).
-Після: pnpm typecheck, pnpm --filter @alias/client test (релевантні describe), CHANGELOG [Unreleased] якщо user-visible.
-Мінімальний diff. Не чіпати GameSyncState / @alias/shared без потреби.
+Після: pnpm typecheck, pnpm --filter @movli/client test (релевантні describe), CHANGELOG [Unreleased] якщо user-visible.
+Мінімальний diff. Не чіпати GameSyncState / @movli/shared без потреби.
 Не рефакторити поза scope сесії. Після UI — .cursor/VISUAL_QA_CHECKLIST.md на TMA viewport 375px.
 ```
 
@@ -46,16 +46,16 @@
 
 | # | Швидкий промт |
 |---|---------------|
-| **0** | `@alias-steward Виконай сесію 0 з docs/LIQUID_GLASS_FIX_PROMPTS.md (pre-flight + verify baseline).` |
-| **1** | `@alias-steward Сесія 1: PageTransition без persistent transform — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **2** | `@alias-steward Сесія 2: viewport-fixed header/footer wiring — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **3** | `@alias-steward Сесія 3: z-index liquid-chrome vs modal — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **4** | `@alias-steward Сесія 4: уніфікація footer blur (glass.css) — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **5** | `@alias-steward Сесія 5: TMA bootstrap ready/expand/isExpanded — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **6** | `@alias-steward Сесія 6: useGyroscope лише з FooterIsland — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **7** | `@alias-steward Сесія 7: prefers-reduced-transparency + CSS cleanup — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **8** | `@alias-steward Сесія 8: banner z-index + LazyRoute skeleton — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
-| **9** | `@alias-steward Сесія 9: visual QA + тести + doc sync — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **0** | `@movli-steward Виконай сесію 0 з docs/LIQUID_GLASS_FIX_PROMPTS.md (pre-flight + verify baseline).` |
+| **1** | `@movli-steward Сесія 1: PageTransition без persistent transform — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **2** | `@movli-steward Сесія 2: viewport-fixed header/footer wiring — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **3** | `@movli-steward Сесія 3: z-index liquid-chrome vs modal — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **4** | `@movli-steward Сесія 4: уніфікація footer blur (glass.css) — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **5** | `@movli-steward Сесія 5: TMA bootstrap ready/expand/isExpanded — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **6** | `@movli-steward Сесія 6: useGyroscope лише з FooterIsland — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **7** | `@movli-steward Сесія 7: prefers-reduced-transparency + CSS cleanup — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **8** | `@movli-steward Сесія 8: banner z-index + LazyRoute skeleton — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
+| **9** | `@movli-steward Сесія 9: visual QA + тести + doc sync — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
 | **A** | `@architect Мікро A: GlassChromePortal (fixed chrome в document.body) — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
 | **B** | `Мікро B: розширити fixed/island на решту екранів — docs/LIQUID_GLASS_FIX_PROMPTS.md` |
 
@@ -111,7 +111,7 @@ flowchart LR
 
 **Задачі:**
 1. Прочитати `.cursor/CURRENT_FOCUS.md`, `AUDIT_RESULTS.md`, цей файл, `docs/TMA_LAYOUT.md`.
-2. Запустити `pnpm typecheck` і `pnpm --filter @alias/client test` — зафіксувати baseline (pass/fail).
+2. Запустити `pnpm typecheck` і `pnpm --filter @movli/client test` — зафіксувати baseline (pass/fail).
 3. Скласти список екранів з `ScreenShell` + `AppHeader` / `FixedBottomBar` (grep уже є в аудиті).
 4. Додати в `.cursor/CURRENT_FOCUS.md` один абзац: «Liquid Glass fix epic, старт з сесії N».
 
@@ -134,7 +134,7 @@ flowchart LR
 
 **Acceptance:**
 - У DevTools computed style на `PageTransition` wrapper після анімації: `transform: none` (не matrix з translate).
-- Скрол і layout без регресії; `pnpm --filter @alias/client test` green.
+- Скрол і layout без регресії; `pnpm --filter @movli/client test` green.
 
 **Промт для агента:**
 
@@ -147,7 +147,7 @@ flowchart LR
 - Після анімації transform має бути none (не translateY(0) matrix)
 - Зберегти короткий fade/slide UX де можливо без transform на постійному стані
 - prefers-reduced-motion: вимкнути анімацію
-- Запусти pnpm typecheck && pnpm --filter @alias/client test
+- Запусти pnpm typecheck && pnpm --filter @movli/client test
 - CHANGELOG [Unreleased] Fixed якщо user-visible blur покращиться
 
 Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §1, docs/TMA_LAYOUT.md
@@ -288,7 +288,7 @@ pnpm typecheck. CHANGELOG [Unreleased] Fixed якщо було видно в UI.
 додай обробку isExpanded / повторний syncLayout коли не expanded.
 
 Не дублюй safe-area padding (канон --tma-inset-*). Додай/онови unit tests.
-pnpm typecheck && pnpm --filter @alias/client test.
+pnpm typecheck && pnpm --filter @movli/client test.
 
 Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §5, docs/TMA_LAYOUT.md, .cursor/rules/06-tma.mdc
 ```
@@ -319,7 +319,7 @@ pnpm typecheck && pnpm --filter @alias/client test.
 Обмеж scope useGyroscope: не викликати глобально з App.tsx — лише коли FooterIsland змонтований
 (використай FOOTER_ISLAND_DOCUMENT_FLAG / dataset на html).
 
-Мінімальний diff. Онови useGyroscope.test.ts. pnpm --filter @alias/client test.
+Мінімальний diff. Онови useGyroscope.test.ts. pnpm --filter @movli/client test.
 
 Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §6
 ```
@@ -349,7 +349,7 @@ pnpm typecheck && pnpm --filter @alias/client test.
 Додай prefers-reduced-transparency для liquid glass (.ui-app-header, .footer-island, sticky footer).
 Прибери мертвий @supports fallback для ::before/::after header якщо glass.css їх вимикає.
 
-Мінімальний diff glass.css + styles.css. pnpm --filter @alias/client test.
+Мінімальний diff glass.css + styles.css. pnpm --filter @movli/client test.
 
 Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §7
 ```
@@ -432,7 +432,7 @@ pnpm typecheck && pnpm --filter @alias/client test.
 ```
 Розшир fixed header (AppHeader fixed + headerFixed) і footer island (FixedBottomBar island + footerFixed)
 на [НАЗВИ ЕКРАНІВ]. Копіюй патерн з ProfileSettingsScreen після сесії 2. Батчами по 3–4 екрани.
-Після кожного батчу: pnpm --filter @alias/client test. CHANGELOG Changed.
+Після кожного батчу: pnpm --filter @movli/client test. CHANGELOG Changed.
 
 Канон: docs/LIQUID_GLASS_FIX_PROMPTS.md §Micro B
 ```

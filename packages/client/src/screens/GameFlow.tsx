@@ -12,7 +12,7 @@ import {
   ScoreboardScreen,
   GameOverScreen,
 } from './GameFlow/screens';
-import { GameMode } from '@alias/shared';
+import { GameMode } from '@movli/shared';
 
 /** Single router for all in-game flow states (VS → … → game over). */
 export function GameFlow() {

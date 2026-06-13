@@ -6,7 +6,7 @@ import { LobbyRulesSummaryCard, rulesTimeRow } from './LobbyRulesSummaryCard';
 import { GameMode } from '../../../types';
 import type { GameSettings, ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
-import { Category, Language, AppTheme, SoundPreset } from '@alias/shared';
+import { Category, Language, AppTheme, SoundPreset } from '@movli/shared';
 
 const theme = {
   bg: 'bg-test',

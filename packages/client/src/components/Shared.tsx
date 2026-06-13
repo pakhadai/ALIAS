@@ -5,7 +5,9 @@ import { Button } from './Button';
 import { ThemeConfig } from '../types';
 import { zIndex } from '../constants/zIndex';
 import { typographyClass, brandCaptionClass } from '../constants/typography';
+import { DEFAULT_HOME_TAGLINE } from '../constants/homeBrand';
 import { ToastItem } from './ToastItem';
+import { MovliLogoMark } from './MovliLogoMark';
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -191,6 +193,35 @@ export function ModalSheetTitle({
   );
 }
 
+/** Left-aligned action row for compact sheets (invite options, team pickers, etc.). */
+export function ModalOptionButton({
+  icon,
+  children,
+  className = '',
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  icon?: React.ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      fullWidth
+      size="md"
+      icon={icon}
+      className={[
+        'justify-start gap-3 font-sans font-semibold normal-case tracking-normal text-ui-fg',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+}
+
 /** Renders into `document.body` so `position: fixed` overlays use the viewport, not a transformed ancestor (e.g. `PageTransition`). */
 export function ModalPortal({ children }: { children: React.ReactNode }) {
   if (typeof document === 'undefined') return <>{children}</>;
@@ -253,7 +284,7 @@ export const ToastNotification: React.FC<{
   return (
     <ModalPortal>
       <div
-        className={`fixed left-0 right-0 top-[var(--tma-toast-top)] ${zIndex.toast} flex justify-center px-4 pointer-events-none`}
+        className={`fixed left-0 right-0 top-(--tma-toast-top) ${zIndex.toast} flex justify-center px-4 pointer-events-none`}
       >
         <div className="pointer-events-auto animate-slide-up">
           <ToastItem message={message} type={type} onDismiss={onClose} />
@@ -333,22 +364,23 @@ export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({
 
 interface LogoProps {
   theme: ThemeConfig;
+  /** Localized home tagline — defaults to EN when boot context has no UI language. */
+  tagline?: string;
 }
 
-export const Logo: React.FC<LogoProps> = ({ theme }) => {
+export const Logo: React.FC<LogoProps> = ({ theme, tagline = DEFAULT_HOME_TAGLINE }) => {
   return (
     <div className="flex flex-col items-center w-full">
-      <h1
-        className={`font-serif font-normal text-7xl tracking-[0.25em] text-center mb-4 animate-pop-in ${theme.textMain}`}
-      >
-        ALIAS
+      <h1 className={`mb-3 w-full max-w-[min(100%,20rem)] ${theme.textMain}`} aria-label="MOVLI">
+        <MovliLogoMark className="block h-auto w-full" />
       </h1>
-      <div className="h-px w-16 bg-ui-border mb-6"></div>
-      <p
-        className={`opacity-40 ${brandCaptionClass} animate-fade-in delay-200 ${theme.textSecondary}`}
-      >
-        Premium Collection
-      </p>
+      <div className="flex w-full max-w-[min(100%,20rem)] items-center justify-center gap-2.5">
+        <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
+        <p className={`shrink-0 opacity-50 ${brandCaptionClass} ${theme.textSecondary}`}>
+          {tagline}
+        </p>
+        <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
+      </div>
     </div>
   );
 };

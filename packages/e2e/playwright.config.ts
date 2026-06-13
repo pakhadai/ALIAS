@@ -33,8 +33,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // Server runtime imports @alias/shared from dist, so ensure shared is built first (CI + fresh clones).
-      command: 'pnpm --filter @alias/shared build && pnpm --filter @alias/server dev',
+      // Server runtime imports @movli/shared from dist, so ensure shared is built first (CI + fresh clones).
+      command: 'pnpm --filter @movli/shared build && pnpm --filter @movli/server dev',
       cwd: repoRoot,
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
@@ -49,7 +49,7 @@ export default defineConfig({
       },
     },
     {
-      command: 'pnpm --filter @alias/client dev',
+      command: 'pnpm --filter @movli/client dev',
       cwd: repoRoot,
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,

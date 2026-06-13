@@ -1,5 +1,5 @@
-import type { RoomErrorCode } from '@alias/shared';
-import { Language } from '@alias/shared';
+import type { RoomErrorCode } from '@movli/shared';
+import { Language } from '@movli/shared';
 import { getUiStrings } from '../hooks/useT';
 
 export type OnlineSocketReadiness = {

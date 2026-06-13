@@ -34,7 +34,7 @@ alwaysApply: true
 - Зміна публічного API (нові Socket events, REST endpoints)
 - Зміна схеми БД (нова міграція)
 - Зміна бізнес-логіки гри (правила, підрахунок очок)
-- Breaking change у @alias/shared
+- Breaking change у @movli/shared
 - Вибір між двома архітектурними підходами
 
 ## Коли НЕ питати — роби сам

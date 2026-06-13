@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { GameActionPayload, Player, Team } from '@alias/shared';
+import type { GameActionPayload, Player, Team } from '@movli/shared';
 import {
   GameState,
   Language,
@@ -8,7 +8,7 @@ import {
   AppTheme,
   GameMode,
   TEAM_COLORS,
-} from '@alias/shared';
+} from '@movli/shared';
 import type { Room } from '../../services/RoomManager';
 import { authorizeGameAction, type GameActionAuthContext } from '../authorizeGameAction';
 

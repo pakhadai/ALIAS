@@ -1,4 +1,4 @@
-# Visual QA Checklist — Alias Master
+# Visual QA Checklist — MOVLI Master
 
 Виконувати після кожної значної зміни UI або game flow.
 
@@ -6,6 +6,7 @@
 
 ### Веб (Desktop Chrome 1280px)
 - [ ] MENU: логотип, кнопки Create/Join/Rules відображаються коректно
+- [ ] MENU CTA: Create — `AccentFooterCta` shell/glow як lobby Start; Join — secondary `Button`; Offline — tertiary `Button`; header icons — `GlassIconButton` chips
 - [ ] ENTER_NAME: введення імені, вибір аватара, валідація
 - [ ] JOIN_INPUT: введення коду, обробка неіснуючого коду
 - [ ] LOBBY: список гравців, QR код, кнопка Start (лише для host)
@@ -27,6 +28,7 @@
 
 ### Мобільний (375px, iOS Safari)
 - [ ] Всі вищеперераховані стани на мобільному
+- [ ] MENU @375px: home CTA stack matches lobby Start visual weight (theme radius, accent shell, tap targets ≥44px)
 - [ ] Safe area дотримано (нотч, home indicator)
 - [ ] Scroll не виходить за межі
 - [ ] Tap targets достатнього розміру

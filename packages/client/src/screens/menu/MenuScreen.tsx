@@ -1,8 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { AlertCircle, User, Settings, BookOpen, WifiOff, Maximize } from 'lucide-react';
 import { Logo, ModalSheetTitle } from '../../components/Shared';
+import { Button } from '../../components/Button';
+import { HomeWordRain } from '../../components/HomeWordRain';
 import { ModalSheet } from '../../components/ModalSheet';
-import { AppHeader, ScreenAccentGlow, ScreenShell } from '../../components/layout';
+import {
+  AccentFooterCta,
+  AppHeader,
+  GlassIconButton,
+  ScreenAccentGlow,
+  ScreenShell,
+} from '../../components/layout';
 import { QuickJoinSheet } from './QuickJoinSheet';
 import { EnterNameSheet } from './EnterNameSheet';
 import { AppSettingsModal } from '../../components/Settings/AppSettingsModal';
@@ -11,7 +19,7 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
-import { hasTelegramInitData, isTelegramMiniApp } from '../../hooks/useTelegramApp';
+import { hasTelegramInitData } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
 import { HEADER_ROW_MIN_PX, HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
 import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
@@ -41,7 +49,7 @@ export const MenuScreen = () => {
   const [quickJoinChecking, setQuickJoinChecking] = useState(false);
   const [createRoomBusy, setCreateRoomBusy] = useState(false);
   const t = useT();
-  const isTelegram = isTelegramMiniApp();
+  const isTelegram = hasTelegramInitData();
 
   void setSettings;
 
@@ -60,16 +68,6 @@ export const MenuScreen = () => {
       setShowFullscreenHint(true);
     }
   };
-
-  const menuActionIconBtn = [
-    'relative z-[1] inline-flex h-11 w-11 shrink-0 items-center justify-center',
-    'touch-manipulation transition-all duration-150 ease-out',
-    'active:scale-90',
-  ].join(' ');
-  const menuActionIcon = [
-    currentTheme.iconColor,
-    'pointer-events-none opacity-50 hover:opacity-100 transition-opacity',
-  ].join(' ');
 
   const showProfileBadge = !isAuthenticated;
   const canQuickJoin = isValidRoomCode(quickJoinCode);
@@ -106,13 +104,10 @@ export const MenuScreen = () => {
 
   const menuActionIcons = (
     <>
-      <button
-        type="button"
-        onClick={handleProfileClick}
-        className={`${menuActionIconBtn} overflow-visible`}
-        aria-label="Profile"
-      >
-        <User size={22} className={menuActionIcon} strokeWidth={1.75} />
+      <div className="relative shrink-0 overflow-visible">
+        <GlassIconButton onClick={handleProfileClick} ariaLabel="Profile">
+          <User size={16} strokeWidth={2} aria-hidden />
+        </GlassIconButton>
         {showProfileBadge ? (
           <span
             data-testid="menu-profile-guest-badge"
@@ -120,33 +115,21 @@ export const MenuScreen = () => {
             aria-hidden
           />
         ) : null}
-      </button>
-      <button
-        type="button"
-        onClick={() => setShowAppSettings(true)}
-        className={menuActionIconBtn}
-        aria-label="Settings"
-      >
-        <Settings size={22} className={menuActionIcon} strokeWidth={1.75} />
-      </button>
-      <button
-        type="button"
+      </div>
+      <GlassIconButton onClick={() => setShowAppSettings(true)} ariaLabel="Settings">
+        <Settings size={16} strokeWidth={2} aria-hidden />
+      </GlassIconButton>
+      <GlassIconButton
         onClick={() => setShowRules(true)}
-        className={menuActionIconBtn}
-        aria-label={t.rulesTitle}
-        data-testid="menu-rules-button"
+        ariaLabel={t.rulesTitle}
+        testId="menu-rules-button"
       >
-        <BookOpen size={22} className={menuActionIcon} strokeWidth={1.75} />
-      </button>
+        <BookOpen size={16} strokeWidth={2} aria-hidden />
+      </GlassIconButton>
       {!isStandaloneDisplay() && !isTelegram && (
-        <button
-          type="button"
-          onClick={() => void handleFullscreenClick()}
-          className={menuActionIconBtn}
-          aria-label="Fullscreen"
-        >
-          <Maximize size={22} className={menuActionIcon} strokeWidth={1.75} />
-        </button>
+        <GlassIconButton onClick={() => void handleFullscreenClick()} ariaLabel="Fullscreen">
+          <Maximize size={16} strokeWidth={2} aria-hidden />
+        </GlassIconButton>
       )}
     </>
   );
@@ -160,20 +143,22 @@ export const MenuScreen = () => {
     .join(' ');
 
   return (
-    <div className="relative flex flex-col min-h-[var(--tg-viewport-height,100dvh)] h-full w-full bg-ui-bg transition-colors duration-500 overflow-hidden">
-      <ScreenAccentGlow />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        aria-hidden
-        style={{
-          backgroundImage: 'radial-gradient(var(--ui-fg) 0.5px, transparent 0.5px)',
-          backgroundSize: '18px 18px',
-        }}
-      />
+    <div className="relative flex flex-col h-full min-h-0 w-full bg-ui-bg transition-colors duration-500 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+        <ScreenAccentGlow />
+        <HomeWordRain />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'radial-gradient(var(--ui-fg) 0.5px, transparent 0.5px)',
+            backgroundSize: '18px 18px',
+          }}
+        />
+      </div>
 
       <ScreenShell
         layout="canonical"
-        className="relative z-10 bg-ui-bg"
+        className="relative z-10 bg-transparent"
         headerFixed
         header={
           <AppHeader
@@ -205,7 +190,7 @@ export const MenuScreen = () => {
           style={{ paddingTop: HOME_CARD_TOP_GAP_PX }}
         >
           <div className="scale-[0.85] origin-top">
-            <Logo theme={currentTheme} />
+            <Logo theme={currentTheme} tagline={t.homeTagline} />
           </div>
 
           {connectionError && (
@@ -218,38 +203,27 @@ export const MenuScreen = () => {
           )}
 
           <div className="w-full space-y-3 flex flex-col items-center mt-10 animate-slide-up">
-            <button
-              type="button"
+            <AccentFooterCta
+              themeButtonClass={currentTheme.button}
               onClick={() => void handleCreateRoom()}
+              variant="animated"
+              loading={createRoomBusy}
               disabled={createRoomBusy}
-              data-testid="menu-create-game"
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 transition-all duration-200 ease-out active:scale-[0.98] shadow-2xl relative overflow-hidden disabled:opacity-70 disabled:pointer-events-none`}
+              buttonTestId="menu-create-game"
+              shellTestId="menu-create-game-shell"
             >
-              <span
-                className="absolute inset-0 opacity-60"
-                style={{
-                  background:
-                    'radial-gradient(70% 60% at 50% 0%, color-mix(in_srgb, var(--ui-accent) 28%, transparent) 0%, transparent 60%)',
-                }}
-                aria-hidden
-              />
-              {createRoomBusy ? (
-                <span className="h-5 w-5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0" />
-              ) : null}
-              <span className={`${typographyClass.label} font-sans tracking-wide`}>
-                {t.createGame}
-              </span>
-            </button>
-            <button
+              {t.createGame}
+            </AccentFooterCta>
+            <Button
               type="button"
+              variant="secondary"
+              size="xl"
+              fullWidth
               onClick={() => setShowQuickJoin(true)}
               data-testid="menu-join-game"
-              className="w-full h-14 rounded-full flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] bg-ui-surface text-ui-fg border border-ui-border hover:bg-ui-surface-hover"
             >
-              <span className={`${typographyClass.label} font-sans tracking-wide`}>
-                {quickJoinLabel}
-              </span>
-            </button>
+              {quickJoinLabel}
+            </Button>
 
             <div className="flex items-center gap-3 w-full opacity-20 py-1">
               <div className="h-px flex-1 bg-ui-border" />
@@ -261,15 +235,19 @@ export const MenuScreen = () => {
               <div className="h-px flex-1 bg-ui-border" />
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="tertiary"
+              size="xl"
+              fullWidth
+              icon={
+                <WifiOff size={14} className="opacity-80 shrink-0" strokeWidth={2} aria-hidden />
+              }
               onClick={startOfflineGame}
               data-testid="menu-offline"
-              className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-ui-border bg-transparent text-ui-fg-muted ${typographyClass.label} font-sans tracking-wide transition-all duration-200 ease-out active:scale-[0.98] hover:bg-ui-surface/40 hover:text-ui-fg`}
             >
-              <WifiOff size={14} className="opacity-80 shrink-0" strokeWidth={2} />
-              <span>{t.playOffline}</span>
-            </button>
+              {t.playOffline}
+            </Button>
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pt-4 pb-safe-bottom">

@@ -15,7 +15,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@alias/shared': path.resolve(__dirname, '../shared/src/index.ts'),
+      '@movli/shared': path.resolve(__dirname, '../shared/src/index.ts'),
     },
   },
   test: {

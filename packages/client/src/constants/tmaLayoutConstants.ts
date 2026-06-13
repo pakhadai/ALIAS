@@ -7,6 +7,25 @@ export const TG_CHROME_GUTTER_PX = 80;
 export const APP_HEADER_BAR_PX = 60;
 /** Minimum content-safe top when SDK under-reports (Dynamic Island + TG chrome ≈ 96–104px). */
 export const TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX = 104;
+/** Desktop TMA — native title bar is outside WebView; trust SDK inset, floor is fallback only. */
+export const TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX = 0;
+/** `document.documentElement.dataset` key → `data-telegram-desktop` on `<html>`. */
+export const TELEGRAM_DESKTOP_DOCUMENT_FLAG = 'telegramDesktop' as const;
+
+const TELEGRAM_DESKTOP_PLATFORMS = new Set(['macos', 'tdesktop', 'weba', 'webk', 'web', 'unigram']);
+
+export function isTelegramDesktopPlatform(platform?: string): boolean {
+  if (!platform) return false;
+  return TELEGRAM_DESKTOP_PLATFORMS.has(platform.toLowerCase());
+}
+
+/** Content-safe top floor by Telegram client — mobile 104px, desktop 0px (SDK-first). */
+export function resolveTelegramContentTopFloorPx(platform?: string): number {
+  return isTelegramDesktopPlatform(platform)
+    ? TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX
+    : TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX;
+}
+
 export const HOME_CARD_TOP_GAP_PX = 16;
 
 /** Written by {@link GlassAppHeader} ResizeObserver; CSS fallback in `styles.css` */
@@ -20,6 +39,13 @@ export const CSS_VAR_FOOTER_ISLAND_HEIGHT = '--footer-island-height';
 
 /** Home card offset from viewport top — content-safe + gap; see `--app-home-card-top` in styles.css */
 export const CSS_VAR_APP_HOME_CARD_TOP = '--app-home-card-top';
+
+/** Mobile browser shell — written by {@link useBrowserShellViewport} from Visual Viewport API. */
+export const CSS_VAR_BROWSER_VISUAL_VIEWPORT_HEIGHT = '--browser-visual-viewport-height';
+export const CSS_VAR_BROWSER_CHROME_BOTTOM_INSET = '--browser-chrome-bottom-inset';
+export const CSS_VAR_BROWSER_CHROME_TOP_INSET = '--browser-chrome-top-inset';
+/** `document.documentElement.dataset` key → `data-browser-shell` on `<html>`. */
+export const BROWSER_SHELL_DOCUMENT_FLAG = 'browserShell' as const;
 
 const PX_PER_REM = 16;
 

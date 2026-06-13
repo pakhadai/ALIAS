@@ -7,6 +7,7 @@ import {
   renderGoogleSignInButton,
   type GoogleIdCredentialResponse,
 } from '../../utils/googleIdentity';
+import { Button } from '../Button';
 import { ModalSheet, ModalSheetFooter } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
 import { typographyClass } from '../../constants/typography';
@@ -88,7 +89,7 @@ export function LoginModal({ open, onDismiss }: LoginModalProps) {
           className={`mb-3 tracking-[0.22em] ${typographyClass.heading} ${currentTheme.textMain}`}
           aria-hidden
         >
-          ALIAS
+          MOVLI
         </p>
         <p className={`mt-1.5 max-w-[16rem] ${typographyClass.body} text-ui-fg-muted`}>
           {t.loginSubtitleShopping}
@@ -109,13 +110,11 @@ export function LoginModal({ open, onDismiss }: LoginModalProps) {
           <p className={`mt-3 text-center ${typographyClass.body} text-ui-danger`}>{error}</p>
         )}
 
-        <button
-          type="button"
-          onClick={onDismiss}
-          className={`mt-4 w-full py-2 ${typographyClass.system} text-ui-fg-muted transition-colors hover:text-ui-fg`}
-        >
-          {t.loginContinueWithout}
-        </button>
+        <Button variant="ghost" fullWidth size="lg" className="mt-4" onClick={onDismiss}>
+          <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+            {t.loginContinueWithout}
+          </span>
+        </Button>
       </ModalSheetFooter>
     </ModalSheet>
   );

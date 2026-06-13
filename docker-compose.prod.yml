@@ -13,13 +13,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-alias}
-      POSTGRES_USER: ${POSTGRES_USER:-alias}
+      POSTGRES_DB: ${POSTGRES_DB:-movli}
+      POSTGRES_USER: ${POSTGRES_USER:-movli}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alias}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-movli}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,7 +45,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://${POSTGRES_USER:-alias}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-alias}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-movli}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-movli}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGIN: https://${DOMAIN}
@@ -78,6 +78,7 @@ services:
       args:
         VITE_SERVER_URL: https://${DOMAIN}
         VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        VITE_TG_APP_LINK: ${VITE_TG_APP_LINK:-}
     restart: unless-stopped
 
   # Reverse proxy — terminates SSL, routes traffic to app/client

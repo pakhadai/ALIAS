@@ -4,8 +4,8 @@ import type {
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from '@alias/shared';
-import { GameState } from '@alias/shared';
+} from '@movli/shared';
+import { GameState } from '@movli/shared';
 import type { RoomManager } from '../services/RoomManager';
 import type { GameEngine } from '../services/GameEngine';
 import type { PerRoomQueue } from '../services/PerRoomQueue';

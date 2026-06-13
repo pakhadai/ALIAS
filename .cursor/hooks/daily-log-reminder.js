@@ -43,7 +43,7 @@ function main() {
   if (fs.existsSync(dailyPath)) return;
   if (!hasRelevantChanges(root)) return;
   console.error(
-    `[alias-steward] Нагадування: є зміни в packages/ або docs/, але немає ${path.relative(root, dailyPath)}. Допиши денний журнал або виклич @alias-steward.`,
+    `[movli-steward] Нагадування: є зміни в packages/ або docs/, але немає ${path.relative(root, dailyPath)}. Допиши денний журнал або виклич @movli-steward.`,
   );
 }
 

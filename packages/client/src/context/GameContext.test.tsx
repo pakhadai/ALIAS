@@ -4,7 +4,8 @@ import { render, screen, act } from '@testing-library/react';
 import { GameProvider, useGame } from './GameContext';
 import { SESSION_KEY } from './gameReducer';
 import { GameState, AppTheme, Language, GameMode, SoundPreset } from '../types';
-import type { GameSyncState } from '@alias/shared';
+import type { GameSyncState } from '@movli/shared';
+import { TIME_UP_IDLE_FALLBACK_MS } from '@movli/shared';
 
 type SocketHandlers = {
   onStateSync: (sync: GameSyncState) => void;
@@ -251,7 +252,7 @@ describe('GameProvider', () => {
 
   it('should preserve local theme when server sync includes different theme', async () => {
     localStorage.setItem(
-      'alias_preferences',
+      'movli_preferences',
       JSON.stringify({ general: { theme: AppTheme.FOREST } })
     );
 
@@ -471,7 +472,7 @@ describe('GameProvider', () => {
     expect(screen.getByTestId('game-mode').textContent).toBe('OFFLINE');
   });
 
-  it('should auto-finish offline overtime via TIME_UP after 5s idle', async () => {
+  it('should auto-finish offline overtime via TIME_UP after idle fallback', async () => {
     vi.useFakeTimers();
 
     try {
@@ -493,7 +494,7 @@ describe('GameProvider', () => {
       expect(screen.getByTestId('game-state').textContent).toBe(GameState.PLAYING);
 
       await act(async () => {
-        vi.advanceTimersByTime(5000);
+        vi.advanceTimersByTime(TIME_UP_IDLE_FALLBACK_MS);
       });
 
       expect(screen.getByTestId('game-state').textContent).toBe(GameState.ROUND_SUMMARY);

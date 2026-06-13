@@ -42,6 +42,7 @@ vi.mock('../../context/AuthContext', () => ({
 
 vi.mock('../../hooks/useT', () => ({
   useT: () => ({
+    homeTagline: 'Говори · Вгадуй',
     joinGame: 'Приєднатися',
     createGame: 'Створити гру',
     menuOrDivider: 'або',

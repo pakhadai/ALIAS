@@ -1,4 +1,4 @@
-const PREFS_KEY = 'alias_preferences';
+const PREFS_KEY = 'movli_preferences';
 
 export type VibratePattern = number | number[];
 

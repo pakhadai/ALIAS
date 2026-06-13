@@ -217,7 +217,7 @@ export function AdminApp() {
 
   // Admin auth probe on mount — deferred: requires token from main app localStorage (bootstrap).
   useEffect(() => {
-    const token = localStorage.getItem('alias_auth_token');
+    const token = localStorage.getItem('movli_auth_token');
     if (!token) {
       setAuthState('unauthorized');
       return;
@@ -278,7 +278,7 @@ export function AdminApp() {
       {/* Top bar */}
       <header className="border-b border-ui-border-subtle px-6 py-3.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="font-serif text-lg tracking-wide text-ui-fg">ALIAS</h1>
+          <h1 className="font-serif text-lg tracking-wide text-ui-fg">MOVLI</h1>
           <span
             className={`${typographyClass.label} tracking-widest text-ui-fg-subtle border border-ui-border px-2 py-0.5 rounded`}
           >

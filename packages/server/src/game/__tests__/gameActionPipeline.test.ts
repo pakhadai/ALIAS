@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GameState, GameMode, Language, Category, SoundPreset, AppTheme } from '@alias/shared';
-import type { GameSettings } from '@alias/shared';
+import { GameState, GameMode, Language, Category, SoundPreset, AppTheme } from '@movli/shared';
+import type { GameSettings } from '@movli/shared';
 import { broadcastRoomState, executeGameActionPipeline } from '../gameActionPipeline';
 import { GameEngine } from '../../services/GameEngine';
 import { RoomManager } from '../../services/RoomManager';

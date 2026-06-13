@@ -21,12 +21,11 @@ const APP_VERSION = (
 const PWA_THEME = '#1A1A1A';
 
 /**
- * Icons: until real PNGs exist, SVG entries satisfy install prompts on many browsers.
- * For production polish on Android (maskable) and iOS (apple-touch-icon), add:
- *   - public/icons/pwa-192.png   (192×192, "any")
- *   - public/icons/pwa-512.png   (512×512, "any")
- *   - public/icons/pwa-512-maskable.png (512×512, safe zone ~40% center — "maskable")
- * Then point `icons` below to those files. See docs/PWA-ICONS.md.
+ * Icons synced from repo `logo/` via scripts/sync-logo.mjs:
+ *   - favicon.ico (128×128 round mark)
+ *   - icons/favicon-32.png, apple-touch-icon.png (180×180)
+ *   - icons/pwa-192.png, icons/pwa-512.png
+ * See docs/PWA-ICONS.md.
  */
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim();
 
@@ -46,8 +45,8 @@ export default defineConfig({
       injectRegister: null,
       manifest: {
         id: '/',
-        name: 'Alias Master',
-        short_name: 'Alias',
+        name: 'MOVLI Master',
+        short_name: 'MOVLI',
         description: 'The ultimate party game for teams.',
         theme_color: PWA_THEME,
         background_color: PWA_THEME,
@@ -58,21 +57,39 @@ export default defineConfig({
         lang: 'uk',
         icons: [
           {
-            src: '/icons/icon-192.svg',
+            src: '/icons/favicon-32.png',
+            sizes: '32x32',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/favicon.ico',
+            sizes: '128x128',
+            type: 'image/x-icon',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/pwa-192.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/icon-192.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
+            src: '/apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/icon-192.svg',
+            src: '/icons/pwa-512.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/pwa-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'maskable',
           },
         ],
@@ -120,8 +137,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       // Resolve shared from source so dev/HMR works without a prior shared build.
-      // App code must still import via the package name: `from '@alias/shared'`.
-      '@alias/shared': path.resolve(__dirname, '../shared/src/index.ts'),
+      // App code must still import via the package name: `from '@movli/shared'`.
+      '@movli/shared': path.resolve(__dirname, '../shared/src/index.ts'),
     },
   },
   publicDir: 'public',

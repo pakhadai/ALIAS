@@ -1,17 +1,21 @@
-# PWA icons (PNG checklist)
+# PWA icons
 
-The app ships with SVG icons (`public/icons/icon-192.svg`, `favicon.svg`) so install works everywhere that accepts SVG. For **best results on iOS and Android**, add raster assets and point `vite.config.ts` → `VitePWA.manifest.icons` to them.
+Raster icons are generated from `logo/logo-original.png` (square app mark) via:
+
+```bash
+pnpm sync:logo
+```
+
+This writes:
 
 | File | Size | Purpose |
 |------|------|---------|
-| `packages/client/public/icons/pwa-192.png` | **192×192** | Web manifest `any`, general launcher |
-| `packages/client/public/icons/pwa-512.png` | **512×512** | Web manifest `any`, splash / high-res |
-| `packages/client/public/icons/pwa-512-maskable.png` | **512×512** | `maskable` — **important graphic in the center ~40%**; outer area is cropped on Android |
+| `packages/client/public/icons/favicon-32.png` | **32×32** | Browser tab (`<link rel="icon">`) |
+| `packages/client/public/favicon.ico` | **128×128** | Legacy `/favicon.ico` requests |
+| `packages/client/public/apple-touch-icon.png` | **180×180** | **iOS “Add to Home Screen”** (PNG required; `.ico` is ignored) |
+| `packages/client/public/icons/pwa-192.png` | **192×192** | Web manifest launcher |
+| `packages/client/public/icons/pwa-512.png` | **512×512** | Web manifest splash / maskable |
 
-Optional for **Apple**:
+`@movli/client` `build` runs `sync:logo` automatically. Source wordmark SVG stays in `logo/logo-swg.svg` for in-app UI only — do **not** use the 16×16 wordmark `.ico` for favicons.
 
-| File | Size | Usage |
-|------|------|--------|
-| `apple-touch-icon.png` (or multiple) | **180×180** (classic) | Replace or supplement `<link rel="apple-touch-icon" href="...">` in `index.html` |
-
-**Export tips:** flat or simple logo, no tiny text at edges (maskable safe zone). After adding files, update the `icons` array in `packages/client/vite.config.ts` and rebuild.
+**Export tips:** square mark on solid background; keep the logo centered (~80% safe zone for maskable). After changing `logo/logo-original.png`, run `pnpm sync:logo` and rebuild.

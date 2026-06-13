@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoomManager } from '../RoomManager';
 import { RedisRoomStore } from '../RedisRoomStore';
-import { GameState, MAX_PLAYERS } from '@alias/shared';
+import { GameState, MAX_PLAYERS } from '@movli/shared';
 
 vi.mock('ioredis', () => {
   const store: Map<string, string> = ((

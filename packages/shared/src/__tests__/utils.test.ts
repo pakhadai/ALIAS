@@ -7,6 +7,7 @@ import {
   ROOM_CODE_LENGTH,
   MAX_PLAYERS,
   DEFAULT_ROUND_TIME,
+  TIME_UP_IDLE_FALLBACK_MS,
   WINNING_SCORE,
 } from '../constants';
 
@@ -80,6 +81,7 @@ describe('shared constants', () => {
 
   it('should define default game scoring and round time', () => {
     expect(DEFAULT_ROUND_TIME).toBe(60);
+    expect(TIME_UP_IDLE_FALLBACK_MS).toBe(30_000);
     expect(WINNING_SCORE).toBe(30);
   });
 

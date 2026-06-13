@@ -1,4 +1,4 @@
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 
 export const TEAM_NAMES: Record<Language, string[]> = {
   [Language.UA]: [

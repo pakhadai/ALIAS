@@ -116,6 +116,39 @@ html[data-telegram-app='true'] #root {
   height: 100%;
 }
 
+/**
+ * Plain browser (no signed Telegram session) — reserve only device safe-area, not TMA 104px floor.
+ */
+html:not([data-telegram-app]) {
+  --tma-content-top-floor: 0px;
+  --tma-content-safe-top: max(
+    var(--tg-content-safe-area-inset-top, 0px),
+    env(safe-area-inset-top, 0px)
+  );
+  --app-page-header-height: max(var(--tma-content-safe-top, 0px), 44px);
+  --app-home-card-top: calc(var(--tma-content-safe-top, 0px) + 16px);
+}
+
+/**
+ * Mobile browser tab — size fixed shell to visible viewport; offset fixed chrome above bottom toolbar.
+ * Enabled by useBrowserShellViewport (skipped in TMA + installed PWA).
+ */
+html[data-browser-shell] body {
+  top: var(--browser-chrome-top-inset, 0px);
+  right: 0;
+  bottom: var(--browser-chrome-bottom-inset, 0px);
+  left: 0;
+  height: auto;
+}
+
+html[data-browser-shell] .ui-app-header--fixed {
+  top: var(--browser-chrome-top-inset, 0px);
+}
+
+html[data-browser-shell] footer.footer-island.ui-app-footer {
+  bottom: var(--browser-chrome-bottom-inset, 0px);
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -250,6 +283,47 @@ html[data-app-header] {
 }
 
 /* Telegram Mini App boot / auth loading (see TelegramAuthLoadingScreen) */
+@keyframes home-word-rise {
+  0% {
+    transform: translateY(calc(100dvh + 40px));
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.12;
+  }
+  85% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translateY(-60px);
+    opacity: 0;
+  }
+}
+
+.home-word-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-word-rain__word {
+  position: absolute;
+  top: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight, 900);
+  font-size: 0.75rem;
+  letter-spacing: var(--font-heading-tracking, -0.03em);
+  text-transform: var(--font-heading-transform, uppercase);
+  color: color-mix(in srgb, var(--ui-accent) 72%, var(--ui-fg));
+  opacity: 0;
+  white-space: nowrap;
+  animation-name: home-word-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
 @keyframes telegram-boot-ring {
   0%,
   100% {
@@ -315,32 +389,12 @@ html[data-app-header] {
 }
 
 /* ── Bottom sheet overlay (ModalSheet, RulesModal, AppSettingsModal) ── */
-/* iOS-style frosted glass: full-viewport blur + material tint; panel inset blur (lobby-start-glass pattern) */
+/* Light scrim behind sheet — theme-adaptive dim, no heavy frosted glass */
 :root {
-  --ui-overlay-blur: 72px;
-  --ui-overlay-blur-secondary: 36px;
-  /** Desaturate bleed-through (accent CTA) — matte tinted glass, not vivid frost */
-  --ui-overlay-saturate: 0.76;
-  --ui-overlay-saturate-secondary: 0.82;
-  --ui-overlay-brightness: 0.87;
+  /** Theme-adaptive scrim — low-opacity fg ink */
+  --ui-overlay-dim: color-mix(in srgb, var(--ui-fg) 22%, transparent);
   /** Theme-adaptive chrome ink — fg/bg blend (dark theme → light ink, light → dark) */
   --ui-sheet-chrome-mix: color-mix(in srgb, var(--ui-fg) 52%, var(--ui-bg) 48%);
-  --ui-overlay-tint-base: color-mix(in srgb, var(--ui-bg) 84%, var(--ui-sheet-chrome-mix) 16%);
-  --ui-overlay-glass-top: color-mix(in srgb, var(--ui-overlay-tint-base) 88%, transparent);
-  --ui-overlay-glass-mid: color-mix(in srgb, var(--ui-overlay-tint-base) 66%, transparent);
-  --ui-overlay-glass-bottom: color-mix(in srgb, var(--ui-overlay-tint-base) 56%, transparent);
-  --ui-overlay-glass: linear-gradient(
-    to bottom,
-    var(--ui-overlay-glass-top) 0%,
-    var(--ui-overlay-glass-mid) 42%,
-    var(--ui-overlay-glass-bottom) 100%
-  );
-  --ui-overlay-frost: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--ui-overlay-tint-base) 44%, transparent) 0%,
-    color-mix(in srgb, var(--ui-overlay-tint-base) 30%, transparent) 38%,
-    color-mix(in srgb, var(--ui-overlay-tint-base) 38%, transparent) 100%
-  );
   --ui-sheet-glass-inset: 2px;
   --ui-sheet-glass-blur: 34px;
   --ui-sheet-handle: color-mix(in srgb, var(--ui-sheet-chrome-mix) 72%, transparent);
@@ -382,14 +436,21 @@ html[data-app-header] {
 }
 
 /**
- * TMA: enforce content-safe floor — SDK may report a too-small positive inset before fullscreen settles.
+ * TMA: enforce content-safe floor on mobile — SDK may report a too-small positive inset before fullscreen settles.
  * SSOT floor: TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX (104px) via --tma-content-top-floor.
+ * Desktop uses html[data-telegram-desktop] — trust SDK inset, no 104px clamp.
  */
-html[data-telegram-app='true'] {
+html[data-telegram-app='true']:not([data-telegram-desktop]) {
   --tma-content-safe-top: max(
     var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 104px)),
     var(--tma-content-top-floor, 104px)
   );
+}
+
+/** Desktop TMA — native title bar is outside WebView; no mobile 104px floor. */
+html[data-telegram-desktop] {
+  --tma-content-safe-top: var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 0px));
+  --app-page-header-height: max(var(--tma-content-safe-top, 0px), 44px);
 }
 
 /* Frosted glass panel — lobby start CTA, AppHeader, bottom sheets inset pattern */
@@ -1012,9 +1073,14 @@ button.lobby-start-btn {
   padding-bottom: var(--sheet-keyboard-lift);
 }
 
-/** Keep sheet top below Telegram native header — flex content box ends above TG chrome */
-html[data-telegram-app='true'] .bottom-sheet-backdrop {
+/** Keep sheet top below Telegram native header — flex content box ends above TG chrome (mobile only) */
+html[data-telegram-app='true']:not([data-telegram-desktop]) .bottom-sheet-backdrop {
   padding-top: var(--tma-inset-top);
+}
+
+/** Desktop TMA — native title bar is outside WebView; trust SDK inset only (no mobile 104px floor) */
+html[data-telegram-desktop] .bottom-sheet-backdrop {
+  padding-top: var(--tma-content-safe-top, 0px);
 }
 
 .bottom-sheet-backdrop--absolute {
@@ -1027,78 +1093,21 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--ui-overlay-glass);
-  backdrop-filter: blur(var(--ui-overlay-blur)) saturate(var(--ui-overlay-saturate))
-    brightness(var(--ui-overlay-brightness));
-  -webkit-backdrop-filter: blur(var(--ui-overlay-blur)) saturate(var(--ui-overlay-saturate))
-    brightness(var(--ui-overlay-brightness));
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 12%,
-    rgba(0, 0, 0, 0.96) 30%,
-    rgba(0, 0, 0, 0.88) 50%,
-    rgba(0, 0, 0, 0.78) 70%,
-    rgba(0, 0, 0, 0.72) 86%,
-    rgba(0, 0, 0, 0.68) 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 12%,
-    rgba(0, 0, 0, 0.96) 30%,
-    rgba(0, 0, 0, 0.88) 50%,
-    rgba(0, 0, 0, 0.78) 70%,
-    rgba(0, 0, 0, 0.72) 86%,
-    rgba(0, 0, 0, 0.68) 100%
-  );
+  background: var(--ui-overlay-dim);
   opacity: 0;
   transition: opacity 0s;
 }
 
 .bottom-sheet-backdrop::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: var(--ui-overlay-frost);
-  backdrop-filter: blur(var(--ui-overlay-blur-secondary))
-    saturate(var(--ui-overlay-saturate-secondary)) brightness(0.9);
-  -webkit-backdrop-filter: blur(var(--ui-overlay-blur-secondary))
-    saturate(var(--ui-overlay-saturate-secondary)) brightness(0.9);
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 12%,
-    rgba(0, 0, 0, 0.96) 30%,
-    rgba(0, 0, 0, 0.88) 50%,
-    rgba(0, 0, 0, 0.78) 70%,
-    rgba(0, 0, 0, 0.72) 86%,
-    rgba(0, 0, 0, 0.68) 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 12%,
-    rgba(0, 0, 0, 0.96) 30%,
-    rgba(0, 0, 0, 0.88) 50%,
-    rgba(0, 0, 0, 0.78) 70%,
-    rgba(0, 0, 0, 0.72) 86%,
-    rgba(0, 0, 0, 0.68) 100%
-  );
-  opacity: 0;
-  transition: opacity 0s;
+  display: none;
 }
 
-.bottom-sheet-backdrop[data-open='true']::before,
-.bottom-sheet-backdrop[data-open='true']::after {
+.bottom-sheet-backdrop[data-open='true']::before {
   opacity: 1;
   transition: opacity 320ms var(--ui-sheet-ease);
 }
 
-.bottom-sheet-backdrop[data-open='false']::before,
-.bottom-sheet-backdrop[data-open='false']::after {
+.bottom-sheet-backdrop[data-open='false']::before {
   opacity: 0;
   transition: opacity 320ms var(--ui-sheet-ease);
 }
@@ -1374,6 +1383,32 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   cursor: grabbing;
 }
 
+/* ── Desktop TMA — modal panel + top bar (backdrop uses same light scrim) ── */
+
+html[data-telegram-desktop] .bottom-sheet-panel {
+  background: color-mix(in srgb, var(--ui-card) 96%, var(--ui-elevated) 4%);
+}
+
+html[data-telegram-desktop] .bottom-sheet-panel::before {
+  display: none;
+}
+
+html[data-telegram-desktop] .bottom-sheet-panel::after {
+  background: color-mix(in srgb, var(--ui-card) 96%, var(--ui-elevated) 4%);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+html[data-telegram-desktop] .bottom-sheet-top-bar::before {
+  display: none;
+}
+
+html[data-telegram-desktop] .bottom-sheet-top-bar::after {
+  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 92%, transparent);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 /** Lobby play-format bar — height + lift (clip-safe inside scroll containers). */
 .lobby-play-mode-slot {
   width: 100%;
@@ -1401,12 +1436,27 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
   .bottom-sheet-top-bar::after {
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 82%, transparent) 0%,
-      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 54%, transparent) 68%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 90%, transparent) 0%,
+      color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 68%, transparent) 68%,
       transparent 100%
     );
     mask-image: none;
     -webkit-mask-image: none;
+  }
+
+  .bottom-sheet-panel::before,
+  .bottom-sheet-panel::after {
+    display: none;
+  }
+
+  .bottom-sheet-panel,
+  .ui-glass-panel {
+    background: color-mix(in srgb, var(--ui-card) 94%, var(--ui-elevated) 6%);
+  }
+
+  .ui-glass-panel::before,
+  .ui-glass-panel::after {
+    display: none;
   }
 }
 
@@ -1426,22 +1476,6 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
     -webkit-mask-image: none;
   }
 
-  .bottom-sheet-backdrop::before {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ui-overlay-tint-base) 90%, transparent),
-      color-mix(in srgb, var(--ui-overlay-tint-base) 76%, transparent)
-    );
-  }
-
-  .bottom-sheet-backdrop::after {
-    display: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
   .bottom-sheet-panel::before,
   .bottom-sheet-panel::after {
     display: none;
@@ -1459,6 +1493,10 @@ html[data-telegram-app='true'] .bottom-sheet-backdrop {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-word-rain {
+    display: none;
+  }
+
   .bottom-sheet-backdrop::before,
   .bottom-sheet-backdrop,
   .bottom-sheet-panel,

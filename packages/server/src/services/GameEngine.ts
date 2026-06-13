@@ -1,12 +1,13 @@
 import {
   GameMode,
   GameState,
+  TIME_UP_IDLE_FALLBACK_MS,
   deriveLobbyReadinessServer,
   getTeamColor,
   getTeamColorToken,
   shuffleArray,
-} from '@alias/shared';
-import type { GameActionPayload, ModeSettings, ModeSettingsUpdate, Team } from '@alias/shared';
+} from '@movli/shared';
+import type { GameActionPayload, ModeSettings, ModeSettingsUpdate, Team } from '@movli/shared';
 import type { PrismaClient } from '@prisma/client';
 import type { Room, RoomManager } from './RoomManager';
 import type { WordService } from './WordService';
@@ -151,7 +152,7 @@ export class GameEngine {
         this.timerBroadcast?.(room);
         this.roomManager.persistRoom(room);
       }
-    }, 5000);
+    }, TIME_UP_IDLE_FALLBACK_MS);
   }
 
   /** Wall-clock target for countdown UIs (reduces client drift vs setInterval). */

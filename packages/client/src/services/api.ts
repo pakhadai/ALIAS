@@ -27,12 +27,12 @@ export function getApiBaseUrl(): string {
 const SERVER_URL = getApiBaseUrl();
 
 /** Storage keys */
-export const AUTH_TOKEN_KEY = 'alias_auth_token';
-export const DEVICE_ID_KEY = 'alias_device_id';
-export const PLAYER_ID_KEY = 'alias_player_id';
-export const ROOM_CODE_KEY = 'alias_room_code';
+export const AUTH_TOKEN_KEY = 'movli_auth_token';
+export const DEVICE_ID_KEY = 'movli_device_id';
+export const PLAYER_ID_KEY = 'movli_player_id';
+export const ROOM_CODE_KEY = 'movli_room_code';
 
-const AUTH_CHANGED_EVENT = 'alias:auth-changed';
+const AUTH_CHANGED_EVENT = 'movli:auth-changed';
 
 function notifyAuthChanged(): void {
   try {

@@ -1,4 +1,4 @@
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 import { AppTheme, type ThemeConfig } from '../types';
 
 export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {

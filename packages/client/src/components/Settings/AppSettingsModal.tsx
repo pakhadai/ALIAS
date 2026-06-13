@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate } from 'lucide-react';
 import { ModalSheet, ModalSheetBody } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
+import { Button } from '../Button';
 import { Language, SoundPreset } from '../../types';
 import { THEME_CONFIG, UI_THEME_IDS } from '../../constants';
 import { useT } from '../../hooks/useT';
@@ -20,7 +21,7 @@ export function AppSettingsModal({ onClose }: Props) {
   const { isAuthenticated } = useAuthContext();
   const [haptics, setHaptics] = useState<boolean>(() => {
     try {
-      const raw = localStorage.getItem('alias_preferences');
+      const raw = localStorage.getItem('movli_preferences');
       if (!raw) return true;
       const prefs = JSON.parse(raw);
       return prefs?.hapticsEnabled !== false;
@@ -63,18 +64,15 @@ export function AppSettingsModal({ onClose }: Props) {
             <p className={`${labelSectionClass} ${currentTheme.textMain}`}>{t.language}</p>
             <div className="flex gap-2">
               {[Language.UA, Language.DE, Language.EN].map((l) => (
-                <button
+                <Button
                   key={l}
                   type="button"
+                  variant={uiLanguage === l ? 'primary' : 'secondary'}
+                  className="flex-1 rounded-xl font-sans normal-case tracking-normal"
                   onClick={() => setPreferences({ language: l })}
-                  className={`flex-1 py-3 rounded-xl border transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                    uiLanguage === l
-                      ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                      : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                  }`}
                 >
                   {l}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -196,21 +194,18 @@ export function AppSettingsModal({ onClose }: Props) {
               {[SoundPreset.FUN, SoundPreset.MINIMAL, SoundPreset.EIGHT_BIT].map((preset) => {
                 const active = settings.general.soundPreset === preset;
                 return (
-                  <button
+                  <Button
                     key={preset}
+                    type="button"
+                    variant={active ? 'primary' : 'secondary'}
+                    className="font-sans normal-case tracking-normal"
                     onClick={() => {
                       setPreferences({ soundPreset: preset });
-                      // Play demo with the selected preset so user can compare
                       playSoundEffect('correct', preset);
                     }}
-                    className={`p-3 rounded-xl border ${typographyClass.label} tracking-widest transition-all ${
-                      active
-                        ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
-                        : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg'
-                    }`}
                   >
                     {preset.replace('_', ' ')}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

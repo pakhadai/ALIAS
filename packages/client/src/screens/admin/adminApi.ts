@@ -13,7 +13,7 @@ export class AdminAuthError extends Error {
 // ─── Fetch wrapper ────────────────────────────────────────────────────────────
 
 export async function adminFetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('alias_auth_token');
+  const token = localStorage.getItem('movli_auth_token');
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers: {
@@ -153,7 +153,7 @@ export const api = {
       method: 'DELETE',
     }),
   uploadCsv: async (packId: string, file: File): Promise<{ message: string }> => {
-    const token = localStorage.getItem('alias_auth_token');
+    const token = localStorage.getItem('movli_auth_token');
     const form = new FormData();
     form.append('file', file);
     form.append('packId', packId);

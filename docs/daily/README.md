@@ -13,7 +13,7 @@
 ## Шаблон `YYYY-MM-DD.md`
 
 ```markdown
-# Alias Master — YYYY-MM-DD
+# MOVLI Master — YYYY-MM-DD
 > Швидкий огляд дня. Деталі релізів → CHANGELOG.md
 
 ## Підсумок (1–3 речення)
@@ -37,4 +37,4 @@
 
 ## Хто веде
 
-Людина або агент **alias-steward** наприкінці сесії (див. [`docs/CONTRIBUTING.md`](../CONTRIBUTING.md)).
+Людина або агент **movli-steward** наприкінці сесії (див. [`docs/CONTRIBUTING.md`](../CONTRIBUTING.md)).

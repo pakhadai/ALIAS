@@ -156,7 +156,7 @@ describe('RoomActionRelay', () => {
 
     expect(ok).toBe(true);
     expect(publish).toHaveBeenCalledWith(
-      expect.stringContaining('alias:rpc:to:inst-2'),
+      expect.stringContaining('movli:rpc:to:inst-2'),
       expect.any(String)
     );
   });

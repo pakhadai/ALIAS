@@ -1,4 +1,4 @@
-import type { GameActionPayload } from '@alias/shared';
+import type { GameActionPayload } from '@movli/shared';
 import type { ActionResult } from './IGameModeHandler';
 
 /**

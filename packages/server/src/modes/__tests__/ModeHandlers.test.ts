@@ -7,7 +7,7 @@ import {
   SoundPreset,
   type GameSettings,
   type GameTask,
-} from '@alias/shared';
+} from '@movli/shared';
 import type { Room } from '../../services/RoomManager';
 import type { ActionContext } from '../IGameModeHandler';
 import { ClassicModeHandler } from '../ClassicModeHandler';

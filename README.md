@@ -1,4 +1,4 @@
-# Alias Master
+# MOVLI Master
 
 **Багатокористувацька онлайн-гра у стилі Alias (Taboo) з підтримкою PWA, офлайн-режиму та мультимовності.**
 
@@ -52,7 +52,7 @@
 
 ## Ідея гри
 
-**Alias Master** — це цифрова версія класичної настільної гри **Alias** (також відома як **Taboo**). Це командна "пати-гра", де:
+**MOVLI Master** — це цифрова версія класичної настільної гри **Alias** (також відома як **Taboo**). Це командна "пати-гра", де:
 
 - Один гравець (**пояснювач**) бачить слово на екрані і пояснює його своїй команді **не називаючи саме слово, однокореневі слова, переклади та жести**.
 - Інші гравці команди намагаються **вгадати слово** за обмежений час.
@@ -119,7 +119,7 @@
 ## Структура проекту
 
 ```
-ALIAS/                          ← Корінь монорепо
+MOVLI/                          ← Корінь монорепо
 ├── package.json                ← Workspace-скрипти (dev, build, test); `packageManager: pnpm@9.0.0`
 ├── pnpm-workspace.yaml         ← packages/*
 ├── tsconfig.base.json          ← Базовий TS конфіг
@@ -135,7 +135,7 @@ ALIAS/                          ← Корінь монорепо
 ├── AGENTS.md                   ← Інструкції ШІ для цього репо (поверх ECC)
 │
 ├── packages/
-│   ├── shared/                 ← @alias/shared — контракти та типи
+│   ├── shared/                 ← @movli/shared — контракти та типи
 │   │   └── src/
 │   │       ├── enums.ts        ← GameState, Language, Category, AppTheme, SoundPreset, GameMode
 │   │       ├── models.ts       ← Player, Team, GameSettings (general + mode), GameTask, RoundStats …
@@ -145,7 +145,7 @@ ALIAS/                          ← Корінь монорепо
 │   │       ├── constants.ts    ← DEFAULT_ROUND_TIME, TEAM_COLORS, MOCK_WORDS
 │   │       └── index.ts        ← Re-export
 │   │
-│   ├── server/                 ← @alias/server
+│   ├── server/                 ← @movli/server
 │   │   ├── prisma/             ← schema, migrations, seed.ts, data/*.json
 │   │   ├── src/
 │   │   │   ├── index.ts        ← Express + Socket.IO + Sentry init
@@ -161,7 +161,7 @@ ALIAS/                          ← Корінь монорепо
 │   │   │   └── validation/schemas.ts
 │   │   └── test/e2e-game-flow.ts   ← окремий tsx-сценарій; Vitest: `src/**/__tests__/**/*.test.ts`
 │   │
-│   ├── client/                 ← @alias/client — React PWA
+│   ├── client/                 ← @movli/client — React PWA
 │   │   ├── public/
 │   │   ├── vite.config.ts      ← Vite + PWA + Sentry plugin
 │   │   ├── src/
@@ -410,7 +410,7 @@ isGameOver = isLastTeam && hasWinner
 2. **Selected Pack IDs** — **`settings.general.selectedPackIds`**: слова лише з обраних паків.
 3. **Default Packs** — якщо пакети не обрані: паки з `isDefault: true`, фільтр за **`general.language`** та **`general.categories`**.
 4. **Custom Words** — категорія **`CUSTOM`**: парсить **`general.customWords`** через кому.
-5. **MOCK_WORDS** — статичний fallback у `@alias/shared` (`packages/shared/src/constants.ts`). Для **української** категорії **GENERAL** — набір **~520+** слів (довгі сесії без БД не вичерпують пул за кілька хвилин). Інші мови/категорії можуть мати менший набір.
+5. **MOCK_WORDS** — статичний fallback у `@movli/shared` (`packages/shared/src/constants.ts`). Для **української** категорії **GENERAL** — набір **~520+** слів (довгі сесії без БД не вичерпують пул за кілька хвилин). Інші мови/категорії можуть мати менший набір.
 6. **EMERGENCY_WORDS** — останній fallback: **8** українських слів (хардкод у `packages/server/src/services/WordService.ts`), якщо колоду зібрати не вдалося.
 
 **Ротація слів:**
@@ -573,7 +573,7 @@ interface GameSyncState {
 
 | Метод | Шлях | Опис |
 |-------|------|------|
-| `GET` | `/api/admin/live` | Live-метрики Redis: активні кімнати (ключі `alias:room:*` без writer), «гравці онлайн» (кількість `alias:socket:*`). |
+| `GET` | `/api/admin/live` | Live-метрики Redis: активні кімнати (ключі `movli:room:*` без writer), «гравці онлайн» (кількість `movli:socket:*`). |
 | `GET` | `/api/admin/packs` | Всі пакети слів |
 | `POST` | `/api/admin/packs` | Створити пакет |
 | `POST` | `/api/admin/packs/:id/words` | Додати слова (bulk) |
@@ -719,12 +719,12 @@ Web Push підписки.
 
 **Використання:**
 
-1. **Room State Persistence** — стан кімнати зберігається в Redis з TTL 2 години. Ключі: `alias:room:{roomCode}`. Дозволяє відновити кімнату після рестарту сервера.
-2. **Socket-to-Room Mapping** — `alias:socket:{socketId}` → `{ roomCode, playerId }`. Для reconnection.
+1. **Room State Persistence** — стан кімнати зберігається в Redis з TTL 2 години. Ключі: `movli:room:{roomCode}`. Дозволяє відновити кімнату після рестарту сервера.
+2. **Socket-to-Room Mapping** — `movli:socket:{socketId}` → `{ roomCode, playerId }`. Для reconnection.
 3. **Socket.IO Redis Adapter** — PubSub для горизонтального масштабування (кілька Node.js інстансів можуть обслуговувати одну кімнату).
-4. **Room writer** — ключ `alias:room:writer:{roomCode}` зберігає `INSTANCE_ID` інстансу, який останнім зберіг знімок кімнати. Використовується для пересилання `game:action` на «власника» стану, якщо сокет потрапив на іншу ноду.
-5. **RoomActionRelay** — Redis pub/sub канали `alias:rpc:to:{INSTANCE_ID}`: якщо подія не на writer-ноді, вона пересилається туди — **`game:action`**, **`room:join`**, **`room:leave`**, **`room:rejoin`**; відповідь/помилка повертається клієнту (`room:error` з кодами `RELAY_UNAVAILABLE`, `RELAY_TIMEOUT`). **`roomDisconnect`** (без відповіді) — коли сокет відвалився на іншій ноді, а кімната живе на writer. Вимкнути relay: `ROOM_ACTION_RELAY=0` (або `false` / `no`).
-6. **IMPOSTER secret word** — окремий ключ у Redis (префікс `alias:imposter:`), щоб секрет не потрапляв у серіалізований `GameSyncState`.
+4. **Room writer** — ключ `movli:room:writer:{roomCode}` зберігає `INSTANCE_ID` інстансу, який останнім зберіг знімок кімнати. Використовується для пересилання `game:action` на «власника» стану, якщо сокет потрапив на іншу ноду.
+5. **RoomActionRelay** — Redis pub/sub канали `movli:rpc:to:{INSTANCE_ID}`: якщо подія не на writer-ноді, вона пересилається туди — **`game:action`**, **`room:join`**, **`room:leave`**, **`room:rejoin`**; відповідь/помилка повертається клієнту (`room:error` з кодами `RELAY_UNAVAILABLE`, `RELAY_TIMEOUT`). **`roomDisconnect`** (без відповіді) — коли сокет відвалився на іншій ноді, а кімната живе на writer. Вимкнути relay: `ROOM_ACTION_RELAY=0` (або `false` / `no`).
+6. **IMPOSTER secret word** — окремий ключ у Redis (префікс `movli:imposter:`), щоб секрет не потрапляв у серіалізований `GameSyncState`.
 
 **Graceful degradation:** Якщо Redis недоступний — онлайн-гра працює в пам’яті, але без persistence між рестартами та без збереження IMPOSTER-секрету між рестартами Redis.
 
@@ -861,7 +861,7 @@ CSS custom properties встановлюються динамічно: `--font-h
 Якщо колись потрібно підняти Redis/Postgres і `pnpm dev` на машині розробника:
 
 1. `pnpm install`
-2. `cp .env.prod.example .env.prod` і відредагувати (для локального Docker-Postgres з `docker-compose.yml` зручно **`DATABASE_URL=postgresql://alias:alias_dev@localhost:5432/alias`** тощо).
+2. `cp .env.prod.example .env.prod` і відредагувати (для локального Docker-Postgres з `docker-compose.yml` зручно **`DATABASE_URL=postgresql://movli:movli_dev@localhost:5432/alias`** тощо).
 3. `docker compose up -d redis postgres` → міграції / seed → `pnpm dev`
 
 Після запуску: клієнт `http://localhost:5173`, сервер `http://localhost:3001`, health `http://localhost:3001/health`.
@@ -875,11 +875,11 @@ CSS custom properties встановлюються динамічно: `--font-h
 | `pnpm dev:server` | Тільки сервер |
 | `pnpm build` | Збірка shared → client + server |
 | `pnpm test:server` | Юніт-тести сервера (vitest) |
-| `pnpm --filter @alias/client test` | Юніт-тести клієнта (vitest; також у CI) |
+| `pnpm --filter @movli/client test` | Юніт-тести клієнта (vitest; також у CI) |
 | `pnpm test:e2e` | E2E тести (playwright) |
-| `pnpm --filter @alias/server db:migrate` | Prisma **`migrate dev`** (інтерактивні міграції для локальної розробки) |
-| `pnpm --filter @alias/server db:seed` | Seed БД |
-| `pnpm --filter @alias/server db:push` | Push schema без міграції |
+| `pnpm --filter @movli/server db:migrate` | Prisma **`migrate dev`** (інтерактивні міграції для локальної розробки) |
+| `pnpm --filter @movli/server db:seed` | Seed БД |
+| `pnpm --filter @movli/server db:push` | Push schema без міграції |
 
 ---
 
@@ -897,7 +897,7 @@ pnpm run dev                           # локальний dev-сервер
 **Типовий VPS з Nginx Proxy Manager** (TLS на NPM, проєкт у спільній мережі на кшталт `npm_network`):
 
 ```bash
-docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
+docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml up -d --build
 ```
 
 У `.env.prod` задай `NPM_DOCKER_NETWORK` так само, як називається мережа NPM (`docker network ls` на сервері). У Nginx Proxy Manager: Proxy Host → **Forward Hostname** `gateway`, **Port** `80` (або forward на `127.0.0.1:9080`, якщо змінено `GATEWAY_PUBLISH`).
@@ -924,9 +924,9 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 Швидка діагностика на VPS:
 
 ```bash
-docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml ps
-docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 app
-docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 gateway
+docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml ps
+docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 app
+docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml logs --tail=200 gateway
 curl -sS -D - https://<DOMAIN>/health -o /dev/null
 ```
 
@@ -954,11 +954,11 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
 
-**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `ALIAS`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/ALIAS`** (`/root/apps/ALIAS` для root). **`VPS_COMPOSE_FILE`** — для стеку за Nginx Proxy Manager на хості: **`docker-compose.npm.yml`** (файл у репо разом із `nginx/npm-edge.conf`). **`VPS_COMPOSE_PROJECT`** — наприклад **`alias`**, щоб збігалося з `docker compose -p alias` на сервері. **`VPS_ENV_FILE`** — за замовчуванням **`.env.prod`** (інше ім’я лише якщо свідомо змінюєте). Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
+**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `MOVLI`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/MOVLI`** (`/root/apps/MOVLI` для root). **`VPS_COMPOSE_FILE`** — для стеку за Nginx Proxy Manager на хості: **`docker-compose.npm.yml`** (файл у репо разом із `nginx/npm-edge.conf`). **`VPS_COMPOSE_PROJECT`** — наприклад **`movli`**, щоб збігалося з `docker compose -p movli` на сервері. **`VPS_ENV_FILE`** — за замовчуванням **`.env.prod`** (інше ім’я лише якщо свідомо змінюєте). Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
 
 **Що має бути на VPS до першого деплою:**
 
-1. Каталог деплою: за замовчуванням **`~/apps/ALIAS`**. Перший запуск без теки — автоматичний `git clone` (див. вище про публічний repo / credentials). Шлях у **`VPS_DEPLOY_PATH`** має **точно** збігатися з реальною текою (регістр літер).
+1. Каталог деплою: за замовчуванням **`~/apps/MOVLI`**. Перший запуск без теки — автоматичний `git clone` (див. вище про публічний repo / credentials). Шлях у **`VPS_DEPLOY_PATH`** має **точно** збігатися з реальною текою (регістр літер).
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
 4. SSL і домен — через NPM (Force SSL) або через `docker-compose.prod.yml` + certbot, якщо не використовуєте NPM.
@@ -984,7 +984,7 @@ pnpm test:server
 Coverage (risk-based, з порогами для core-модулів `services/validation/modes`):
 
 ```bash
-pnpm --filter @alias/server test:coverage
+pnpm --filter @movli/server test:coverage
 ```
 
 Файли тестів (сервер): `packages/server/src/services/__tests__/`
@@ -996,7 +996,7 @@ pnpm --filter @alias/server test:coverage
 ### Клієнтські (Vitest)
 
 ```bash
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 ```
 
 Той самий скрипт виконується в job **Client tests** у `.github/workflows/ci.yml`. Тести лежать поруч із кодом (наприклад `*.test.ts` / `*.test.tsx` у `packages/client/src/`).
@@ -1012,9 +1012,9 @@ pnpm test:e2e:report  # відкрити звіт
 Запуск за тегами (рекомендовано для CI):
 
 ```bash
-pnpm --filter @alias/e2e run test -- --grep "@smoke"
-pnpm --filter @alias/e2e run test -- --grep "@core"
-pnpm --filter @alias/e2e run test -- --grep "@extended"
+pnpm --filter @movli/e2e run test -- --grep "@smoke"
+pnpm --filter @movli/e2e run test -- --grep "@core"
+pnpm --filter @movli/e2e run test -- --grep "@extended"
 ```
 
 ---
@@ -1039,7 +1039,7 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 | `STRIPE_SUCCESS_URL` | Опційно | URL перенаправлення після оплати |
 | `STRIPE_CANCEL_URL` | Опційно | URL при скасуванні оплати |
 | `TELEGRAM_BOT_TOKEN` | Опційно | Токен бота (вимагатиметься для Telegram Mini App auth, Stars і webhook). |
-| `TELEGRAM_WEBHOOK_URL` | Prod | Публічний HTTPS URL для webhook, напр. `https://alias.example.com/api/bot/webhook`. |
+| `TELEGRAM_WEBHOOK_URL` | Prod | Публічний HTTPS URL для webhook, напр. `https://movli.example.com/api/bot/webhook`. |
 | `TELEGRAM_WEBHOOK_SECRET` | Prod | Secret token для заголовка `X-Telegram-Bot-Api-Secret-Token` (обов’язковий у webhook-режимі). |
 | `VAPID_PUBLIC_KEY` | Опційно | VAPID ключ для push |
 | `VAPID_PRIVATE_KEY` | Опційно | VAPID private key |
@@ -1056,6 +1056,7 @@ pnpm --filter @alias/e2e run test -- --grep "@extended"
 |--------|------|
 | `VITE_SERVER_URL` | URL сервера (default: `http://localhost:3001`) |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `VITE_TG_APP_LINK` | Telegram Mini App deep-link для запрошень у лобі (`https://t.me/<bot>/<app>`) |
 | `VITE_SENTRY_DSN` / `VITE_SENTRY_RELEASE` | Опційно: клієнтський Sentry (`src/sentry.ts`) |
 
 ---
@@ -1189,10 +1190,10 @@ Seed **не** повинен “вшивати” адмінів (це ризи�
 | Пакет | Ключові runtime-бібліотеки |
 |-------|----------------------------|
 | **Корінь** | pnpm, turbo, eslint, prettier, typescript |
-| **@alias/shared** | лише `typescript` (після `tsc` — чистий JS) |
-| **@alias/server** | express, socket.io, @socket.io/redis-adapter, ioredis, prisma/@prisma/client, zod, stripe, jsonwebtoken, google-auth-library, cors, dotenv, multer, csv-parse, uuid, web-push, express-rate-limit (~8.x), **@sentry/node**, ipaddr.js |
-| **@alias/client** | react 19, socket.io-client, vite, @vitejs/plugin-react, vite-plugin-pwa, workbox*, tailwindcss, @stripe/*, @react-oauth/google, lucide-react, qrcode, **@sentry/react** (~10.x) + **@sentry/vite-plugin** (~5.x) |
-| **@alias/e2e** | @playwright/test |
+| **@movli/shared** | лише `typescript` (після `tsc` — чистий JS) |
+| **@movli/server** | express, socket.io, @socket.io/redis-adapter, ioredis, prisma/@prisma/client, zod, stripe, jsonwebtoken, google-auth-library, cors, dotenv, multer, csv-parse, uuid, web-push, express-rate-limit (~8.x), **@sentry/node**, ipaddr.js |
+| **@movli/client** | react 19, socket.io-client, vite, @vitejs/plugin-react, vite-plugin-pwa, workbox*, tailwindcss, @stripe/*, @react-oauth/google, lucide-react, qrcode, **@sentry/react** (~10.x) + **@sentry/vite-plugin** (~5.x) |
+| **@movli/e2e** | @playwright/test |
 
 ### `packages/shared/src`
 
@@ -1271,4 +1272,4 @@ Seed **не** повинен “вшивати” адмінів (це ризи�
 
 ### Правила для ШІ-розробника
 
-Операційні правила, steward, денний журнал і делегування ECC — у **[`AGENTS.md`](./AGENTS.md)** та **[`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md)**. Технічні інваріанти гри (контракти, Zod, `authorizeGameAction`) — у skill **`.cursor/skills/alias-master/SKILL.md`**.
+Операційні правила, steward, денний журнал і делегування ECC — у **[`AGENTS.md`](./AGENTS.md)** та **[`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md)**. Технічні інваріанти гри (контракти, Zod, `authorizeGameAction`) — у skill **`.cursor/skills/movli-master/SKILL.md`**.

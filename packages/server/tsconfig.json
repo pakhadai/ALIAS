@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "paths": {
-      "@alias/shared": ["../shared/src/index.ts"]
+      "@movli/shared": ["../shared/src/index.ts"]
     },
     "resolveJsonModule": true,
     "outDir": "./dist",

@@ -7,6 +7,7 @@ import { ConnectionStatusBanner } from './components/ConnectionStatusBanner';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { TelegramAuthLoadingScreen } from './components/TelegramAuthLoadingScreen';
 import { useTelegramApp } from './hooks/useTelegramApp';
+import { useBrowserShellViewport } from './hooks/useBrowserShellViewport';
 import { applyGlassTheme } from './lib/glassTheme';
 import { useAuthContext } from './context/AuthContext';
 import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
@@ -252,6 +253,7 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 
 const AppContent = () => {
   const { isTelegram, startParam } = useTelegramApp();
+  useBrowserShellViewport();
 
   React.useEffect(() => {
     if (isTelegram) return;
@@ -299,7 +301,7 @@ const AppContent = () => {
 
   return (
     <AppLoginProvider>
-      <div className="min-h-0 h-[var(--tg-viewport-height,100dvh)] max-h-[var(--tg-viewport-height,100dvh)] w-full overflow-x-hidden bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
+      <div className="min-h-0 h-full max-h-full w-full overflow-x-hidden bg-ui-bg text-ui-fg font-sans selection:bg-ui-accent selection:text-ui-accent-contrast">
         <ConnectionStatusBanner />
         <PwaUpdateBanner />
         <GameRouter />

@@ -19,7 +19,7 @@ WordPack          — пакунок у магазині / грі (slug на к�
 
 Міграція колонки: `prisma/migrations/20260410193000_word_concept_concept_key/migration.sql`.
 
-Після `git pull` з цією міграцією потрібно застосувати міграції (`pnpm --filter @alias/server db:migrate` або `prisma migrate deploy`), потім за бажанням перезапустити seed.
+Після `git pull` з цією міграцією потрібно застосувати міграції (`pnpm --filter @movli/server db:migrate` або `prisma migrate deploy`), потім за бажанням перезапустити seed.
 
 ---
 
@@ -103,10 +103,10 @@ WordPack          — пакунок у магазині / грі (slug на к�
 
 ```bash
 # Застосувати міграції
-pnpm --filter @alias/server db:migrate
+pnpm --filter @movli/server db:migrate
 
 # Пересіяти словники (потрібна БД і DATABASE_URL)
-pnpm --filter @alias/server db:seed
+pnpm --filter @movli/server db:seed
 ```
 
 TypeScript для імпорту JSON: у `packages/server/tsconfig.json` увімкнено **`resolveJsonModule`**; у `tsconfig.typecheck.json` включено `prisma/data/**/*.json`.

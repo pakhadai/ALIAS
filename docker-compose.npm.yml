@@ -3,20 +3,20 @@
 # (через спільну зовнішню мережу Docker — типово `npm_network`, див. `NPM_DOCKER_NETWORK` у `.env.prod`).
 # Запасний варіант: forward на `http://<docker-host>:9080` (або зміни `GATEWAY_PUBLISH` у `.env.prod`).
 #
-# Запуск (як на VPS): docker compose -p alias --env-file .env.prod -f docker-compose.npm.yml up -d --build
+# Запуск (як на VPS): docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml up -d --build
 
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-alias}
-      POSTGRES_USER: ${POSTGRES_USER:-alias}
+      POSTGRES_DB: ${POSTGRES_DB:-movli}
+      POSTGRES_USER: ${POSTGRES_USER:-movli}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alias}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-movli}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,11 +39,11 @@ services:
       dockerfile: packages/server/Dockerfile
     restart: unless-stopped
     # Apply DB migrations on boot (idempotent) then start server.
-    command: sh -c "pnpm --filter @alias/server exec prisma migrate deploy && node packages/server/dist/server/src/index.js"
+    command: sh -c "pnpm --filter @movli/server exec prisma migrate deploy && node packages/server/dist/server/src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://${POSTGRES_USER:-alias}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-alias}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-movli}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-movli}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://${DOMAIN}}
@@ -79,6 +79,7 @@ services:
         # Set VITE_SERVER_URL explicitly only if you intentionally host API on a different origin.
         VITE_SERVER_URL: ${VITE_SERVER_URL:-}
         VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        VITE_TG_APP_LINK: ${VITE_TG_APP_LINK:-}
     restart: unless-stopped
 
   gateway:

@@ -53,6 +53,7 @@ vi.mock('../../context/AuthContext', () => ({
 
 vi.mock('../../hooks/useT', () => ({
   useT: () => ({
+    homeTagline: 'Говори · Вгадуй',
     joinGame: 'Приєднатися',
     createGame: 'Створити гру',
     menuOrDivider: 'або',
@@ -120,6 +121,13 @@ describe('MenuScreen buttons', () => {
     });
   });
 
+  it('should show home tagline and ambient word rain on menu', () => {
+    const { container } = render(<MenuScreen />);
+
+    expect(screen.getByText('Говори · Вгадуй')).toBeInTheDocument();
+    expect(container.querySelector('.home-word-rain')).not.toBeNull();
+  });
+
   it('should navigate to profile when profile button is clicked', async () => {
     const user = userEvent.setup();
     render(<MenuScreen />);
@@ -157,6 +165,23 @@ describe('MenuScreen buttons', () => {
     await waitFor(() => {
       expect(screen.getByRole('dialog', { name: 'Правила' })).toBeTruthy();
     });
+  });
+
+  it('should use unified button primitives on menu CTAs', () => {
+    render(<MenuScreen />);
+
+    expect(screen.getByTestId('menu-create-game-shell')).toHaveClass('accent-footer-cta-shell');
+    expect(screen.getByTestId('menu-create-game')).toHaveClass('lobby-start-btn--ready');
+    expect(screen.getByTestId('menu-join-game')).toHaveClass('rounded-theme');
+    expect(screen.getByTestId('menu-offline')).toHaveClass('rounded-theme');
+  });
+
+  it('should use glass icon chips in menu header', () => {
+    render(<MenuScreen />);
+
+    const headerIcons = screen.getByTestId('menu-action-icons');
+    expect(headerIcons.querySelectorAll('.ui-glass-icon-btn').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByTestId('menu-profile-guest-badge')).toBeInTheDocument();
   });
 
   it('should call createNewRoom when create game button is clicked', async () => {

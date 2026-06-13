@@ -13,7 +13,7 @@ globs: packages/server/**/*.ts
 - Rate limiting на ВСІХ публічних маршрутах
 
 ## Socket.IO
-- Всі events типізовані через ServerToClientEvents / ClientToServerEvents з @alias/shared
+- Всі events типізовані через ServerToClientEvents / ClientToServerEvents з @movli/shared
 - Кожен event handler: Zod validation → authorization check → business logic
 - emit тільки після підтвердження операції (не fire-and-forget для важливих подій)
 - room broadcasting: `io.to(roomCode).emit(...)` — не `socket.broadcast`

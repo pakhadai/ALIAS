@@ -1,4 +1,4 @@
-import { GameState, type GameActionPayload, type RoomErrorPayload } from '@alias/shared';
+import { GameState, type GameActionPayload, type RoomErrorPayload } from '@movli/shared';
 import type { Room } from '../services/RoomManager';
 import { roomError } from '../utils/roomError';
 

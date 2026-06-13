@@ -1,5 +1,5 @@
-import type { GameTask } from '@alias/shared';
-import { GameMode } from '@alias/shared';
+import type { GameTask } from '@movli/shared';
+import { GameMode } from '@movli/shared';
 
 /**
  * Build a GameTask from a raw word for offline (pass-and-play) mode.

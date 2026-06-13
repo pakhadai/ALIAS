@@ -8,7 +8,7 @@ import type {
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from '@alias/shared';
+} from '@movli/shared';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 

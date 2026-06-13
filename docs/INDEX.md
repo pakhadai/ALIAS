@@ -1,4 +1,4 @@
-# Документація Alias Master — індекс
+# Документація MOVLI Master — індекс
 
 > Один факт — одне місце. Ця сторінка **навігує**; деталі — у зазначених файлах.
 
@@ -22,7 +22,7 @@
 | [`.cursor/CURRENT_FOCUS.md`](../.cursor/CURRENT_FOCUS.md) | Поточний фокус сесії |
 | [`.cursor/rules/00-identity.mdc`](../.cursor/rules/00-identity.mdc) … `08-typography.mdc` | Стандарти коду 2026 + TYPO-001 typography |
 | [`.cursor/VISUAL_QA_CHECKLIST.md`](../.cursor/VISUAL_QA_CHECKLIST.md) | QA після UI/game змін |
-| `.cursor/agents/alias-steward.md`, `.cursor/skills/alias-master/` | Project steward |
+| `.cursor/agents/movli-steward.md`, `.cursor/skills/movli-master/` | Project steward |
 | [`.cursor/AGENTS.md`](../.cursor/AGENTS.md) | ECC (загальні агенти) — **не дублювати** в `docs/` |
 
 ## Тематичні `docs/`
@@ -34,10 +34,11 @@
 | [`TESTING_ACCEPTANCE.md`](./TESTING_ACCEPTANCE.md) | Vitest / Playwright must-not-break |
 | [`UI_TOKENS.md`](./UI_TOKENS.md) | `--ui-*`, Tailwind `*-ui-*`, safe-area, заборони кольорів |
 | [`TYPOGRAPHY_UNIFICATION.md`](./TYPOGRAPHY_UNIFICATION.md) | TYPO-001 — semantic typography, фази, session prompts |
-| [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, glass header/footer, `FixedBottomBar`, Lobby start CTA, safe-area |
+| [`TMA_LAYOUT.md`](./TMA_LAYOUT.md) | `ScreenShell`, glass header/footer, **Desktop TMA** (`data-telegram-desktop`), safe-area, owner QA |
 | [`TMA_HEADER_UNIFICATION.md`](./TMA_HEADER_UNIFICATION.md) | План фаз уніфікації хедерів (OMR → Alias), session prompts 0–6 |
 | [`PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`](./PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md) | Profile / ProfileSettings / LobbySettings — аудит, session prompts 0–8 + мікро A–C |
 | [`LIQUID_GLASS_FIX_PROMPTS.md`](./LIQUID_GLASS_FIX_PROMPTS.md) | Liquid Glass Header/Footer — аудит backdrop/TMA, session prompts 0–9 + мікро A–B |
+| [`TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md`](./TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md) | **COMPLETED 2026-06-12** — TMA Desktop epic prompts 0–9; canon → `TMA_LAYOUT.md#desktop-tma` |
 | [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md) | LAYOUT-001 — layout presets, footer width, radius, surface classes; session prompts 0–7 + мікро A–B |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |

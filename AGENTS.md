@@ -1,6 +1,6 @@
-# Alias Master — інструкції для агентів
+# MOVLI Master — інструкції для агентів
 
-Монорепозиторій **`alias-master-monorepo`**: онлайн Alias (Taboo), PWA, Socket.IO, Prisma/PostgreSQL, Redis.
+Монорепозиторій **`movli-master-monorepo`**: онлайн Alias (Taboo), PWA, Socket.IO, Prisma/PostgreSQL, Redis.
 
 > **ECC (загальні агенти, skills, hooks):** [`.cursor/AGENTS.md`](./.cursor/AGENTS.md) — не дублюй їх тут. Цей файл — **проєктний шар** поверх ECC.
 
@@ -19,7 +19,7 @@
 
 ## Стек (коротко)
 
-- **pnpm 9** workspaces + **Turbo**; пакети: `@alias/shared`, `@alias/server`, `@alias/client`, `@alias/e2e`
+- **pnpm 9** workspaces + **Turbo**; пакети: `@movli/shared`, `@movli/server`, `@movli/client`, `@movli/e2e`
 - **Node** **>=20** (`engines`, CI, Dockerfile)
 - Контракти: **`packages/shared`** — єдине джерело типів і Socket.IO подій
 - Сервер: Express + Socket.IO + Prisma; клієнт: React 19 + Vite 7 PWA
@@ -40,15 +40,15 @@
 - Нові `GameAction` → Zod (`schemas.ts`), `authorizeGameAction`, `GameEngine` / `modes/*`.
 - IMPOSTER: секрет лише через `imposter:secret`, не в публічному sync.
 
-Детальні чеклісти — skill [`.cursor/skills/alias-master/SKILL.md`](./.cursor/skills/alias-master/SKILL.md).
+Детальні чеклісти — skill [`.cursor/skills/movli-master/SKILL.md`](./.cursor/skills/movli-master/SKILL.md).
 
-## Project Steward: `alias-steward`
+## Project Steward: `movli-steward`
 
-Спеціалізований subagent: **`.cursor/agents/alias-steward.md`**.
+Спеціалізований subagent: **`.cursor/agents/movli-steward.md`**.
 
-Виклик у промпті: `@alias-steward …`
+Виклик у промпті: `@movli-steward …`
 
-**Перед нетривіальною зміною:** pre-flight (doc + вплив на `@alias/shared`, план ≤5 кроків).
+**Перед нетривіальною зміною:** pre-flight (doc + вплив на `@movli/shared`, план ≤5 кроків).
 
 **Після задачі:** `docs/daily/YYYY-MM-DD.md`, за потреби `CHANGELOG` `[Unreleased]`, `PROJECT_STATE` при зміні стеку.
 
@@ -60,7 +60,7 @@
 | Фіча / баг | `tdd-guide` + Vitest (`packages/server`, `packages/client`) |
 | Код написано | `code-reviewer` |
 | Auth, Stripe, env, API | `security-reviewer` |
-| Масове оновлення markdown | `doc-updater` → **alias-steward** перевіряє канон |
+| Масове оновлення markdown | `doc-updater` → **movli-steward** перевіряє канон |
 
 ## Перевірка перед завершенням
 
@@ -76,17 +76,17 @@ E2E за потреби: `pnpm test:e2e`.
 **Pre-flight:**
 
 ```
-@alias-steward Перевір pre-flight для задачі: [опиши]. Які doc/code торкнути? План у 5 кроків.
+@movli-steward Перевір pre-flight для задачі: [опиши]. Які doc/code торкнути? План у 5 кроків.
 ```
 
 **Кінець сесії:**
 
 ```
-@alias-steward Підсумуй сесію: допиши docs/daily/YYYY-MM-DD.md, CHANGELOG [Unreleased] якщо потрібно, sync PROJECT_STATE якщо змінився стек.
+@movli-steward Підсумуй сесію: допиши docs/daily/YYYY-MM-DD.md, CHANGELOG [Unreleased] якщо потрібно, sync PROJECT_STATE якщо змінився стек.
 ```
 
 **Лише документація:**
 
 ```
-@alias-steward Аудит doc↔code для [модуль]. Виправ мінімально README або docs/, без зміни коду.
+@movli-steward Аудит doc↔code для [модуль]. Виправ мінімально README або docs/, без зміни коду.
 ```

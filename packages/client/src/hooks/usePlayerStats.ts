@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { UserProfile, PlayerStatsPayload } from '../services/api';
 import { getAuthToken, postPlayerStatsDelta, mergeLocalPlayerStats } from '../services/api';
 
-const LEGACY_STORAGE_KEY = 'alias_player_stats_v1';
-const MIGRATION_DONE_KEY = 'alias_player_stats_server_merged_v1';
+const LEGACY_STORAGE_KEY = 'movli_player_stats_v1';
+const MIGRATION_DONE_KEY = 'movli_player_stats_server_merged_v1';
 const FLUSH_DEBOUNCE_MS = 4000;
 
 export interface PlayerStats {

@@ -248,7 +248,7 @@ export function createStoreRoutes(prisma: PrismaClient): IRouter {
 
       const invoiceUrl = await createTelegramInvoiceLink({
         botToken,
-        title: `ALIAS — ${itemName}`,
+        title: `MOVLI — ${itemName}`,
         description: 'Оплата через Telegram Stars',
         payload: purchase.id,
         currency: 'XTR',

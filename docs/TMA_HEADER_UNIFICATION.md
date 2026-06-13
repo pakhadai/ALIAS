@@ -1,6 +1,6 @@
 # TMA Header Unification — план фаз (OMR → Alias)
 
-> **Мета:** уніфікувати хедери в `@alias/client`, взявши з Oh My Revit (OMR) SSOT константи, формули висоти, TG gutter і матрицю екранів — **без** зміни нашого канону **sticky glass у scroll** (не portal fixed).
+> **Мета:** уніфікувати хедери в `@movli/client`, взявши з Oh My Revit (OMR) SSOT константи, формули висоти, TG gutter і матрицю екранів — **без** зміни нашого канону **sticky glass у scroll** (не portal fixed).
 >
 > **Канон layout:** [`TMA_LAYOUT.md`](./TMA_LAYOUT.md#glass-app-chrome-header--footer) · **Еталон:** `packages/client/src/screens/lobby/LobbyScreen.tsx`
 >
@@ -114,7 +114,7 @@ Title центрується у повній content-safe зоні (без ок�
 
 ```bash
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 ```
 
 ---
@@ -150,7 +150,7 @@ pnpm --filter @alias/client test
 
 ```bash
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 ```
 
 ---
@@ -282,7 +282,7 @@ rg "<header className=.*pt-safe-top" packages/client/src/screens/menu --glob "My
 
 ```bash
 pnpm build:shared && pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 ```
 
 ### Grep gates
@@ -301,7 +301,7 @@ rg "tma-fixed-header-height" packages/client/src
 ### E2E (якщо env ready)
 
 ```bash
-pnpm --filter @alias/e2e test -- --grep @smoke
+pnpm --filter @movli/e2e test -- --grep @smoke
 ```
 
 ### Code review checklist

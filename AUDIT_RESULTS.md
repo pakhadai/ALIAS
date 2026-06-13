@@ -1,4 +1,4 @@
-# Audit Results — Alias Master
+# Audit Results — MOVLI Master
 
 Формат: дата | блок | severity | статус | опис
 
@@ -22,7 +22,7 @@
 
 | ID | Sev | Status | Опис |
 |----|-----|--------|------|
-| B-1 | 🟢 | ✅ VERIFIED | Relay + Redis adapter + writer lock OK (2026-06-07). Evidence: `RoomActionRelay.ts`, `RedisRoomStore.ts` `alias:room:writer:*`, `index.ts` adapter + relay init, `socketHandlers.ts` writer routing. |
+| B-1 | 🟢 | ✅ VERIFIED | Relay + Redis adapter + writer lock OK (2026-06-07). Evidence: `RoomActionRelay.ts`, `RedisRoomStore.ts` `movli:room:writer:*`, `index.ts` adapter + relay init, `socketHandlers.ts` writer routing. |
 | B-2 | ✅ | RESOLVED | README `GameSyncState` синхронізовано з `events.ts` (2026-06-06) |
 
 ## Блок C: Performance
@@ -66,7 +66,7 @@
 | G-4 | 🟠 | ✅ RESOLVED | REST routes integration — store, purchases/webhook, custom-decks, push, admin (+ AuthService HMAC/expiry, 2026-06-07) |
 | G-5 | 🟡 | ✅ RESOLVED | Socket/pipeline/relay integration — `socketHandlers.int.test.ts` (8 cases: room:exists ack, grace rejoin, NOT_HOST/NOT_EXPLAINER E2E), `gameActionPipeline.test.ts`, `RoomActionRelay.test.ts` relay timeout/unavailable. Server **341** tests (2026-06-07 Phase 4) |
 | G-6 | 🟡 | ✅ RESOLVED | Client unit — GameContext sync, offlineGameActions, gameReducer edge cases, QuickBuyModal TMA Stars (44 tests, 2026-06-07 Phase 5) |
-| G-7 | 🟡 | ✅ RESOLVED | `@alias/shared` pure utils — `utils.test.ts` (shuffleArray, getTeamColor, constants); vitest script added (2026-06-07 Phase 6) |
+| G-7 | 🟡 | ✅ RESOLVED | `@movli/shared` pure utils — `utils.test.ts` (shuffleArray, getTeamColor, constants); vitest script added (2026-06-07 Phase 6) |
 | G-8 | 🟠 | ✅ RESOLVED | E2E `@smoke` + `@core` specs added — `smoke-round.spec.ts`, `core-acceptance.spec.ts`, `helpers/game-ui.ts` (2026-06-07 Phase 7). Local run blocked without Postgres (`docker compose up -d postgres`); CI runs `@smoke` / `@core` on chromium + mobile-chrome. |
 | G-9 | 🟡 | ✅ RESOLVED | Lobby Fix Phase 4 tests — `buildTeamShells`, `TeamSetupScreen`, `room:exists` writer-only int, `lobby-team-builder.spec.ts`; client **142/142**, server **356/356** (2026-06-08) |
 

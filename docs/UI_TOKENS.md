@@ -1,4 +1,4 @@
-# UI-токени Alias Master
+# UI-токени MOVLI Master
 
 **Status:** `implemented` (сесії 1–7/7 завершено 2026-06-07 — verification grep + unit/E2E smoke green)
 
@@ -208,6 +208,31 @@
 
 **Модуль:** `packages/client/src/constants/surfaceClasses.ts` — імпорт для Phase 5 card migration (RulesModal, Store, settings).
 
+## Button taxonomy
+
+**Status:** Home menu unification ✅ (2026-06-13) — `MenuScreen` on shared primitives; `Button` variant `tertiary` for de-emphasized bordered actions.
+
+| Тип | Компонент | Variant / mode | Коли |
+|-----|-----------|----------------|------|
+| **Screen primary CTA** | `AccentFooterCta` | `variant="animated"` (default ready) / `"plain"` / `"blocked"` | Create game, Start game, Rematch — accent shell + `lobby-start-btn--ready` glow |
+| **Standard primary** | `Button` | `variant="primary"` + optional `themeClass={theme.button}` | Modal/sheet confirm, forms |
+| **Secondary** | `Button` | `variant="secondary"` | Join game, cancel-with-fill, alternate main action |
+| **Tertiary** | `Button` | `variant="tertiary"` | De-emphasized bordered action (Play offline, low-priority escape) |
+| **Ghost / outline** | `Button` | `variant="ghost"` or `"outline"` | Text-only dismiss, inline cancel |
+| **Danger** | `Button` | `variant="danger"` / `"dangerSolid"` | Destructive confirm |
+| **Icon / toolbar** | `GlassIconButton` | — | App header actions (profile, settings, rules) |
+| **Compact inline** | raw `<button>` or `Button size="sm"` | — | Icon-only in inputs (QuickJoin submit) — escape only |
+
+### Правила
+
+1. **Radius:** primary/secondary/tertiary/ghost — `rounded-theme` (via `Button` / `AccentFooterCta`); не hardcode `rounded-full` на screen CTAs.
+2. **Height:** main screen actions — `Button size="xl"` або `AccentFooterCta` (lobby volume); не mix `h-14` / `h-11` ad-hoc.
+3. **Feedback:** `Button` / `AccentFooterCta` — haptics + optional click sound; не дублюй `active:scale-*` inline на consumers.
+4. **Modals:** primary + ghost cancel — див. `.cursor/rules/07-modals.mdc`.
+5. **Нові home-style CTAs:** `AccentFooterCta` (primary) + `Button secondary` + `Button tertiary` — не raw `<button>` з inline Tailwind.
+
+**Reference:** `packages/client/src/screens/menu/MenuScreen.tsx`, `packages/client/src/components/layout/AccentFooterCta.tsx`, `packages/client/src/components/Button.tsx`.
+
 ## Spacing (vertical rhythm)
 
 **Status:** LAYOUT-001 Phase 6 ✅ (optional) — SSOT `spacing.ts`; pilot на settings + stats екранах.  
@@ -290,7 +315,7 @@
 **Винятки (дозволено):**
 
 - **Theme preview** у налаштуваннях (`ThemeConfig.preview`, swatches у `AppSettingsModal`).
-- **`colorHex` команд** — inline колір аватара/команди (не частина app theme). Джерело: `@alias/shared` `TEAM_COLORS` (`hex` + optional `--team-color-*`); `Team.color` зберігає CSS var name або hex fallback через `getTeamColorToken()`.
+- **`colorHex` команд** — inline колір аватара/команди (не частина app theme). Джерело: `@movli/shared` `TEAM_COLORS` (`hex` + optional `--team-color-*`); `Team.color` зберігає CSS var name або hex fallback через `getTeamColorToken()`.
 - **`:root` fallback** у `styles.css` до гідрації React.
 - **`THEME_CONFIG` / `themes.json`** — джерело палітр, не TSX-компоненти.
 

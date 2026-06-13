@@ -6,7 +6,7 @@ import {
   type GameSettings,
   type GameTask,
   type QuizTaskKind,
-} from '@alias/shared';
+} from '@movli/shared';
 import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
 
 type EncodedQuizTask = {

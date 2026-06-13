@@ -1,4 +1,4 @@
-import { getTeamColor, getTeamColorToken, Language } from '@alias/shared';
+import { getTeamColor, getTeamColorToken, Language } from '@movli/shared';
 import type { Team } from '../types';
 import { TEAM_NAMES } from '../constants';
 

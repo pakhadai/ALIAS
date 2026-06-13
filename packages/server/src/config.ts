@@ -88,7 +88,7 @@ export const config = {
   vapid: {
     publicKey: process.env.VAPID_PUBLIC_KEY || '',
     privateKey: process.env.VAPID_PRIVATE_KEY || '',
-    email: process.env.VAPID_EMAIL || 'mailto:admin@aliasmaster.app',
+    email: process.env.VAPID_EMAIL || 'mailto:admin@movlimaster.app',
   },
 };
 

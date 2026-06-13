@@ -1,7 +1,7 @@
 {
-  "name": "@alias/server",
+  "name": "@movli/server",
   "private": true,
-  "version": "0.6.4",
+  "version": "0.6.5",
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "tsx watch src/index.ts",
@@ -18,7 +18,7 @@
     "test:e2e": "tsx test/e2e-game-flow.ts"
   },
   "dependencies": {
-    "@alias/shared": "workspace:*",
+    "@movli/shared": "workspace:*",
     "@prisma/client": "^6.19.2",
     "@sentry/node": "^10.47.0",
     "@socket.io/redis-adapter": "^8.3.0",

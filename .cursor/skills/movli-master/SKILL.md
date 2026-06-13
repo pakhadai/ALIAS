@@ -1,13 +1,13 @@
 ---
-name: alias-master
-description: Alias Master monorepo — GameMode, Socket.IO contracts, Prisma, shared-first changes, and verification checklists. Use when editing packages/shared, server game logic, client GameContext, or project docs.
+name: movli-master
+description: MOVLI Master monorepo — GameMode, Socket.IO contracts, Prisma, shared-first changes, and verification checklists. Use when editing packages/shared, server game logic, client GameContext, or project docs.
 ---
 
-# Alias Master — skill
+# MOVLI Master — skill
 
-Monorepo: `@alias/shared`, `@alias/server`, `@alias/client`, `@alias/e2e`.
+Monorepo: `@movli/shared`, `@movli/server`, `@movli/client`, `@movli/e2e`.
 
-**Docs:** [`AGENTS.md`](../../../AGENTS.md), [`docs/INDEX.md`](../../../docs/INDEX.md). **Steward:** `@alias-steward`.
+**Docs:** [`AGENTS.md`](../../../AGENTS.md), [`docs/INDEX.md`](../../../docs/INDEX.md). **Steward:** `@movli-steward`.
 
 ## Shared-first checklist
 
@@ -52,7 +52,7 @@ Reconnect grace: `RECONNECT_GRACE_MS = 60_000` in `packages/server/src/index.ts`
 ## Prisma
 
 - Schema: `packages/server/prisma/schema.prisma`
-- Local migrate: `pnpm --filter @alias/server db:migrate` (**migrate dev**)
+- Local migrate: `pnpm --filter @movli/server db:migrate` (**migrate dev**)
 - Prod: `migrate deploy` in Docker/CI only
 - Seed/data formats: `docs/PRISMA_WORD_DATA.md`
 

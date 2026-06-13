@@ -240,7 +240,7 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
               {
                 price_data: {
                   currency: 'usd',
-                  product_data: { name: `ALIAS — ${itemName}` },
+                  product_data: { name: `MOVLI — ${itemName}` },
                   unit_amount: priceInCents,
                 },
                 quantity: 1,
@@ -376,7 +376,7 @@ export function createPurchaseRoutes(prisma: PrismaClient): IRouter {
             amount: priceInCents,
             currency: 'usd',
             automatic_payment_methods: { enabled: true },
-            description: `ALIAS — ${itemName}`,
+            description: `MOVLI — ${itemName}`,
             metadata: { purchaseId: purchase.id, userId, itemType, itemId },
           },
           { idempotencyKey: `pi_${purchase.id}` }

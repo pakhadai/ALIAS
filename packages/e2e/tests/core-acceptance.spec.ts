@@ -4,6 +4,7 @@ import {
   clickFixedChrome,
   closeTwoPlayerSession,
   confirmRoundSummary,
+  correctRe,
   createTwoPlayerLobby,
   HOST_NAME,
   imReadyRe,
@@ -89,11 +90,11 @@ test.describe('@core Offline game', () => {
     await startFromLobby(page);
 
     await page.getByRole('button', { name: imReadyRe }).click();
-    await expect(page.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByRole('button', { name: correctRe })).toBeVisible({ timeout: 90_000 });
 
     await tapCorrect(page, 1);
-    // 30s round floor + 5s offline timeUp fallback (+ buffer)
-    await waitForRoundSummary(page, 45_000);
+    // 30s round floor + 30s timeUp fallback (+ buffer)
+    await waitForRoundSummary(page, 75_000);
     await confirmRoundSummary(page);
 
     await expect(page.getByText(scoreboardRe).first()).toBeVisible({ timeout: 30_000 });
@@ -114,16 +115,18 @@ test.describe('@core Rematch', () => {
           timeout: 30_000,
         });
         await explainer.getByRole('button', { name: imReadyRe }).click();
-        await expect(explainer.getByText(/\d{1,2}:\d{2}/)).toBeVisible({ timeout: 90_000 });
+        await expect(explainer.getByRole('button', { name: correctRe })).toBeVisible({
+          timeout: 90_000,
+        });
         if (correctCount > 0) {
           await tapCorrect(explainer, correctCount);
         }
-        await waitForRoundSummary(explainer, 45_000);
+        await waitForRoundSummary(explainer, 90_000);
         await confirmRoundSummary(session.host);
       };
 
       await startFromLobby(session.host);
-      await playRound(session.host, 10);
+      await playRound(session.host, 5);
       await expect(session.host.getByText(scoreboardRe).first()).toBeVisible({ timeout: 30_000 });
 
       await session.host.getByRole('button', { name: nextRoundRe }).click();

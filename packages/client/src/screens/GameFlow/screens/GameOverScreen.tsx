@@ -143,7 +143,7 @@ export const GameOverScreen = () => {
       ctx.fillStyle = accent;
       ctx.font = 'bold 42px Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText('ALIAS', W / 2, 60);
+      ctx.fillText('MOVLI', W / 2, 60);
 
       // Subtitle
       ctx.save();
@@ -205,7 +205,7 @@ export const GameOverScreen = () => {
       ctx.globalAlpha = 0.25;
       ctx.font = '11px Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('aliasmaster.app', W / 2, H - 18);
+      ctx.fillText('movlimaster.app', W / 2, H - 18);
       ctx.restore();
 
       return await new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), 'image/png'));
@@ -221,10 +221,10 @@ export const GameOverScreen = () => {
     try {
       const blob = await buildShareImage();
       if (blob) {
-        const file = new File([blob], 'alias-result.png', { type: 'image/png' });
+        const file = new File([blob], 'movli-result.png', { type: 'image/png' });
         if (navigator.canShare?.({ files: [file] })) {
           try {
-            await navigator.share({ files: [file], title: `ALIAS — ${t.finalResults}` });
+            await navigator.share({ files: [file], title: `MOVLI — ${t.finalResults}` });
             return;
           } catch (_err) {
             void _err;
@@ -234,7 +234,7 @@ export const GameOverScreen = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'alias-result.png';
+        a.download = 'movli-result.png';
         a.click();
         URL.revokeObjectURL(url);
         return;
@@ -243,7 +243,7 @@ export const GameOverScreen = () => {
       const lines = sorted.map(
         (team, i) => `${['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`} ${team.name}: ${team.score} ${t.pts}`
       );
-      const text = `🎮 ALIAS — ${t.finalResults}\n${lines.join('\n')}`;
+      const text = `🎮 MOVLI — ${t.finalResults}\n${lines.join('\n')}`;
       if (navigator.share) {
         try {
           await navigator.share({ text });

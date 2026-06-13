@@ -5,7 +5,7 @@
  * Requires: server running on localhost:3001
  */
 import { io, type Socket } from 'socket.io-client';
-import type { GameSyncState, ClientToServerEvents, ServerToClientEvents } from '@alias/shared';
+import type { GameSyncState, ClientToServerEvents, ServerToClientEvents } from '@movli/shared';
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3001';
 
@@ -65,7 +65,7 @@ function assert(condition: boolean, message: string): void {
 }
 
 async function runTest() {
-  console.log(`\n=== ALIAS E2E Test ===`);
+  console.log(`\n=== MOVLI E2E Test ===`);
   console.log(`Server: ${SERVER_URL}\n`);
 
   const host = createClient('Host');

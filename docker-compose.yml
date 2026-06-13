@@ -12,9 +12,9 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_DB: alias
-      POSTGRES_USER: alias
-      POSTGRES_PASSWORD: alias_dev
+      POSTGRES_DB: movli
+      POSTGRES_USER: movli
+      POSTGRES_PASSWORD: movli_dev
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -31,7 +31,7 @@ services:
       PORT: 3001
       NODE_ENV: development
       REDIS_URL: redis://redis:6379
-      DATABASE_URL: postgresql://alias:alias_dev@postgres:5432/alias
+      DATABASE_URL: postgresql://movli:movli_dev@postgres:5432/movli
       CORS_ORIGIN: http://localhost:5173,http://localhost:5174
       # Решта — з `.env.prod` (див. `.env.prod.example`)
     depends_on:

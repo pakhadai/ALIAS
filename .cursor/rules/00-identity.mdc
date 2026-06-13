@@ -3,13 +3,13 @@ description: Project identity and steward rules
 alwaysApply: true
 ---
 
-# ALIAS MASTER — PROJECT IDENTITY
+# MOVLI MASTER — PROJECT IDENTITY
 
 ## Monorepo structure
-- `@alias/shared` — contracts only, no runtime deps, CommonJS output
-- `@alias/server` — Express + Socket.IO + Prisma + Redis, CommonJS
-- `@alias/client` — React 19 PWA, ESM, Vite 7
-- `@alias/e2e` — Playwright only
+- `@movli/shared` — contracts only, no runtime deps, CommonJS output
+- `@movli/server` — Express + Socket.IO + Prisma + Redis, CommonJS
+- `@movli/client` — React 19 PWA, ESM, Vite 7
+- `@movli/e2e` — Playwright only
 
 ## Non-negotiables
 - Server is authoritative. Client NEVER computes game state.

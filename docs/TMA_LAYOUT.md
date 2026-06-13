@@ -376,8 +376,12 @@ Bootstrap viewport/safe-area: `bootstrapTelegramMiniApp()` у `index.tsx` (sync 
 | `HEADER_ROW_MIN_PX` | 44 | Мін. висота title row |
 | `TG_CHROME_GUTTER_PX` | 80 | L/R clearance під нативні TG кнопки (Phase 2) |
 | `APP_HEADER_BAR_PX` | 60 (`3.75rem`) | Legacy constant (історичний fallback); висота header = title row (`content-safe-top`) |
-| `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | **104** | Fallback `--tg-content-safe-area-inset-top` / `--tma-content-top-floor` коли SDK не ready |
+| `TELEGRAM_MOBILE_CONTENT_TOP_FLOOR_PX` | **104** | Fallback `--tg-content-safe-area-inset-top` / `--tma-content-top-floor` коли SDK не ready (iOS / Android) |
+| `TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX` | **0** | Desktop TMA fallback — нативний title bar поза WebView; довіряти SDK `contentSafeAreaInset` |
+| `TELEGRAM_DESKTOP_DOCUMENT_FLAG` | `telegramDesktop` | `dataset` key → `data-telegram-desktop` на `<html>` |
 | `HOME_CARD_TOP_GAP_PX` | 16 | Зазор home card body padding (`MenuScreen` Phase 4 ✅) |
+
+Helpers: `isTelegramDesktopPlatform(platform)`, `resolveTelegramContentTopFloorPx(platform)` — desktop platforms: `tdesktop`, `macos`, `weba`, `webk`, `web`, `unigram`.
 
 ### `--app-home-card-top`
 
@@ -421,6 +425,78 @@ Helpers: `titleRowHeightCss()`, `appPageHeaderHeightFallbackCss()`, `appPageHead
 | **4 — MenuScreen home** | ✅ 2026-06-08 | fixed → `ScreenShell` + sticky `AppHeader`; `--app-home-card-top` |
 | **5 — TMA hardening** | ✅ 2026-06-08 | 104px content-safe floor, back matrix, toast/banner offset |
 | **6 — Verification** | ✅ 2026-06-11 | grep gates green; client **340/340**; `TMA_LAYOUT.md` floor synced (LAYOUT-001 Phase 7); manual @375px — owner |
+
+---
+
+## Desktop TMA
+
+> **Статус:** ✅ Epic Sessions 0–9 (2026-06-12). Session prompts: [`TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md`](./TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md).  
+> **Проблема (до fix):** на `tdesktop` / `macos` / web-клієнтах — header ~150–196px (mobile floor 104px), 80px title gutter, прозорий liquid glass chrome/modals.
+
+### Detection і bootstrap
+
+| Механізм | Де | Поведінка |
+|----------|-----|-----------|
+| `isTelegramDesktopPlatform(platform)` | `tmaLayoutConstants.ts` | `true` для `tdesktop`, `macos`, `weba`, `webk`, `web`, `unigram` |
+| `data-telegram-desktop` на `<html>` | `bootstrapTelegramMiniApp()` у `useTelegramApp.ts` | Встановлюється на desktop; видаляється на mobile |
+| `expand` / `requestFullscreen` | `useTelegramApp.ts` | **Пропускаються** на desktop (вікно, не immersive) |
+| Content-top floor | `resolveTelegramContentTopFloorPx()` | Mobile **104px**; desktop **0px** (SDK-first) |
+
+**Важливо:** desktop overrides через `html[data-telegram-desktop]` — **не** `@media (min-width: …)` (вікно TG desktop може бути вузьким).
+
+### CSS policy (desktop vs mobile)
+
+| Область | Mobile (`:not([data-telegram-desktop])`) | Desktop (`html[data-telegram-desktop]`) |
+|---------|------------------------------------------|----------------------------------------|
+| `--tma-content-safe-top` | `max(SDK inset, 104px floor)` | SDK inset або floor `0px` — без 104px clamp (`styles.css`) |
+| AppHeader TG gutter | `data-tg-gutter` + 80px inline padding | Gutter **off** — content rail (`GlassAppHeader.tsx`) |
+| Modal backdrop `padding-top` | `var(--tma-inset-top)` | `var(--tma-content-safe-top, 0px)` — sheet від верху WebView |
+| Header / footer glass | Liquid glass feather + blur (`glass.css`) | Opaque **92%** fill, blur `::before` off, feather **0** |
+| Modal glass | Stacked blur + gradient masks | Backdrop tint **85–90%**; panel **96%** `--ui-card`; top bar **92%** |
+| `@supports not (backdrop-filter)` | Opaque fallback ≥90% tint | Той самий fallback + desktop opaque rules |
+
+Джерела: `packages/client/src/styles.css`, `packages/client/src/styles/glass.css`.
+
+### Automated coverage (Vitest)
+
+| Файл | Що перевіряє |
+|------|--------------|
+| `tmaLayoutConstants.test.ts` | `tdesktop` → floor 0; `ios` / `undefined` → 104 |
+| `useTelegramApp.test.ts` | Bootstrap floor + `data-telegram-desktop` attr |
+| `GlassAppHeader.test.tsx` | Desktop без gutter; mobile з gutter |
+
+Client tests **376/376** (2026-06-12); `pnpm typecheck` green.
+
+### Manual QA checklist (owner)
+
+Перевірити в Telegram Desktop (`tdesktop`) і за наявності — `macos`. Mobile regression — iOS TMA @375px або DevTools mobile emulation + `platform=ios` mock.
+
+| # | Крок | Desktop (`tdesktop` / `macos`) | Mobile @375px |
+|---|------|--------------------------------|---------------|
+| 1 | **Menu home** — header height | Title band ~**44–60px**, не ~150px | ~**104px** content-safe band OK |
+| 2 | **Lobby** — header + footer | Opaque chrome; CTA / room code читабельні | Liquid glass feather OK |
+| 3 | **EnterName / Login** modal | Panel і backdrop не просвічують | Glass esthetic OK |
+| 4 | **Light + dark** TG theme | Контраст header/footer/modal | Без регресії |
+| 5 | **Modal stack** | Nested sheet (QR, add-player) — той самий opaque стиль | z-index над chrome |
+| 6 | **Reconnect banner** | Під header, не перекриває back/title | Як раніше |
+| 7 | **`@supports` / reduced transparency** | Opaque fallback usable (DevTools: disable backdrop-filter) | CTA читабельний |
+
+**Швидка DevTools перевірка (desktop):**
+
+```js
+document.documentElement.getAttribute('data-telegram-desktop'); // "true"
+getComputedStyle(document.documentElement).getPropertyValue('--tma-content-top-floor'); // "0px"
+getComputedStyle(document.documentElement).getPropertyValue('--tma-content-safe-top');
+```
+
+### Anti-patterns (desktop epic)
+
+| Заборонено | Чому |
+|------------|------|
+| `@media (min-width: 768px)` для TMA desktop | TG desktop window може бути вузьким |
+| Зменшити mobile floor 104 → 88 | Регресія iOS Dynamic Island |
+| `padding-top: 0` на всіх TMA modals | Зламає mobile modal clearance |
+| Прибрати liquid glass на mobile | Out of scope — лише desktop overrides |
 
 ---
 

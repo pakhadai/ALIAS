@@ -23,8 +23,8 @@ describe('ScreenShell', () => {
     );
 
     const shell = container.firstElementChild;
-    expect(shell?.className).toContain('h-[var(--tg-viewport-height,100dvh)]');
-    expect(shell?.className).toContain('max-h-[var(--tg-viewport-height,100dvh)]');
+    expect(shell?.className).toContain('h-full');
+    expect(shell?.className).toContain('max-h-full');
 
     const scrollColumn = screen.getByTestId('content').parentElement?.parentElement;
     expect(scrollColumn?.className).toContain('overflow-y-auto');

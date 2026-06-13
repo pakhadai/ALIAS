@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { Language, Category, SoundPreset, AppTheme, GameMode } from '@alias/shared';
-import type { GameActionPayload, GameSettingsUpdate } from '@alias/shared';
+import { Language, Category, SoundPreset, AppTheme, GameMode } from '@movli/shared';
+import type { GameActionPayload, GameSettingsUpdate } from '@movli/shared';
 
 // --- Socket event payloads ---
 

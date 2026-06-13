@@ -25,7 +25,7 @@
 ### Швидкий старт (copy-paste)
 
 ```
-@alias-steward Pre-flight для Lobby Fix Phase 1.
+@movli-steward Pre-flight для Lobby Fix Phase 1.
 
 Прочитай: .cursor/CURRENT_FOCUS.md, AUDIT_RESULTS.md, docs/LOBBY_TEAM_BUILDER.md, docs/archive/LOBBY_FIX_PROMPTS.md (Phase 1).
 
@@ -38,7 +38,7 @@
 
 - Phases 1–4 завершені
 - `pnpm typecheck` green
-- `pnpm --filter @alias/client test` і `pnpm --filter @alias/server test` green
+- `pnpm --filter @movli/client test` і `pnpm --filter @movli/server test` green
 - У `CHANGELOG` [Unreleased] є записи по lobby fixes
 
 ### Очікуваний результат після всіх фаз
@@ -66,14 +66,14 @@
 ## Pre-flight (вставляти на початку кожної фази)
 
 ```
-@alias-steward Pre-flight для Lobby Fix Phase N.
+@movli-steward Pre-flight для Lobby Fix Phase N.
 
 Прочитай перед змінами:
 - `.cursor/CURRENT_FOCUS.md`
 - `AUDIT_RESULTS.md`
 - `docs/LOBBY_TEAM_BUILDER.md`
 - `docs/archive/LOBBY_FIX_PROMPTS.md` (секція Phase N)
-- `AGENTS.md` + `.cursor/skills/alias-master/SKILL.md`
+- `AGENTS.md` + `.cursor/skills/movli-master/SKILL.md`
 
 Інваріанти (НЕ порушувати):
 - Сервер authoritative; клієнт не обчислює game state.
@@ -101,7 +101,7 @@
 # Lobby Fix — Phase 1: TMA back navigation, offline remove cleanup, teamsLocked restore, shared teamShells
 
 ## Мета
-Виправити 4 підтверджені баги з мінімальним diff, без зміни публічного API (@alias/shared) і без зміни ігрової логіки на сервері (окрім Redis restore).
+Виправити 4 підтверджені баги з мінімальним diff, без зміни публічного API (@movli/shared) і без зміни ігрової логіки на сервері (окрім Redis restore).
 
 ## Контекст (підтверджені проблеми)
 1. `packages/client/src/hooks/useTelegramBackButton.ts:41-54` — SETTINGS/TEAMS викликають `leaveRoom()`; LOBBY → MENU без leave → zombie rejoin.
@@ -198,8 +198,8 @@ TeamSetupScreen: display/move на materialized list; setTeams після rename
 
 ## Verification
 pnpm typecheck
-pnpm --filter @alias/client test
-pnpm --filter @alias/server test
+pnpm --filter @movli/client test
+pnpm --filter @movli/server test
 
 ## Самоперевірка
 - CLIENT_NAV_STATES для SETTINGS overlay не зламано?
@@ -211,7 +211,7 @@ pnpm --filter @alias/server test
 
 ## Phase 2 — Серверна цілісність лоббі
 
-**Орієнтовний час:** 2–3 сесії. **Може торкнутись `@alias/shared`** (lobbyReadiness, RoomErrorCode).
+**Орієнтовний час:** 2–3 сесії. **Може торкнутись `@movli/shared`** (lobbyReadiness, RoomErrorCode).
 
 ### Промт
 
@@ -324,8 +324,8 @@ room:join лише якщо room.gameState === LOBBY.
 ## Verification
 pnpm build:shared
 pnpm typecheck
-pnpm --filter @alias/server test
-pnpm --filter @alias/shared test
+pnpm --filter @movli/server test
+pnpm --filter @movli/shared test
 ```
 
 ---
@@ -410,7 +410,7 @@ TYPO-001: typographyClass.*, без нових text-xs/sm.
 
 ## Verification
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 rg "Перемістити" packages/client/src --glob "!translations.ts"
 ```
 
@@ -485,8 +485,8 @@ Viewport: desktop; опційно mobile-chrome 375px guest play-format bar.
 
 ## Verification
 pnpm typecheck
-pnpm --filter @alias/client test
-pnpm --filter @alias/server test
+pnpm --filter @movli/client test
+pnpm --filter @movli/server test
 pnpm test:e2e -- --grep "@core|lobby"
 ```
 
@@ -515,9 +515,9 @@ Senior reviewer + QA. Не пиши новий код окрім критичн�
 ## Verification commands (запусти всі)
 pnpm build:shared
 pnpm typecheck
-pnpm --filter @alias/shared test
-pnpm --filter @alias/server test
-pnpm --filter @alias/client test
+pnpm --filter @movli/shared test
+pnpm --filter @movli/server test
+pnpm --filter @movli/client test
 pnpm verify
 rg "text-\[[0-9]+px\]" packages/client/src/screens/lobby --glob "*.tsx"
 

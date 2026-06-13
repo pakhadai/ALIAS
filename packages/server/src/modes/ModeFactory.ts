@@ -1,4 +1,4 @@
-import { GameMode } from '@alias/shared';
+import { GameMode } from '@movli/shared';
 import type { IGameModeHandler } from './IGameModeHandler';
 import { ClassicModeHandler } from './ClassicModeHandler';
 import { TranslationModeHandler } from './TranslationModeHandler';

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TeamSetupScreen } from './TeamSetupScreen';
 import { GameMode } from '../../types';
-import { Language } from '@alias/shared';
+import { Language } from '@movli/shared';
 
 const setGameState = vi.fn();
 const sendAction = vi.fn();

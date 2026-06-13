@@ -7,7 +7,7 @@ import {
 } from '../../constants/tmaLayoutConstants';
 import type { ScreenLayoutContentRail } from '../../constants/screenLayout';
 import { useScreenLayoutOptional } from '../../context/ScreenLayoutContext';
-import { hasTelegramInitData } from '../../hooks/useTelegramApp';
+import { hasTelegramInitData, isTelegramDesktopPlatform } from '../../hooks/useTelegramApp';
 import { AppHeaderOverflowMenu, type AppHeaderMenuItem } from './AppHeaderOverflowMenu';
 import { GlassIconButton } from './GlassIconButton';
 
@@ -228,7 +228,10 @@ export function AppHeader({
 
   /** Real TMA session only — plain browser loads SDK stub with `platform` but empty initData. */
   const isTelegramSession = hasTelegramInitData();
-  const applyTgGutter = isTelegramSession && tgChromeGutter;
+  const applyTgGutter =
+    isTelegramSession &&
+    tgChromeGutter &&
+    !isTelegramDesktopPlatform(window.Telegram?.WebApp?.platform);
   const centerContent = title ?? center;
 
   const leftSlot =

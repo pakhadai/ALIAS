@@ -10,9 +10,10 @@ import {
   AppTheme,
   GameMode,
   TEAM_COLORS,
-} from '@alias/shared';
+  TIME_UP_IDLE_FALLBACK_MS,
+} from '@movli/shared';
 import type { Room } from '../RoomManager';
-import type { Player, Team, GameSettings } from '@alias/shared';
+import type { Player, Team, GameSettings } from '@movli/shared';
 import { GameActionRejectedError } from '../../utils/GameActionRejectedError';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -1069,7 +1070,7 @@ describe('Timer', () => {
     expect(room.timerInterval).toBeNull();
   });
 
-  it('auto-advances to ROUND_SUMMARY 5s after timeUp if explainer sends no action', async () => {
+  it('auto-advances to ROUND_SUMMARY after timeUp idle fallback if explainer sends no action', async () => {
     vi.spyOn(wordService, 'nextWord').mockResolvedValue({
       word: 'X',
       deck: [],
@@ -1083,7 +1084,7 @@ describe('Timer', () => {
     vi.advanceTimersByTime(2000);
     expect(room.timeUp).toBe(true);
     expect(room.gameState).toBe(GameState.PLAYING);
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(TIME_UP_IDLE_FALLBACK_MS);
     expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
   });
 

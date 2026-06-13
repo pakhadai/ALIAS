@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Link2, Mail, QrCode } from 'lucide-react';
 import { ModalSheet } from '../../../components/ModalSheet';
-import { ModalSheetTitle } from '../../../components/Shared';
+import { ModalOptionButton, ModalSheetTitle } from '../../../components/Shared';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import type { ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
-import { typographyClass } from '../../../constants/typography';
 
 type T = TranslationStrings;
 
@@ -37,9 +36,6 @@ export function LobbyInviteSheet(props: {
     requestClose();
   };
 
-  const optionClass =
-    'w-full min-h-11 flex items-center gap-3 px-4 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98] disabled:text-ui-fg-muted disabled:bg-ui-surface disabled:hover:bg-ui-surface';
-
   return (
     <ModalSheet
       open={open}
@@ -52,33 +48,25 @@ export function LobbyInviteSheet(props: {
     >
       <div data-testid="lobby-invite-sheet">
         <div className="space-y-2">
-          <button
-            type="button"
+          <ModalOptionButton
             onClick={() => runAndClose(onInviteTelegram)}
-            className={optionClass}
+            icon={<Mail size={18} className={theme.iconColor} aria-hidden />}
           >
-            <Mail size={18} className={theme.iconColor} aria-hidden />
-            <span className={`${typographyClass.body} font-semibold text-ui-fg`}>
-              {t.lobbyInviteTelegram}
-            </span>
-          </button>
-          <button type="button" onClick={() => runAndClose(onShareLink)} className={optionClass}>
-            <Link2 size={18} className={theme.iconColor} aria-hidden />
-            <span className={`${typographyClass.body} font-semibold text-ui-fg`}>
-              {t.lobbyInviteCopyLink}
-            </span>
-          </button>
-          <button
-            type="button"
+            {t.lobbyInviteTelegram}
+          </ModalOptionButton>
+          <ModalOptionButton
+            onClick={() => runAndClose(onShareLink)}
+            icon={<Link2 size={18} className={theme.iconColor} aria-hidden />}
+          >
+            {t.lobbyInviteCopyLink}
+          </ModalOptionButton>
+          <ModalOptionButton
             onClick={runQrNested}
             disabled={!qrCodeData}
-            className={optionClass}
+            icon={<QrCode size={18} className={theme.iconColor} aria-hidden />}
           >
-            <QrCode size={18} className={theme.iconColor} aria-hidden />
-            <span className={`${typographyClass.body} font-semibold text-ui-fg`}>
-              {t.lobbyInviteQr}
-            </span>
-          </button>
+            {t.lobbyInviteQr}
+          </ModalOptionButton>
         </div>
       </div>
     </ModalSheet>

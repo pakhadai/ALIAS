@@ -8,7 +8,7 @@ declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: (string | { url: string; revision: string | null })[];
 };
 
-const NOTIFY_ICON = '/icons/icon-192.svg';
+const NOTIFY_ICON = '/icons/pwa-192.png';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
@@ -40,7 +40,7 @@ self.addEventListener('activate', (event) => {
 registerRoute(
   ({ url }) => url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com',
   new StaleWhileRevalidate({
-    cacheName: 'alias-fonts',
+    cacheName: 'movli-fonts',
     plugins: [new ExpirationPlugin({ maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 })],
   })
 );
@@ -87,7 +87,7 @@ self.addEventListener('push', (event) => {
     data: { url: data.url || '/' },
     vibrate: [200, 100, 200],
   };
-  event.waitUntil(self.registration.showNotification(data.title || 'ALIAS', notifOptions));
+  event.waitUntil(self.registration.showNotification(data.title || 'MOVLI', notifOptions));
 });
 
 self.addEventListener('notificationclick', (event) => {

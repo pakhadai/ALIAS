@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { GameActionPayload, GameSettings, GameTask } from '@alias/shared';
+import type { GameActionPayload, GameSettings, GameTask } from '@movli/shared';
 import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
 import { reduceExplainerAction } from './explainerModeActions';
 

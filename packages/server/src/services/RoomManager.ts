@@ -9,7 +9,7 @@ import {
   DEFAULT_APP_THEME,
   getTeamColor,
   getTeamColorToken,
-} from '@alias/shared';
+} from '@movli/shared';
 import type {
   Player,
   Team,
@@ -17,7 +17,7 @@ import type {
   GameTask,
   RoundStats,
   GameSyncState,
-} from '@alias/shared';
+} from '@movli/shared';
 import { RedisRoomStore } from './RedisRoomStore';
 import { config } from '../config';
 

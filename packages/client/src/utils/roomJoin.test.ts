@@ -50,14 +50,14 @@ describe('roomJoin', () => {
 
   describe('buildTelegramLobbyInviteUrl', () => {
     it('sets startapp on a standard t.me app link', () => {
-      expect(buildTelegramLobbyInviteUrl('https://t.me/alias_bot/app', '11111')).toBe(
-        'https://t.me/alias_bot/app?startapp=lobby_11111'
+      expect(buildTelegramLobbyInviteUrl('https://t.me/movli_bot/app', '11111')).toBe(
+        'https://t.me/movli_bot/app?startapp=lobby_11111'
       );
     });
 
     it('falls back for non-URL app links', () => {
-      expect(buildTelegramLobbyInviteUrl('t.me/alias_bot/app', '22222')).toBe(
-        't.me/alias_bot/app?startapp=lobby_22222'
+      expect(buildTelegramLobbyInviteUrl('t.me/movli_bot/app', '22222')).toBe(
+        't.me/movli_bot/app?startapp=lobby_22222'
       );
     });
   });

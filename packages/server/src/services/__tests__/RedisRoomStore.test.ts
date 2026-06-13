@@ -38,7 +38,7 @@ vi.mock('ioredis', () => {
       _n: number
     ): Promise<[string, string[]]> {
       // Minimal scan emulation for tests: single-pass over current in-memory keys.
-      // Pattern is always a prefix match like `alias:room:*`.
+      // Pattern is always a prefix match like `movli:room:*`.
       const prefix = pattern.endsWith('*') ? pattern.slice(0, -1) : pattern;
       const keys = Array.from(store.keys()).filter((k) => k.startsWith(prefix));
       return [cursor === '0' ? '0' : '0', keys];

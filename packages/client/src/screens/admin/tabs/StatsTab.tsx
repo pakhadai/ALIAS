@@ -151,7 +151,7 @@ export function StatsTab({ showToast }: Props) {
           <StatCard
             label="Гравців онлайн"
             value={live?.playersOnline ?? '—'}
-            sub={live?.redisConnected ? 'alias:socket:* ключі' : ''}
+            sub={live?.redisConnected ? 'movli:socket:* ключі' : ''}
           />
         </div>
       </section>

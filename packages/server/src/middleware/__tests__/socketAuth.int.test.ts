@@ -15,7 +15,7 @@ import type {
   InterServerEvents,
   SocketData,
   GameSyncState,
-} from '@alias/shared';
+} from '@movli/shared';
 
 type AppServer = IOServer<
   ClientToServerEvents,

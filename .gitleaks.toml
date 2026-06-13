@@ -1,4 +1,4 @@
-title = "Alias Master gitleaks config"
+title = "MOVLI Master gitleaks config"
 
 [extend]
 useDefault = true

@@ -21,30 +21,30 @@
 
 ```
 Перед змінами: .cursor/CURRENT_FOCUS.md, AUDIT_RESULTS.md, docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md (секція нижче).
-Після: pnpm typecheck, pnpm --filter @alias/client test, CHANGELOG [Unreleased] якщо user-visible, .cursor/CURRENT_FOCUS.md.
-Мінімальний diff. Не чіпати GameSyncState / @alias/shared без потреби.
+Після: pnpm typecheck, pnpm --filter @movli/client test, CHANGELOG [Unreleased] якщо user-visible, .cursor/CURRENT_FOCUS.md.
+Мінімальний diff. Не чіпати GameSyncState / @movli/shared без потреби.
 ```
 
 ---
 
 ## Швидкі промти (copy-paste)
 
-> Формат: `@alias-steward` + номер сесії. Агент читає **повну** секцію з цього файлу.
+> Формат: `@movli-steward` + номер сесії. Агент читає **повну** секцію з цього файлу.
 
 | # | Швидкий промт |
 |---|---------------|
-| **0** | `@alias-steward Виконай сесію 0 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md (pre-flight + verify baseline).` |
-| **1** | `@alias-steward Сесія 1: i18n ProfileSettingsScreen + LobbySettingsScreen — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **2** | `@alias-steward Сесія 2: пояснення дефолти лоббі vs налаштування кімнати — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **3** | `@alias-steward Сесія 3: error feedback при save профілю/lobby defaults — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **4** | `@alias-steward Сесія 4: візуальна уніфікація settings screens з profile flow — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **5** | `@alias-steward Сесія 5: LobbySettings — категорії, прапори, toggles, haptics — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **6** | `@alias-steward Сесія 6: Reset lobby defaults — confirm + семантика — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **7** | `@alias-steward Сесія 7: ProfileScreen dedup stats + guest/store nav — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **8** | `@architect @alias-steward Сесія 8: shared settings primitives + unsaved changes — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **0** | `@movli-steward Виконай сесію 0 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md (pre-flight + verify baseline).` |
+| **1** | `@movli-steward Сесія 1: i18n ProfileSettingsScreen + LobbySettingsScreen — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **2** | `@movli-steward Сесія 2: пояснення дефолти лоббі vs налаштування кімнати — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **3** | `@movli-steward Сесія 3: error feedback при save профілю/lobby defaults — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **4** | `@movli-steward Сесія 4: візуальна уніфікація settings screens з profile flow — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **5** | `@movli-steward Сесія 5: LobbySettings — категорії, прапори, toggles, haptics — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **6** | `@movli-steward Сесія 6: Reset lobby defaults — confirm + семантика — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **7** | `@movli-steward Сесія 7: ProfileScreen dedup stats + guest/store nav — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **8** | `@architect @movli-steward Сесія 8: shared settings primitives + unsaved changes — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
 | **A** | `Мікро A: ProfileSettings avatar preview + email overflow — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
 | **B** | `Мікро B: SettingsScreen header → ScreenTitle — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
-| **C** | `@alias-steward Мікро C: guest path до lobby defaults — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
+| **C** | `@movli-steward Мікро C: guest path до lobby defaults — docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md` |
 
 ### Ультра-короткі (одним рядком)
 
@@ -88,11 +88,11 @@ flowchart LR
 ## Сесія 0 — Pre-flight
 
 ```
-@alias-steward Pre-flight для epic Profile/Lobby Settings improvements.
+@movli-steward Pre-flight для epic Profile/Lobby Settings improvements.
 
 1. Прочитай docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md (контекст таблиця).
 2. Переліч файли: ProfileScreen, ProfileSettingsScreen, LobbySettingsScreen, SettingsScreen, ProfileNavList, PlayerStatsScreen, translations.ts, api fetchLobbySettings/saveLobbySettings.
-3. pnpm typecheck + pnpm --filter @alias/client test — baseline має бути green.
+3. pnpm typecheck + pnpm --filter @movli/client test — baseline має бути green.
 4. Поверни: що вже зроблено в repo vs відкриті пункти аудиту; рекомендований порядок сесій 1–8.
 ```
 
@@ -100,12 +100,12 @@ flowchart LR
 
 ## Сесія 1 — P0: i18n
 
-**Швидко:** `@alias-steward Сесія 1 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 1 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
 ```
-@alias-steward Pre-flight: i18n для ProfileSettingsScreen і LobbySettingsScreen.
+@movli-steward Pre-flight: i18n для ProfileSettingsScreen і LobbySettingsScreen.
 
 Контекст: обидва екрани мають захардкоджені українські рядки; ProfileScreen/PlayerStatsScreen використовують useT().
 
@@ -130,12 +130,12 @@ Acceptance:
 
 ## Сесія 2 — P0: пояснення дефолти vs кімната
 
-**Швидко:** `@alias-steward Сесія 2 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 2 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
 ```
-@alias-steward Pre-flight: пояснити різницю LobbySettingsScreen (дефолти нових кімнат) vs SettingsScreen (live кімната).
+@movli-steward Pre-flight: пояснити різницю LobbySettingsScreen (дефолти нових кімнат) vs SettingsScreen (live кімната).
 
 Задача:
 1. i18n (UA/DE/EN): info banner на LobbySettingsScreen («стандартні налаштування для нових ігор»).
@@ -155,7 +155,7 @@ Acceptance:
 
 ## Сесія 3 — P0: error feedback при save
 
-**Швидко:** `@alias-steward Сесія 3 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 3 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
@@ -181,12 +181,12 @@ Acceptance:
 
 ## Сесія 4 — P1: візуальна уніфікація shell
 
-**Швидко:** `@alias-steward Сесія 4 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 4 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
 ```
-@alias-steward Pre-flight: уніфікувати shell ProfileSettingsScreen і LobbySettingsScreen з PlayerStatsScreen.
+@movli-steward Pre-flight: уніфікувати shell ProfileSettingsScreen і LobbySettingsScreen з PlayerStatsScreen.
 
 Reference:
 - PlayerStatsScreen.tsx — currentTheme.bg + dot pattern
@@ -210,7 +210,7 @@ Acceptance:
 
 ## Сесія 5 — P1: LobbySettings UI polish
 
-**Швидко:** `@alias-steward Сесія 5 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 5 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
@@ -235,12 +235,12 @@ Acceptance:
 
 ## Сесія 6 — P1: Reset lobby defaults
 
-**Швидко:** `@alias-steward Сесія 6 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 6 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
 ```
-@alias-steward Pre-flight: виправити «Скинути» на LobbySettingsScreen.
+@movli-steward Pre-flight: виправити «Скинути» на LobbySettingsScreen.
 
 Проблема:
 - handleReset: saveLobbySettings({}) + setLocal(gameSettings) — не factory/server defaults
@@ -264,7 +264,7 @@ Acceptance:
 
 ## Сесія 7 — P1: ProfileScreen dedup
 
-**Швидко:** `@alias-steward Сесія 7 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Сесія 7 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
@@ -277,7 +277,7 @@ Acceptance:
 
 Acceptance:
 - Auth: stats один раз (картки)
-- pnpm --filter @alias/client test green
+- pnpm --filter @movli/client test green
 ```
 
 **Файли:** `ProfileScreen.tsx`, tests за наявності
@@ -286,12 +286,12 @@ Acceptance:
 
 ## Сесія 8 — P2: shared primitives + dirty guard
 
-**Швидко:** `@architect @alias-steward Сесія 8 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@architect @movli-steward Сесія 8 з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ### Повний промт
 
 ```
-@architect @alias-steward Pre-flight: shared settings UI + unsaved changes guard.
+@architect @movli-steward Pre-flight: shared settings UI + unsaved changes guard.
 
 Part A — components (packages/client/src/components/settings/ або аналог):
 - SettingsToggle (switch + haptic)
@@ -324,7 +324,7 @@ Acceptance:
 2. Email row — truncate/min-w-0 для 375px.
 3. Avatar grid tap targets ≥44px (grid-cols-5 або gap якщо треба).
 
-Файл: ProfileSettingsScreen.tsx | pnpm --filter @alias/client test
+Файл: ProfileSettingsScreen.tsx | pnpm --filter @movli/client test
 ```
 
 ### B — In-lobby SettingsScreen header
@@ -338,10 +338,10 @@ Game logic без змін. pnpm typecheck + client tests.
 
 ### C — Guest lobby defaults (product)
 
-**Швидко:** `@alias-steward Мікро C з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
+**Швидко:** `@movli-steward Мікро C з docs/PROFILE_LOBBY_SETTINGS_IMPROVEMENT_PROMPTS.md`
 
 ```
-@alias-steward: guest access до LobbySettings.
+@movli-steward: guest access до LobbySettings.
 
 Варіанти (обери з pre-flight або запитай):
 A) localStorage defaults без auth
@@ -375,7 +375,7 @@ CHANGELOG [Unreleased] якщо UX змінився.
 
 ```bash
 pnpm typecheck
-pnpm --filter @alias/client test
+pnpm --filter @movli/client test
 # опційно після UI:
 pnpm test:e2e --grep @smoke
 ```
