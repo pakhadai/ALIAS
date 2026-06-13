@@ -31,36 +31,48 @@ export function useTelegramLobbyDeepLink({
   showNotification,
 }: UseTelegramLobbyDeepLinkArgs): void {
   const consumedStartParamRef = useRef<string | null>(null);
+  const inFlightStartParamRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
     if (!startParam) return;
     if (consumedStartParamRef.current === startParam) return;
+    if (inFlightStartParamRef.current === startParam) return;
     if (gameState !== GameState.MENU) return;
     if (!startParam.startsWith(TELEGRAM_LOBBY_START_PREFIX)) return;
 
-    consumedStartParamRef.current = startParam;
     const t = getUiStrings(uiLanguage);
     const roomCode = parseTelegramLobbyRoomCode(startParam);
 
     if (!roomCode) {
+      consumedStartParamRef.current = startParam;
       showNotification(t.tgDeepLinkInvalidCode, 'error');
       return;
     }
 
-    void (async () => {
-      const result = await attemptRoomJoin(roomCode, {
-        checkRoomExists,
-        onJoin: (code) => {
-          setRoomCode(code);
-          setGameState(GameState.ENTER_NAME);
-        },
-      });
+    inFlightStartParamRef.current = startParam;
 
-      if (result === 'not_found') {
-        showNotification(t.tgDeepLinkRoomNotFound.replace('{0}', roomCode), 'error');
-      } else if (result === 'error') {
-        showNotification(t.tgDeepLinkJoinFailed, 'error');
+    void (async () => {
+      try {
+        const result = await attemptRoomJoin(roomCode, {
+          checkRoomExists,
+          onJoin: (code) => {
+            setRoomCode(code);
+            setGameState(GameState.ENTER_NAME);
+          },
+        });
+
+        consumedStartParamRef.current = startParam;
+
+        if (result === 'not_found') {
+          showNotification(t.tgDeepLinkRoomNotFound.replace('{0}', roomCode), 'error');
+        } else if (result === 'error') {
+          showNotification(t.tgDeepLinkJoinFailed, 'error');
+        }
+      } finally {
+        if (inFlightStartParamRef.current === startParam) {
+          inFlightStartParamRef.current = null;
+        }
       }
     })();
   }, [

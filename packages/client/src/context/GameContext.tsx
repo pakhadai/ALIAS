@@ -60,6 +60,8 @@ import {
   shouldEjectToMenuOnSessionEnd,
 } from '../utils/roomErrorMessage';
 import { attemptRoomJoin, isValidRoomCode, roomJoinEnterNamePayload } from '../utils/roomJoin';
+import { useAuthContext } from './AuthContext';
+import { useTelegramLobbyDeepLink } from '../hooks/useTelegramLobbyDeepLink';
 
 const GameStateContext = createContext<GameStateContextValue | undefined>(undefined);
 const GameUIContext = createContext<GameUIContextValue | undefined>(undefined);
@@ -69,6 +71,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(gameReducer, initialState, restoreSession);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const { isAuthenticated } = useAuthContext();
 
   const { play: playSound } = useAudio(state.settings);
 
@@ -1213,6 +1216,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }),
     [sendAction, playSound, showNotification, socketApi, isOnlineRoomReady, notifyRoomNotReady]
   );
+
+  const telegramStartParam =
+    typeof window !== 'undefined'
+      ? (window.Telegram?.WebApp?.initDataUnsafe?.start_param ?? null)
+      : null;
+
+  useTelegramLobbyDeepLink({
+    isAuthenticated,
+    startParam: telegramStartParam,
+    gameState: state.gameState,
+    uiLanguage: state.uiLanguage,
+    setGameState: (gameState) => dispatch({ type: 'SET_STATE', payload: { gameState } }),
+    setRoomCode: (roomCode) =>
+      dispatch({
+        type: 'SET_STATE',
+        payload: {
+          roomCode,
+          gameMode: 'ONLINE',
+          isHost: false,
+          connectionError: null,
+          connectionErrorCode: null,
+        },
+      }),
+    checkRoomExists: socketApi.checkRoomExists,
+    showNotification,
+  });
 
   return (
     <GameStateContext.Provider value={gameStateValue}>

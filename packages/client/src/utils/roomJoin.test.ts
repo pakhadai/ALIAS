@@ -5,6 +5,7 @@ import {
   buildRoomJoinUrl,
   buildTelegramLobbyInviteUrl,
   isValidRoomCode,
+  normalizeTelegramAppLink,
   parseTelegramLobbyRoomCode,
   roomJoinEnterNamePayload,
 } from './roomJoin';
@@ -49,15 +50,35 @@ describe('roomJoin', () => {
   });
 
   describe('buildTelegramLobbyInviteUrl', () => {
-    it('sets startapp on a standard t.me app link', () => {
-      expect(buildTelegramLobbyInviteUrl('https://t.me/movli_bot/app', '11111')).toBe(
-        'https://t.me/movli_bot/app?startapp=lobby_11111'
+    it('sets startapp on a main t.me bot link', () => {
+      expect(buildTelegramLobbyInviteUrl('https://t.me/aliasmaster_bot', '88638')).toBe(
+        'https://t.me/aliasmaster_bot?startapp=lobby_88638'
+      );
+    });
+
+    it('normalizes legacy /app suffix before adding startapp', () => {
+      expect(buildTelegramLobbyInviteUrl('https://t.me/aliasmaster_bot/app', '11111')).toBe(
+        'https://t.me/aliasmaster_bot?startapp=lobby_11111'
       );
     });
 
     it('falls back for non-URL app links', () => {
-      expect(buildTelegramLobbyInviteUrl('t.me/movli_bot/app', '22222')).toBe(
-        't.me/movli_bot/app?startapp=lobby_22222'
+      expect(buildTelegramLobbyInviteUrl('t.me/aliasmaster_bot/app', '22222')).toBe(
+        'https://t.me/aliasmaster_bot?startapp=lobby_22222'
+      );
+    });
+  });
+
+  describe('normalizeTelegramAppLink', () => {
+    it('strips trailing /app from main mini app links', () => {
+      expect(normalizeTelegramAppLink('https://t.me/aliasmaster_bot/app')).toBe(
+        'https://t.me/aliasmaster_bot'
+      );
+    });
+
+    it('keeps named mini app paths', () => {
+      expect(normalizeTelegramAppLink('https://t.me/aliasmaster_bot/play')).toBe(
+        'https://t.me/aliasmaster_bot/play'
       );
     });
   });

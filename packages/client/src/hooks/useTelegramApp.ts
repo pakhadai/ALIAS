@@ -27,6 +27,15 @@ export function hasTelegramInitData(): boolean {
   return typeof initData === 'string' && initData.length > 0;
 }
 
+/**
+ * Menu home — skip the empty TMA title-row band on desktop (native bar is outside WebView)
+ * and in plain browser; mobile TMA keeps the content-safe title row.
+ */
+export function shouldUseMenuCompactHeader(): boolean {
+  if (!hasTelegramInitData()) return true;
+  return isTelegramDesktopPlatform(getTelegramWebApp()?.platform);
+}
+
 function safeTelegramCall(fn: () => void): void {
   try {
     fn();
@@ -135,17 +144,8 @@ export function ensureTelegramExpanded(webApp: TelegramWebApp): void {
 
 let tmaBootstrapDone = false;
 
-/**
- * Synchronous TMA bootstrap — call before `createRoot` (index.tsx) for earliest `ready()` / layout vars.
- * Idempotent; hook `useEffect` re-invokes safely for test-only mounts.
- */
-export function bootstrapTelegramMiniApp(): boolean {
-  const webApp = getTelegramWebApp();
-  if (!webApp || !hasTelegramInitData()) return false;
-  if (tmaBootstrapDone) return true;
-
-  tmaBootstrapDone = true;
-
+/** Sync layout document flags on every bootstrap — platform may settle after the first call. */
+function syncTelegramDocumentFlags(webApp: TelegramWebApp): void {
   const contentTopFloorPx = resolveTelegramContentTopFloorPx(webApp.platform);
   const isDesktop = isTelegramDesktopPlatform(webApp.platform);
 
@@ -159,6 +159,21 @@ export function bootstrapTelegramMiniApp(): boolean {
   } else {
     delete document.documentElement.dataset[TELEGRAM_DESKTOP_DOCUMENT_FLAG];
   }
+}
+
+/**
+ * Synchronous TMA bootstrap — call before `createRoot` (index.tsx) for earliest `ready()` / layout vars.
+ * Idempotent; hook `useEffect` re-invokes safely for test-only mounts.
+ */
+export function bootstrapTelegramMiniApp(): boolean {
+  const webApp = getTelegramWebApp();
+  if (!webApp || !hasTelegramInitData()) return false;
+
+  syncTelegramDocumentFlags(webApp);
+
+  if (tmaBootstrapDone) return true;
+
+  tmaBootstrapDone = true;
 
   safeTelegramCall(() => webApp.ready());
   bootstrapTelegramViewport(webApp);

@@ -26,15 +26,40 @@ export function buildRoomJoinUrl(roomCode: string): string {
   return u.toString();
 }
 
+/**
+ * Normalizes BotFather Mini App base URL to `https://t.me/<bot>?startapp=…`.
+ * Legacy env values like `https://t.me/aliasmaster_bot/app` map to the main app link.
+ */
+export function normalizeTelegramAppLink(appLink: string): string {
+  const trimmed = appLink.trim();
+  if (!trimmed) return trimmed;
+
+  try {
+    const u = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    if (u.hostname === 't.me' || u.hostname === 'telegram.me') {
+      const segments = u.pathname.split('/').filter(Boolean);
+      if (segments.length === 2 && segments[1] === 'app') {
+        u.pathname = `/${segments[0]}`;
+      }
+    }
+    u.search = '';
+    u.hash = '';
+    return u.toString().replace(/\/$/, '');
+  } catch {
+    return trimmed.replace(/\/app\/?(?=[?#]|$)/, '');
+  }
+}
+
 /** Telegram Mini App invite URL (`startapp=lobby_<roomCode>`). */
 export function buildTelegramLobbyInviteUrl(appLink: string, roomCode: string): string {
+  const base = normalizeTelegramAppLink(appLink);
   try {
-    const u = new URL(appLink);
+    const u = new URL(base.startsWith('http') ? base : `https://${base}`);
     u.searchParams.set('startapp', `${TELEGRAM_LOBBY_START_PREFIX}${roomCode}`);
     return u.toString();
   } catch {
-    const sep = appLink.includes('?') ? '&' : '?';
-    return `${appLink}${sep}startapp=${TELEGRAM_LOBBY_START_PREFIX}${roomCode}`;
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}startapp=${TELEGRAM_LOBBY_START_PREFIX}${roomCode}`;
   }
 }
 

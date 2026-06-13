@@ -63,6 +63,23 @@ vi.mock('../hooks/useAudio', () => ({
   useAudio: () => ({ play: vi.fn() }),
 }));
 
+vi.mock('./AuthContext', () => ({
+  useAuthContext: () => ({
+    isAuthenticated: false,
+    authState: { status: 'idle' as const },
+    userId: '',
+    profile: null,
+    refreshProfile: vi.fn(),
+    loginWithGoogle: vi.fn(),
+    loginWithTelegram: vi.fn(),
+    logout: vi.fn(),
+  }),
+}));
+
+vi.mock('../hooks/useTelegramLobbyDeepLink', () => ({
+  useTelegramLobbyDeepLink: vi.fn(),
+}));
+
 vi.mock('../services/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/api')>();
   return {

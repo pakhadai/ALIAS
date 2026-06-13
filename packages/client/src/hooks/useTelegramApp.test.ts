@@ -12,6 +12,7 @@ import {
   hasTelegramInitData,
   isTelegramDesktopPlatform,
   resetTelegramBootstrapForTests,
+  shouldUseMenuCompactHeader,
   useTelegramApp,
 } from './useTelegramApp';
 
@@ -258,5 +259,51 @@ describe('useTelegramApp', () => {
     expect(
       document.documentElement.style.getPropertyValue('--tg-content-safe-area-inset-top')
     ).toBe('28px');
+  });
+
+  it('should use menu compact header in browser and desktop TMA only', () => {
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: '' } },
+    });
+    expect(shouldUseMenuCompactHeader()).toBe(true);
+
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: 'test-init', platform: 'tdesktop' } },
+    });
+    expect(shouldUseMenuCompactHeader()).toBe(true);
+
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: 'test-init', platform: 'ios' } },
+    });
+    expect(shouldUseMenuCompactHeader()).toBe(false);
+  });
+
+  it('should re-sync data-telegram-desktop when bootstrap runs again after platform settles', () => {
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: 'test-init', platform: 'ios' } },
+    });
+
+    bootstrapTelegramMiniApp();
+    expect(document.documentElement.getAttribute('data-telegram-desktop')).toBeNull();
+
+    Object.defineProperty(window, 'Telegram', {
+      configurable: true,
+      writable: true,
+      value: { WebApp: { ...mockWebApp, initData: 'test-init', platform: 'tdesktop' } },
+    });
+
+    bootstrapTelegramMiniApp();
+    expect(document.documentElement.getAttribute('data-telegram-desktop')).toBe('true');
+    expect(document.documentElement.style.getPropertyValue(CSS_VAR_TMA_CONTENT_TOP_FLOOR)).toBe(
+      `${TELEGRAM_DESKTOP_CONTENT_TOP_FLOOR_PX}px`
+    );
   });
 });

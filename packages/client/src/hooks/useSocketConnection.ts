@@ -446,32 +446,54 @@ export function useSocketConnection(options: UseSocketConnectionOptions) {
     [scheduleEmitAfterHandshakeConnect]
   );
 
-  const checkRoomExists = useCallback((code: string): Promise<boolean> => {
-    const socket = socketRef.current;
-    if (!socket) return Promise.resolve(false);
-
-    return new Promise<boolean>((resolve) => {
-      const emitCheck = () => {
-        socket.emit('room:exists', { roomCode: code }, (res) => {
-          resolve(Boolean(res?.exists));
-          // This check is used before joining a room; keep the socket clean/idle.
-          suppressStoredRejoinRef.current = false;
-          if (socket.connected) socket.disconnect();
-        });
+  const waitForSocketRef = useCallback((maxMs = 5000): Promise<AppSocket | null> => {
+    return new Promise((resolve) => {
+      const startedAt = Date.now();
+      const poll = () => {
+        const socket = socketRef.current;
+        if (socket) {
+          resolve(socket);
+          return;
+        }
+        if (Date.now() - startedAt >= maxMs) {
+          resolve(null);
+          return;
+        }
+        window.setTimeout(poll, 16);
       };
-
-      // If already connected, just emit. Otherwise connect for a single roundtrip.
-      if (socket.connected) {
-        emitCheck();
-        return;
-      }
-
-      suppressStoredRejoinRef.current = true;
-      prepareSocketForRoomHandshake(socket);
-      socket.once('connect', emitCheck);
-      socket.connect();
+      poll();
     });
   }, []);
+
+  const checkRoomExists = useCallback(
+    async (code: string): Promise<boolean> => {
+      const socket = socketRef.current ?? (await waitForSocketRef());
+      if (!socket) return false;
+
+      return new Promise<boolean>((resolve) => {
+        const emitCheck = () => {
+          socket.emit('room:exists', { roomCode: code }, (res) => {
+            resolve(Boolean(res?.exists));
+            // This check is used before joining a room; keep the socket clean/idle.
+            suppressStoredRejoinRef.current = false;
+            if (socket.connected) socket.disconnect();
+          });
+        };
+
+        // If already connected, just emit. Otherwise connect for a single roundtrip.
+        if (socket.connected) {
+          emitCheck();
+          return;
+        }
+
+        suppressStoredRejoinRef.current = true;
+        prepareSocketForRoomHandshake(socket);
+        socket.once('connect', emitCheck);
+        socket.connect();
+      });
+    },
+    [waitForSocketRef]
+  );
 
   const leaveRoom = useCallback(() => {
     setIsReconnecting(false);

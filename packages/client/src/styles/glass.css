@@ -360,7 +360,7 @@ html[data-telegram-desktop] .footer-island::before {
 html[data-telegram-desktop] .ui-app-header::after,
 html[data-telegram-desktop] .ui-app-footer::after,
 html[data-telegram-desktop] .footer-island::after {
-  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 92%, transparent);
+  background: var(--ui-elevated, var(--ui-card));
   mask-image: none;
   -webkit-mask-image: none;
 }

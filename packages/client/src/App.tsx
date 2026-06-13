@@ -10,7 +10,6 @@ import { useTelegramApp } from './hooks/useTelegramApp';
 import { useBrowserShellViewport } from './hooks/useBrowserShellViewport';
 import { applyGlassTheme } from './lib/glassTheme';
 import { useAuthContext } from './context/AuthContext';
-import { useTelegramLobbyDeepLink } from './hooks/useTelegramLobbyDeepLink';
 import { useTelegramBackButton } from './hooks/useTelegramBackButton';
 import { AppLoginProvider } from './context/AppLoginContext';
 import { BackNavigationGuardProvider } from './context/BackNavigationGuardContext';
@@ -252,7 +251,7 @@ const TelegramAuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childr
 };
 
 const AppContent = () => {
-  const { isTelegram, startParam } = useTelegramApp();
+  const { isTelegram } = useTelegramApp();
   useBrowserShellViewport();
 
   React.useEffect(() => {
@@ -266,28 +265,7 @@ const AppContent = () => {
     return () => media.removeEventListener('change', sync);
   }, [isTelegram]);
   const { isAuthenticated } = useAuthContext();
-  const {
-    gameState,
-    gameMode,
-    uiLanguage,
-    setGameState,
-    setRoomCode,
-    roomCode,
-    checkRoomExists,
-    showNotification,
-    leaveRoom,
-  } = useGame();
-
-  useTelegramLobbyDeepLink({
-    isAuthenticated,
-    startParam,
-    gameState,
-    uiLanguage,
-    setGameState,
-    setRoomCode,
-    checkRoomExists,
-    showNotification,
-  });
+  const { gameState, gameMode, roomCode, setGameState, leaveRoom } = useGame();
 
   useTelegramBackButton({
     isTelegram,

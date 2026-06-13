@@ -19,7 +19,7 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useT } from '../../hooks/useT';
 import { toggleFullscreen, isStandaloneDisplay, isAppleMobile } from '../../utils/fullscreen';
-import { hasTelegramInitData } from '../../hooks/useTelegramApp';
+import { hasTelegramInitData, shouldUseMenuCompactHeader } from '../../hooks/useTelegramApp';
 import { RulesModal } from './RulesModal';
 import { HEADER_ROW_MIN_PX, HOME_CARD_TOP_GAP_PX } from '../../constants/tmaLayoutConstants';
 import { typographyClass, brandCaptionClass, systemBannerClass } from '../../constants/typography';
@@ -137,7 +137,7 @@ export const MenuScreen = () => {
   const frozenChromeClass = isEnterName ? 'pointer-events-none select-none' : undefined;
   const menuHeaderClass = [
     frozenChromeClass,
-    !hasTelegramInitData() ? 'ui-app-header--menu-compact' : undefined,
+    shouldUseMenuCompactHeader() ? 'ui-app-header--menu-compact' : undefined,
   ]
     .filter(Boolean)
     .join(' ');

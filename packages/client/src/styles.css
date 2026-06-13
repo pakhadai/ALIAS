@@ -453,6 +453,14 @@ html[data-telegram-desktop] {
   --app-page-header-height: max(var(--tma-content-safe-top, 0px), 44px);
 }
 
+/** Desktop TMA — title row uses SDK inset only (never 104px CSS fallback). */
+html[data-telegram-desktop] .ui-app-header__title-row {
+  --ui-app-header-title-row-chrome: max(
+    var(--tma-content-safe-top, 0px),
+    var(--ui-app-header-control-row)
+  );
+}
+
 /* Frosted glass panel — lobby start CTA, AppHeader, bottom sheets inset pattern */
 .ui-glass-panel,
 .lobby-start-glass {
@@ -1383,10 +1391,14 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   cursor: grabbing;
 }
 
-/* ── Desktop TMA — modal panel + top bar (backdrop uses same light scrim) ── */
+/* ── Desktop TMA — modal panel + top bar (backdrop-filter unreliable in TG Desktop WebView) ── */
+
+html[data-telegram-desktop] .bottom-sheet-backdrop::before {
+  background: color-mix(in srgb, var(--ui-fg) 48%, transparent);
+}
 
 html[data-telegram-desktop] .bottom-sheet-panel {
-  background: color-mix(in srgb, var(--ui-card) 96%, var(--ui-elevated) 4%);
+  background: var(--ui-card);
 }
 
 html[data-telegram-desktop] .bottom-sheet-panel::before {
@@ -1394,7 +1406,7 @@ html[data-telegram-desktop] .bottom-sheet-panel::before {
 }
 
 html[data-telegram-desktop] .bottom-sheet-panel::after {
-  background: color-mix(in srgb, var(--ui-card) 96%, var(--ui-elevated) 4%);
+  background: var(--ui-card);
   mask-image: none;
   -webkit-mask-image: none;
 }
@@ -1404,9 +1416,21 @@ html[data-telegram-desktop] .bottom-sheet-top-bar::before {
 }
 
 html[data-telegram-desktop] .bottom-sheet-top-bar::after {
-  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 92%, transparent);
+  background: var(--ui-elevated, var(--ui-card));
   mask-image: none;
   -webkit-mask-image: none;
+}
+
+html[data-telegram-desktop] .ui-glass-panel,
+html[data-telegram-desktop] .lobby-start-glass {
+  background: var(--ui-card);
+}
+
+html[data-telegram-desktop] .ui-glass-panel::before,
+html[data-telegram-desktop] .lobby-start-glass::before,
+html[data-telegram-desktop] .ui-glass-panel::after,
+html[data-telegram-desktop] .lobby-start-glass::after {
+  display: none;
 }
 
 /** Lobby play-format bar — height + lift (clip-safe inside scroll containers). */
