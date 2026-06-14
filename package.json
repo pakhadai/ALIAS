@@ -15,6 +15,7 @@
     "build": "turbo run build",
     "build:pnpm": "pnpm run build:shared && pnpm --parallel --filter @movli/client --filter @movli/server run build",
     "build:shared": "pnpm --filter @movli/shared build",
+    "gen:mock-translations": "node scripts/generate-mock-translation-words.mjs && pnpm build:shared",
     "typecheck": "turbo run typecheck",
     "typecheck:pnpm": "pnpm -r --filter @movli/shared --filter @movli/client --filter @movli/server run typecheck",
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check",

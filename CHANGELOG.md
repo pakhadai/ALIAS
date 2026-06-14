@@ -31,7 +31,11 @@
 ## [Unreleased]
 
 ### Fixed
-- Translation mode flip: target answers resolved via shared `conceptKey` across language packs (not source `conceptId`); MOCK fallback builds `source|target` pairs so tap-to-flip works when DB pairs are missing
+- Home menu «Створити гру» CTA: snake glow no longer ghost-offset — `slideUp` animation ends with `transform: none` (same as `pageIn`); horizontal bleed padding on menu CTA stack (`tailwind.config.ts`, `MenuScreen.tsx`, `styles.css`)
+- Bottom sheet drag: disable `backdrop-filter` on panel/header while `data-dragging` — fixes smeared modal title during swipe-to-dismiss on iOS/TMA (`styles.css`)
+- Word seed: legacy `travel` / `science` / `movies` JSON maps seed again with stable `conceptKey` (`{slug}-{index}`) so Translation mode pairs UA↔EN↔DE correctly from DB
+- Translation deck build: default `targetLanguage` resolved server-side and offline when unset (UA→DE, EN→UA, etc.) instead of skipping pair assembly
+- Translation MOCK fallback: `MOCK_TRANSLATION_WORDS` generated from `prisma/data/*.json` (aligned UA/EN/DE); replaces misaligned index pairing in `MOCK_WORDS` (`scripts/generate-mock-translation-words.mjs`)
 - Translation mode: flip card back shows target-language answer (`GameTask.answer`); deck pairs built from DB concept translations (`WordService`); lobby target-language picker excludes deck language; pack language chip updates deck language (not target)
 - Home menu hero layout: spacer zone collapses first on short viewports, then tagline, logo mark last — prevents logo sliding under fixed `AppHeader` (`MenuScreen`, `styles.css`)
 

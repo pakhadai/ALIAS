@@ -1,26 +1,18 @@
 import type { GameSettings, GameTask } from '@movli/shared';
-import { Category, GameMode, decodeWordEntry } from '@movli/shared';
-import { MOCK_WORDS } from '../constants';
+import {
+  Category,
+  GameMode,
+  decodeWordEntry,
+  buildMockTranslationDeckEntries,
+  resolveMockTargetLanguage,
+} from '@movli/shared';
 
 /** Index-aligned MOCK word pairs for offline / fallback translation decks. */
 export function buildOfflineTranslationDeck(general: GameSettings['general']): string[] {
-  const srcLang = general.language;
-  const targetLang = general.targetLanguage;
-  if (!targetLang || targetLang === srcLang) return [];
-
+  const targetLang = resolveMockTargetLanguage(general.language, general.targetLanguage);
+  if (!targetLang) return [];
   const categories = general.categories.filter((cat) => cat !== Category.CUSTOM);
-  const entries: string[] = [];
-  for (const cat of categories) {
-    const srcList = MOCK_WORDS[srcLang]?.[cat] ?? [];
-    const tgtList = MOCK_WORDS[targetLang]?.[cat] ?? [];
-    const count = Math.min(srcList.length, tgtList.length);
-    for (let i = 0; i < count; i++) {
-      const source = srcList[i]?.trim();
-      const target = tgtList[i]?.trim();
-      if (source && target) entries.push(`${source}|${target}`);
-    }
-  }
-  return entries;
+  return buildMockTranslationDeckEntries(general.language, targetLang, categories);
 }
 
 /**

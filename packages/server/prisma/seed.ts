@@ -67,6 +67,16 @@ function isConceptArray(data: unknown): data is ConceptSeed[] {
   return typeof first === 'object' && first !== null && 'translations' in first;
 }
 
+function isLegacyWordMap(data: unknown): data is Partial<Record<string, string[]>> {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const record = data as Record<string, unknown>;
+  return SUPPORTED_LANGS.some((lang) => Array.isArray(record[lang]));
+}
+
+function pickLegacyWords(data: Partial<Record<string, string[]>>, lang: SupportedLang): string[] {
+  return data[lang] ?? data[lang.toLowerCase()] ?? [];
+}
+
 function pickTranslation(
   translations: Partial<Record<string, TranslationBlock>>,
   lang: SupportedLang
@@ -217,6 +227,34 @@ async function seedRichLanguagePack(
   return rows.length;
 }
 
+/** Legacy Format B: parallel word lists per language — linked by stable index-based conceptKey. */
+async function seedLegacyLanguagePack(
+  wordPackId: string,
+  lang: SupportedLang,
+  words: string[],
+  categorySlug: string
+): Promise<number> {
+  const language = lang as Language;
+  await prisma.wordConcept.deleteMany({ where: { packId: wordPackId } });
+
+  let count = 0;
+  for (let index = 0; index < words.length; index++) {
+    const word = words[index]?.trim();
+    if (!word) continue;
+    await prisma.wordConcept.create({
+      data: {
+        packId: wordPackId,
+        conceptKey: `${categorySlug}-${index}`,
+        translations: {
+          create: [{ language, word }],
+        },
+      },
+    });
+    count++;
+  }
+  return count;
+}
+
 // ─── Main seed function ────────────────────────────────────────────────
 
 async function main() {
@@ -227,11 +265,22 @@ async function main() {
       const slug = `${lang.toLowerCase()}-${asset.slug}`;
       const name = packName(lang, asset.category);
 
-      if (!isConceptArray(asset.data)) {
-        throw new Error(`Invalid word data for category "${asset.slug}": expected concept[]`);
-      }
       const wp = await upsertWordPack(slug, name, lang, asset.category, 0);
-      const count = await seedRichLanguagePack(wp.id, lang, asset.data);
+      let count = 0;
+      if (isConceptArray(asset.data)) {
+        count = await seedRichLanguagePack(wp.id, lang, asset.data);
+      } else if (isLegacyWordMap(asset.data)) {
+        count = await seedLegacyLanguagePack(
+          wp.id,
+          lang,
+          pickLegacyWords(asset.data, lang),
+          asset.slug
+        );
+      } else {
+        throw new Error(
+          `Invalid word data for category "${asset.slug}": expected concept[] or legacy { UA, EN, DE } map`
+        );
+      }
       await prisma.wordPack.update({
         where: { id: wp.id },
         data: { wordCount: count },

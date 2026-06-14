@@ -248,11 +248,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let deck = [...wordDeck];
     if (deck.length === 0) {
       let pool: string[] = [];
-      if (
-        mode.gameMode === GameMode.TRANSLATION &&
-        general.targetLanguage &&
-        general.targetLanguage !== general.language
-      ) {
+      if (mode.gameMode === GameMode.TRANSLATION && general.language) {
         pool = buildOfflineTranslationDeck(general);
       }
       if (pool.length === 0) {

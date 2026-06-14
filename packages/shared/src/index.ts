@@ -7,3 +7,4 @@ export * from './utils';
 export * from './events';
 export * from './lobbyReadiness';
 export * from './wordEntry';
+export * from './mockTranslationWords';

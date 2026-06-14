@@ -1331,6 +1331,26 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   transition: none;
 }
 
+/**
+ * Drag transform + backdrop-filter = smeared header/text on iOS/TMA WebView.
+ * Swap frosted glass for opaque chrome for the gesture lifetime only.
+ */
+.bottom-sheet-panel[data-dragging='true']::before {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.bottom-sheet-panel[data-dragging='true'] .bottom-sheet-top-bar::before {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.bottom-sheet-panel[data-dragging='true'] .bottom-sheet-top-bar::after {
+  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 94%, transparent);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 .bottom-sheet-panel--sheet {
   border-radius: var(--ui-sheet-radius) var(--ui-sheet-radius) 0 0;
   height: auto;

@@ -1,4 +1,11 @@
-import { Category, MOCK_WORDS, shuffleArray, encodeWordEntry } from '@movli/shared';
+import {
+  Category,
+  MOCK_WORDS,
+  shuffleArray,
+  encodeWordEntry,
+  buildMockTranslationDeckEntries,
+  resolveMockTargetLanguage,
+} from '@movli/shared';
 // Absolute minimum fallback — shown only if the DB is down AND MOCK_WORDS is empty
 const EMERGENCY_WORDS = ['Яблуко', 'Банан', 'Стіл', 'Кіт', 'Вода', 'Сонце', 'Книга', 'Місяць'];
 import type { GameSettings } from '@movli/shared';
@@ -204,21 +211,9 @@ export class WordService {
 
   private buildMockTranslationDeck(settings: GameSettings, categories: Category[]): string[] {
     const srcLang = settings.general.language;
-    const targetLang = settings.general.targetLanguage;
-    if (!targetLang || targetLang === srcLang) return [];
-
-    const entries: string[] = [];
-    for (const cat of categories) {
-      const srcList = MOCK_WORDS[srcLang]?.[cat] ?? [];
-      const tgtList = MOCK_WORDS[targetLang]?.[cat] ?? [];
-      const count = Math.min(srcList.length, tgtList.length);
-      for (let i = 0; i < count; i++) {
-        const source = srcList[i]?.trim();
-        const target = tgtList[i]?.trim();
-        if (source && target) entries.push(`${source}|${target}`);
-      }
-    }
-    return entries;
+    const targetLang = resolveMockTargetLanguage(srcLang, settings.general.targetLanguage);
+    if (!targetLang) return [];
+    return buildMockTranslationDeckEntries(srcLang, targetLang, categories);
   }
 
   private async fetchTargetTranslations(
@@ -226,7 +221,7 @@ export class WordService {
     rows: CrossLangSourceRow[]
   ): Promise<Map<string, string>> {
     const srcLang = settings.general.language;
-    const targetLang = settings.general.targetLanguage;
+    const targetLang = resolveMockTargetLanguage(srcLang, settings.general.targetLanguage);
     const needTranslation =
       !!targetLang &&
       targetLang !== srcLang &&

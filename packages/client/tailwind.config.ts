@@ -66,7 +66,8 @@ export default {
         },
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(20px) scale(0.95)' },
-          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          /* `none` (not translateY(0) scale(1)) — forwards fill must not isolate filters on CTA glow */
+          '100%': { opacity: '1', transform: 'none' },
         },
         pageIn: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },

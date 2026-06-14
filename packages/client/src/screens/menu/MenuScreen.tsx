@@ -223,7 +223,7 @@ export const MenuScreen = () => {
             </div>
           </div>
 
-          <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up">
+          <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up px-3">
             <AccentFooterCta
               themeButtonClass={currentTheme.button}
               onClick={() => void handleCreateRoom()}
