@@ -65,6 +65,15 @@ function quizContextRoom(
 }
 
 describe('Game mode handlers', () => {
+  test('ClassicModeHandler decodes JSON deck entry with hint', () => {
+    const h = new ClassicModeHandler();
+    const encoded = JSON.stringify({ v: 1, word: 'Кіт', hint: 'Тварина' });
+    const deck = [encoded];
+    const t = h.generateTask(deck, classicDeckSettings());
+    expect(t.prompt).toBe('Кіт');
+    expect(t.hint).toBe('Тварина');
+  });
+
   test('ClassicModeHandler generates a task from deck (pop)', () => {
     const h = new ClassicModeHandler();
     const deck = ['a', 'b', 'c'];

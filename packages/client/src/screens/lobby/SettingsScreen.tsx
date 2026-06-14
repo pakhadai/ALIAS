@@ -22,7 +22,7 @@ import { Button } from '../../components/Button';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { CustomDeckModal } from '../../components/CustomDeck/CustomDeckModal';
-import { GameState, Language, Category, GameMode } from '../../types';
+import { GameState, Category, GameMode } from '../../types';
 import type { GameSettings } from '../../types';
 import {
   CategoryChipGrid,
@@ -30,6 +30,8 @@ import {
   getCategoryLabel,
   LanguageChipRow,
   LOBBY_LANG_FLAG,
+  pickDefaultTargetLanguage,
+  targetLanguagesForSource,
   SettingsToggle,
 } from '../../components/Settings';
 import { useGame } from '../../context/GameContext';
@@ -148,6 +150,13 @@ export const SettingsScreen = () => {
       gameState !== GameState.SETTINGS
     )
       return;
+    if (patch.gameMode === GameMode.TRANSLATION) {
+      const src = settings.general.language;
+      const cur = settings.general.targetLanguage;
+      if (!cur || cur === src) {
+        updateGeneral('targetLanguage', pickDefaultTargetLanguage(src));
+      }
+    }
     sendAction({
       action: 'UPDATE_SETTINGS',
       data: { mode: patch as unknown as GameSettings['mode'] },
@@ -179,8 +188,19 @@ export const SettingsScreen = () => {
     updateGeneral('selectedPackIds', next);
   };
 
-  const packLanguage = (settings.general.targetLanguage ?? settings.general.language) as Language;
-  const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === packLanguage);
+  const deckLanguage = settings.general.language;
+  const translationTargetLanguages = useMemo(
+    () => targetLanguagesForSource(deckLanguage),
+    [deckLanguage]
+  );
+  const resolvedTargetLanguage = useMemo(() => {
+    const current = settings.general.targetLanguage;
+    if (current && current !== deckLanguage && translationTargetLanguages.includes(current)) {
+      return current;
+    }
+    return pickDefaultTargetLanguage(deckLanguage);
+  }, [settings.general.targetLanguage, deckLanguage, translationTargetLanguages]);
+  const filteredOwnedPacks = ownedPacks.filter((p) => String(p.language) === deckLanguage);
 
   const modeIcon = useMemo(() => {
     const m = settings.mode.gameMode ?? GameMode.CLASSIC;
@@ -376,7 +396,8 @@ export const SettingsScreen = () => {
                   {t.targetAnswerLanguage ?? 'Мова відповіді (підказка)'}
                 </p>
                 <LanguageChipRow
-                  value={settings.general.targetLanguage ?? Language.EN}
+                  value={resolvedTargetLanguage}
+                  languages={translationTargetLanguages}
                   onChange={(l) => updateGeneral('targetLanguage', l)}
                   disabled={!isHost}
                 />
@@ -384,10 +405,10 @@ export const SettingsScreen = () => {
                   className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}
                 >
                   {t.translationLobbyFlowHint
-                    .replace('{0}', LOBBY_LANG_FLAG[settings.general.language])
-                    .replace('{1}', settings.general.language)
-                    .replace('{2}', LOBBY_LANG_FLAG[settings.general.targetLanguage ?? Language.EN])
-                    .replace('{3}', settings.general.targetLanguage ?? Language.EN)}
+                    .replace('{0}', LOBBY_LANG_FLAG[deckLanguage])
+                    .replace('{1}', deckLanguage)
+                    .replace('{2}', LOBBY_LANG_FLAG[resolvedTargetLanguage])
+                    .replace('{3}', resolvedTargetLanguage)}
                 </p>
               </div>
             )}
@@ -454,8 +475,17 @@ export const SettingsScreen = () => {
                         {t.packLanguage ?? 'Pack language'}
                       </p>
                       <LanguageChipRow
-                        value={packLanguage}
-                        onChange={(l) => updateGeneral('targetLanguage', l)}
+                        value={deckLanguage}
+                        onChange={(l) => {
+                          updateGeneral('language', l);
+                          if (
+                            (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION &&
+                            (settings.general.targetLanguage === l ||
+                              !settings.general.targetLanguage)
+                          ) {
+                            updateGeneral('targetLanguage', pickDefaultTargetLanguage(l));
+                          }
+                        }}
                         size="compact"
                         disabled={!isHost}
                       />
@@ -599,6 +629,100 @@ export const SettingsScreen = () => {
                         })}
                       </div>
                     </div>
+                  );
+                }
+
+                if (mode.gameMode === GameMode.HARDCORE) {
+                  const variant = mode.hardcoreVariant ?? 'SKIP_ENDS_TURN';
+                  return (
+                    <>
+                      <div className="space-y-3 py-4 first:pt-0">
+                        <p className={`${labelSectionClass} text-ui-fg`}>
+                          {t.lobbyHardcoreVariantTitle ?? 'Hardcore variant'}
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(
+                            [
+                              ['TABOO', t.lobbyHardcoreVariantTaboo],
+                              ['SKIP_ENDS_TURN', t.lobbyHardcoreVariantSkip],
+                              ['MAX', t.lobbyHardcoreVariantMax],
+                            ] as const
+                          ).map(([id, label]) => {
+                            const active = variant === id;
+                            return (
+                              <button
+                                key={id}
+                                type="button"
+                                onClick={() => updateMode({ hardcoreVariant: id })}
+                                className={`py-3 px-1 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
+                                  active
+                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
+                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="py-4">
+                        <SectionHeader
+                          title={t.lobbyRulesSectionBasics}
+                          open={rulesOpen.basics}
+                          onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
+                        />
+                        {rulesOpen.basics && (
+                          <div className="space-y-3 pt-1">
+                            <p className={`${labelSectionClass} text-ui-fg`}>{t.roundTime}</p>
+                            <div className="flex items-stretch gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.max(30, localRoundTime - 10);
+                                  setLocalRoundTime(next);
+                                  lastHapticRoundTime.current = next;
+                                  vibrate(HAPTIC.nav);
+                                  updateMode({ classicRoundTime: next });
+                                }}
+                                disabled={!isHost}
+                                className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                                aria-label={t.roundTime + ' −10'}
+                              >
+                                −
+                              </button>
+                              <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
+                                <span
+                                  className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
+                                >
+                                  {localRoundTime}
+                                </span>
+                                <span
+                                  className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
+                                >
+                                  s
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = Math.min(180, localRoundTime + 10);
+                                  setLocalRoundTime(next);
+                                  lastHapticRoundTime.current = next;
+                                  vibrate(HAPTIC.nav);
+                                  updateMode({ classicRoundTime: next });
+                                }}
+                                disabled={!isHost}
+                                className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
+                                aria-label={t.roundTime + ' +10'}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
                   );
                 }
 

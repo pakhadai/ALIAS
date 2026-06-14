@@ -92,7 +92,7 @@ export function LobbyAvatarStrip(props: {
                 {p.isHost && (
                   <span
                     className="pointer-events-none absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full bg-ui-surface border border-ui-border"
-                    aria-label="Host"
+                    aria-label={t.roomOrganizer}
                   >
                     <Crown
                       size={10}

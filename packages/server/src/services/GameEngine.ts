@@ -641,6 +641,9 @@ export class GameEngine {
                 classicRoundTime:
                   patch.classicRoundTime ??
                   (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+                hardcoreVariant:
+                  patch.hardcoreVariant ??
+                  (prev.gameMode === GameMode.HARDCORE ? prev.hardcoreVariant : 'SKIP_ENDS_TURN'),
               };
             }
             case GameMode.CLASSIC:

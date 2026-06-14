@@ -215,7 +215,10 @@ export function applyOfflineGameAction(
           type: 'SET_STATE',
           payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false },
         });
-      } else if (stateRef.current.settings.mode.gameMode === GameMode.HARDCORE) {
+      } else if (
+        stateRef.current.settings.mode.gameMode === GameMode.HARDCORE &&
+        stateRef.current.settings.mode.hardcoreVariant !== 'TABOO'
+      ) {
         dispatch({
           type: 'SET_STATE',
           payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false },
@@ -537,6 +540,11 @@ export function applyOfflineGameAction(
                           classicRoundTime:
                             patch.classicRoundTime ??
                             (prev.gameMode !== GameMode.IMPOSTER ? prev.classicRoundTime : 60),
+                          hardcoreVariant:
+                            patch.hardcoreVariant ??
+                            (prev.gameMode === GameMode.HARDCORE
+                              ? prev.hardcoreVariant
+                              : 'SKIP_ENDS_TURN'),
                         };
                       case GameMode.CLASSIC:
                       case GameMode.TRANSLATION:

@@ -1,12 +1,12 @@
-import { v4 as uuidv4 } from 'uuid';
 import type { GameActionPayload, GameSettings, GameTask } from '@movli/shared';
 import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
 import { reduceExplainerAction } from './explainerModeActions';
+import { taskFromDeckEntry } from './deckEntryTask';
 
 export class ClassicModeHandler implements IGameModeHandler {
   generateTask(deck: string[], _settings: GameSettings): GameTask {
-    const word = deck.pop() ?? '';
-    return { id: uuidv4(), prompt: word };
+    const raw = deck.pop() ?? '';
+    return taskFromDeckEntry(raw);
   }
 
   handleAction(

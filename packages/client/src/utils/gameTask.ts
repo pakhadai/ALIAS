@@ -1,5 +1,27 @@
-import type { GameTask } from '@movli/shared';
-import { GameMode } from '@movli/shared';
+import type { GameSettings, GameTask } from '@movli/shared';
+import { Category, GameMode, decodeWordEntry } from '@movli/shared';
+import { MOCK_WORDS } from '../constants';
+
+/** Index-aligned MOCK word pairs for offline / fallback translation decks. */
+export function buildOfflineTranslationDeck(general: GameSettings['general']): string[] {
+  const srcLang = general.language;
+  const targetLang = general.targetLanguage;
+  if (!targetLang || targetLang === srcLang) return [];
+
+  const categories = general.categories.filter((cat) => cat !== Category.CUSTOM);
+  const entries: string[] = [];
+  for (const cat of categories) {
+    const srcList = MOCK_WORDS[srcLang]?.[cat] ?? [];
+    const tgtList = MOCK_WORDS[targetLang]?.[cat] ?? [];
+    const count = Math.min(srcList.length, tgtList.length);
+    for (let i = 0; i < count; i++) {
+      const source = srcList[i]?.trim();
+      const target = tgtList[i]?.trim();
+      if (source && target) entries.push(`${source}|${target}`);
+    }
+  }
+  return entries;
+}
 
 /**
  * Build a GameTask from a raw word for offline (pass-and-play) mode.
@@ -12,7 +34,15 @@ export function buildOfflineTask(
   taskId: string
 ): GameTask {
   const m = mode ?? GameMode.CLASSIC;
+  const decoded = decodeWordEntry(rawWord);
+
   if (m === GameMode.TRANSLATION) {
+    if (decoded) {
+      const task: GameTask = { id: taskId, prompt: decoded.word };
+      if (decoded.hint) task.hint = decoded.hint;
+      if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
+      return task;
+    }
     const parts = rawWord.split('|');
     return {
       id: taskId,
@@ -20,6 +50,7 @@ export function buildOfflineTask(
       answer: parts[1]?.trim(),
     };
   }
+
   if (m === GameMode.QUIZ) {
     const correct = rawWord;
     const shuffled = [...remainingDeck].sort(() => Math.random() - 0.5);
@@ -30,5 +61,32 @@ export function buildOfflineTask(
     const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
     return { id: taskId, prompt: correct, answer: correct, options };
   }
+
+  if (decoded) {
+    const task: GameTask = { id: taskId, prompt: decoded.word };
+    if (decoded.hint) task.hint = decoded.hint;
+    if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
+    return task;
+  }
+
   return { id: taskId, prompt: rawWord };
+}
+
+/** Whether skip ends the explainer turn in offline hardcore mode. */
+export function hardcoreSkipEndsTurn(
+  mode: GameMode | undefined,
+  hardcoreVariant: 'TABOO' | 'SKIP_ENDS_TURN' | 'MAX' | undefined
+): boolean {
+  if (mode !== GameMode.HARDCORE) return false;
+  return (hardcoreVariant ?? 'SKIP_ENDS_TURN') !== 'TABOO';
+}
+
+/** Show taboo chips for hardcore TABOO / MAX variants. */
+export function hardcoreShowsTaboo(
+  mode: GameMode | undefined,
+  hardcoreVariant: 'TABOO' | 'SKIP_ENDS_TURN' | 'MAX' | undefined
+): boolean {
+  if (mode !== GameMode.HARDCORE) return false;
+  const v = hardcoreVariant ?? 'SKIP_ENDS_TURN';
+  return v === 'TABOO' || v === 'MAX';
 }

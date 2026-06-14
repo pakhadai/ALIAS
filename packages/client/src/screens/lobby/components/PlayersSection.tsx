@@ -75,7 +75,7 @@ export function PlayersSection(props: {
                     <Crown
                       size={14}
                       className="text-[color-mix(in_srgb,var(--ui-accent)_65%,var(--ui-warning)_35%)]"
-                      aria-label="Host"
+                      aria-label={t.roomOrganizer}
                     />
                   )}
                 </span>

@@ -342,10 +342,9 @@ export const MilestoneNotification: React.FC<MilestoneNotificationProps> = ({
 
   return (
     <ModalPortal>
-      <div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${zIndex.milestone} w-full px-10 text-center animate-pop-in`}
-      >
-        <div className="bg-ui-card border border-ui-border p-16 rounded-[4rem] shadow-2xl backdrop-blur-3xl ring-1 ring-ui-border">
+      <div className="ui-milestone-root animate-pop-in" role="status" aria-live="polite">
+        <div className="ui-milestone-overlay" aria-hidden="true" />
+        <div className="ui-milestone-card">
           <Star
             className="w-16 h-16 text-ui-accent mx-auto mb-8 animate-pulse"
             fill="currentColor"

@@ -132,6 +132,14 @@ describe('MenuScreen buttons', () => {
     expect(container.querySelector('.home-word-rain')).not.toBeNull();
   });
 
+  it('should order home hero flex zones so spacer shrinks before tagline and logo', () => {
+    render(<MenuScreen />);
+
+    expect(screen.getByTestId('menu-home-hero-spacer')).toHaveClass('menu-home-hero__spacer');
+    expect(screen.getByTestId('menu-home-hero-tagline')).toHaveClass('menu-home-hero__tagline');
+    expect(screen.getByTestId('menu-home-hero-logo')).toHaveClass('menu-home-hero__logo');
+  });
+
   it('should navigate to profile when profile button is clicked', async () => {
     const user = userEvent.setup();
     render(<MenuScreen />);

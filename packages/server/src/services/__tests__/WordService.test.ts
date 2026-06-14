@@ -173,8 +173,35 @@ describe('buildDeck (with Prisma)', () => {
         where: expect.objectContaining({
           concept: expect.objectContaining({ pack: expect.objectContaining({ isDefault: true }) }),
         }),
+        select: { word: true, hint: true, tabooWords: true },
       })
     );
+  });
+
+  it('encodes DB rows with hint or tabooWords as JSON v:1', async () => {
+    const mockPrisma = {
+      wordTranslation: {
+        findMany: vi.fn().mockResolvedValue([
+          { word: 'Кіт', hint: 'Тварина', tabooWords: ['мяу'] },
+          { word: 'Стіл', hint: null, tabooWords: [] },
+        ]),
+      },
+      customDeck: {
+        findUnique: vi.fn().mockResolvedValue(null),
+      },
+    } as unknown as PrismaClient;
+
+    service.setPrisma(mockPrisma);
+    const deck = await service.buildDeck(baseSettings);
+    expect(deck).toContain('Стіл');
+    const encoded = deck.find((e) => e.startsWith('{'));
+    expect(encoded).toBeDefined();
+    expect(JSON.parse(encoded!)).toMatchObject({
+      v: 1,
+      word: 'Кіт',
+      hint: 'Тварина',
+      tabooWords: ['мяу'],
+    });
   });
 
   it('falls back to MOCK_WORDS when DB returns empty', async () => {
@@ -311,6 +338,10 @@ describe('buildDeck (with Prisma)', () => {
         synonyms: [],
         antonyms: [],
         tabooWords: [],
+        concept: {
+          conceptKey: 'food-apple',
+          pack: { category: 'General', slug: 'ua-general' },
+        },
       },
     ];
     const mockPrisma = {
@@ -321,7 +352,12 @@ describe('buildDeck (with Prisma)', () => {
           // main query (UA)
           .mockResolvedValueOnce(quizRows)
           // target translation query (EN)
-          .mockResolvedValueOnce([{ conceptId: 'c1', word: 'Яблуко' }]),
+          .mockResolvedValueOnce([
+            {
+              word: 'Яблуко',
+              concept: { conceptKey: 'food-apple', pack: { slug: 'en-general' } },
+            },
+          ]),
       },
     } as unknown as PrismaClient;
 
@@ -352,6 +388,89 @@ describe('buildDeck (with Prisma)', () => {
       (mockPrisma.wordTranslation.findMany as unknown as { mock: { calls: unknown[][] } }).mock
         .calls.length
     ).toBe(2);
+  });
+
+  it('TRANSLATION: builds source|target pipe entries via conceptKey across language packs', async () => {
+    const translationRows = [
+      {
+        word: 'Кіт',
+        conceptId: 'src-c1',
+        concept: {
+          conceptKey: 'general-cat',
+          pack: { category: 'General', slug: 'ua-general' },
+        },
+      },
+      {
+        word: 'Сонце',
+        conceptId: 'src-c2',
+        concept: {
+          conceptKey: 'general-sun',
+          pack: { category: 'General', slug: 'ua-general' },
+        },
+      },
+    ];
+    const mockPrisma = {
+      customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
+      wordTranslation: {
+        findMany: vi
+          .fn()
+          .mockResolvedValueOnce(translationRows)
+          .mockResolvedValueOnce([
+            {
+              word: 'Katze',
+              concept: { conceptKey: 'general-cat', pack: { slug: 'de-general' } },
+            },
+            {
+              word: 'Sonne',
+              concept: { conceptKey: 'general-sun', pack: { slug: 'de-general' } },
+            },
+          ]),
+      },
+    } as unknown as PrismaClient;
+
+    service.setPrisma(mockPrisma);
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, targetLanguage: Language.DE },
+      mode: { gameMode: GameMode.TRANSLATION, classicRoundTime: 60 },
+    };
+
+    const deck = await service.buildDeck(settings);
+    expect(deck).toContain('Кіт|Katze');
+    expect(deck).toContain('Сонце|Sonne');
+    expect(deck.every((entry) => entry.includes('|'))).toBe(true);
+  });
+
+  it('TRANSLATION: skips concepts without target translation and falls back to MOCK pairs', async () => {
+    const mockPrisma = {
+      customDeck: { findUnique: vi.fn().mockResolvedValue(null) },
+      wordTranslation: {
+        findMany: vi
+          .fn()
+          .mockResolvedValueOnce([
+            {
+              word: 'Кіт',
+              conceptId: 'src-c1',
+              concept: {
+                conceptKey: 'general-cat',
+                pack: { category: 'General', slug: 'ua-general' },
+              },
+            },
+          ])
+          .mockResolvedValueOnce([]),
+      },
+    } as unknown as PrismaClient;
+
+    service.setPrisma(mockPrisma);
+    const settings: GameSettings = {
+      ...baseSettings,
+      general: { ...baseSettings.general, targetLanguage: Language.DE },
+      mode: { gameMode: GameMode.TRANSLATION, classicRoundTime: 60 },
+    };
+
+    const deck = await service.buildDeck(settings);
+    expect(deck.some((entry) => entry.includes('|'))).toBe(true);
+    expect(deck.length).toBeGreaterThan(0);
   });
 });
 

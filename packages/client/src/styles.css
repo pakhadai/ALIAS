@@ -772,6 +772,22 @@ button:active .ui-glass-icon-btn {
   min-width: 44px;
 }
 
+/**
+ * Menu home hero — vertical flex collapse order on short viewports:
+ * spacer (connection-error slot) → tagline → logo mark last (stays clear of fixed header).
+ */
+.menu-home-hero__logo {
+  flex: 1 0 0%;
+}
+
+.menu-home-hero__tagline {
+  flex: 1 1 0%;
+}
+
+.menu-home-hero__spacer {
+  flex: 1 3 0%;
+}
+
 /** Menu profile — guest login dot (hardcoded fill; avoids icon-head overlap + token wash-out in glass chrome) */
 .menu-profile-guest-badge {
   position: absolute;
@@ -840,6 +856,63 @@ footer.footer-island.ui-app-footer {
 
 .ui-toast-glass--success {
   border-color: color-mix(in srgb, var(--ui-success) 42%, var(--ui-border) 58%);
+}
+
+/** Round milestone ("Досягнення") — opaque card + dim scrim (TMA backdrop-filter bleed-through) */
+.ui-milestone-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-milestone);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 2.5rem;
+  pointer-events: none;
+}
+
+.ui-milestone-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--ui-overlay-dim);
+}
+
+.ui-milestone-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 28rem;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 4rem;
+  padding: 4rem;
+  background-color: var(--ui-toast-surface);
+  backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--ui-toast-glass-blur)) saturate(1.65);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ui-fg) 10%, transparent),
+    inset 0 0 24px color-mix(in srgb, var(--ui-fg) 4%, transparent),
+    0 8px 28px color-mix(in srgb, var(--ui-bg) 50%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ui-fg) 12%, transparent);
+}
+
+.ui-milestone-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ui-fg) 8%, transparent) 0%,
+    transparent 48%
+  );
+}
+
+.ui-milestone-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 /** Specular sheen on top of opaque surface — not the fill layer */
@@ -966,33 +1039,32 @@ footer.footer-island.ui-app-footer {
   border-radius: inherit;
   pointer-events: none;
   background-image: radial-gradient(
-    128px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 72%, white 28%) 0%,
-    color-mix(in srgb, var(--ui-accent) 88%, transparent) 22%,
-    color-mix(in srgb, var(--ui-accent) 45%, transparent) 48%,
-    transparent 72%
+    112px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 82%, white 18%) 0%,
+    color-mix(in srgb, var(--ui-accent) 92%, transparent) 18%,
+    color-mix(in srgb, var(--ui-accent) 58%, transparent) 42%,
+    transparent 68%
   );
   animation: accent-cta-snake 6s linear infinite;
 }
 
 .accent-footer-cta-shell--ready::before {
-  inset: -4px;
-  filter: blur(16px);
-  opacity: 0.48;
+  inset: -10px;
+  filter: blur(14px);
+  opacity: 0.58;
   z-index: 0;
   background-image: radial-gradient(
-    140px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 68%, white 32%) 0%,
-    color-mix(in srgb, var(--ui-accent) 55%, transparent) 32%,
-    transparent 76%
+    128px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 78%, white 22%) 0%,
+    color-mix(in srgb, var(--ui-accent) 62%, transparent) 28%,
+    transparent 72%
   );
 }
 
 .accent-footer-cta-shell--ready::after {
-  inset: -1px;
-  padding: 1.5px;
-  opacity: 0.55;
-  filter: blur(0.75px);
+  inset: -2px;
+  padding: 2px;
+  opacity: 0.78;
   z-index: 1;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -1014,8 +1086,10 @@ footer.footer-island.ui-app-footer {
 
 button.lobby-start-btn {
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   backface-visibility: hidden;
   border: none;
+  isolation: isolate;
 }
 
 .lobby-start-btn--ready:active {
@@ -1037,8 +1111,9 @@ button.lobby-start-btn {
 
 .lobby-start-btn--ready {
   box-shadow:
-    inset 0 1px 2px 0 color-mix(in srgb, white 9%, transparent),
-    0 0 24px color-mix(in srgb, var(--ui-accent) 16%, transparent);
+    inset 0 1px 2px 0 color-mix(in srgb, white 12%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ui-bg) 55%, transparent),
+    0 4px 18px color-mix(in srgb, var(--ui-accent) 28%, transparent);
 }
 
 .lobby-start-btn--plain:active {
@@ -1057,8 +1132,9 @@ button.lobby-start-btn {
 
   .lobby-start-btn--ready {
     box-shadow:
-      inset 0 1px 2px 0 color-mix(in srgb, white 9%, transparent),
-      0 0 24px color-mix(in srgb, var(--ui-accent) 16%, transparent);
+      inset 0 1px 2px 0 color-mix(in srgb, white 12%, transparent),
+      0 1px 2px color-mix(in srgb, var(--ui-bg) 55%, transparent),
+      0 4px 18px color-mix(in srgb, var(--ui-accent) 28%, transparent);
   }
 }
 

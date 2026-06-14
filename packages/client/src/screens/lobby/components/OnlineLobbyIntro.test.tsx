@@ -58,7 +58,7 @@ const t = {
   categories: 'Words',
   lobbyRulesSummaryTitle: 'Game rules',
   lobbyRulesSummaryHintHost: 'Tap to change mode, time and words',
-  lobbyRulesSummaryHintGuest: 'Host chose these rules',
+  lobbyRulesSummaryHintGuest: 'Selected game rules',
   lobbyRulesSummaryEdit: 'Edit rules',
   customDeckChip: 'Custom: {0}',
 } as TranslationStrings;

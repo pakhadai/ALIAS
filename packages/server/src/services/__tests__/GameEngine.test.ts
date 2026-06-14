@@ -1254,7 +1254,14 @@ describe('Team builder actions', () => {
 describe('Mode-specific actions', () => {
   it('should end turn on HARDCORE SKIP', async () => {
     const room = makeRoom({
-      settings: { ...defaultSettings, mode: { gameMode: GameMode.HARDCORE, classicRoundTime: 60 } },
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.HARDCORE,
+          classicRoundTime: 60,
+          hardcoreVariant: 'SKIP_ENDS_TURN',
+        },
+      },
       gameState: GameState.PLAYING,
       currentTask: { id: 't1', prompt: 'Word' },
     });
@@ -1383,7 +1390,46 @@ describe('UPDATE_SETTINGS mode merges', () => {
     });
     if (room.settings.mode.gameMode === GameMode.HARDCORE) {
       expect(room.settings.mode.classicRoundTime).toBe(90);
+      expect(room.settings.mode.hardcoreVariant).toBe('SKIP_ENDS_TURN');
     }
+  });
+
+  it('should preserve hardcoreVariant on HARDCORE settings patch', async () => {
+    const room = makeRoom({
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.HARDCORE,
+          classicRoundTime: 60,
+          hardcoreVariant: 'TABOO',
+        },
+      },
+    });
+    await engine.handleAction(room, {
+      action: 'UPDATE_SETTINGS',
+      data: { mode: { hardcoreVariant: 'MAX' } },
+    });
+    if (room.settings.mode.gameMode === GameMode.HARDCORE) {
+      expect(room.settings.mode.hardcoreVariant).toBe('MAX');
+    }
+  });
+
+  it('should not end turn on HARDCORE TABOO SKIP', async () => {
+    const room = makeRoom({
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.HARDCORE,
+          classicRoundTime: 60,
+          hardcoreVariant: 'TABOO',
+        },
+      },
+      gameState: GameState.PLAYING,
+      currentTask: { id: 't1', prompt: 'Word' },
+      wordDeck: ['next'],
+    });
+    await engine.handleAction(room, { action: 'SKIP' });
+    expect(room.gameState).toBe(GameState.PLAYING);
   });
 });
 

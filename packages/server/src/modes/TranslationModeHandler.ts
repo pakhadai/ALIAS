@@ -1,5 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { GameActionPayload, GameSettings, GameTask } from '@movli/shared';
+import {
+  decodeWordEntry,
+  type GameActionPayload,
+  type GameSettings,
+  type GameTask,
+} from '@movli/shared';
 import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
 import { reduceExplainerAction } from './explainerModeActions';
 
@@ -11,6 +16,13 @@ import { reduceExplainerAction } from './explainerModeActions';
 export class TranslationModeHandler implements IGameModeHandler {
   generateTask(deck: string[], _settings: GameSettings): GameTask {
     const raw = deck.pop() ?? '';
+    const decoded = decodeWordEntry(raw);
+    if (decoded) {
+      const task: GameTask = { id: uuidv4(), prompt: decoded.word };
+      if (decoded.hint) task.hint = decoded.hint;
+      if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
+      return task;
+    }
     const parts = raw.split('|');
     const prompt = parts[0]?.trim() || raw;
     const answer = parts[1]?.trim();

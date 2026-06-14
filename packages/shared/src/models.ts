@@ -1,4 +1,6 @@
 import type { Language, Category, SoundPreset, AppTheme, GameMode } from './enums';
+import type { HardcoreVariant } from './wordEntry';
+export type { HardcoreVariant } from './wordEntry';
 
 /** Player in a room (online or offline). */
 export interface Player {
@@ -35,6 +37,10 @@ export interface GameTask {
   options?: string[];
   /** Optional mode-specific task kind (used by QUIZ UI for labels). */
   kind?: QuizTaskKind;
+  /** Optional explainer hint (flip card back). */
+  hint?: string;
+  /** Taboo words for hardcore TABOO / MAX variants. */
+  tabooWords?: string[];
 }
 
 export interface GameSettings {
@@ -100,6 +106,8 @@ export type ModeSettings =
       gameMode: GameMode.HARDCORE;
       /** Round time for hardcore mode (seconds). */
       classicRoundTime: number;
+      /** TABOO = taboo list + classic skip; SKIP_ENDS_TURN = skip ends turn; MAX = both. */
+      hardcoreVariant: HardcoreVariant;
     }
   | {
       gameMode: GameMode.IMPOSTER;

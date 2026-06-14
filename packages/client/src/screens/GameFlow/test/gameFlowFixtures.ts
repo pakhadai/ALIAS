@@ -77,7 +77,7 @@ export const gameFlowSettings = {
 
 export const gameFlowMockT = {
   takePhone: "I'M READY",
-  waitAdmin: 'Waiting for admin...',
+  waitAdmin: 'Preparing the game...',
   explains: 'Explaining',
   playingNow: 'Playing',
   noPlayersInTeam: 'No players',

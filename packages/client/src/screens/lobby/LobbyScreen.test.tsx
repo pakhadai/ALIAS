@@ -139,7 +139,7 @@ const mockT = {
   lobbyReadinessMinPlayers: '≥2 players',
   lobbyReadinessAllAssigned: 'All in teams',
   lobbyReadinessEachTeam: 'Each team has a player',
-  lobbyGuestWaitingTitle: 'Host is setting up',
+  lobbyGuestWaitingTitle: 'Preparing the game',
   lobbyGuestInTeam: "You're on a team",
   lobbyGuestPickTeam: 'Pick a team',
   lobbyGuestWaitingFooter: 'Waiting for start',

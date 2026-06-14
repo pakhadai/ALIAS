@@ -123,6 +123,7 @@ const modeSettingsPartialSchema = z
       .int()
       .min(60)
       .max(15 * 60),
+    hardcoreVariant: z.enum(['TABOO', 'SKIP_ENDS_TURN', 'MAX']).optional(),
   })
   .partial();
 

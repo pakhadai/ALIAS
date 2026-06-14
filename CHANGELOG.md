@@ -30,8 +30,16 @@
 
 ## [Unreleased]
 
+### Fixed
+- Translation mode flip: target answers resolved via shared `conceptKey` across language packs (not source `conceptId`); MOCK fallback builds `source|target` pairs so tap-to-flip works when DB pairs are missing
+- Translation mode: flip card back shows target-language answer (`GameTask.answer`); deck pairs built from DB concept translations (`WordService`); lobby target-language picker excludes deck language; pack language chip updates deck language (not target)
+- Home menu hero layout: spacer zone collapses first on short viewports, then tagline, logo mark last — prevents logo sliding under fixed `AppHeader` (`MenuScreen`, `styles.css`)
+
+### Changed
+- Local DB tooling: `.env.prod` defaults aligned with `docker-compose.yml` (`movli`/`movli_dev`); Prisma CLI scripts load root `.env.prod`; root `db:up`, `db:migrate`, `db:seed`, `db:studio`, `db:setup` shortcuts
+
 ### Added
-- TEST-COV-001 epic closure (Session 11): full verify green; server **402** / client **480** / shared **36**; server coverage **75.63%**; docs canon sync (`TESTING_ACCEPTANCE`, `AGENT_BRIEF`, `AUDIT_RESULTS` Block K, `INDEX`)
+- Hardcore epic: `hardcoreVariant` (`TABOO` | `SKIP_ENDS_TURN` | `MAX`) in `@movli/shared` mode settings; `GameTask.hint` / `tabooWords`; `wordEntry` JSON v:1 encode/decode; WordService loads hint/taboo from DB; tap-to-flip hint + taboo chips in `ClassicWordCard`; lobby rules 3-chip variant picker
 - Root `test:client` script — parity with `test:server` (TEST-COV-001 Session 10)
 - E2E `@extended` store/profile flows (TEST-COV-001 Session 9): `extended-profile.spec.ts`, `extended-store.spec.ts`, `auth-session` + `menu-ui` helpers, `seed-e2e-auth-user.ts`; optional `pnpm --filter @movli/e2e run test:extended`
 - `@movli/shared` contract tests (TEST-COV-001 Session 8): `events.test.ts` — `ROOM_ERROR_CODES` drift guard incl. `RELAY_*`; `network.test.ts` — legacy `NetworkMessage` types; expanded `lobbyReadiness.test.ts` (0 players, SOLO edge cases) + `utils.test.ts` (`DEFAULT_APP_THEME`, `MOCK_WORDS`); shared **36** tests

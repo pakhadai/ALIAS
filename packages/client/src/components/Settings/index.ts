@@ -1,4 +1,9 @@
-export { LOBBY_LANG_FLAG, LOBBY_LANGUAGES } from './constants';
+export {
+  LOBBY_LANG_FLAG,
+  LOBBY_LANGUAGES,
+  pickDefaultTargetLanguage,
+  targetLanguagesForSource,
+} from './constants';
 export { categoryIcon, getCategoryLabel, DEFAULT_LOBBY_CATEGORIES } from './categoryUtils';
 export { SettingsToggle } from './SettingsToggle';
 export type { SettingsToggleProps } from './SettingsToggle';

@@ -1,5 +1,6 @@
 import type { GameMode } from './enums';
 import type { GeneralSettings } from './models';
+import type { HardcoreVariant } from './wordEntry';
 
 /** Partial settings patch sent with `UPDATE_SETTINGS`. */
 export type ModeSettingsUpdate = Partial<{
@@ -16,6 +17,7 @@ export type ModeSettingsUpdate = Partial<{
   }>;
   quizWrongPenaltyEnabled: boolean;
   imposterDiscussionTime: number;
+  hardcoreVariant: HardcoreVariant;
 }>;
 
 export type GameSettingsUpdate = Partial<{

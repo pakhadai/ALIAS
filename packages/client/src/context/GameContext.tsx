@@ -39,7 +39,7 @@ import type { GameSyncState, RoomErrorPayload } from '@movli/shared';
 import { shuffleArray, TIME_UP_IDLE_FALLBACK_MS } from '@movli/shared';
 import { truncateUtf16Safe } from '../utils/utf16';
 import { bestTextOnColor } from '../utils/color';
-import { buildOfflineTask } from '../utils/gameTask';
+import { buildOfflineTask, buildOfflineTranslationDeck } from '../utils/gameTask';
 import { getUiStrings } from '../hooks/useT';
 import { AVATARS } from '../utils/avatars';
 export { AVATARS };
@@ -247,15 +247,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { general, mode } = settings;
     let deck = [...wordDeck];
     if (deck.length === 0) {
-      const pool = general.categories.flatMap((cat) => {
-        if (cat === Category.CUSTOM && general.customWords) {
-          return general.customWords
-            .split(',')
-            .map((w) => w.trim().replace(/<[^>]*>/g, ''))
-            .filter(Boolean);
-        }
-        return MOCK_WORDS[general.language][cat] || [];
-      });
+      let pool: string[] = [];
+      if (
+        mode.gameMode === GameMode.TRANSLATION &&
+        general.targetLanguage &&
+        general.targetLanguage !== general.language
+      ) {
+        pool = buildOfflineTranslationDeck(general);
+      }
+      if (pool.length === 0) {
+        pool = general.categories.flatMap((cat) => {
+          if (cat === Category.CUSTOM && general.customWords) {
+            return general.customWords
+              .split(',')
+              .map((w) => w.trim().replace(/<[^>]*>/g, ''))
+              .filter(Boolean);
+          }
+          return MOCK_WORDS[general.language][cat] || [];
+        });
+      }
 
       const finalPool =
         pool.length > 0 ? pool : MOCK_WORDS[general.language][Category.GENERAL] || [];

@@ -65,7 +65,7 @@ const t = {
   helpPrivacyP4: 'P4',
   helpImpressumTitle: 'Impressum',
   helpImpressumBody: 'Body',
-  helpImpressumHost: 'Host',
+  helpImpressumHost: 'Site address',
   helpImpressumRepoHint: 'Hint',
   helpAgbTitle: 'Terms',
   helpAgbIntro: 'Intro',

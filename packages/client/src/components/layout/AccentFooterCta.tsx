@@ -67,7 +67,7 @@ export function AccentFooterCta({
         onClick={onClick}
         disabled={resolvedVariant !== 'blocked' && disabled}
         aria-disabled={resolvedVariant === 'blocked' ? true : disabled || undefined}
-        className={`lobby-start-btn relative z-0 inline-flex w-full items-center justify-center gap-2 rounded-theme px-10 py-5 ${typographyClass.label} font-semibold tracking-wide transition-transform duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg disabled:opacity-40 ${btnClass}`}
+        className={`lobby-start-btn relative z-[2] inline-flex w-full items-center justify-center gap-2 rounded-theme px-10 py-5 ${typographyClass.label} font-semibold tracking-wide transition-transform duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg disabled:opacity-40 ${btnClass}`}
       >
         {loading ? (
           <Loader2 size={18} className="animate-spin shrink-0" aria-hidden />

@@ -1,16 +1,23 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { typographyClass } from '../../../constants/typography';
 
 type TPlaying = Record<string, string>;
 
-const SWIPE_THRESHOLD_PX = 52;
+export const SWIPE_THRESHOLD_PX = 52;
 const SWIPE_MAX_DRAG = 72;
 
 export interface ClassicWordCardProps {
   displayPrompt: string;
+  hint?: string;
+  tabooWords?: string[];
+  showTaboo?: boolean;
   isCriticalTime: boolean;
-  /** When set, horizontal (right=correct, left=skip) or vertical (up=correct, down=skip) swipe fires. */
   onSwipe?: (direction: 'correct' | 'skip', origin: { x: number; y: number }) => void;
   swipeDisabled?: boolean;
+  hintLabel?: string;
+  /** Front-side tap hint when flip is available (defaults to hintLabel). */
+  flipTapLabel?: string;
+  tabooLabel?: string;
 }
 
 export interface ClassicActionFooterProps {
@@ -29,7 +36,6 @@ const correctFooterBg =
 const correctFooterActive =
   'active:bg-[linear-gradient(180deg,color-mix(in_srgb,var(--ui-success)_62%,var(--ui-surface))_0%,color-mix(in_srgb,var(--ui-success)_48%,var(--ui-surface))_100%)]';
 
-/** Split «WORD|hint» (translation decks) from plain prompts. */
 function splitPrompt(displayPrompt: string): { main: string; hint: string | null } {
   const i = displayPrompt.indexOf('|');
   if (i < 0) {
@@ -44,25 +50,40 @@ function splitPrompt(displayPrompt: string): { main: string; hint: string | null
   };
 }
 
-/**
- * Word card for classic / translation / synonyms explainer view.
- */
 export function ClassicWordCard({
   displayPrompt,
+  hint: hintProp,
+  tabooWords,
+  showTaboo = false,
   isCriticalTime,
   onSwipe,
   swipeDisabled,
+  hintLabel = 'Hint',
+  flipTapLabel,
+  tabooLabel = 'Taboo',
 }: ClassicWordCardProps): React.ReactElement {
   const rootRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const [drag, setDrag] = useState({ x: 0, y: 0 });
+  const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    setFlipped(false);
+  }, [displayPrompt, hintProp]);
+
+  const { main: mainWord, hint: legacyHint } = splitPrompt(displayPrompt);
+  const flipHint = hintProp ?? legacyHint ?? undefined;
+  const frontTapLabel = flipTapLabel ?? hintLabel;
+  const visibleTaboo = showTaboo && tabooWords && tabooWords.length > 0;
+  const swipeEnabled = Boolean(onSwipe) && !swipeDisabled;
 
   const clampDrag = useCallback((dx: number, dy: number) => {
     const m = SWIPE_MAX_DRAG;
     const len = Math.hypot(dx, dy) || 1;
-    const nx = (dx / len) * Math.min(len, m);
-    const ny = (dy / len) * Math.min(len, m);
-    return { x: nx, y: ny };
+    return {
+      x: (dx / len) * Math.min(len, m),
+      y: (dy / len) * Math.min(len, m),
+    };
   }, []);
 
   const cardOrigin = useCallback(() => {
@@ -107,12 +128,16 @@ export function ClassicWordCard({
         /* already released */
       }
 
-      if (!onSwipe || swipeDisabled) return;
-
       const th = SWIPE_THRESHOLD_PX;
       const ax = Math.abs(dx);
       const ay = Math.abs(dy);
-      if (ax < th && ay < th) return;
+
+      if (ax < th && ay < th) {
+        if (flipHint) setFlipped((f) => !f);
+        return;
+      }
+
+      if (!onSwipe || swipeDisabled) return;
 
       const origin = cardOrigin();
       if (ax >= ay) {
@@ -123,7 +148,7 @@ export function ClassicWordCard({
         else if (dy > th) onSwipe('skip', origin);
       }
     },
-    [cardOrigin, onSwipe, swipeDisabled]
+    [cardOrigin, flipHint, onSwipe, swipeDisabled]
   );
 
   const onPointerCancel = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -137,49 +162,100 @@ export function ClassicWordCard({
     }
   }, []);
 
-  const swipeEnabled = Boolean(onSwipe) && !swipeDisabled;
-  const { main: mainWord, hint: translationHint } = splitPrompt(displayPrompt);
+  const cardShellClass = `w-full max-w-sm aspect-3/4 max-h-[55vh] rounded-4xl shadow-2xl relative border bg-ui-word-card-bg transition-all duration-200 ease-out animate-pop-in select-none ${
+    isCriticalTime
+      ? 'border-[color-mix(in_srgb,var(--ui-danger)_45%,var(--ui-word-card-border))] shadow-[0_0_0_1px_color-mix(in_srgb,var(--ui-danger)_25%,transparent),0_20px_40px_-10px_color-mix(in_srgb,var(--ui-fg)_14%,transparent)]'
+      : 'border-ui-word-card-border shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--ui-fg)_12%,transparent)]'
+  } ${swipeEnabled ? 'cursor-grab active:cursor-grabbing active:scale-[0.99]' : ''}`;
 
   return (
-    <div
-      ref={rootRef}
-      key={displayPrompt}
-      data-word-card
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={finishPointer}
-      onPointerCancel={onPointerCancel}
-      style={{
-        transform: drag.x !== 0 || drag.y !== 0 ? `translate(${drag.x}px, ${drag.y}px)` : undefined,
-        touchAction: swipeEnabled ? 'none' : undefined,
-      }}
-      className={`w-full max-w-sm aspect-3/4 max-h-[55vh] rounded-4xl shadow-2xl flex items-center justify-center p-10 relative border bg-ui-word-card-bg transition-all duration-200 ease-out animate-pop-in select-none ${
-        isCriticalTime
-          ? 'border-[color-mix(in_srgb,var(--ui-danger)_45%,var(--ui-word-card-border))] shadow-[0_0_0_1px_color-mix(in_srgb,var(--ui-danger)_25%,transparent),0_20px_40px_-10px_color-mix(in_srgb,var(--ui-fg)_14%,transparent)]'
-          : 'border-ui-word-card-border shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--ui-fg)_12%,transparent)]'
-      } ${swipeEnabled ? 'cursor-grab active:cursor-grabbing active:scale-[0.99]' : ''}`}
-    >
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-px bg-[color-mix(in_srgb,var(--ui-word-card-fg)_12%,transparent)]" />
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-px bg-[color-mix(in_srgb,var(--ui-word-card-fg)_12%,transparent)]" />
-      <div className="pointer-events-none flex w-full max-w-full flex-col items-center justify-center gap-3 px-1 sm:gap-4">
-        <h2
-          className={`font-sans text-5xl font-black leading-tight tracking-tight text-ui-word-card-fg wrap-break-word text-center antialiased [text-rendering:optimizeLegibility] sm:text-6xl ${translationHint ? 'uppercase' : ''}`}
+    <div className="flex w-full max-w-sm flex-col items-center gap-3">
+      <div
+        ref={rootRef}
+        key={displayPrompt}
+        data-word-card
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishPointer}
+        onPointerCancel={onPointerCancel}
+        style={{
+          transform:
+            drag.x !== 0 || drag.y !== 0 ? `translate(${drag.x}px, ${drag.y}px)` : undefined,
+          touchAction: swipeEnabled ? 'none' : undefined,
+          perspective: '1200px',
+        }}
+        className={cardShellClass}
+      >
+        <div
+          className="relative h-full w-full transition-transform duration-500 ease-out"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : undefined,
+          }}
         >
-          {mainWord}
-        </h2>
-        {translationHint ? (
-          <p className="max-w-full wrap-break-word text-center font-serif text-2xl font-medium leading-snug tracking-normal text-[color-mix(in_srgb,var(--ui-word-card-fg)_58%,var(--ui-fg-muted)_42%)] antialiased normal-case sm:text-3xl">
-            {translationHint}
-          </p>
-        ) : null}
+          <div
+            className="absolute inset-0 flex items-center justify-center p-10"
+            style={{ backfaceVisibility: 'hidden' }}
+          >
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-8 h-px bg-[color-mix(in_srgb,var(--ui-word-card-fg)_12%,transparent)]" />
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-8 h-px bg-[color-mix(in_srgb,var(--ui-word-card-fg)_12%,transparent)]" />
+            <div className="pointer-events-none flex w-full max-w-full flex-col items-center justify-center gap-3 px-1 sm:gap-4">
+              <h2 className="font-sans text-5xl font-black leading-tight tracking-tight text-ui-word-card-fg wrap-break-word text-center antialiased [text-rendering:optimizeLegibility] sm:text-6xl">
+                {mainWord}
+              </h2>
+              {flipHint && !flipped ? (
+                <p
+                  className={`${typographyClass.caption} text-[color-mix(in_srgb,var(--ui-word-card-fg)_45%,var(--ui-fg-muted)_55%)] normal-case tracking-normal`}
+                >
+                  {frontTapLabel}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {flipHint ? (
+            <div
+              className="absolute inset-0 flex items-center justify-center p-10"
+              style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+            >
+              <div className="pointer-events-none flex w-full max-w-full flex-col items-center justify-center gap-2 px-2">
+                <p
+                  className={`${typographyClass.label} text-[color-mix(in_srgb,var(--ui-word-card-fg)_50%,var(--ui-fg-muted)_50%)] normal-case tracking-wide`}
+                >
+                  {hintLabel}
+                </p>
+                <p className="max-w-full wrap-break-word text-center font-serif text-2xl font-medium leading-snug tracking-normal text-[color-mix(in_srgb,var(--ui-word-card-fg)_72%,var(--ui-fg-muted)_28%)] antialiased normal-case sm:text-3xl">
+                  {flipHint}
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
+
+      {visibleTaboo ? (
+        <div className="w-full space-y-2 px-1">
+          <p
+            className={`${typographyClass.label} text-center text-ui-fg-muted normal-case tracking-wide`}
+          >
+            {tabooLabel}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {tabooWords.map((word) => (
+              <span
+                key={word}
+                className={`rounded-full border border-[color-mix(in_srgb,var(--ui-danger)_35%,var(--ui-border))] bg-[color-mix(in_srgb,var(--ui-danger)_10%,var(--ui-surface))] px-3 py-1.5 ${typographyClass.system} text-ui-danger normal-case tracking-normal`}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-/**
- * Explainer Correct / Skip controls (fixed footer).
- */
 export function ClassicActionFooter({
   t,
   onCorrect,

@@ -7,6 +7,7 @@ import { usePlayerStats } from '../../../hooks/usePlayerStats';
 import { HAPTIC } from '../../../utils/haptics';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import { ClassicWordCard, ClassicActionFooter, QuizUI } from '../modes';
+import { hardcoreShowsTaboo } from '../../../utils/gameTask';
 import { GuesserFeedback } from './GuesserFeedback';
 import { PlayingPauseOverlay } from './PlayingPauseOverlay';
 
@@ -54,6 +55,8 @@ export const PlayingScreen = () => {
   const activeTeam = teams[currentTeamIndex];
   const modeSetting = settings.mode.gameMode ?? GameMode.CLASSIC;
   const isQuizMode = modeSetting === GameMode.QUIZ;
+  const isTranslationMode = modeSetting === GameMode.TRANSLATION;
+  const targetLanguage = settings.general.targetLanguage;
   const isQuizPerTask =
     isQuizMode && 'quizTimerMode' in settings.mode && settings.mode.quizTimerMode === 'PER_TASK';
   const countdownMax = useMemo(() => {
@@ -97,6 +100,19 @@ export const PlayingScreen = () => {
   const canSeeClassicWord = gameMode === 'OFFLINE' || isActualExplainer;
   const canUseClassicButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const displayPrompt = currentTask?.prompt ?? currentWord;
+  const cardFlipBack = isTranslationMode
+    ? currentTask?.answer
+    : (currentTask?.hint ?? currentTask?.answer);
+  const flipBackLabel = isTranslationMode
+    ? (t.wordTranslationAnswer ?? 'Answer') + (targetLanguage ? ` (${targetLanguage})` : '')
+    : (t.wordHintTap ?? 'Hint');
+  const flipTapLabel = isTranslationMode ? (t.wordTranslationTap ?? 'Tap for answer') : undefined;
+  const showHardcoreTaboo =
+    settings.mode.gameMode === GameMode.HARDCORE &&
+    hardcoreShowsTaboo(
+      settings.mode.gameMode,
+      settings.mode.gameMode === GameMode.HARDCORE ? settings.mode.hardcoreVariant : undefined
+    );
   const solvedBy = isQuizMode ? currentTaskAnswered : undefined;
   const solvedByName =
     isQuizMode && solvedBy ? (players.find((p) => p.id === solvedBy)?.name ?? null) : null;
@@ -313,6 +329,12 @@ export const PlayingScreen = () => {
         ) : canSeeClassicWord ? (
           <ClassicWordCard
             displayPrompt={displayPrompt}
+            hint={cardFlipBack}
+            tabooWords={showHardcoreTaboo ? currentTask?.tabooWords : undefined}
+            showTaboo={showHardcoreTaboo}
+            hintLabel={flipBackLabel}
+            flipTapLabel={flipTapLabel}
+            tabooLabel={t.wordTabooLabel ?? 'Taboo'}
             isCriticalTime={isCriticalTime}
             swipeDisabled={isPaused}
             onSwipe={
