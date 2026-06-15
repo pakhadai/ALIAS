@@ -311,6 +311,10 @@ async function handleInboundRoomLeave(msg: RoomLeaveRpcInbound): Promise<void> {
     }
     cancelGraceRemoval(removedId);
     io.to(msg.roomCode).emit('room:player-left', { playerId: removedId });
+    const roomAfterLeave = roomManager.getRoom(msg.roomCode);
+    if (roomAfterLeave) {
+      gameEngine.onQuizPlayerRemoved(roomAfterLeave);
+    }
     broadcastRoomState(io, msg.roomCode, roomManager);
     await roomActionRelay.publishReply(msg.replyToInstanceId, {
       v: 1,
@@ -375,7 +379,14 @@ function handleInboundRoomDisconnect(msg: RoomDisconnectRpcInbound): void {
   void roomQueue.run(msg.roomCode, async () => {
     const graceInfo = roomManager.markSocketDisconnected(msg.socketId);
     if (!graceInfo) return;
-    wireGraceAfterMarkDisconnected(io, roomManager, roomQueue, graceInfo, RECONNECT_GRACE_MS);
+    wireGraceAfterMarkDisconnected(
+      io,
+      roomManager,
+      roomQueue,
+      graceInfo,
+      RECONNECT_GRACE_MS,
+      (room) => gameEngine.onQuizPlayerRemoved(room)
+    );
   });
 }
 
@@ -468,7 +479,14 @@ io.on('connection', (socket) => {
         if (localRoom) {
           const graceInfo = roomManager.markSocketDisconnected(disconnectedSocketId);
           if (!graceInfo) return;
-          wireGraceAfterMarkDisconnected(io, roomManager, roomQueue, graceInfo, RECONNECT_GRACE_MS);
+          wireGraceAfterMarkDisconnected(
+            io,
+            roomManager,
+            roomQueue,
+            graceInfo,
+            RECONNECT_GRACE_MS,
+            (room) => gameEngine.onQuizPlayerRemoved(room)
+          );
           return;
         }
 
@@ -490,6 +508,7 @@ io.on('connection', (socket) => {
           if (room) {
             if (result.removedPlayerId) {
               io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+              gameEngine.onQuizPlayerRemoved(room);
             }
             io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
             if (result.wasMigration) {

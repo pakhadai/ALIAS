@@ -100,7 +100,11 @@ export function ClassicWordCard({
       if (swipeDisabled || !onSwipe || e.button !== 0) return;
       startRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
       setDrag({ x: 0, y: 0 });
-      e.currentTarget.setPointerCapture(e.pointerId);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* unsupported in some test environments */
+      }
     },
     [onSwipe, swipeDisabled]
   );

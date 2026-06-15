@@ -1,3 +1,5 @@
+import type { GameTask } from './models';
+
 /** Hardcore sub-variant: taboo list, skip ends turn, or both. */
 export type HardcoreVariant = 'TABOO' | 'SKIP_ENDS_TURN' | 'MAX';
 
@@ -47,4 +49,22 @@ export function decodeWordEntry(raw: string): WordEntryV1 | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Build a TRANSLATION mode task from a deck entry (`word|answer` or JSON v:1).
+ * In JSON entries the `hint` field is the target-language answer (flip card back).
+ */
+export function translationTaskFromDeckEntry(raw: string, id: string): GameTask {
+  const decoded = decodeWordEntry(raw);
+  if (decoded) {
+    const task: GameTask = { id, prompt: decoded.word };
+    if (decoded.hint) task.answer = decoded.hint;
+    if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
+    return task;
+  }
+  const parts = raw.split('|');
+  const prompt = parts[0]?.trim() || raw;
+  const answer = parts[1]?.trim();
+  return answer ? { id, prompt, answer } : { id, prompt };
 }

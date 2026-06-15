@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { gotoAuthenticatedHome } from './helpers/auth-session';
 import { gotoHome } from './helpers/game-ui';
 import {
-  loginGoogleRe,
+  expectLoginModalVisible,
   openProfileFromMenu,
   openStoreFromAuthProfile,
   openStoreFromGuestProfile,
@@ -26,9 +26,7 @@ test.describe('@extended Store', () => {
     await expect(buyBtn).toBeVisible({ timeout: 45_000 });
     await buyBtn.click();
 
-    await expect(page.getByRole('button', { name: loginGoogleRe })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expectLoginModalVisible(page);
     await expect(page.getByRole('heading', { name: storeTitleRe })).toHaveCount(0);
   });
 

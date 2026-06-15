@@ -39,6 +39,7 @@ import {
 } from '../../components/Settings';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
+import { isOnlineOnlyGameMode } from '../../constants/gameModeAvailability';
 import { fetchStore } from '../../services/api';
 import type { WordPackItem } from '../../services/api';
 import { useResourceLoad } from '../../hooks/useResourceLoad';
@@ -145,8 +146,16 @@ function NumericStepper({
 }
 
 export const SettingsScreen = () => {
-  const { settings, currentTheme, setGameState, isHost, sendAction, gameState, showNotification } =
-    useGame();
+  const {
+    settings,
+    currentTheme,
+    setGameState,
+    isHost,
+    sendAction,
+    gameState,
+    showNotification,
+    gameMode,
+  } = useGame();
   const { isAuthenticated } = useAuthContext();
   const t = useT();
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
@@ -388,8 +397,10 @@ export const SettingsScreen = () => {
                 ] as const
               ).map(([mode, label, icon]) => {
                 const active = (settings.mode.gameMode ?? GameMode.CLASSIC) === mode;
-                const hint =
-                  mode === GameMode.TRANSLATION
+                const onlineOnlyBlocked = gameMode === 'OFFLINE' && isOnlineOnlyGameMode(mode);
+                const hint = onlineOnlyBlocked
+                  ? t.gameModeQuizOnlineOnly
+                  : mode === GameMode.TRANSLATION
                     ? (t.gameModeCardHintTranslation ?? t.gameModeHintTranslation)
                     : mode === GameMode.QUIZ
                       ? (t.gameModeCardHintQuiz ?? t.gameModeHintQuiz)
@@ -404,8 +415,14 @@ export const SettingsScreen = () => {
                   <SettingsChip
                     key={mode}
                     active={active}
-                    disabled={!isHost}
-                    onClick={() => updateMode({ gameMode: mode })}
+                    disabled={!isHost || onlineOnlyBlocked}
+                    onClick={() => {
+                      if (onlineOnlyBlocked) {
+                        showNotification(t.gameModeQuizOnlineOnly, 'info');
+                        return;
+                      }
+                      updateMode({ gameMode: mode });
+                    }}
                     className="py-3 px-2 flex-col hover:-translate-y-0.5 will-change-transform"
                     aria-label={`${label}. ${hint}`}
                   >
@@ -508,7 +525,11 @@ export const SettingsScreen = () => {
                   <textarea
                     value={settings.general.customWords || ''}
                     onChange={(e) => updateGeneral('customWords', e.target.value)}
-                    placeholder={t.customWordsPlaceholder || 'Enter words separated by commas...'}
+                    placeholder={
+                      (settings.mode.gameMode ?? GameMode.CLASSIC) === GameMode.TRANSLATION
+                        ? (t.customWordsPlaceholderTranslation ?? t.customWordsPlaceholder)
+                        : t.customWordsPlaceholder || 'Enter words separated by commas...'
+                    }
                     className={`w-full h-24 p-4 rounded-xl border resize-none bg-ui-surface text-ui-fg border-ui-border focus:border-ui-accent outline-none ${typographyClass.bodyInput}`}
                   />
                 )}

@@ -5,7 +5,7 @@ import type {
   InterServerEvents,
   SocketData,
 } from '@movli/shared';
-import type { RoomManager } from '../services/RoomManager';
+import type { RoomManager, Room } from '../services/RoomManager';
 import type { PerRoomQueue } from '../services/PerRoomQueue';
 import { scheduleGraceRemoval } from '../services/disconnectGrace';
 
@@ -17,7 +17,8 @@ export function wireGraceAfterMarkDisconnected(
   roomManager: RoomManager,
   roomQueue: PerRoomQueue,
   graceInfo: { roomCode: string; playerId: string; wasHostMigration: boolean },
-  reconnectGraceMs: number
+  reconnectGraceMs: number,
+  onAfterPlayerRemoved?: (room: Room) => void
 ): void {
   const roomAfter = roomManager.getRoom(graceInfo.roomCode);
   if (roomAfter) {
@@ -37,6 +38,7 @@ export function wireGraceAfterMarkDisconnected(
       if (!room) return;
       if (result.removedPlayerId) {
         io.to(result.roomCode).emit('room:player-left', { playerId: result.removedPlayerId });
+        onAfterPlayerRemoved?.(room);
       }
       io.to(result.roomCode).emit('game:state-sync', roomManager.getSyncState(room));
       if (result.wasMigration) {

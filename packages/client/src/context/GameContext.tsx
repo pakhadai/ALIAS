@@ -1122,6 +1122,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Tear down any online socket room so stale sync cannot hijack offline flow.
         socketApi.leaveRoom();
         offlineJoinPendingRef.current = true;
+        const curSettings = stateRef.current.settings;
+        const offlineSettings: GameSettings =
+          curSettings.mode.gameMode === GameMode.QUIZ
+            ? {
+                ...curSettings,
+                mode: {
+                  gameMode: GameMode.CLASSIC,
+                  classicRoundTime:
+                    'classicRoundTime' in curSettings.mode ? curSettings.mode.classicRoundTime : 60,
+                },
+              }
+            : curSettings;
         dispatch({
           type: 'SET_STATE',
           payload: {
@@ -1133,6 +1145,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             myPlayerId: '',
             players: [],
             teams: [],
+            settings: offlineSettings,
             connectionError: null,
             connectionErrorCode: null,
           },
@@ -1150,23 +1163,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const prev = stateRef.current.timeLeft;
         const next = typeof val === 'function' ? val(prev) : val;
         const clamped = Math.max(0, next);
-        const mode = stateRef.current.settings.mode;
-        const tickQuizRound =
-          typeof val === 'function' &&
-          stateRef.current.gameMode === 'OFFLINE' &&
-          stateRef.current.gameState === GameState.PLAYING &&
-          !stateRef.current.isPaused &&
-          mode.gameMode === GameMode.QUIZ &&
-          'quizTimerMode' in mode &&
-          mode.quizTimerMode === 'PER_TASK';
-
         const payload: Partial<AppState> = { timeLeft: clamped };
-        if (tickQuizRound) {
-          const roundLeft = stateRef.current.quizRoundTimeLeft;
-          if (roundLeft !== undefined && roundLeft > 0) {
-            payload.quizRoundTimeLeft = Math.max(0, roundLeft - 1);
-          }
-        }
         if (
           stateRef.current.gameMode === 'OFFLINE' &&
           stateRef.current.gameState === GameState.PLAYING &&

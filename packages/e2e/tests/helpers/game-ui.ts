@@ -46,6 +46,7 @@ export const lobbySettingsButtonRe = /^(Settings|Налаштування|Einste
 export const lobbySettingsRulesTabRe = /^(Правила|Rules|Regeln)$/;
 /** Collapsible "Time & goal" block on the rules tab (`t.lobbyRulesSectionBasics`). */
 export const lobbyRulesBasicsRe = /^(Час і перемога|Zeit & Ziel|Time & goal)$/i;
+export const scoreToWinMinusRe = /^(Перемога при −5|Win at −5|Sieg bei −5)$/;
 /** Round-time stepper minus (`aria-label={t.roundTime + ' −10'}`), Unicode minus U+2212. */
 export const roundTimeMinusButtonRe = /^(Час|Zeit|Time) −10$/;
 
@@ -345,7 +346,7 @@ export async function openLobbySettings(page: Page): Promise<void> {
 /** Round time / score-to-win live under Settings → Rules (default tab is Mode). */
 export async function openLobbySettingsRulesTab(page: Page): Promise<void> {
   await openLobbySettings(page);
-  const rulesTab = page.getByRole('button', { name: lobbySettingsRulesTabRe, exact: true });
+  const rulesTab = page.getByRole('tab', { name: lobbySettingsRulesTabRe, exact: true });
   await rulesTab.scrollIntoViewIfNeeded();
   await rulesTab.click();
   await expect(page.getByRole('button', { name: lobbyRulesBasicsRe })).toBeVisible({
@@ -448,17 +449,17 @@ export async function lowerScoreToWin(host: Page, target = 10): Promise<void> {
   const clampedTarget = Math.max(10, target);
   await openLobbySettingsRulesTab(host);
   const basics = host.getByRole('button', { name: lobbyRulesBasicsRe });
-  const scoreInput = host.locator('input[type="number"]').last();
-  if (!(await scoreInput.isVisible().catch(() => false))) {
+  const scoreValue = host.getByTestId('settings-score-to-win');
+  const minusBtn = host.getByRole('button', { name: scoreToWinMinusRe });
+  if (!(await scoreValue.isVisible().catch(() => false))) {
     await basics.click();
   }
-  await expect(scoreInput).toBeVisible({ timeout: 10_000 });
-  const minusBtn = scoreInput.locator('xpath=..').getByRole('button', { name: '−' });
-  while (Number(await scoreInput.inputValue()) > clampedTarget) {
+  await expect(scoreValue).toBeVisible({ timeout: 10_000 });
+  await expect(minusBtn).toBeVisible({ timeout: 10_000 });
+  while (Number((await scoreValue.textContent())?.trim()) > clampedTarget) {
     await minusBtn.click();
   }
-  await expect(scoreInput).toHaveValue(String(clampedTarget));
-  await expect(host.getByTestId('settings-score-to-win')).toHaveText(String(clampedTarget), {
+  await expect(scoreValue).toHaveText(String(clampedTarget), {
     timeout: 10_000,
   });
   await closeLobbySettings(host);

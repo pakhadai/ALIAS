@@ -13,8 +13,14 @@ export interface ActionResult {
   endTurn: boolean;
 }
 
+/** Optional context when building a task from the remaining deck. */
+export interface GenerateTaskOptions {
+  /** Words already shown this session — QUIZ uses these to fill distractor slots. */
+  distractorPool?: readonly string[];
+}
+
 export interface IGameModeHandler {
-  generateTask(deck: string[], settings: GameSettings): GameTask;
+  generateTask(deck: string[], settings: GameSettings, options?: GenerateTaskOptions): GameTask;
   handleAction(
     action: GameActionPayload,
     currentTask: GameTask,

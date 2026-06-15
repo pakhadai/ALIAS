@@ -424,6 +424,33 @@ describe('authorizeGameAction', () => {
       });
     });
 
+    it('should allow START_PLAYING for any player in QUIZ mode', () => {
+      const team = makeTeam({ nextPlayerIndex: 0 });
+      runAuthCase({
+        name: 'quiz start guest',
+        room: makeRoom({
+          teams: [team],
+          currentTeamIndex: 0,
+          gameState: GameState.COUNTDOWN,
+          settings: {
+            general: makeRoom().settings.general,
+            mode: {
+              gameMode: GameMode.QUIZ,
+              classicRoundTime: 60,
+              quizTimerMode: 'ROUND',
+              quizRoundTime: 60,
+              quizQuestionTime: 10,
+              quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: true },
+              quizWrongPenaltyEnabled: false,
+            },
+          },
+        }),
+        payload: { action: 'START_PLAYING' },
+        ctx: socketCtx('socket-guest'),
+        expectOk: true,
+      });
+    });
+
     it('should allow GUESS_OPTION for host via relay', () => {
       runAuthCase({
         name: 'guess relay host',

@@ -676,6 +676,70 @@ describe('QUIZ timers', () => {
     expect(room.currentTaskWrongAttempts).toEqual([]);
     expect(room.currentTaskAnswered).toBeUndefined();
   });
+
+  it('when last unanswered player is kicked after others guessed wrong, advances quiz', async () => {
+    vi.spyOn(wordService, 'nextWord')
+      .mockResolvedValueOnce({
+        word: 'Q1',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      })
+      .mockResolvedValueOnce({
+        word: 'Q2',
+        deck: [],
+        usedWords: [],
+        deckReshuffled: false,
+      });
+
+    const p1 = makePlayer({ id: 'p1' });
+    const p2 = makePlayer({ id: 'p2', name: 'Bob' });
+    const p3 = makePlayer({ id: 'p3', name: 'Cara' });
+    const p4 = makePlayer({ id: 'p4', name: 'Dan' });
+    const room = makeRoom({
+      players: [p1, p2, p3, p4],
+      teams: [makeTeam({ id: 't1', players: [p1, p2] }), makeTeam({ id: 't2', players: [p3, p4] })],
+      settings: {
+        ...defaultSettings,
+        mode: {
+          gameMode: GameMode.QUIZ,
+          classicRoundTime: 60,
+          quizTimerMode: 'PER_TASK',
+          quizRoundTime: 10,
+          quizQuestionTime: 30,
+          quizTypes: { synonyms: true, antonyms: true, taboo: true, translation: false },
+          quizWrongPenaltyEnabled: false,
+        },
+      },
+    });
+
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    room.currentTask = { id: 'task-x', prompt: 'Q', answer: 'A', options: ['A', 'B', 'C', 'D'] };
+
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'B' } },
+      'p1'
+    );
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'C' } },
+      'p2'
+    );
+    await engine.handleAction(
+      room,
+      { action: 'GUESS_OPTION', data: { selectedOption: 'D' } },
+      'p3'
+    );
+    expect(room.currentTaskAnswered).toBeUndefined();
+
+    await engine.handleAction(room, { action: 'KICK_PLAYER', data: 'p4' });
+    expect(room.players).toHaveLength(3);
+    expect(room.currentTaskAnswered).toBe('__all_wrong__');
+
+    await vi.advanceTimersByTimeAsync(2500);
+    expect(wordService.nextWord).toHaveBeenCalledTimes(2);
+  });
 });
 
 // ─── TIME_UP ─────────────────────────────────────────────────────────────────
@@ -1528,6 +1592,49 @@ describe('QUIZ lifecycle', () => {
     await engine.handleAction(room, { action: 'START_PLAYING' });
     vi.advanceTimersByTime(3000);
     expect(room.gameState).toBe(GameState.ROUND_SUMMARY);
+  });
+
+  it('should reset currentRoundStats on each QUIZ START_PLAYING', async () => {
+    vi.spyOn(wordService, 'nextWord').mockResolvedValue({
+      word: 'A',
+      deck: [],
+      usedWords: [],
+      deckReshuffled: false,
+    });
+    const room = makeRoom({
+      settings: quizSettings,
+      gameState: GameState.COUNTDOWN,
+      currentRoundStats: {
+        correct: 7,
+        skipped: 1,
+        words: [{ word: 'old', taskId: 't0', result: 'guessed' }],
+        teamId: '',
+        explainerName: '',
+      },
+    });
+    await engine.handleAction(room, { action: 'START_PLAYING' });
+    expect(room.currentRoundStats.correct).toBe(0);
+    expect(room.currentRoundStats.words).toEqual([]);
+  });
+
+  it('should not add quiz points again on CONFIRM_ROUND', async () => {
+    const p1 = makePlayer({ id: 'p1' });
+    const team = makeTeam({ id: 't1', score: 5, players: [p1] });
+    const room = makeRoom({
+      players: [p1],
+      teams: [team],
+      gameState: GameState.ROUND_SUMMARY,
+      settings: quizSettings,
+      currentRoundStats: {
+        correct: 3,
+        skipped: 0,
+        words: [],
+        teamId: '',
+        explainerName: '',
+      },
+    });
+    await engine.handleAction(room, { action: 'CONFIRM_ROUND' });
+    expect(room.teams[0]?.score).toBe(5);
   });
 });
 

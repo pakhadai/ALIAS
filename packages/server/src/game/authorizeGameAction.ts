@@ -1,4 +1,4 @@
-import { GameState, type GameActionPayload, type RoomErrorPayload } from '@movli/shared';
+import { GameMode, GameState, type GameActionPayload, type RoomErrorPayload } from '@movli/shared';
 import type { Room } from '../services/RoomManager';
 import { roomError } from '../utils/roomError';
 
@@ -129,7 +129,9 @@ export function authorizeGameAction(
   }
 
   const explainerActions = new Set(['START_ROUND', 'START_PLAYING', 'CORRECT', 'SKIP', 'TIME_UP']);
-  if (explainerActions.has(payload.action) && !isHost) {
+  const quizBlitzStart =
+    payload.action === 'START_PLAYING' && room.settings.mode.gameMode === GameMode.QUIZ;
+  if (explainerActions.has(payload.action) && !quizBlitzStart && !isHost) {
     const upcomingExplainerId = (() => {
       const team = room.teams[room.currentTeamIndex];
       if (!team || team.players.length === 0) return null;

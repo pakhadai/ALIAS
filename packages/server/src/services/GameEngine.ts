@@ -44,6 +44,14 @@ export class GameEngine {
     this.prisma = prisma;
   }
 
+  /**
+   * Call after a player is removed from `room.players` during an active QUIZ question
+   * (kick, leave, disconnect grace) so all-wrong advance is not stuck waiting for GUESS_OPTION.
+   */
+  onQuizPlayerRemoved(room: Room): void {
+    this.maybeAdvanceQuizAfterAllWrong(room);
+  }
+
   private async persistNewGameSession(room: Room): Promise<void> {
     if (!this.prisma) return;
     try {
@@ -339,18 +347,7 @@ export class GameEngine {
         }
 
         // QUIZ: everyone guessed wrong — advance like question timeout (no round wait).
-        if (
-          isQuiz &&
-          payload.action === 'GUESS_OPTION' &&
-          !room.currentTaskAnswered &&
-          room.players.length > 0 &&
-          new Set(room.currentTaskWrongAttempts ?? []).size >= room.players.length
-        ) {
-          room.currentTaskAnswered = '__all_wrong__';
-          this.scheduleQuizMicroPauseAndAdvance(room);
-          this.timerBroadcast?.(room);
-          this.roomManager.persistRoom(room);
-        }
+        this.maybeAdvanceQuizAfterAllWrong(room);
 
         if (result.endTurn) {
           this.transitionToRoundSummary(room);
@@ -403,6 +400,7 @@ export class GameEngine {
       }
 
       case 'START_PLAYING': {
+        if (room.gameState === GameState.PLAYING) break;
         this.clearTimeUpFallback(room);
         room.gameState = GameState.PLAYING;
         if (room.settings.mode.gameMode === GameMode.QUIZ) {
@@ -414,6 +412,14 @@ export class GameEngine {
             mode.quizTimerMode === 'PER_TASK'
               ? mode.quizQuestionTime
               : (mode.quizRoundTime ?? roundTime);
+          room.currentRoundStats = {
+            correct: 0,
+            skipped: 0,
+            words: [],
+            teamId: '',
+            explainerName: '',
+            explainerId: undefined,
+          };
         } else {
           room.timeLeft =
             'classicRoundTime' in room.settings.mode ? room.settings.mode.classicRoundTime : 0;
@@ -799,6 +805,8 @@ export class GameEngine {
         }
         if (kickedWasExplainer) {
           this.transitionToRoundSummary(room);
+        } else {
+          this.onQuizPlayerRemoved(room);
         }
         break;
       }
@@ -815,17 +823,18 @@ export class GameEngine {
 
       case 'CONFIRM_ROUND': {
         const { currentRoundStats, teams, currentTeamIndex, settings } = room;
+        const isQuiz = settings.mode.gameMode === GameMode.QUIZ;
         const rawPoints =
           currentRoundStats.correct -
           (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
-        const points = Math.max(0, rawPoints);
+        const points = isQuiz ? 0 : Math.max(0, rawPoints);
 
         const activeTeam = teams[currentTeamIndex];
         const explainerId = currentRoundStats.explainerId;
         const correctCount = currentRoundStats.correct;
         room.teams = teams.map((t) => {
           const updated = { ...t };
-          if (t.id === currentRoundStats.teamId) {
+          if (!isQuiz && t.id === currentRoundStats.teamId) {
             updated.score = Math.max(0, t.score + points);
             if (correctCount > 0) {
               updated.players = t.players.map((p) => ({
@@ -869,6 +878,22 @@ export class GameEngine {
     room.roundEndsAt = undefined;
   }
 
+  /** QUIZ: when every remaining player already guessed wrong, advance like question timeout. */
+  private maybeAdvanceQuizAfterAllWrong(room: Room): void {
+    if (room.settings.mode.gameMode !== GameMode.QUIZ) return;
+    if (room.gameState !== GameState.PLAYING) return;
+    if (!room.currentTask) return;
+    if (room.currentTaskAnswered) return;
+    if (room.players.length === 0) return;
+    const wrongCount = new Set(room.currentTaskWrongAttempts ?? []).size;
+    if (wrongCount < room.players.length) return;
+
+    room.currentTaskAnswered = '__all_wrong__';
+    this.scheduleQuizMicroPauseAndAdvance(room);
+    this.timerBroadcast?.(room);
+    this.roomManager.persistRoom(room);
+  }
+
   /** After a correct guess, per-question timeout, or all-wrong in QUIZ: brief pause then next task. */
   private scheduleQuizMicroPauseAndAdvance(room: Room): void {
     if (!room.currentTask) return;
@@ -909,7 +934,9 @@ export class GameEngine {
     const handler = this.getActiveHandler(room);
     // Temporarily push word back so handler can pop it via its generateTask()
     room.wordDeck.push(word);
-    const task = handler.generateTask(room.wordDeck, room.settings);
+    const task = handler.generateTask(room.wordDeck, room.settings, {
+      distractorPool: room.usedWords,
+    });
     room.currentTask = task;
     room.currentWord = task.prompt;
     room.currentTaskAnswered = undefined;

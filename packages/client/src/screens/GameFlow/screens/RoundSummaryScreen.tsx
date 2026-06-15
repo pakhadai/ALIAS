@@ -5,6 +5,7 @@ import { FixedBottomBar, ScreenShell } from '../../../components/layout';
 import { footerIslandClassName } from '../../../constants/footerLayout';
 import { useGame } from '../../../context/GameContext';
 import { useT } from '../../../hooks/useT';
+import { GameMode } from '../../../types';
 
 export const RoundSummaryScreen = () => {
   const {
@@ -23,6 +24,7 @@ export const RoundSummaryScreen = () => {
   const processingRef = useRef(false);
 
   const isSolo = (settings.general.teamMode ?? 'TEAMS') === 'SOLO';
+  const isQuiz = settings.mode.gameMode === GameMode.QUIZ;
   const rawPoints =
     currentRoundStats.correct - (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
   const points = Math.max(0, rawPoints);
@@ -32,7 +34,7 @@ export const RoundSummaryScreen = () => {
     currentRoundStats.explainerName || scoringTeam?.players[0]?.name || scoringTeam?.name || '';
   const nextTeam = teams.length > 0 ? teams[(currentTeamIndex + 1) % teams.length] : undefined;
   const nextPlayerName = nextTeam?.players[0]?.name || nextTeam?.name || '';
-  const showNextUp = isSolo && teams.length > 1 && nextPlayerName.length > 0;
+  const showNextUp = isSolo && teams.length > 1 && nextPlayerName.length > 0 && !isQuiz;
 
   const confirmRoundResults = () => {
     if (!isHost || isSubmitting || processingRef.current) return;
@@ -40,13 +42,13 @@ export const RoundSummaryScreen = () => {
     setIsSubmitting(true);
 
     const oldScore = scoringTeam?.score || 0;
-    const newScore = Math.max(0, oldScore + points);
+    const newScore = isQuiz ? oldScore : Math.max(0, oldScore + points);
     const oldTens = Math.floor(oldScore / 10);
     const newTens = Math.floor(newScore / 10);
 
     let delay = 0;
-    if (newTens > oldTens && newScore < settings.general.scoreToWin) {
-      setMilestone({ points: newTens * 10, team: scoringTeam?.name || '' });
+    if (!isQuiz && newTens > oldTens && newScore < settings.general.scoreToWin && scoringTeam) {
+      setMilestone({ points: newTens * 10, team: scoringTeam.name || '' });
       if (settings.general.soundEnabled) playSound('win');
       delay = 3000;
     }
@@ -102,9 +104,17 @@ export const RoundSummaryScreen = () => {
       >
         <header className="py-12 text-center space-y-4">
           <h2 className={`text-4xl font-serif tracking-widest uppercase ${currentTheme.textMain}`}>
-            {t.timeIsUp}
+            {isQuiz ? t.quizRoundSummaryTitle : t.timeIsUp}
           </h2>
-          {isSolo ? (
+          {isQuiz ? (
+            <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
+              <span
+                className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] ${currentTheme.textSecondary}`}
+              >
+                {t.quizRoundSummarySubtitle}
+              </span>
+            </div>
+          ) : isSolo ? (
             <div className="space-y-3">
               <div className="inline-block px-6 py-2 rounded-full border border-ui-border bg-ui-surface">
                 <span

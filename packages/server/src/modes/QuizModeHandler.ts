@@ -7,7 +7,12 @@ import {
   type GameTask,
   type QuizTaskKind,
 } from '@movli/shared';
-import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
+import type {
+  IGameModeHandler,
+  ActionContext,
+  ActionResult,
+  GenerateTaskOptions,
+} from './IGameModeHandler';
 
 type EncodedQuizTask = {
   v: 1;
@@ -54,36 +59,54 @@ function isQuizWrongPenaltyEnabled(settings: GameSettings): boolean {
   return mode.quizWrongPenaltyEnabled === true;
 }
 
+function answerFromDeckEntry(raw: string): string {
+  const decoded = tryDecode(raw);
+  return decoded?.answer ?? raw;
+}
+
+/** Fill distractors up to `targetCount`, skipping `correct` and already-chosen answers. */
+function appendDistractors(
+  correct: string,
+  distractors: string[],
+  sources: readonly string[],
+  targetCount: number
+): void {
+  const seen = new Set([correct, ...distractors]);
+  const available = shuffleArray(sources);
+  for (const w of available) {
+    if (distractors.length >= targetCount) break;
+    const ans = answerFromDeckEntry(w);
+    if (seen.has(ans)) continue;
+    seen.add(ans);
+    distractors.push(ans);
+  }
+}
+
 /**
  * Quiz (Blitz) mode: a prompt is shown with 4 options.
  * Any player can press an option; the first correct answer scores a point.
  * Concurrency guard is handled by GameEngine via room.currentTaskAnswered.
  */
 export class QuizModeHandler implements IGameModeHandler {
-  generateTask(deck: string[], _settings: GameSettings): GameTask {
+  generateTask(deck: string[], _settings: GameSettings, options?: GenerateTaskOptions): GameTask {
     const raw = deck.pop() ?? '';
     const decoded = tryDecode(raw);
     const correct = decoded?.answer ?? raw;
     const prompt = decoded?.prompt ?? raw;
 
     const distractors: string[] = [];
-    const available = shuffleArray(deck);
-    for (const w of available) {
-      const d = tryDecode(w);
-      const ans = d?.answer ?? w;
-      if (ans !== correct && distractors.length < 3) {
-        distractors.push(ans);
-      }
-      if (distractors.length >= 3) break;
+    appendDistractors(correct, distractors, deck, 3);
+    if (distractors.length < 3 && options?.distractorPool?.length) {
+      appendDistractors(correct, distractors, options.distractorPool, 3);
     }
 
-    const options = shuffleArray([correct, ...distractors]);
+    const choiceOptions = shuffleArray([...new Set([correct, ...distractors])].slice(0, 4));
 
     const task: GameTask = {
       id: uuidv4(),
       prompt,
       answer: correct,
-      options,
+      options: choiceOptions,
     };
     if (decoded?.kind) {
       task.kind = decoded.kind;

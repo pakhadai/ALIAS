@@ -1,11 +1,16 @@
 import { GameMode, type GameActionPayload, type GameSettings, type GameTask } from '@movli/shared';
-import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
+import type {
+  IGameModeHandler,
+  ActionContext,
+  ActionResult,
+  GenerateTaskOptions,
+} from './IGameModeHandler';
 import { reduceExplainerAction } from './explainerModeActions';
 import { taskFromDeckEntry } from './deckEntryTask';
 
 /** Like classic, but skipping a word may end the explainer's turn depending on hardcoreVariant. */
 export class HardcoreModeHandler implements IGameModeHandler {
-  generateTask(deck: string[], _settings: GameSettings): GameTask {
+  generateTask(deck: string[], _settings: GameSettings, _options?: GenerateTaskOptions): GameTask {
     const raw = deck.pop() ?? '';
     return taskFromDeckEntry(raw);
   }

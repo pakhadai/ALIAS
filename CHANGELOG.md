@@ -44,7 +44,9 @@
 - Home menu: stronger tagline contrast, roomier «or» divider, offline icon+label centered as one group (`Shared.tsx`, `MenuScreen.tsx`)
 
 ### Fixed
-- App settings modal: restore mount-on-open + internal exit animation — always-mounted `open={showAppSettings}` broke E2E smoke language toggle in real browser (`AppSettingsModal`, `MenuScreen`)
+- Quiz mode: fill answer distractors from `usedWords` when the remaining deck is too small; advance question when all remaining players already guessed wrong after kick/leave/disconnect (not only on `GUESS_OPTION`)
+- E2E: lobby settings tabs use `role="tab"` (`SettingsTabBar`); login guest flows assert modal title + dismiss CTA instead of GSI iframe button; score-to-win stepper uses `data-testid="settings-score-to-win"` (`game-ui.ts`, `menu-ui.ts`)
+- Translation mode: JSON deck entries map `hint` → `GameTask.answer` (flip card); shared `translationTaskFromDeckEntry`; client flip fallback `answer ?? hint`; custom-words placeholder shows `word|translation` format; tests for handler, offline task, and card flip
 - Bottom sheet drag: disable `backdrop-filter` on panel/header while `data-dragging` — fixes smeared modal title during swipe-to-dismiss on iOS/TMA (`styles.css`)
 - Word seed: legacy `travel` / `science` / `movies` JSON maps seed again with stable `conceptKey` (`{slug}-{index}`) so Translation mode pairs UA↔EN↔DE correctly from DB
 - Translation deck build: default `targetLanguage` resolved server-side and offline when unset (UA→DE, EN→UA, etc.) instead of skipping pair assembly

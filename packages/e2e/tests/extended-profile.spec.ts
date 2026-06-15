@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { gotoAuthenticatedHome } from './helpers/auth-session';
 import { gotoHome } from './helpers/game-ui';
 import {
-  loginGoogleRe,
+  expectLoginModalVisible,
   openProfileFromMenu,
   openProfileSettings,
   openStoreFromGuestProfile,
@@ -49,8 +49,6 @@ test.describe('@extended Profile', () => {
     await gotoHome(page);
     await openProfileFromMenu(page);
     await page.getByTestId('profile-guest-lobby-settings').click();
-    await expect(page.getByRole('button', { name: loginGoogleRe })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expectLoginModalVisible(page);
   });
 });

@@ -32,6 +32,7 @@ import { LobbyPlayModeBarSlot } from './components/LobbyPlayModeBarSlot';
 import { LobbyStartPanel } from './components/LobbyStartPanel';
 import { LobbyGuestWaitingCard } from './components/LobbyGuestWaitingCard';
 import { deriveLobbyReadiness } from './deriveLobbyReadiness';
+import { isOnlineOnlyGameMode } from '../../constants/gameModeAvailability';
 import { useLobbyQrCode } from './useLobbyQrCode';
 
 const MAX_LOBBY_TEAMS = 10;
@@ -330,6 +331,15 @@ export const LobbyScreen = () => {
   const showPlayModeBar = isHost || isSolo || myTeamId == null;
 
   const handleStartTap = () => {
+    if (
+      gameMode === 'OFFLINE' &&
+      isOnlineOnlyGameMode(settings.mode.gameMode ?? GameMode.CLASSIC)
+    ) {
+      haptic.impactOccurred('light');
+      vibrate(HAPTIC.lobbyTap);
+      showNotification(t.gameModeQuizOnlineOnly, 'error');
+      return;
+    }
     if (!lobbyReadiness.ok) {
       haptic.impactOccurred('light');
       vibrate(HAPTIC.lobbyTap);

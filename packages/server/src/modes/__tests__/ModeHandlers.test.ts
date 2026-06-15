@@ -107,6 +107,16 @@ describe('Game mode handlers', () => {
     expect(t.answer).toBe('cat');
   });
 
+  test('TranslationModeHandler maps JSON hint to answer', () => {
+    const h = new TranslationModeHandler();
+    const encoded = JSON.stringify({ v: 1, word: 'Кіт', hint: 'Cat' });
+    const deck = [encoded];
+    const t = h.generateTask(deck, classicDeckSettings());
+    expect(t.prompt).toBe('Кіт');
+    expect(t.answer).toBe('Cat');
+    expect(t.hint).toBeUndefined();
+  });
+
   test('TranslationModeHandler falls back when there is no delimiter', () => {
     const h = new TranslationModeHandler();
     const deck = ['plainword'];
@@ -122,6 +132,17 @@ describe('Game mode handlers', () => {
     expect(t.answer).toBe('correct');
     expect(t.options?.length).toBe(4);
     expect(new Set(t.options).size).toBe(t.options?.length);
+    expect(t.options).toContain('correct');
+  });
+
+  test('QuizModeHandler fills distractors from usedWords when deck is nearly empty', () => {
+    const h = new QuizModeHandler();
+    const deck = ['correct'];
+    const t = h.generateTask(deck, classicDeckSettings(), {
+      distractorPool: ['w1', 'w2', 'w3', 'w4'],
+    });
+    expect(t.answer).toBe('correct');
+    expect(t.options?.length).toBe(4);
     expect(t.options).toContain('correct');
   });
 

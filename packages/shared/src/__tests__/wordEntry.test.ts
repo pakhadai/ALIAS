@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeWordEntry, encodeWordEntry } from '../wordEntry';
+import { decodeWordEntry, encodeWordEntry, translationTaskFromDeckEntry } from '../wordEntry';
 
 describe('wordEntry', () => {
   it('encodeWordEntry round-trips word + hint + tabooWords', () => {
@@ -30,5 +30,27 @@ describe('wordEntry', () => {
   it('decodeWordEntry returns null for invalid JSON', () => {
     expect(decodeWordEntry('{not-json')).toBeNull();
     expect(decodeWordEntry('{"v":2,"word":"x"}')).toBeNull();
+  });
+});
+
+describe('translationTaskFromDeckEntry', () => {
+  it('should split pipe format into prompt and answer', () => {
+    const task = translationTaskFromDeckEntry('кіт|cat', 't1');
+    expect(task).toEqual({ id: 't1', prompt: 'кіт', answer: 'cat' });
+  });
+
+  it('should map JSON hint field to answer for flip UI', () => {
+    const raw = encodeWordEntry({ word: 'Кіт', hint: 'Cat' });
+    const task = translationTaskFromDeckEntry(raw, 't2');
+    expect(task.prompt).toBe('Кіт');
+    expect(task.answer).toBe('Cat');
+    expect(task.hint).toBeUndefined();
+  });
+
+  it('should return prompt-only task when no translation is present', () => {
+    expect(translationTaskFromDeckEntry('plainword', 't3')).toEqual({
+      id: 't3',
+      prompt: 'plainword',
+    });
   });
 });

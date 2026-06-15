@@ -15,6 +15,7 @@ import { TEAM_NAMES, MAX_PLAYERS } from '../constants';
 import { buildTeamShells } from '../utils/buildTeamShells';
 import { AVATARS } from '../utils/avatars';
 import { getUiStrings } from '../hooks/useT';
+import { isOnlineOnlyGameMode } from '../constants/gameModeAvailability';
 
 export type OfflineGameActionDeps = {
   stateRef: MutableRefObject<AppState>;
@@ -62,7 +63,7 @@ export function applyOfflineGameAction(
     playSound,
     nextWordLogic,
     nextOfflineImposterWord,
-    offlineQuizLockTaskIdRef,
+    offlineQuizLockTaskIdRef: _offlineQuizLockTaskIdRef,
   } = deps;
 
   // Offline mode: allow PAUSE_GAME from any local player.
@@ -229,42 +230,8 @@ export function applyOfflineGameAction(
       break;
     }
     case 'GUESS_OPTION': {
-      const { settings, currentTask, timeUp } = stateRef.current;
+      const { settings, currentTask } = stateRef.current;
       if (settings.mode.gameMode !== GameMode.QUIZ || !currentTask?.answer) break;
-      const sel = payload.data.selectedOption;
-      if (typeof sel !== 'string') break;
-      if (offlineQuizLockTaskIdRef.current === currentTask.id) break;
-      if (sel !== currentTask.answer) {
-        playSound('skip');
-        break;
-      }
-      offlineQuizLockTaskIdRef.current = currentTask.id;
-      playSound('correct');
-      dispatch({
-        type: 'SET_STATE',
-        payload: {
-          currentRoundStats: {
-            ...stateRef.current.currentRoundStats,
-            correct: stateRef.current.currentRoundStats.correct + 1,
-            words: [
-              ...stateRef.current.currentRoundStats.words,
-              {
-                word: currentTask.prompt,
-                taskId: currentTask.id,
-                result: 'guessed' as const,
-              },
-            ],
-          },
-        },
-      });
-      if (timeUp) {
-        dispatch({
-          type: 'SET_STATE',
-          payload: { gameState: GameState.ROUND_SUMMARY, timeUp: false },
-        });
-      } else {
-        nextWordLogic();
-      }
       break;
     }
     case 'START_ROUND': {
@@ -365,6 +332,18 @@ export function applyOfflineGameAction(
       break;
     }
     case 'START_GAME': {
+      const mode = stateRef.current.settings.mode.gameMode ?? GameMode.CLASSIC;
+      if (isOnlineOnlyGameMode(mode)) {
+        const uiStrings = getUiStrings(stateRef.current.uiLanguage);
+        dispatch({
+          type: 'SHOW_NOTIF',
+          payload: {
+            message: uiStrings.gameModeQuizOnlineOnly,
+            type: 'error',
+          },
+        });
+        break;
+      }
       const teamMode = stateRef.current.settings.general.teamMode ?? 'TEAMS';
       const teamsForReadiness =
         teamMode === 'SOLO' ? [] : materializeOfflineTeamsIfNeeded(stateRef.current);
@@ -386,24 +365,6 @@ export function applyOfflineGameAction(
         isPaused: false,
       };
 
-      if (stateRef.current.settings.mode.gameMode === GameMode.QUIZ) {
-        dispatch({
-          type: 'SET_STATE',
-          payload: {
-            ...startBase,
-            gameState: GameState.COUNTDOWN,
-            currentRoundStats: {
-              correct: 0,
-              skipped: 0,
-              words: [],
-              teamId: '',
-              explainerName: '',
-              explainerId: undefined,
-            },
-          },
-        });
-        break;
-      }
       if (stateRef.current.settings.mode.gameMode === GameMode.IMPOSTER) {
         const ps = stateRef.current.players;
         const imposter = ps[Math.floor(Math.random() * Math.max(1, ps.length))];
@@ -441,10 +402,7 @@ export function applyOfflineGameAction(
       dispatch({
         type: 'SET_STATE',
         payload: {
-          gameState:
-            stateRef.current.settings.mode.gameMode === GameMode.QUIZ
-              ? GameState.COUNTDOWN
-              : GameState.PRE_ROUND,
+          gameState: GameState.PRE_ROUND,
           currentTeamIndex: (stateRef.current.currentTeamIndex + 1) % stateRef.current.teams.length,
         },
       });
@@ -696,9 +654,10 @@ export function applyOfflineGameAction(
     }
     case 'CONFIRM_ROUND': {
       const { currentRoundStats, teams, currentTeamIndex, settings } = stateRef.current;
+      const isQuiz = settings.mode.gameMode === GameMode.QUIZ;
       const rawPoints =
         currentRoundStats.correct - (settings.general.skipPenalty ? currentRoundStats.skipped : 0);
-      const points = Math.max(0, rawPoints);
+      const points = isQuiz ? 0 : Math.max(0, rawPoints);
 
       const activeTeam = teams[currentTeamIndex];
       const updatedTeams = teams.map((t) => {

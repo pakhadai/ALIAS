@@ -1,11 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
-  decodeWordEntry,
+  translationTaskFromDeckEntry,
   type GameActionPayload,
   type GameSettings,
   type GameTask,
 } from '@movli/shared';
-import type { IGameModeHandler, ActionContext, ActionResult } from './IGameModeHandler';
+import type {
+  IGameModeHandler,
+  ActionContext,
+  ActionResult,
+  GenerateTaskOptions,
+} from './IGameModeHandler';
 import { reduceExplainerAction } from './explainerModeActions';
 
 /**
@@ -14,19 +19,9 @@ import { reduceExplainerAction } from './explainerModeActions';
  * Gameplay actions are identical to Classic (explainer-driven CORRECT / SKIP).
  */
 export class TranslationModeHandler implements IGameModeHandler {
-  generateTask(deck: string[], _settings: GameSettings): GameTask {
+  generateTask(deck: string[], _settings: GameSettings, _options?: GenerateTaskOptions): GameTask {
     const raw = deck.pop() ?? '';
-    const decoded = decodeWordEntry(raw);
-    if (decoded) {
-      const task: GameTask = { id: uuidv4(), prompt: decoded.word };
-      if (decoded.hint) task.hint = decoded.hint;
-      if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
-      return task;
-    }
-    const parts = raw.split('|');
-    const prompt = parts[0]?.trim() || raw;
-    const answer = parts[1]?.trim();
-    return { id: uuidv4(), prompt, answer };
+    return translationTaskFromDeckEntry(raw, uuidv4());
   }
 
   handleAction(

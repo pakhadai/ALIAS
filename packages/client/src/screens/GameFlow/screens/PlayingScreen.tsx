@@ -101,7 +101,7 @@ export const PlayingScreen = () => {
   const canUseClassicButtons = gameMode === 'OFFLINE' || isActualExplainer;
   const displayPrompt = currentTask?.prompt ?? currentWord;
   const cardFlipBack = isTranslationMode
-    ? currentTask?.answer
+    ? (currentTask?.answer ?? currentTask?.hint)
     : (currentTask?.hint ?? currentTask?.answer);
   const flipBackLabel = isTranslationMode
     ? (t.wordTranslationAnswer ?? 'Answer') + (targetLanguage ? ` (${targetLanguage})` : '')

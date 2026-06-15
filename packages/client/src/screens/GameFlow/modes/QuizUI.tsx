@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { GameTask, GameActionPayload } from '@movli/shared';
 import type { ThemeConfig } from '../../../types';
+import { typographyClass } from '../../../constants/typography';
 import { HAPTIC } from '../../../utils/haptics';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
+import { useT } from '../../../hooks/useT';
 
 const OPTION_BTN =
   'min-h-[60px] min-w-0 flex items-center justify-center text-center px-4 py-5 rounded-2xl font-sans font-bold text-sm sm:text-base uppercase tracking-wide transition-all duration-200 border active:scale-95 active:opacity-90 disabled:opacity-40 disabled:pointer-events-none';
@@ -32,6 +34,7 @@ export function QuizUI({
   currentTaskAnswered,
   onAction,
 }: QuizUIProps): React.ReactElement {
+  const t = useT();
   const haptic = useHapticFeedback();
   const [picked, setPicked] = useState<string | null>(null);
   const [lockedOut, setLockedOut] = useState(false);
@@ -87,13 +90,13 @@ export function QuizUI({
 
   const kindLabel =
     task.kind === 'SYNONYM'
-      ? 'ЗНАЙДИ СИНОНІМ'
+      ? t.quizKindSynonym
       : task.kind === 'ANTONYM'
-        ? 'АНТОНІМ'
+        ? t.quizKindAntonym
         : task.kind === 'TRANSLATION'
-          ? 'ПЕРЕКЛАД'
+          ? t.quizKindTranslation
           : task.kind === 'TABOO'
-            ? 'ВГАДАЙ ЗА ПІДКАЗКАМИ'
+            ? t.quizKindTaboo
             : null;
 
   return (
@@ -101,7 +104,7 @@ export function QuizUI({
       {kindLabel && (
         <div className="px-4 py-2 rounded-full border border-ui-border bg-ui-surface shadow-sm transition-colors duration-200">
           <span
-            className={`text-[10px] uppercase tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
+            className={`${typographyClass.label} tracking-[0.4em] font-bold ${currentTheme.textSecondary}`}
           >
             {kindLabel}
           </span>
@@ -126,8 +129,8 @@ export function QuizUI({
                 ? `${solvedByName} +1`
                 : systemReveal
                   ? currentTaskAnswered === '__all_wrong__'
-                    ? 'Ніхто не вгадав'
-                    : 'Час вийшов'
+                    ? t.quizAllWrong
+                    : t.quizTimeOut
                   : '+1'}
             </span>
           </div>

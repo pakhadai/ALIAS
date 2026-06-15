@@ -5,6 +5,7 @@ import {
   decodeWordEntry,
   buildMockTranslationDeckEntries,
   resolveMockTargetLanguage,
+  translationTaskFromDeckEntry,
 } from '@movli/shared';
 
 /** Index-aligned MOCK word pairs for offline / fallback translation decks. */
@@ -29,18 +30,7 @@ export function buildOfflineTask(
   const decoded = decodeWordEntry(rawWord);
 
   if (m === GameMode.TRANSLATION) {
-    if (decoded) {
-      const task: GameTask = { id: taskId, prompt: decoded.word };
-      if (decoded.hint) task.hint = decoded.hint;
-      if (decoded.tabooWords?.length) task.tabooWords = decoded.tabooWords;
-      return task;
-    }
-    const parts = rawWord.split('|');
-    return {
-      id: taskId,
-      prompt: parts[0]?.trim() || rawWord,
-      answer: parts[1]?.trim(),
-    };
+    return translationTaskFromDeckEntry(rawWord, taskId);
   }
 
   if (m === GameMode.QUIZ) {

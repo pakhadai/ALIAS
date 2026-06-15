@@ -164,19 +164,43 @@ describe('applyOfflineGameAction', () => {
     expect(getState().teamsLocked).toBe(false);
   });
 
-  it('should build solo teams on START_GAME in QUIZ mode', () => {
-    const { deps, getState } = createOfflineDeps({
-      gameState: GameState.LOBBY,
-      settings: {
-        ...initialState.settings,
-        general: { ...initialState.settings.general, teamMode: 'SOLO' },
-        mode: quizModeSettings,
+  it('should block START_GAME in QUIZ mode (online-only)', () => {
+    const dispatchSpy = vi.fn((action: Action) => {
+      current = gameReducer(current, action);
+      stateRef.current = current;
+    });
+    let current = gameReducer(initialState, {
+      type: 'SET_STATE',
+      payload: {
+        gameMode: 'OFFLINE',
+        isHost: true,
+        myPlayerId: 'host',
+        players: [makePlayer('host', 'Host'), makePlayer('guest', 'Guest')],
+        settings: {
+          ...initialState.settings,
+          general: { ...initialState.settings.general, teamMode: 'SOLO' },
+          mode: quizModeSettings,
+        },
+        gameState: GameState.LOBBY,
       },
     });
+    const stateRef = { current };
+    const deps: OfflineGameActionDeps = {
+      stateRef,
+      dispatch: dispatchSpy,
+      playSound: vi.fn(),
+      nextWordLogic: vi.fn(),
+      nextOfflineImposterWord: vi.fn(() => 'word'),
+      offlineQuizLockTaskIdRef: { current: null },
+    };
     applyOfflineGameAction(deps, { action: 'START_GAME' });
-    expect(getState().gameState).toBe(GameState.COUNTDOWN);
-    expect(getState().teams).toHaveLength(2);
-    expect(getState().teams.every((team) => team.players.length === 1)).toBe(true);
+    expect(stateRef.current.gameState).toBe(GameState.LOBBY);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'SHOW_NOTIF',
+        payload: expect.objectContaining({ type: 'error' }),
+      })
+    );
   });
 
   it('should increment correct count and call nextWordLogic on CORRECT', () => {
