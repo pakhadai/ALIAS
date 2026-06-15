@@ -35,12 +35,15 @@ test.describe('@smoke MOVLI — basic smoke tests', () => {
 
   test('language toggle cycles through UA→DE→EN', async ({ page }) => {
     await gotoHome(page);
-    // Language selector is inside the app settings modal
     await page.getByRole('button', { name: 'Settings' }).click();
+    const settingsDialog = page.getByRole('dialog', {
+      name: /Settings|Налаштування|Einstellungen/i,
+    });
+    await expect(settingsDialog).toBeVisible({ timeout: 10_000 });
 
-    const ua = page.getByRole('button', { name: 'UA', exact: true });
-    const de = page.getByRole('button', { name: 'DE', exact: true });
-    const en = page.getByRole('button', { name: 'EN', exact: true });
+    const ua = settingsDialog.getByRole('button', { name: 'UA', exact: true });
+    const de = settingsDialog.getByRole('button', { name: 'DE', exact: true });
+    const en = settingsDialog.getByRole('button', { name: 'EN', exact: true });
 
     await expect(ua).toBeVisible();
     await expect(de).toBeVisible();

@@ -31,7 +31,7 @@
 ## [Unreleased]
 
 ### Fixed
-- Lobby invite QR: reliable generation with loading/retry UI, stale-result guard, canonical join URL via optional `VITE_PUBLIC_APP_URL` (`useLobbyQrCode`, `roomJoin.ts`, `LobbyInviteSheet`)
+- App settings modal: restore mount-on-open + internal exit animation — always-mounted `open={showAppSettings}` broke E2E smoke language toggle in real browser (`AppSettingsModal`, `MenuScreen`)
 - Bottom sheet drag: disable `backdrop-filter` on panel/header while `data-dragging` — fixes smeared modal title during swipe-to-dismiss on iOS/TMA (`styles.css`)
 - Word seed: legacy `travel` / `science` / `movies` JSON maps seed again with stable `conceptKey` (`{slug}-{index}`) so Translation mode pairs UA↔EN↔DE correctly from DB
 - Translation deck build: default `targetLanguage` resolved server-side and offline when unset (UA→DE, EN→UA, etc.) instead of skipping pair assembly

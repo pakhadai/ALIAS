@@ -324,8 +324,8 @@ export const MenuScreen = () => {
         />
       ) : null}
 
-      {!isEnterName ? (
-        <AppSettingsModal open={showAppSettings} onClose={() => setShowAppSettings(false)} />
+      {showAppSettings && !isEnterName ? (
+        <AppSettingsModal onClose={() => setShowAppSettings(false)} />
       ) : null}
 
       {isEnterName ? <EnterNameSheet /> : null}

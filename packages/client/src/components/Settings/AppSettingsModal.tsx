@@ -13,13 +13,13 @@ import { playSoundEffect } from '../../utils/audio';
 import { typographyClass, labelSectionClass, captionMutedClass } from '../../constants/typography';
 
 type Props = {
-  open: boolean;
   onClose: () => void;
 };
 
-export function AppSettingsModal({ open, onClose }: Props) {
+export function AppSettingsModal({ onClose }: Props) {
   const { settings, currentTheme, setPreferences, showNotification, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
+  const [open, setOpen] = useState(true);
   const [haptics, setHaptics] = useState<boolean>(() => {
     try {
       const raw = localStorage.getItem('movli_preferences');
@@ -35,11 +35,13 @@ export function AppSettingsModal({ open, onClose }: Props) {
   const themes = useMemo(() => UI_THEME_IDS, []);
 
   const sectionLabel = `${labelSectionClass} ${currentTheme.textMain}`;
+  const handleClose = () => setOpen(false);
 
   return (
     <ModalSheet
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
+      onExited={onClose}
       zLayer="modalNested"
       size="tall"
       showClose
@@ -97,7 +99,7 @@ export function AppSettingsModal({ open, onClose }: Props) {
                       return;
                     }
                     setPreferences({ theme: themeId });
-                    onClose();
+                    handleClose();
                   }}
                   className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden ${
                     isActive ? 'ring-2 ring-offset-2 ring-offset-ui-bg' : ''
