@@ -6,6 +6,7 @@ import type { TranslationStrings } from '../../../hooks/useT';
 import { LobbyInviteSheet } from './LobbyInviteSheet';
 import { LobbyRulesSummaryCard } from './LobbyRulesSummaryCard';
 import { typographyClass } from '../../../constants/typography';
+import type { LobbyQrStatus } from '../useLobbyQrCode';
 
 type T = TranslationStrings;
 
@@ -17,6 +18,8 @@ export function OnlineLobbyIntro(props: {
   modeLabel: string;
   categoriesPreview: string;
   qrCodeData: string;
+  qrStatus: LobbyQrStatus;
+  onRetryQr: () => void;
   isHost: boolean;
   onShareLink: () => void;
   onInviteTelegram: () => void;
@@ -31,6 +34,8 @@ export function OnlineLobbyIntro(props: {
     modeLabel,
     categoriesPreview,
     qrCodeData,
+    qrStatus,
+    onRetryQr,
     isHost,
     onShareLink,
     onInviteTelegram,
@@ -93,9 +98,11 @@ export function OnlineLobbyIntro(props: {
           theme={theme}
           t={t}
           qrCodeData={qrCodeData}
+          qrStatus={qrStatus}
           onShareLink={onShareLink}
           onInviteTelegram={onInviteTelegram}
           onShowQr={onShowQr}
+          onRetryQr={onRetryQr}
         />
       ) : null}
 

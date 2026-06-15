@@ -25,6 +25,16 @@ function isInteractiveSheetTarget(target: EventTarget | null): boolean {
   );
 }
 
+function resolveSheetScrollElement(panel: HTMLElement): HTMLElement {
+  return panel.querySelector<HTMLElement>('[data-modal-sheet-scroll]') ?? panel;
+}
+
+function isSheetDragHandleTarget(panel: HTMLElement, target: EventTarget | null): boolean {
+  if (!(target instanceof Node)) return false;
+  const dragZone = panel.querySelector('[data-sheet-drag-handle]');
+  return Boolean(dragZone?.contains(target));
+}
+
 type UseSheetDragToCloseOptions = {
   enabled: boolean;
   onDismiss: () => void;
@@ -90,12 +100,48 @@ export function useSheetDragToClose({
     };
   }, [panelRef, resetDrag]);
 
+  /**
+   * Block rubber-band pull on scroll body when already at top — swipe-to-dismiss stays on the header
+   * handle only (iOS WebView otherwise scrolls/bounces inner content).
+   */
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!enabled || !panel) return;
+
+    const scrollEl = resolveSheetScrollElement(panel);
+    let touchStartY = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      if (isInteractiveSheetTarget(e.target)) return;
+      if (isSheetDragHandleTarget(panel, e.target)) return;
+      touchStartY = e.touches[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (activeRef.current) return;
+      if (e.touches.length !== 1) return;
+      if (isInteractiveSheetTarget(e.target)) return;
+      if (isSheetDragHandleTarget(panel, e.target)) return;
+      if (scrollEl.scrollTop > 0) return;
+      const deltaY = (e.touches[0]?.clientY ?? 0) - touchStartY;
+      if (deltaY > 0) e.preventDefault();
+    };
+
+    scrollEl.addEventListener('touchstart', onTouchStart, { passive: true });
+    scrollEl.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    return () => {
+      scrollEl.removeEventListener('touchstart', onTouchStart);
+      scrollEl.removeEventListener('touchmove', onTouchMove);
+    };
+  }, [enabled, panelRef]);
+
   const canStartDrag = useCallback(
     (target: EventTarget | null) => {
       if (!enabled || !panelRef.current) return false;
       if (isInteractiveSheetTarget(target)) return false;
-      const dragZone = panelRef.current.querySelector('[data-sheet-drag-handle]');
-      return Boolean(dragZone?.contains(target as Node));
+      return isSheetDragHandleTarget(panelRef.current, target);
     },
     [enabled, panelRef]
   );

@@ -98,6 +98,8 @@ declare global {
   interface ImportMetaEnv {
     readonly VITE_SENTRY_DSN?: string;
     readonly VITE_SENTRY_RELEASE?: string;
+    /** Canonical public PWA URL for lobby QR / copy-link invites (optional). */
+    readonly VITE_PUBLIC_APP_URL?: string;
   }
 }
 

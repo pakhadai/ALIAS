@@ -163,6 +163,8 @@ const mockT = {
   lobbyInviteCopyLink: 'Copy',
   lobbyInviteTelegram: 'TG',
   lobbyInviteQr: 'QR',
+  lobbyQrRetry: 'Retry QR',
+  lobbyQrLoading: 'Loading QR',
   copyRoomCodeTitle: 'Copy code',
   roomCodeCopied: 'Code copied',
   linkCopied: 'Copied',

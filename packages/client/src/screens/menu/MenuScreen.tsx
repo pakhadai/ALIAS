@@ -223,7 +223,7 @@ export const MenuScreen = () => {
             </div>
           </div>
 
-          <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up px-3">
+          <div className="w-full space-y-3 flex flex-col items-center shrink-0 animate-slide-up px-4 overflow-visible">
             <AccentFooterCta
               themeButtonClass={currentTheme.button}
               onClick={() => void handleCreateRoom()}
@@ -324,8 +324,8 @@ export const MenuScreen = () => {
         />
       ) : null}
 
-      {showAppSettings && !isEnterName ? (
-        <AppSettingsModal onClose={() => setShowAppSettings(false)} />
+      {!isEnterName ? (
+        <AppSettingsModal open={showAppSettings} onClose={() => setShowAppSettings(false)} />
       ) : null}
 
       {isEnterName ? <EnterNameSheet /> : null}

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate } from 'lucide-react';
 import { ModalSheet, ModalSheetBody } from '../ModalSheet';
-import { ModalSheetTitle } from '../Shared';
+import { ModalSheetTitle, menuHeaderModalBackdropClass } from '../Shared';
 import { Button } from '../Button';
 import { Language, SoundPreset } from '../../types';
 import { THEME_CONFIG, UI_THEME_IDS } from '../../constants';
@@ -13,10 +13,11 @@ import { playSoundEffect } from '../../utils/audio';
 import { typographyClass, labelSectionClass, captionMutedClass } from '../../constants/typography';
 
 type Props = {
+  open: boolean;
   onClose: () => void;
 };
 
-export function AppSettingsModal({ onClose }: Props) {
+export function AppSettingsModal({ open, onClose }: Props) {
   const { settings, currentTheme, setPreferences, showNotification, uiLanguage } = useGame();
   const { isAuthenticated } = useAuthContext();
   const [haptics, setHaptics] = useState<boolean>(() => {
@@ -30,23 +31,21 @@ export function AppSettingsModal({ onClose }: Props) {
     }
   });
   const t = useT();
-  const [open, setOpen] = useState(true);
 
   const themes = useMemo(() => UI_THEME_IDS, []);
 
   const sectionLabel = `${labelSectionClass} ${currentTheme.textMain}`;
-  const handleClose = () => setOpen(false);
 
   return (
     <ModalSheet
       open={open}
-      onClose={handleClose}
-      onExited={onClose}
+      onClose={onClose}
       zLayer="modalNested"
       size="tall"
       showClose
       closeAriaLabel={t.close}
       paddedContent={false}
+      backdropClassName={menuHeaderModalBackdropClass}
       ariaLabelledBy="app-settings-title"
       header={
         <div className="flex items-center gap-2 min-w-0">
@@ -98,7 +97,7 @@ export function AppSettingsModal({ onClose }: Props) {
                       return;
                     }
                     setPreferences({ theme: themeId });
-                    handleClose();
+                    onClose();
                   }}
                   className={`relative rounded-2xl p-4 flex flex-col gap-1 transition-all active:scale-95 text-left overflow-hidden ${
                     isActive ? 'ring-2 ring-offset-2 ring-offset-ui-bg' : ''

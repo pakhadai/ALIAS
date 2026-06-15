@@ -389,10 +389,12 @@ html[data-app-header] {
 }
 
 /* ── Bottom sheet overlay (ModalSheet, RulesModal, AppSettingsModal) ── */
-/* Light scrim behind sheet — theme-adaptive dim, no heavy frosted glass */
+/* Flat dark scrim behind sheet — no frosted glass / gradient wash */
 :root {
-  /** Theme-adaptive scrim — low-opacity fg ink */
-  --ui-overlay-dim: color-mix(in srgb, var(--ui-fg) 22%, transparent);
+  /** Modal backdrop — neutral dark filter (works on light + dark themes) */
+  --ui-overlay-dim: rgba(0, 0, 0, 0.55);
+  /** Menu header sheets (settings, rules) — slightly stronger dim over hero CTAs */
+  --ui-overlay-dim-strong: rgba(0, 0, 0, 0.62);
   /** Theme-adaptive chrome ink — fg/bg blend (dark theme → light ink, light → dark) */
   --ui-sheet-chrome-mix: color-mix(in srgb, var(--ui-fg) 52%, var(--ui-bg) 48%);
   --ui-sheet-glass-inset: 2px;
@@ -447,6 +449,19 @@ html[data-telegram-app='true']:not([data-telegram-desktop]) {
     var(--tg-content-safe-area-inset-top, var(--tma-content-top-floor, 104px)),
     var(--tma-content-top-floor, 104px)
   );
+}
+
+/**
+ * TMA mobile WebView (iOS/Android): blurred ::before/filter layers paint above the button
+ * (dark matte overlay); mask-composite snake ring also glitches. Use button box-shadow only.
+ */
+html[data-telegram-app='true']:not([data-telegram-desktop]) .accent-footer-cta-shell--ready::before,
+html[data-telegram-app='true']:not([data-telegram-desktop]) .accent-footer-cta-shell--ready::after {
+  display: none;
+}
+
+html[data-telegram-app='true']:not([data-telegram-desktop]) .lobby-start-btn--ready {
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--ui-accent) 36%, transparent);
 }
 
 /** Desktop TMA — native title bar is outside WebView; no mobile 104px floor. */
@@ -1036,27 +1051,22 @@ footer.footer-island.ui-app-footer {
 .accent-footer-cta-shell--ready::after {
   content: '';
   position: absolute;
+  /* Pin glow/ring to the button box (shell is width:100% around the button). */
+  inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background-image: radial-gradient(
-    112px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 82%, white 18%) 0%,
-    color-mix(in srgb, var(--ui-accent) 92%, transparent) 18%,
-    color-mix(in srgb, var(--ui-accent) 58%, transparent) 42%,
-    transparent 68%
-  );
-  animation: accent-cta-snake 6s linear infinite;
 }
 
+/* Centered ambient halo — behind the button (z-index -1); filter can paint over siblings on iOS if z≥0. */
 .accent-footer-cta-shell--ready::before {
-  inset: -10px;
+  inset: -8px;
   filter: blur(14px);
-  opacity: 0.58;
-  z-index: 0;
+  opacity: 0.52;
+  z-index: -1;
   background-image: radial-gradient(
-    128px circle at var(--snake-x) var(--snake-y),
+    120px 56px at 50% 50%,
     color-mix(in srgb, var(--ui-accent) 78%, white 22%) 0%,
-    color-mix(in srgb, var(--ui-accent) 62%, transparent) 28%,
+    color-mix(in srgb, var(--ui-accent) 58%, transparent) 38%,
     transparent 72%
   );
 }
@@ -1065,11 +1075,20 @@ footer.footer-island.ui-app-footer {
   inset: -2px;
   padding: 2px;
   opacity: 0.78;
-  z-index: 1;
+  z-index: -1;
+  background-image: radial-gradient(
+    112px circle at var(--snake-x) var(--snake-y),
+    color-mix(in srgb, var(--ui-accent) 82%, white 18%) 0%,
+    color-mix(in srgb, var(--ui-accent) 92%, transparent) 18%,
+    color-mix(in srgb, var(--ui-accent) 58%, transparent) 42%,
+    transparent 68%
+  );
+  animation: accent-cta-snake 6s linear infinite;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  /* source-out = exclude ring on WebKit; xor mis-renders filled overlay on iOS TMA */
+  -webkit-mask-composite: source-out;
   mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -1087,9 +1106,9 @@ footer.footer-island.ui-app-footer {
 button.lobby-start-btn {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  backface-visibility: hidden;
   border: none;
-  isolation: isolate;
+  position: relative;
+  z-index: 1;
 }
 
 .lobby-start-btn--ready:active {
@@ -1110,10 +1129,10 @@ button.lobby-start-btn {
 }
 
 .lobby-start-btn--ready {
+  /* No --ui-bg drop shadow — reads as dark opaque frame on OLED themes */
   box-shadow:
-    inset 0 1px 2px 0 color-mix(in srgb, white 12%, transparent),
-    0 1px 2px color-mix(in srgb, var(--ui-bg) 55%, transparent),
-    0 4px 18px color-mix(in srgb, var(--ui-accent) 28%, transparent);
+    inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+    0 4px 20px color-mix(in srgb, var(--ui-accent) 30%, transparent);
 }
 
 .lobby-start-btn--plain:active {
@@ -1121,9 +1140,14 @@ button.lobby-start-btn {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .accent-footer-cta-shell--ready::before,
   .accent-footer-cta-shell--ready::after {
     animation: none;
+    background-image: radial-gradient(
+      112px circle at 50% 50%,
+      color-mix(in srgb, var(--ui-accent) 72%, white 28%) 0%,
+      color-mix(in srgb, var(--ui-accent) 48%, transparent) 42%,
+      transparent 68%
+    );
   }
 
   .accent-footer-cta-shell--blocked {
@@ -1132,9 +1156,8 @@ button.lobby-start-btn {
 
   .lobby-start-btn--ready {
     box-shadow:
-      inset 0 1px 2px 0 color-mix(in srgb, white 12%, transparent),
-      0 1px 2px color-mix(in srgb, var(--ui-bg) 55%, transparent),
-      0 4px 18px color-mix(in srgb, var(--ui-accent) 28%, transparent);
+      inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+      0 4px 20px color-mix(in srgb, var(--ui-accent) 30%, transparent);
   }
 }
 
@@ -1180,20 +1203,18 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /** Stronger neutral wash toward the bottom — tames accent CTA / footer glow before it hits sheet glass */
-  background: linear-gradient(
-    to bottom,
-    var(--ui-overlay-dim) 0%,
-    var(--ui-overlay-dim) 38%,
-    color-mix(in srgb, var(--ui-bg) 38%, var(--ui-overlay-dim) 62%) 68%,
-    color-mix(in srgb, var(--ui-bg) 52%, transparent) 100%
-  );
+  background: var(--ui-overlay-dim);
   opacity: 0;
   transition: opacity 0s;
 }
 
 .bottom-sheet-backdrop::after {
   display: none;
+}
+
+/** Menu header sheets — slightly stronger dim (settings, rules on home) */
+.bottom-sheet-backdrop.bottom-sheet-backdrop--menu-dim::before {
+  background: var(--ui-overlay-dim-strong);
 }
 
 .bottom-sheet-backdrop[data-open='true']::before {
@@ -1208,6 +1229,24 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
 
 .bottom-sheet-backdrop[data-open='false'] {
   pointer-events: none;
+}
+
+/**
+ * Dark scrim + feathered glass mask = sheet reads as invisible (blurred black through mask).
+ * Solid surface while open — header top bar keeps its own frosted chrome.
+ */
+.bottom-sheet-backdrop[data-open='true'] .bottom-sheet-panel {
+  background: var(--ui-surface, var(--ui-card));
+}
+
+.bottom-sheet-backdrop[data-open='true'] .bottom-sheet-panel::before {
+  display: none;
+}
+
+.bottom-sheet-backdrop[data-open='true'] .bottom-sheet-panel::after {
+  background: var(--ui-surface, var(--ui-card));
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 /**
@@ -1331,31 +1370,11 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   transition: none;
 }
 
-/**
- * Drag transform + backdrop-filter = smeared header/text on iOS/TMA WebView.
- * Swap frosted glass for opaque chrome for the gesture lifetime only.
- */
-.bottom-sheet-panel[data-dragging='true']::before {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.bottom-sheet-panel[data-dragging='true'] .bottom-sheet-top-bar::before {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.bottom-sheet-panel[data-dragging='true'] .bottom-sheet-top-bar::after {
-  background: color-mix(in srgb, var(--ui-elevated, var(--ui-card)) 94%, transparent);
-  mask-image: none;
-  -webkit-mask-image: none;
-}
-
 .bottom-sheet-panel--sheet {
   border-radius: var(--ui-sheet-radius) var(--ui-sheet-radius) 0 0;
   height: auto;
   overflow-y: auto;
-  overscroll-y: contain;
+  overscroll-behavior-y: none;
 }
 
 .bottom-sheet-panel--sheet.bottom-sheet-panel--size-compact,
@@ -1386,7 +1405,7 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
-  overscroll-y: contain;
+  overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1404,10 +1423,7 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   background: transparent;
   touch-action: none;
   cursor: grab;
-}
-
-.bottom-sheet-top-bar:active {
-  cursor: grabbing;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bottom-sheet-top-bar::after {
@@ -1503,17 +1519,10 @@ html[data-telegram-desktop] .bottom-sheet-backdrop {
   min-width: 0;
   touch-action: none;
   cursor: grab;
-}
-
-.bottom-sheet-handle-row:active {
-  cursor: grabbing;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Desktop TMA — modal panel + top bar (backdrop-filter unreliable in TG Desktop WebView) ── */
-
-html[data-telegram-desktop] .bottom-sheet-backdrop::before {
-  background: color-mix(in srgb, var(--ui-fg) 48%, transparent);
-}
 
 html[data-telegram-desktop] .bottom-sheet-panel {
   /* Theme surface — not --ui-card/--ui-elevated (often #fff on Warm Paper) */

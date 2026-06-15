@@ -147,6 +147,9 @@ export const bottomSheetBackdropClass = (
     .filter(Boolean)
     .join(' ');
 
+/** Menu header sheets (settings, rules) — slightly stronger dim over home hero / CTAs */
+export const menuHeaderModalBackdropClass = 'bottom-sheet-backdrop--menu-dim';
+
 /** Height + padding preset for edge-to-edge sheets. See `docs/TMA_LAYOUT.md`. */
 export type ModalSheetSize = 'compact' | 'default' | 'tall';
 

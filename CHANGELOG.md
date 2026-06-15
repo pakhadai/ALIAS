@@ -31,7 +31,7 @@
 ## [Unreleased]
 
 ### Fixed
-- Home menu «Створити гру» CTA: snake glow no longer ghost-offset — `slideUp` animation ends with `transform: none` (same as `pageIn`); horizontal bleed padding on menu CTA stack (`tailwind.config.ts`, `MenuScreen.tsx`, `styles.css`)
+- Lobby invite QR: reliable generation with loading/retry UI, stale-result guard, canonical join URL via optional `VITE_PUBLIC_APP_URL` (`useLobbyQrCode`, `roomJoin.ts`, `LobbyInviteSheet`)
 - Bottom sheet drag: disable `backdrop-filter` on panel/header while `data-dragging` — fixes smeared modal title during swipe-to-dismiss on iOS/TMA (`styles.css`)
 - Word seed: legacy `travel` / `science` / `movies` JSON maps seed again with stable `conceptKey` (`{slug}-{index}`) so Translation mode pairs UA↔EN↔DE correctly from DB
 - Translation deck build: default `targetLanguage` resolved server-side and offline when unset (UA→DE, EN→UA, etc.) instead of skipping pair assembly
@@ -40,9 +40,11 @@
 - Home menu hero layout: spacer zone collapses first on short viewports, then tagline, logo mark last — prevents logo sliding under fixed `AppHeader` (`MenuScreen`, `styles.css`)
 
 ### Changed
+- Modal backdrop scrim: flat dark overlay (`rgb(0 0 0 / 55%)`) instead of light fg-based gradient wash (`styles.css`)
 - Local DB tooling: `.env.prod` defaults aligned with `docker-compose.yml` (`movli`/`movli_dev`); Prisma CLI scripts load root `.env.prod`; root `db:up`, `db:migrate`, `db:seed`, `db:studio`, `db:setup` shortcuts
 
 ### Added
+- Lobby QR invite: `useLobbyQrCode` hook, `VITE_PUBLIC_APP_URL` for prod Docker QR/copy-link, docs in `docs/VIRAL_INVITES_PHASE7.md` §2b
 - Hardcore epic: `hardcoreVariant` (`TABOO` | `SKIP_ENDS_TURN` | `MAX`) in `@movli/shared` mode settings; `GameTask.hint` / `tabooWords`; `wordEntry` JSON v:1 encode/decode; WordService loads hint/taboo from DB; tap-to-flip hint + taboo chips in `ClassicWordCard`; lobby rules 3-chip variant picker
 - Root `test:client` script — parity with `test:server` (TEST-COV-001 Session 10)
 - E2E `@extended` store/profile flows (TEST-COV-001 Session 9): `extended-profile.spec.ts`, `extended-store.spec.ts`, `auth-session` + `menu-ui` helpers, `seed-e2e-auth-user.ts`; optional `pnpm --filter @movli/e2e run test:extended`
@@ -171,7 +173,7 @@
 - Accent footer CTA snake animation: perimeter crawl via `@property --snake-x/y` + `radial-gradient` (replaces conic spin; `styles.css`)
 
 ### Fixed
-- Profile hero accent glow sharp horizontal cutoff — moved to full-viewport `ScreenAccentGlow` (same pattern as menu home); removed fixed `h-40` radial clip in `ProfileHero` (`ScreenAccentGlow.tsx`, `ProfileScreen.tsx`, `ProfileHero.tsx`, `MenuScreen.tsx`)
+- Home menu «Create game» CTA on TMA mobile (iOS): hide blurred `::before`/`::after` pseudo layers (iOS paints filter blur above button → dark matte overlay); accent-only `box-shadow` on TMA; remove `--ui-bg` drop shadow from `.lobby-start-btn--ready`; pseudo glow at `z-index: -1` on desktop (`styles.css`, `AccentFooterCta.tsx`)
 - TMA `AppHeader` title sat below native Telegram back/menu buttons — title row now spans full `--tg-content-safe-area-inset-top` (no separate `pt-device-top`); aligns with Bot API 8.0+ content safe area (`GlassAppHeader.tsx`, `styles.css`, `tmaLayoutConstants.ts`)
 - ModalSheet keyboard lift jitter — CSS-animated `--sheet-keyboard-lift` (280ms) instead of instant `paddingBottom`; deferred input focus after enter animation; `pb-modal-bottom` padding transition via `data-keyboard-open`; single settle timer on dismiss (`ModalSheet.tsx`, `useVisualViewportBottomInset.ts`, `styles.css`)
 - TMA ModalSheet overlap with Telegram header buttons when SDK reports undersized `contentSafeAreaInset.top` — enforce 88px floor via `--tma-content-safe-top` and backdrop `padding-top` (`styles.css`, `useTelegramApp.ts`)

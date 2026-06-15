@@ -1,6 +1,6 @@
 # Current Focus — MOVLI Master
 
-**Last updated:** 2026-06-14 (Translation mode flip + deck pairs ✅)  
+**Last updated:** 2026-06-15 (Lobby QR invite hardening ✅, full test suite green)  
 **Active branch:** `main`
 
 ## What's in progress
@@ -11,6 +11,7 @@
 
 ## What was just completed
 
+- **Lobby QR invite:** `useLobbyQrCode` (loading/error/retry, cancellation), `VITE_PUBLIC_APP_URL`, invite sheet + QR modal UX, tests + `docs/VIRAL_INVITES_PHASE7.md` §2b
 - **Translation mode:** DB deck builds `source|target` pairs via `WordService`; flip card back shows `GameTask.answer` in target language; lobby target-language picker excludes deck language; pack language chip fixes deck `language` field
 - **Hardcore + Hint flip epic:** `@movli/shared` `hardcoreVariant`, `GameTask.hint/tabooWords`, `wordEntry.ts`; server WordService + handlers + GameEngine merge; client flip card, taboo chips, settings 3-chip picker, offline skip logic ✅
 

@@ -1057,6 +1057,7 @@ pnpm --filter @movli/e2e run test -- --grep "@extended"
 | `VITE_SERVER_URL` | URL сервера (default: `http://localhost:3001`) |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `VITE_TG_APP_LINK` | Telegram Mini App deep-link для запрошень у лобі (`https://t.me/<bot>/<app>`) |
+| `VITE_PUBLIC_APP_URL` | Канонічний публічний URL PWA для QR-коду та copy-link у лобі (`?room=`). У Docker prod/npm зазвичай `https://DOMAIN`; у dev — fallback на `window.location` |
 | `VITE_SENTRY_DSN` / `VITE_SENTRY_RELEASE` | Опційно: клієнтський Sentry (`src/sentry.ts`) |
 
 ---

@@ -8,6 +8,7 @@ import {
   isValidRoomCode,
   normalizeTelegramAppLink,
   parseTelegramLobbyRoomCode,
+  resolvePublicAppJoinBase,
   roomJoinEnterNamePayload,
 } from './roomJoin';
 import { PLAYER_ID_KEY, ROOM_CODE_KEY } from '../services/api';
@@ -20,6 +21,7 @@ describe('roomJoin', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   describe('isValidRoomCode', () => {
@@ -45,8 +47,25 @@ describe('roomJoin', () => {
     });
   });
 
+  describe('resolvePublicAppJoinBase', () => {
+    it('uses window location when env is unset', () => {
+      window.history.replaceState({}, '', '/play?utm=1#hash');
+      expect(resolvePublicAppJoinBase()).toBe(`${window.location.origin}/play`);
+    });
+
+    it('uses VITE_PUBLIC_APP_URL when set', () => {
+      vi.stubEnv('VITE_PUBLIC_APP_URL', 'https://movli.example.com/app/');
+      window.history.replaceState({}, '', '/dev');
+
+      expect(resolvePublicAppJoinBase()).toBe('https://movli.example.com/app');
+      expect(buildRoomJoinUrl('12345')).toBe('https://movli.example.com/app?room=12345');
+    });
+  });
+
   describe('buildRoomJoinUrl', () => {
     it('builds a clean ?room= URL on current origin', () => {
+      vi.unstubAllEnvs();
+      window.history.replaceState({}, '', '/play');
       expect(buildRoomJoinUrl('99999')).toBe(`${window.location.origin}/play?room=99999`);
     });
   });

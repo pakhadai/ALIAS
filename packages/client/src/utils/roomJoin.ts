@@ -38,11 +38,33 @@ export function parseTelegramLobbyRoomCode(startParam: string): string | null {
   return isValidRoomCode(roomCode) ? roomCode : null;
 }
 
-/** PWA / web share URL that opens the app with `?room=` for quick join. */
-export function buildRoomJoinUrl(roomCode: string): string {
+/**
+ * Canonical PWA origin + path for room invites (QR, copy link, Web Share).
+ * Uses `VITE_PUBLIC_APP_URL` when set (Docker/TMA); otherwise current `window.location`.
+ */
+export function resolvePublicAppJoinBase(): string {
+  const fromEnv = (import.meta.env.VITE_PUBLIC_APP_URL as string | undefined)?.trim();
+  if (fromEnv) {
+    try {
+      const u = new URL(fromEnv.startsWith('http') ? fromEnv : `https://${fromEnv}`);
+      u.search = '';
+      u.hash = '';
+      const path = u.pathname.replace(/\/$/, '');
+      return path ? `${u.origin}${path}` : u.origin;
+    } catch {
+      // fall through to window.location
+    }
+  }
   const u = new URL(window.location.href);
   u.search = '';
   u.hash = '';
+  const path = u.pathname.replace(/\/$/, '');
+  return path ? `${u.origin}${path}` : u.origin;
+}
+
+/** PWA / web share URL that opens the app with `?room=` for quick join. */
+export function buildRoomJoinUrl(roomCode: string): string {
+  const u = new URL(resolvePublicAppJoinBase());
   u.searchParams.set('room', roomCode);
   return u.toString();
 }

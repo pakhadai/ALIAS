@@ -17,7 +17,6 @@ import { typographyClass, systemBannerClass } from '../../constants/typography';
 import { buildTeamShells } from '../../utils/buildTeamShells';
 import { buildRoomJoinUrl, buildTelegramLobbyInviteUrl } from '../../utils/roomJoin';
 import { MAX_PLAYERS } from '../../constants';
-import QRCode from 'qrcode';
 import type { Player } from '../../types';
 import { AssignPlayerSheet } from './components/AssignPlayerSheet';
 import { AddOfflinePlayerSheet } from './components/AddOfflinePlayerSheet';
@@ -32,6 +31,7 @@ import { LobbyPlayModeBarSlot } from './components/LobbyPlayModeBarSlot';
 import { LobbyStartPanel } from './components/LobbyStartPanel';
 import { LobbyGuestWaitingCard } from './components/LobbyGuestWaitingCard';
 import { deriveLobbyReadiness } from './deriveLobbyReadiness';
+import { useLobbyQrCode } from './useLobbyQrCode';
 
 const MAX_LOBBY_TEAMS = 10;
 
@@ -85,7 +85,6 @@ export const LobbyScreen = () => {
     if (teams.length <= desired) return;
     setTeams(teams.slice(0, desired).map((t) => ({ ...t, players: [...t.players] })));
   }, [gameMode, isHost, isSolo, general.teamCount, teams, setTeams]);
-  const [qrCodeData, setQrCodeData] = useState<string>('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const { registerLobbyExitHandler } = useLobbyExit();
   const openExitConfirmRef = useRef<() => void>(() => {});
@@ -113,19 +112,19 @@ export const LobbyScreen = () => {
   const userToggledTeamsRef = useRef(false);
 
   const joinUrl = useMemo(() => (roomCode ? buildRoomJoinUrl(roomCode) : ''), [roomCode]);
+  const qrEnabled = gameMode === 'ONLINE' && Boolean(roomCode);
+  const handleQrGenerateError = useCallback(() => {
+    showNotification(t.lobbyQrGenerateFailed, 'error');
+  }, [showNotification, t.lobbyQrGenerateFailed]);
+  const {
+    qrCodeData,
+    status: qrStatus,
+    retry: retryQr,
+  } = useLobbyQrCode(joinUrl, qrEnabled, {
+    onError: handleQrGenerateError,
+  });
   const prevPlayerIdsRef = useRef<string[]>([]);
   const didInitPlayersRef = useRef(false);
-
-  useEffect(() => {
-    if (gameMode === 'ONLINE' && roomCode) {
-      QRCode.toDataURL(joinUrl, { margin: 1 })
-        .then(setQrCodeData)
-        .catch(() => {
-          setQrCodeData('');
-          showNotification(t.lobbyQrGenerateFailed, 'error');
-        });
-    }
-  }, [joinUrl, gameMode, roomCode, showNotification, t.lobbyQrGenerateFailed]);
 
   useEffect(() => {
     const prev = new Set(prevPlayerIdsRef.current);
@@ -414,7 +413,7 @@ export const LobbyScreen = () => {
             }
           >
             <div className="bg-ui-surface p-4 rounded-2xl border border-ui-border w-[min(72vw,240px)] aspect-square shrink-0 flex items-center justify-center">
-              {qrCodeData ? (
+              {qrStatus === 'ready' && qrCodeData ? (
                 <img
                   src={qrCodeData}
                   alt=""
@@ -423,10 +422,22 @@ export const LobbyScreen = () => {
                   decoding="async"
                   className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
                 />
+              ) : qrStatus === 'error' ? (
+                <button
+                  type="button"
+                  onClick={retryQr}
+                  className={`flex flex-col items-center gap-2 px-4 text-center ${typographyClass.body} text-ui-fg-muted touch-manipulation active:scale-95`}
+                >
+                  <span>{t.lobbyQrGenerateFailed}</span>
+                  <span className={`${typographyClass.label} text-ui-accent`}>
+                    {t.lobbyQrRetry}
+                  </span>
+                </button>
               ) : (
                 <Loader2
                   size={32}
                   className={`animate-spin ${currentTheme.iconColor} text-ui-fg-muted`}
+                  aria-hidden
                 />
               )}
             </div>
@@ -485,6 +496,8 @@ export const LobbyScreen = () => {
                 modeLabel={modeLabel}
                 categoriesPreview={categoriesPreview}
                 qrCodeData={qrCodeData}
+                qrStatus={qrStatus}
+                onRetryQr={retryQr}
                 isHost={isHost}
                 onShareLink={() => void shareJoinLink()}
                 onInviteTelegram={inviteFriendsViaTelegram}

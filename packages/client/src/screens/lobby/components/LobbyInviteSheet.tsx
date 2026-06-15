@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link2, Mail, QrCode } from 'lucide-react';
+import { Link2, Loader2, Mail, QrCode } from 'lucide-react';
 import { ModalSheet } from '../../../components/ModalSheet';
 import { ModalOptionButton, ModalSheetTitle } from '../../../components/Shared';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import type { ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
+import type { LobbyQrStatus } from '../useLobbyQrCode';
 
 type T = TranslationStrings;
 
@@ -14,11 +15,23 @@ export function LobbyInviteSheet(props: {
   theme: ThemeConfig;
   t: T;
   qrCodeData: string;
+  qrStatus: LobbyQrStatus;
   onShareLink: () => void;
   onInviteTelegram: () => void;
   onShowQr: () => void;
+  onRetryQr: () => void;
 }): React.ReactNode {
-  const { onDismiss, theme, t, qrCodeData, onShareLink, onInviteTelegram, onShowQr } = props;
+  const {
+    onDismiss,
+    theme,
+    t,
+    qrCodeData,
+    qrStatus,
+    onShareLink,
+    onInviteTelegram,
+    onShowQr,
+    onRetryQr,
+  } = props;
   const haptic = useHapticFeedback();
   const [open, setOpen] = useState(true);
   const requestClose = () => setOpen(false);
@@ -29,12 +42,28 @@ export function LobbyInviteSheet(props: {
     requestClose();
   };
 
-  const runQrNested = () => {
+  const runQrAction = () => {
     haptic.impactOccurred('light');
+    if (qrStatus === 'loading' || qrStatus === 'idle') return;
+    if (qrStatus === 'error') {
+      onRetryQr();
+      return;
+    }
     if (!qrCodeData) return;
     onShowQr();
     requestClose();
   };
+
+  const qrLabel = qrStatus === 'error' ? t.lobbyQrRetry : t.lobbyInviteQr;
+
+  const qrIcon =
+    qrStatus === 'loading' ? (
+      <Loader2 size={18} className={`animate-spin ${theme.iconColor}`} aria-hidden />
+    ) : (
+      <QrCode size={18} className={theme.iconColor} aria-hidden />
+    );
+
+  const qrDisabled = qrStatus === 'loading' || qrStatus === 'idle';
 
   return (
     <ModalSheet
@@ -61,11 +90,14 @@ export function LobbyInviteSheet(props: {
             {t.lobbyInviteCopyLink}
           </ModalOptionButton>
           <ModalOptionButton
-            onClick={runQrNested}
-            disabled={!qrCodeData}
-            icon={<QrCode size={18} className={theme.iconColor} aria-hidden />}
+            data-testid="lobby-invite-qr-button"
+            onClick={runQrAction}
+            disabled={qrDisabled}
+            aria-busy={qrStatus === 'loading'}
+            aria-label={qrStatus === 'loading' ? t.lobbyQrLoading : qrLabel}
+            icon={qrIcon}
           >
-            {t.lobbyInviteQr}
+            {qrLabel}
           </ModalOptionButton>
         </div>
       </div>

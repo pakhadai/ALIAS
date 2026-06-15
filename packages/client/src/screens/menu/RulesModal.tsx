@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { ModalSheet, ModalSheetBody } from '../../components/ModalSheet';
-import { ModalSheetTitle } from '../../components/Shared';
+import { ModalSheetTitle, menuHeaderModalBackdropClass } from '../../components/Shared';
 import { GameMode } from '../../types';
 import type { GameSettings, ThemeConfig } from '../../types';
 import { useT } from '../../hooks/useT';
@@ -323,6 +323,7 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
       closeAriaLabel={t.close}
       closeIconSize={22}
       paddedContent={false}
+      backdropClassName={menuHeaderModalBackdropClass}
       ariaLabelledBy="rules-modal-title"
       header={
         <ModalSheetTitle id="rules-modal-title" themeClass="text-ui-fg">
