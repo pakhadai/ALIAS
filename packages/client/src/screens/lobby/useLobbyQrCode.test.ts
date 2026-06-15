@@ -1,19 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useLobbyQrCode } from './useLobbyQrCode';
+import { clearLobbyQrCache } from './generateLobbyQrDataUrl';
 
-const { toDataURL } = vi.hoisted(() => ({
-  toDataURL: vi.fn(),
+const { generateLobbyQrDataUrl, getCachedLobbyQrDataUrl } = vi.hoisted(() => ({
+  generateLobbyQrDataUrl: vi.fn(),
+  getCachedLobbyQrDataUrl: vi.fn(),
 }));
 
-vi.mock('qrcode', () => ({
-  default: { toDataURL },
-}));
+vi.mock('./generateLobbyQrDataUrl', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./generateLobbyQrDataUrl')>();
+  return {
+    ...actual,
+    generateLobbyQrDataUrl,
+    getCachedLobbyQrDataUrl,
+  };
+});
 
 describe('useLobbyQrCode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    toDataURL.mockResolvedValue('data:image/png;base64,ok');
+    clearLobbyQrCache();
+    getCachedLobbyQrDataUrl.mockReturnValue(undefined);
+    generateLobbyQrDataUrl.mockResolvedValue('data:image/svg+xml;charset=utf-8,ok');
   });
 
   it('should stay idle when disabled', () => {
@@ -21,7 +30,7 @@ describe('useLobbyQrCode', () => {
 
     expect(result.current.status).toBe('idle');
     expect(result.current.qrCodeData).toBe('');
-    expect(toDataURL).not.toHaveBeenCalled();
+    expect(generateLobbyQrDataUrl).not.toHaveBeenCalled();
   });
 
   it('should generate QR data URL when enabled', async () => {
@@ -31,12 +40,12 @@ describe('useLobbyQrCode', () => {
       expect(result.current.status).toBe('ready');
     });
 
-    expect(toDataURL).toHaveBeenCalledWith('https://app.test/?room=12345', { margin: 1 });
-    expect(result.current.qrCodeData).toBe('data:image/png;base64,ok');
+    expect(generateLobbyQrDataUrl).toHaveBeenCalledWith('https://app.test/?room=12345');
+    expect(result.current.qrCodeData).toBe('data:image/svg+xml;charset=utf-8,ok');
   });
 
-  it('should call onError and expose error status when generation fails', async () => {
-    toDataURL.mockRejectedValueOnce(new Error('canvas'));
+  it('should call onError and expose error status when generation fails twice', async () => {
+    generateLobbyQrDataUrl.mockRejectedValue(new Error('canvas'));
     const onError = vi.fn();
 
     const { result } = renderHook(() =>
@@ -47,14 +56,31 @@ describe('useLobbyQrCode', () => {
       expect(result.current.status).toBe('error');
     });
 
+    expect(generateLobbyQrDataUrl).toHaveBeenCalledTimes(2);
     expect(onError).toHaveBeenCalledOnce();
     expect(result.current.qrCodeData).toBe('');
   });
 
-  it('should retry generation after failure', async () => {
-    toDataURL
+  it('should auto-retry once before succeeding', async () => {
+    generateLobbyQrDataUrl
       .mockRejectedValueOnce(new Error('fail'))
-      .mockResolvedValueOnce('data:image/png;base64,retry');
+      .mockResolvedValueOnce('data:image/svg+xml;charset=utf-8,retry');
+
+    const { result } = renderHook(() => useLobbyQrCode('https://app.test/?room=12345', true));
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('ready');
+    });
+
+    expect(generateLobbyQrDataUrl).toHaveBeenCalledTimes(2);
+    expect(result.current.qrCodeData).toBe('data:image/svg+xml;charset=utf-8,retry');
+  });
+
+  it('should retry generation after failure via retry()', async () => {
+    generateLobbyQrDataUrl
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValueOnce('data:image/svg+xml;charset=utf-8,retry');
 
     const { result } = renderHook(() => useLobbyQrCode('https://app.test/?room=12345', true));
 
@@ -70,20 +96,30 @@ describe('useLobbyQrCode', () => {
       expect(result.current.status).toBe('ready');
     });
 
-    expect(toDataURL).toHaveBeenCalledTimes(2);
-    expect(result.current.qrCodeData).toBe('data:image/png;base64,retry');
+    expect(generateLobbyQrDataUrl).toHaveBeenCalledTimes(3);
+    expect(result.current.qrCodeData).toBe('data:image/svg+xml;charset=utf-8,retry');
+  });
+
+  it('should use cached QR immediately without regenerating', () => {
+    getCachedLobbyQrDataUrl.mockReturnValue('data:image/svg+xml;charset=utf-8,cached');
+
+    const { result } = renderHook(() => useLobbyQrCode('https://app.test/?room=12345', true));
+
+    expect(result.current.status).toBe('ready');
+    expect(result.current.qrCodeData).toBe('data:image/svg+xml;charset=utf-8,cached');
+    expect(generateLobbyQrDataUrl).not.toHaveBeenCalled();
   });
 
   it('should ignore stale results when joinUrl changes quickly', async () => {
     let resolveFirst: ((value: string) => void) | undefined;
-    toDataURL
+    generateLobbyQrDataUrl
       .mockImplementationOnce(
         () =>
           new Promise<string>((resolve) => {
             resolveFirst = resolve;
           })
       )
-      .mockResolvedValueOnce('data:image/png;base64,new');
+      .mockResolvedValueOnce('data:image/svg+xml;charset=utf-8,new');
 
     const { result, rerender } = renderHook(
       ({ url }: { url: string }) => useLobbyQrCode(url, true),
@@ -96,10 +132,10 @@ describe('useLobbyQrCode', () => {
       expect(result.current.status).toBe('ready');
     });
 
-    resolveFirst?.('data:image/png;base64,stale');
+    resolveFirst?.('data:image/svg+xml;charset=utf-8,stale');
 
     await waitFor(() => {
-      expect(result.current.qrCodeData).toBe('data:image/png;base64,new');
+      expect(result.current.qrCodeData).toBe('data:image/svg+xml;charset=utf-8,new');
     });
   });
 });
