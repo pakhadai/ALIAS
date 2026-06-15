@@ -74,6 +74,8 @@ vi.mock('../../hooks/useT', () => ({
     profileAnonymous: 'Guest',
     profileFreeAccount: 'Free account',
     profileGuestReset: 'Reset session',
+    profileGuestResetMenu: 'Reset session',
+    profileGuestLoginCta: 'Sign in / Register',
     profileLogout: 'Log out',
     profileLoginAnchor: 'Sign in to sync purchases',
     loginGoogle: 'Sign in with Google',
@@ -138,17 +140,27 @@ describe('ProfileScreen', () => {
     logout.mockResolvedValue(undefined);
   });
 
-  it('should show guest login CTA and browse store navigation', async () => {
+  it('should show guest login CTA in footer and browse store navigation', async () => {
     render(<ProfileScreen />);
 
-    expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
-    expect(screen.getByTestId('profile-guest-reset-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('profile-guest-login-btn')).toHaveTextContent('Sign in / Register');
+    expect(screen.getByText('Sign in to sync purchases')).toBeInTheDocument();
+    expect(screen.queryByTestId('profile-guest-reset-btn')).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText('Sign in with Google'));
+    await userEvent.click(screen.getByTestId('profile-guest-login-btn'));
     expect(requestLogin).toHaveBeenCalledOnce();
 
     await userEvent.click(screen.getByText('Browse store'));
     expect(setGameState).toHaveBeenCalledWith(GameState.STORE);
+  });
+
+  it('should open reset session confirm from overflow menu for guests', async () => {
+    render(<ProfileScreen />);
+
+    await userEvent.click(screen.getByTestId('app-header-menu'));
+    await userEvent.click(screen.getByTestId('app-header-menu-item-guest-reset'));
+
+    expect(screen.getByRole('heading', { name: 'Reset session?' })).toBeInTheDocument();
   });
 
   it('should gate guest lobby settings behind login', async () => {

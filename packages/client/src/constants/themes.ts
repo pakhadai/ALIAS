@@ -45,7 +45,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans border border-ui-border',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -79,7 +79,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -114,7 +114,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -141,7 +141,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -179,7 +179,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-sans',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-md',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -206,7 +206,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -236,7 +236,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-serif',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },
@@ -275,7 +275,7 @@ export const THEME_CONFIG: Record<AppTheme, ThemeConfig> = {
     textAccent: 'text-ui-accent font-sans',
     textGradient: 'text-ui-fg font-sans',
     button:
-      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans shadow-lg',
+      'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
     iconColor: 'text-ui-fg',
     progressBar: 'bg-ui-accent',
   },

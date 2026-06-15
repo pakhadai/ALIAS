@@ -36,6 +36,9 @@ export const SettingsToggle: React.FC<SettingsToggleProps> = ({
 
   const statusLabel = checked ? enabledLabel : disabledLabel;
 
+  const cardClassName =
+    'w-full p-4 rounded-xl border border-ui-border bg-ui-surface text-left transition-all flex items-center justify-between gap-3';
+
   if (variant === 'compact') {
     return (
       <button
@@ -44,11 +47,7 @@ export const SettingsToggle: React.FC<SettingsToggleProps> = ({
         aria-checked={checked}
         aria-label={ariaLabel}
         onClick={handleClick}
-        className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
-          checked
-            ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-            : 'border-ui-border bg-ui-surface'
-        } ${className}`}
+        className={`${cardClassName} ${className}`}
       >
         <span className={titleClassName ?? 'text-ui-fg'}>{statusLabel}</span>
         <ToggleTrack checked={checked} />
@@ -63,11 +62,7 @@ export const SettingsToggle: React.FC<SettingsToggleProps> = ({
       aria-checked={checked}
       aria-label={ariaLabel ?? title}
       onClick={handleClick}
-      className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
-        checked
-          ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-          : 'border-ui-border bg-ui-surface'
-      } ${className}`}
+      className={`${cardClassName} ${className}`}
     >
       <div className="min-w-0">
         {title ? <p className={`${titleClassName ?? ''} !mb-0`}>{title}</p> : null}
@@ -94,7 +89,7 @@ function ToggleTrack({ checked }: { checked: boolean }) {
       aria-hidden
     >
       <span
-        className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-ui-fg shadow-md ring-1 ring-[color-mix(in_srgb,var(--ui-fg)_12%,var(--ui-border))] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
+        className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-md ring-1 ring-black/10 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />

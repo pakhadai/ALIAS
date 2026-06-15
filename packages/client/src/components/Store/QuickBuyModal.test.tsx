@@ -21,6 +21,15 @@ vi.mock('../../hooks/useHapticFeedback', () => ({
   }),
 }));
 
+vi.mock('../../context/GameContext', () => ({
+  useGame: () => ({
+    currentTheme: {
+      button:
+        'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans',
+    },
+  }),
+}));
+
 vi.mock('../ModalSheet', () => ({
   ModalSheet: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div data-testid="modal">{children}</div> : null,

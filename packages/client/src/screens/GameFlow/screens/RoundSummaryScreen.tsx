@@ -80,6 +80,8 @@ export const RoundSummaryScreen = () => {
           <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
             {isHost ? (
               <Button
+                variant="primary"
+                volume="cta"
                 themeClass={currentTheme.button}
                 fullWidth
                 size="xl"

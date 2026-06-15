@@ -284,13 +284,17 @@ function ImposterDiscussionPhase({
           </div>
 
           <div className="mt-auto space-y-3 pt-6">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              fullWidth
+              size="lg"
               onClick={() => setConfirmEnd(true)}
-              className="w-full rounded-xl py-3 min-h-[48px] text-center text-sm font-medium text-ui-fg-muted opacity-70 transition-all duration-200 hover:opacity-100 active:scale-[0.99]"
             >
-              Завершити гру / відгадали
-            </button>
+              <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+                Завершити гру / відгадали
+              </span>
+            </Button>
           </div>
         </div>
       </div>

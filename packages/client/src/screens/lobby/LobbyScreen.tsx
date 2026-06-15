@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Lock, Unlock, ChevronDown, ChevronUp } from 'lucide-react';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { Button } from '../../components/Button';
 import { FixedBottomBar, ScreenShell, AppHeader } from '../../components/layout';
 import { ModalSheet } from '../../components/ModalSheet';
 import { ModalSheetTitle } from '../../components/Shared';
@@ -423,16 +424,18 @@ export const LobbyScreen = () => {
                   className="w-[208px] h-[208px] max-w-full max-h-full object-contain rounded-lg"
                 />
               ) : qrStatus === 'error' ? (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="md"
                   onClick={retryQr}
-                  className={`flex flex-col items-center gap-2 px-4 text-center ${typographyClass.body} text-ui-fg-muted touch-manipulation active:scale-95`}
+                  className="flex-col gap-2 font-sans normal-case tracking-normal touch-manipulation"
                 >
                   <span>{t.lobbyQrGenerateFailed}</span>
                   <span className={`${typographyClass.label} text-ui-accent`}>
                     {t.lobbyQrRetry}
                   </span>
-                </button>
+                </Button>
               ) : (
                 <Loader2
                   size={32}
@@ -454,13 +457,15 @@ export const LobbyScreen = () => {
                   <p className={`${typographyClass.body} text-ui-fg-muted`}>
                     {t.roomNotFound.replace('{0}', roomCode)}
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="md"
                     onClick={() => setGameState(GameState.JOIN_INPUT)}
-                    className={`mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-danger)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-danger)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_35%,transparent)] rounded-xl text-ui-danger ${typographyClass.label} tracking-wider transition-all duration-200 active:scale-[0.98]`}
+                    className="mt-4 font-sans normal-case tracking-normal text-ui-danger"
                   >
                     {t.tryAgain}
-                  </button>
+                  </Button>
                 </div>
               ) : connectionError ? (
                 <div className="bg-[color-mix(in_srgb,var(--ui-warning)_12%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_30%,transparent)] rounded-2xl p-6 text-center">
@@ -468,13 +473,15 @@ export const LobbyScreen = () => {
                     {t.connectionFailed}
                   </p>
                   <p className={`${typographyClass.body} text-ui-fg-muted`}>{connectionError}</p>
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="md"
                     onClick={() => setGameState(GameState.JOIN_INPUT)}
-                    className={`mt-4 px-6 py-2 bg-[color-mix(in_srgb,var(--ui-warning)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-warning)_28%,transparent)] border border-[color-mix(in_srgb,var(--ui-warning)_35%,transparent)] rounded-xl text-ui-warning ${typographyClass.label} tracking-wider transition-all duration-200 active:scale-[0.98]`}
+                    className="mt-4 font-sans normal-case tracking-normal text-ui-warning"
                   >
                     {t.tryAgain}
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="bg-ui-surface border border-ui-border rounded-2xl p-6 text-center">
@@ -601,21 +608,25 @@ export const LobbyScreen = () => {
                   <ScreenTitle as="h3">{t.teams}</ScreenTitle>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {isHost && gameMode === 'OFFLINE' && (
-                      <button
+                      <Button
                         type="button"
+                        variant="tertiary"
+                        size="sm"
                         onClick={() => setGameState(GameState.TEAMS)}
-                        className={`px-2.5 py-1.5 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.label} font-sans normal-case text-ui-fg-muted transition-all active:scale-[0.98]`}
+                        className="font-sans normal-case tracking-normal"
                       >
                         {t.lobbyConfigureTeams} →
-                      </button>
+                      </Button>
                     )}
                     {isHost && (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() =>
                           sendAction({ action: 'TEAM_LOCK', data: { locked: !teamsLocked } })
                         }
-                        className="min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
+                        className="min-h-9 min-w-9 px-0"
                         aria-label={teamsLocked ? t.unlockTeams : t.lockTeams}
                         title={teamsLocked ? t.unlockTeams : t.lockTeams}
                       >
@@ -623,26 +634,31 @@ export const LobbyScreen = () => {
                           <Lock
                             size={15}
                             className={`${currentTheme.iconColor} text-ui-fg-muted`}
+                            aria-hidden
                           />
                         ) : (
                           <Unlock
                             size={15}
                             className={`${currentTheme.iconColor} text-ui-fg-muted`}
+                            aria-hidden
                           />
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
 
                 {shouldCollapseTeams && (
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="md"
+                    fullWidth
                     onClick={() => {
                       userToggledTeamsRef.current = true;
                       setTeamsExpanded((v) => !v);
                     }}
-                    className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.label} font-sans normal-case text-ui-fg-muted transition-all active:scale-[0.98]`}
+                    className="font-sans normal-case tracking-normal gap-1.5"
                     data-testid="lobby-teams-toggle"
                   >
                     {teamsExpanded ? (
@@ -656,7 +672,7 @@ export const LobbyScreen = () => {
                         {t.lobbyShowTeams}
                       </>
                     )}
-                  </button>
+                  </Button>
                 )}
 
                 {teamsExpanded ? (

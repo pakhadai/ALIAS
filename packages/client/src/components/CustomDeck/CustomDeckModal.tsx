@@ -18,6 +18,9 @@ import { useT } from '../../hooks/useT';
 import { buildDeckShareUrl } from '../../utils/deckShare';
 import { ModalSheet, ModalSheetBody, ModalSheetFooter } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
+import { Button } from '../Button';
+import { SettingsChip } from '../Settings';
+import { settingsChipLabelClass } from '../Settings/settingsChipStyles';
 import { typographyClass, captionMutedClass, formLabelClass } from '../../constants/typography';
 import {
   fetchMyDecks,
@@ -44,16 +47,20 @@ function CopyButton({ text }: { text: string }) {
     });
   };
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
       onClick={copy}
-      className="p-1.5 rounded-lg hover:bg-ui-surface-hover transition-all duration-200 ease-out active:scale-95"
+      className="min-h-8 min-w-8 px-1.5"
+      aria-label="Copy access code"
     >
       {copied ? (
-        <Check size={13} className="text-ui-success" />
+        <Check size={13} className="text-ui-success" aria-hidden />
       ) : (
-        <Copy size={13} className="text-ui-fg-muted" />
+        <Copy size={13} className="text-ui-fg-muted" aria-hidden />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -111,14 +118,16 @@ function DeckItem({
             <CopyButton text={deck.accessCode} />
           </div>
           {deck.accessCode && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={handleShareLink}
-              className={`ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 ${typographyClass.label} tracking-wider text-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-all duration-200 ease-out active:scale-[0.98]`}
+              className="ml-1 font-sans normal-case tracking-normal gap-1 text-ui-accent"
             >
-              <Share2 size={12} className="shrink-0" />
+              <Share2 size={12} className="shrink-0" aria-hidden />
               {t.shareDeckLink}
-            </button>
+            </Button>
           )}
           {deck.status !== 'approved' && (
             <>
@@ -129,13 +138,21 @@ function DeckItem({
         </div>
       </div>
       {onSelect && <ChevronRight size={16} className="text-ui-fg-muted shrink-0" />}
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
         onClick={handleDelete}
         disabled={deleting}
-        className="shrink-0 p-2 rounded-xl hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] text-ui-fg-muted hover:text-ui-danger transition-all duration-200 ease-out active:scale-95 disabled:opacity-50"
+        className="shrink-0 min-h-11 min-w-11 px-0 text-ui-fg-muted hover:text-ui-danger hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)]"
+        aria-label="Delete deck"
       >
-        {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-      </button>
+        {deleting ? (
+          <Loader2 size={14} className="animate-spin" aria-hidden />
+        ) : (
+          <Trash2 size={14} aria-hidden />
+        )}
+      </Button>
     </div>
   );
 }
@@ -239,14 +256,28 @@ function CreateForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
 
       {error && <p className={`${typographyClass.system} text-ui-danger`}>{error}</p>}
 
-      <button
-        onClick={handleSubmit}
+      <Button
+        type="button"
+        variant="primary"
+        volume="cta"
+        fullWidth
+        size="lg"
         disabled={saving}
-        className={`w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out`}
+        onClick={() => void handleSubmit()}
+        className="font-sans normal-case tracking-normal"
       >
-        {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-        Створити словник
-      </button>
+        {saving ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <Loader2 size={14} className="animate-spin" aria-hidden />
+            Створення…
+          </span>
+        ) : (
+          <span className="inline-flex items-center justify-center gap-2">
+            <Plus size={14} aria-hidden />
+            Створити словник
+          </span>
+        )}
+      </Button>
     </div>
   );
 }
@@ -318,11 +349,15 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
           onChange={handleFile}
           className="hidden"
         />
-        <button
+        <Button
+          type="button"
+          variant="tertiary"
+          fullWidth
+          size="md"
           onClick={() => fileRef.current?.click()}
-          className="w-full h-24 border-2 border-dashed border-ui-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] hover:bg-ui-surface transition-all duration-200 ease-out"
+          className="h-24 border-2 border-dashed flex-col gap-2 font-sans normal-case tracking-normal"
         >
-          <FileText size={20} className="text-ui-fg-muted" />
+          <FileText size={20} className="text-ui-fg-muted" aria-hidden />
           <span className={`${captionMutedClass} text-ui-fg-muted`}>
             {file ? file.name : 'Натисніть для вибору файлу'}
           </span>
@@ -331,19 +366,33 @@ function UploadForm({ onCreated }: { onCreated: (deck: CustomDeckSummary) => voi
               {(file.size / 1024).toFixed(1)} KB
             </span>
           )}
-        </button>
+        </Button>
       </div>
 
       {error && <p className={`${typographyClass.system} text-ui-danger`}>{error}</p>}
 
-      <button
-        onClick={handleSubmit}
+      <Button
+        type="button"
+        variant="primary"
+        volume="cta"
+        fullWidth
+        size="lg"
         disabled={saving || !file}
-        className={`w-full h-11 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-200 ease-out`}
+        onClick={() => void handleSubmit()}
+        className="font-sans normal-case tracking-normal"
       >
-        {saving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-        Завантажити
-      </button>
+        {saving ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <Loader2 size={14} className="animate-spin" aria-hidden />
+            Завантаження…
+          </span>
+        ) : (
+          <span className="inline-flex items-center justify-center gap-2">
+            <Upload size={14} aria-hidden />
+            Завантажити
+          </span>
+        )}
+      </Button>
     </div>
   );
 }
@@ -410,14 +459,16 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
         <div className="shrink-0 px-5 pb-4 border-b border-ui-border">
           <div className="flex items-center gap-3 min-w-0">
             {view !== 'list' ? (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setView('list')}
                 aria-label="Назад до списку"
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface transition-all duration-200 ease-out"
+                className="min-h-11 min-w-11 px-0 shrink-0"
               >
-                <X size={18} />
-              </button>
+                <X size={18} aria-hidden />
+              </Button>
             ) : (
               <div className="p-2 rounded-xl bg-ui-surface border border-ui-border">
                 <FileText size={20} className="text-ui-accent" />
@@ -442,7 +493,10 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
           {/* Tabs (only on list view) */}
           {view === 'list' && (
             <div className="flex gap-2 mt-4">
-              <button
+              <SettingsChip
+                size="compact"
+                variant="solid"
+                className="font-sans normal-case tracking-normal"
                 onClick={() => {
                   if (!isAuthenticated) {
                     requestLogin();
@@ -450,12 +504,14 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('create');
                 }}
-                className={`flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
               >
-                <Plus size={13} />
-                Створити
-              </button>
-              <button
+                <Plus size={13} aria-hidden />
+                <span className={settingsChipLabelClass}>Створити</span>
+              </SettingsChip>
+              <SettingsChip
+                size="compact"
+                variant="tint"
+                className="font-sans normal-case tracking-normal"
                 onClick={() => {
                   if (!isAuthenticated) {
                     requestLogin();
@@ -463,11 +519,10 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   }
                   setView('upload');
                 }}
-                className={`flex items-center gap-1.5 h-8 px-3 rounded-full bg-ui-surface hover:bg-ui-surface-hover border border-ui-border text-ui-fg ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
               >
-                <Upload size={13} />
-                CSV / TXT
-              </button>
+                <Upload size={13} aria-hidden />
+                <span className={settingsChipLabelClass}>CSV / TXT</span>
+              </SettingsChip>
             </div>
           )}
         </div>
@@ -481,12 +536,16 @@ export function CustomDeckModal({ onClose, onSelectDeck }: CustomDeckModalProps)
                   <p className={`text-ui-fg-muted ${typographyClass.body}`}>
                     Увійдіть, щоб створювати словники
                   </p>
-                  <button
+                  <Button
+                    type="button"
+                    variant="primary"
+                    volume="cta"
+                    size="md"
                     onClick={requestLogin}
-                    className={`h-9 px-5 rounded-full bg-ui-accent hover:bg-ui-accent-hover active:bg-ui-accent-pressed text-ui-accent-contrast ${typographyClass.label} tracking-wider transition-all duration-200 ease-out`}
+                    className="font-sans normal-case tracking-normal"
                   >
                     Увійти
-                  </button>
+                  </Button>
                 </div>
               ) : loading ? (
                 <div className="flex items-center justify-center h-40">

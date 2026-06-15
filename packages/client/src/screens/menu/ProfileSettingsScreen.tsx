@@ -3,7 +3,7 @@ import { Check, Loader2 } from 'lucide-react';
 import { AvatarDisplay, PRESET_AVATARS } from '../../components/AvatarDisplay';
 import { Button } from '../../components/Button';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
-import { UnsavedChangesModal } from '../../components/Settings';
+import { SettingsToggle, UnsavedChangesModal } from '../../components/Settings';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
@@ -185,10 +185,12 @@ export const ProfileSettingsScreen = () => {
         <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
             type="button"
+            variant="primary"
+            volume="cta"
             size="xl"
             fullWidth
             themeClass={currentTheme.button}
-            className="rounded-full tracking-[0.3em] min-h-[56px] gap-2"
+            className="min-h-[56px] gap-2"
             onClick={() => void handleSave()}
             disabled={saving}
           >
@@ -264,19 +266,23 @@ export const ProfileSettingsScreen = () => {
             ))}
           </div>
           {showTelegramAvatarSync && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
+              className="mx-auto normal-case"
               onClick={() => void handleSyncTelegramAvatar()}
               disabled={syncingAvatar}
-              className={`mx-auto flex items-center justify-center gap-2 rounded-full border border-ui-border bg-ui-surface px-4 py-2.5 ${typographyClass.label} font-medium normal-case text-ui-fg transition-all active:scale-[0.98] disabled:opacity-50`}
+              icon={
+                syncingAvatar ? (
+                  <Loader2 size={14} className="animate-spin" aria-hidden />
+                ) : (
+                  <span className="material-symbols-outlined text-[18px]! opacity-80">sync</span>
+                )
+              }
             >
-              {syncingAvatar ? (
-                <Loader2 size={14} className="animate-spin" aria-hidden />
-              ) : (
-                <span className="material-symbols-outlined text-[18px]! opacity-80">sync</span>
-              )}
               {t.profileSettingsSyncTelegramAvatar}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -292,36 +298,18 @@ export const ProfileSettingsScreen = () => {
         </div>
 
         {showSkipNameToggle && (
-          <div className={`${sectionCard} space-y-3`}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <p className={`${typographyClass.system} font-medium text-ui-fg`}>
-                  {t.profileSettingsSkipNameTitle}
-                </p>
-                <p
-                  className={`${typographyClass.label} text-ui-fg-muted leading-relaxed normal-case`}
-                >
-                  {t.profileSettingsSkipNameBody.replace('{0}', providerLabel)}
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={skipNamePrompt}
-                onClick={() => setSkipNamePrompt((v) => !v)}
-                className={`relative shrink-0 w-12 h-7 rounded-full transition-colors ${
-                  skipNamePrompt ? 'bg-ui-accent' : 'bg-ui-surface border border-ui-border'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-ui-fg transition-transform ${
-                    skipNamePrompt ? 'translate-x-5 bg-ui-accent-contrast' : ''
-                  }`}
-                />
-              </button>
-            </div>
+          <div className="space-y-3">
+            <SettingsToggle
+              checked={skipNamePrompt}
+              onChange={setSkipNamePrompt}
+              title={t.profileSettingsSkipNameTitle}
+              hint={t.profileSettingsSkipNameBody.replace('{0}', providerLabel)}
+              enabledLabel={t.enabled}
+              disabledLabel={t.disabled}
+              titleClassName={`${typographyClass.system} font-medium text-ui-fg`}
+            />
             {skipNamePrompt && autoNamePreview && (
-              <p className={`${typographyClass.label} text-ui-fg-muted`}>
+              <p className={`${typographyClass.label} text-ui-fg-muted px-1`}>
                 {t.profileSettingsSkipNamePreview}{' '}
                 <span className="font-medium text-ui-fg">{autoNamePreview}</span>
               </p>
@@ -356,27 +344,33 @@ export const ProfileSettingsScreen = () => {
               <div className="flex justify-between items-center">
                 <span className={`${typographyClass.system} text-ui-fg`}>{t.notifications}</span>
                 {pushPermission === 'granted' ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="success"
+                    size="sm"
+                    className="normal-case"
                     onClick={pushUnsubscribe}
                     disabled={pushLoading}
-                    className={`${typographyClass.label} font-medium normal-case px-3 py-1.5 rounded-full transition-all bg-[color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_24%,transparent)] disabled:opacity-50`}
                   >
                     {pushLoading ? '...' : `✓ ${t.notificationsOn}`}
-                  </button>
+                  </Button>
                 ) : pushPermission === 'denied' ? (
                   <span className={`${typographyClass.label} text-ui-fg-muted`}>
                     {t.notificationsBlocked}
                   </span>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
+                    volume="cta"
+                    size="sm"
+                    themeClass={currentTheme.button}
+                    className="normal-case"
                     onClick={pushSubscribe}
                     disabled={pushLoading}
-                    className={`${typographyClass.label} font-medium normal-case px-3 py-1.5 rounded-full transition-all ${currentTheme.button} disabled:opacity-50`}
                   >
                     {pushLoading ? '...' : t.enableNotifications}
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -390,13 +384,17 @@ export const ProfileSettingsScreen = () => {
                     {t.pwaAddToHomeScreen}
                   </span>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="primary"
+                  volume="cta"
+                  size="sm"
+                  themeClass={currentTheme.button}
+                  className="normal-case"
                   onClick={install}
-                  className={`${typographyClass.label} font-medium normal-case px-3 py-1.5 rounded-full transition-all active:scale-95 ${currentTheme.button}`}
                 >
                   {t.pwaInstall}
-                </button>
+                </Button>
               </div>
             )}
           </div>

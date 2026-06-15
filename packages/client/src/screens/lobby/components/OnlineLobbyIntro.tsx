@@ -70,7 +70,7 @@ export function OnlineLobbyIntro(props: {
       <div className="flex w-full items-stretch gap-2">
         <div
           data-testid="lobby-room-code"
-          className="flex min-w-0 flex-[7] items-center justify-center rounded-2xl border border-ui-border bg-ui-surface px-4 py-3 shadow-[0_0_0_1px_color-mix(in_srgb,var(--ui-accent)_15%,transparent),0_4px_24px_-4px_color-mix(in_srgb,var(--ui-accent)_20%,transparent)]"
+          className="flex min-w-0 flex-[7] items-center justify-center rounded-2xl border border-ui-border bg-ui-surface px-4 py-3 shadow-sm"
         >
           <span className={`text-4xl font-serif tracking-[0.125em] ${theme.textMain}`}>
             {roomCode}
@@ -80,7 +80,7 @@ export function OnlineLobbyIntro(props: {
           type="button"
           onClick={handleInviteClick}
           data-testid="lobby-invite-button"
-          className="flex min-w-0 flex-[3] flex-col items-center justify-center gap-1 rounded-2xl border border-[color-mix(in_srgb,var(--ui-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--ui-accent)_16%,transparent)] px-2 py-3 hover:bg-[color-mix(in_srgb,var(--ui-accent)_22%,transparent)] transition-all active:scale-95 touch-manipulation"
+          className="flex min-w-0 flex-[3] flex-col items-center justify-center gap-1 rounded-2xl border border-ui-border bg-ui-surface px-2 py-3 shadow-sm hover:bg-ui-surface-hover transition-all active:scale-95 touch-manipulation"
           aria-label={t.lobbyInviteFriends ?? t.lobbyInvite}
         >
           <UserPlus size={22} className={theme.iconColor} aria-hidden />

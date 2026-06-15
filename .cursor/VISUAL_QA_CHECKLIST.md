@@ -48,6 +48,40 @@
 - [ ] Luminous Aero (світла) — всі елементи видимі
 - [ ] Void Luxe — OLED black коректний
 - [ ] Quantum Eclipse — неоновий акцент читається
+- [ ] **Warm Paper (`PAPER_LUXE`)** — BTN-001 neutral pills: немає «брудної» плями під secondary/tertiary
+
+## 🔘 BTN-001 — Button unification (manual @375px TMA)
+
+**Canon:** [`docs/BUTTON_UNIFICATION.md`](../docs/BUTTON_UNIFICATION.md) · [`docs/UI_TOKENS.md`](../docs/UI_TOKENS.md#button-taxonomy)  
+**Automated gates:** `pnpm --filter @movli/client test buttonGovernance`
+
+Після змін у `Button.tsx`, `AccentFooterCta.tsx`, `styles.css` (`.lobby-start-btn--*`, `.ui-soft-btn--*`) або screen/modal footers:
+
+### Home & screen CTAs
+- [ ] **Menu @375px:** 4 типи в одній сім’ї — `GlassIconButton` header; `AccentFooterCta` Create; `Button secondary xl` Join; `Button tertiary xl` Offline
+- [ ] Primary accent: soft-pill glow **без** perimeter hairline / snake ring
+- [ ] Secondary vs tertiary: чіткий контраст muted fill; offline не виглядає disabled
+- [ ] Screen footer CTAs (`LobbySettings`, `TeamSetup`, `MyDecks`): `volume="cta"` + `size="xl"` — той самий volume що lobby Start
+
+### Modals & sheets
+- [ ] Modal footer pair: `primary volume="cta" size="lg"` + `ghost size="lg" fullWidth`
+- [ ] Ghost cancel: без fill, readable on frosted backdrop
+- [ ] Danger confirm: `variant="danger"` — та сама геометрія pill, не flat red block
+
+### Nav & selection (не pill CTA)
+- [ ] Profile nav rows — glass list (`SURFACE_NAV_ROW_CLASS`), не pill CTA
+- [ ] Store accent row — `SURFACE_NAV_ACCENT_BTN_CLASS` + `lobby-start-btn--plain`
+- [ ] Settings chips / toggles — selection controls, не action buttons
+
+### Interaction
+- [ ] Tap targets ≥ 44×44px на icon + footer CTAs
+- [ ] `:active` scale ~0.97 на `Button` / `AccentFooterCta`; haptic light на press
+- [ ] `prefers-reduced-motion`: blocked CTA pulse off; no snake animation on `animated` variant
+
+### Themes (BTN-001 spot check)
+- [ ] **Midnight Ruby** — accent depth readable
+- [ ] **Warm Paper** — neutral buttons без wide blur shadow / bg glow
+- [ ] **Midnight Ruby + Warm Paper** — порівняти Join vs Offline hierarchy
 
 ## 👑 ADMIN FLOW
 

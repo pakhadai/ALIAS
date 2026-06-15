@@ -2,6 +2,9 @@ import React from 'react';
 import { Plus, Shuffle, User, Users } from 'lucide-react';
 import type { ThemeConfig } from '../../../types';
 import type { TranslationStrings } from '../../../hooks/useT';
+import { Button } from '../../../components/Button';
+import { SettingsChip } from '../../../components/Settings';
+import { settingsChipLabelClass } from '../../../components/Settings/settingsChipStyles';
 import { typographyClass } from '../../../constants/typography';
 
 const MAX_TEAMS = 10;
@@ -32,13 +35,6 @@ export function LobbyPlayModeBar(props: {
     shuffleDisabled,
   } = props;
 
-  const segmentClass = (active: boolean) =>
-    `flex-1 min-h-11 py-2.5 px-2 rounded-xl border ${typographyClass.system} font-bold tracking-wide transition-all active:scale-[0.98] ${
-      active
-        ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-fg'
-        : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover'
-    }`;
-
   const teamsLabel = (t.lobbyTeamsCount ?? '{0} teams').replace('{0}', String(teamCount));
   const groupLabel = t.teamMode ?? t.lobbyPlayMode ?? 'Play format';
 
@@ -53,28 +49,24 @@ export function LobbyPlayModeBar(props: {
 
       {isHost ? (
         <div className="flex gap-2" role="group" aria-label={groupLabel}>
-          <button
-            type="button"
-            onClick={() => onTeamModeChange('SOLO')}
-            className={segmentClass(isSolo)}
+          <SettingsChip
+            active={isSolo}
             aria-pressed={isSolo}
+            className="flex-1 font-sans normal-case tracking-normal"
+            onClick={() => onTeamModeChange('SOLO')}
           >
-            <span className="inline-flex items-center justify-center gap-1.5">
-              <User size={15} className={theme.iconColor} aria-hidden />
-              {t.teamModeSolo ?? 'Solo'}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onTeamModeChange('TEAMS')}
-            className={segmentClass(!isSolo)}
+            <User size={15} className={theme.iconColor} aria-hidden />
+            <span className={settingsChipLabelClass}>{t.teamModeSolo ?? 'Solo'}</span>
+          </SettingsChip>
+          <SettingsChip
+            active={!isSolo}
             aria-pressed={!isSolo}
+            className="flex-1 font-sans normal-case tracking-normal"
+            onClick={() => onTeamModeChange('TEAMS')}
           >
-            <span className="inline-flex items-center justify-center gap-1.5">
-              <Users size={15} className={theme.iconColor} aria-hidden />
-              {t.teamModeTeams ?? 'Teams'}
-            </span>
-          </button>
+            <Users size={15} className={theme.iconColor} aria-hidden />
+            <span className={settingsChipLabelClass}>{t.teamModeTeams ?? 'Teams'}</span>
+          </SettingsChip>
         </div>
       ) : (
         <p className={`${typographyClass.body} font-semibold text-center text-ui-fg`}>
@@ -89,43 +81,50 @@ export function LobbyPlayModeBar(props: {
               {t.teamCount}
             </span>
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => onTeamCountChange(Math.max(MIN_TEAMS, teamCount - 1))}
                 disabled={teamCount <= MIN_TEAMS}
-                className={`min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover ${typographyClass.body} font-bold disabled:opacity-40`}
+                className="min-h-9 min-w-9 px-0 text-xl font-bold leading-none"
                 aria-label={t.lobbyRemoveTeam ?? 'Remove team'}
               >
                 −
-              </button>
+              </Button>
               <span
                 className={`min-w-[2ch] text-center ${typographyClass.body} font-bold tabular-nums text-ui-fg`}
               >
                 {teamCount}
               </span>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => onTeamCountChange(Math.min(MAX_TEAMS, teamCount + 1))}
                 disabled={teamCount >= MAX_TEAMS}
-                className={`min-h-9 min-w-9 flex items-center justify-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:bg-ui-surface-hover ${typographyClass.body} font-bold disabled:opacity-40`}
+                className="min-h-9 min-w-9 px-0"
                 aria-label={t.lobbyAddTeam ?? 'Add team'}
               >
                 <Plus size={14} className={theme.iconColor} aria-hidden />
-              </button>
+              </Button>
             </div>
           </div>
           <p className={`${typographyClass.label} leading-relaxed text-ui-fg-muted normal-case`}>
             {t.lobbyTeamAssignHint}
           </p>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="md"
+            fullWidth
             onClick={onShuffleUnassigned}
             disabled={shuffleDisabled}
-            className={`w-full min-h-11 inline-flex items-center justify-center gap-2 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.body} font-semibold text-ui-fg transition-all active:scale-[0.98] disabled:opacity-40`}
+            className="font-sans normal-case tracking-normal gap-2"
           >
             <Shuffle size={16} className={theme.iconColor} aria-hidden />
             {t.lobbyRandomTeams ?? t.shuffle}
-          </button>
+          </Button>
         </div>
       ) : null}
 

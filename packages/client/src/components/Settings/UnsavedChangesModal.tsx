@@ -60,8 +60,10 @@ export const UnsavedChangesModal: React.FC<UnsavedChangesModalProps> = ({
       <div className="flex flex-col gap-4">
         <Button
           variant="primary"
+          volume="cta"
+          themeClass={theme?.button}
           fullWidth
-          size="xl"
+          size="lg"
           disabled={saving}
           onClick={() => void onSave()}
         >

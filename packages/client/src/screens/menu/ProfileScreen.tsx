@@ -14,7 +14,6 @@ import { useGame } from '../../context/GameContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { useAppLogin } from '../../context/AppLoginContext';
 import { useT } from '../../hooks/useT';
-import { useTelegramApp } from '../../hooks/useTelegramApp';
 import { useCollapsingHeaderTitle } from '../../hooks/useCollapsingHeaderTitle';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { LogoutConfirmBottomSheet } from '../../components/Auth/LogoutConfirmBottomSheet';
@@ -33,7 +32,6 @@ export const ProfileScreen = () => {
   const { setGameState, currentTheme, showNotification } = useGame();
   const { authState, profile, logout } = useAuthContext();
   const { requestLogin } = useAppLogin();
-  const { isTelegram } = useTelegramApp();
   const { get: getStats } = usePlayerStats();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -95,12 +93,17 @@ export const ProfileScreen = () => {
   }, [showNotification, t.lobbyDefaultsAuthRequired, requestLogin]);
 
   const profileMenuItems = useMemo(
-    () => [
-      { id: '1', label: 'Пункт 1', onSelect: () => console.log('profile menu: item 1') },
-      { id: '2', label: 'Пункт 2', onSelect: () => console.log('profile menu: item 2') },
-      { id: '3', label: 'Пункт 3', onSelect: () => console.log('profile menu: item 3') },
-    ],
-    []
+    () =>
+      isGuest
+        ? [
+            {
+              id: 'guest-reset',
+              label: t.profileGuestResetMenu,
+              onSelect: () => setShowLogoutConfirm(true),
+            },
+          ]
+        : [],
+    [isGuest, t.profileGuestResetMenu]
   );
 
   const authBenefits = useMemo(
@@ -161,7 +164,6 @@ export const ProfileScreen = () => {
         emoji: '📊',
         label: t.profileBenefitGameStatsLabel,
         sub: t.profileBenefitGameStatsSub,
-        onPress: goToPlayerStats,
       },
       {
         emoji: '☁️',
@@ -169,7 +171,7 @@ export const ProfileScreen = () => {
         sub: t.profileBenefitSyncSub,
       },
     ],
-    [t, goToPlayerStats]
+    [t]
   );
 
   const heroBadge = loadingAuth ? null : isGuest ? (
@@ -180,16 +182,32 @@ export const ProfileScreen = () => {
 
   const sessionEndFooter = !loadingAuth ? (
     <FixedBottomBar island contentClassName={footerIslandClassName('narrow')}>
-      <AccentFooterCta
-        variant="plain"
-        buttonTestId={isGuest ? 'profile-guest-reset-btn' : 'profile-logout-btn'}
-        themeButtonClass={currentTheme.button}
-        onClick={() => setShowLogoutConfirm(true)}
-        disabled={loggingOut}
-        loading={loggingOut}
-      >
-        {isGuest ? t.profileGuestReset : (t.profileLogout ?? 'LOG OUT')}
-      </AccentFooterCta>
+      {isGuest ? (
+        <div className="flex w-full flex-col gap-2">
+          <AccentFooterCta
+            variant="plain"
+            buttonTestId="profile-guest-login-btn"
+            themeButtonClass={currentTheme.button}
+            onClick={requestLogin}
+          >
+            {t.profileGuestLoginCta}
+          </AccentFooterCta>
+          <p className={`${typographyClass.body} text-center text-ui-fg-muted`}>
+            {t.profileLoginAnchor}
+          </p>
+        </div>
+      ) : (
+        <AccentFooterCta
+          variant="plain"
+          buttonTestId="profile-logout-btn"
+          themeButtonClass={currentTheme.button}
+          onClick={() => setShowLogoutConfirm(true)}
+          disabled={loggingOut}
+          loading={loggingOut}
+        >
+          {t.profileLogout ?? 'LOG OUT'}
+        </AccentFooterCta>
+      )}
     </FixedBottomBar>
   ) : undefined;
 
@@ -241,37 +259,6 @@ export const ProfileScreen = () => {
 
         {isGuest ? (
           <div className="relative flex flex-1 flex-col w-full max-w-md mx-auto gap-6 pb-4">
-            {!isTelegram && (
-              <div className="flex flex-col items-stretch gap-3">
-                <button
-                  type="button"
-                  onClick={requestLogin}
-                  className={`relative w-full min-h-[52px] overflow-hidden rounded-full flex items-center justify-center gap-2 transition-all duration-200 ease-out active:scale-[0.98] shadow-lg ${currentTheme.button}`}
-                >
-                  <span
-                    className="absolute inset-0 opacity-60"
-                    style={{
-                      background:
-                        'radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, var(--ui-accent) 28%, transparent) 0%, transparent 60%)',
-                    }}
-                    aria-hidden
-                  />
-                  <span className={`relative ${typographyClass.label} font-sans tracking-[0.2em]`}>
-                    {t.loginGoogle}
-                  </span>
-                </button>
-                <p className={`${typographyClass.body} text-center text-ui-fg-muted`}>
-                  {t.profileLoginAnchor}
-                </p>
-              </div>
-            )}
-
-            {isTelegram && !loadingAuth && (
-              <p className={`${typographyClass.body} text-center leading-relaxed text-ui-fg-muted`}>
-                {t.profileLoginAnchor}
-              </p>
-            )}
-
             <ProfileGuestBenefits title={t.profileBenefitsTitle} items={guestBenefits} />
 
             <button

@@ -2,6 +2,7 @@ import React from 'react';
 import { Crown, Minus, MoreHorizontal, Plus, X } from 'lucide-react';
 import type { Player, ThemeConfig } from '../../../types';
 import { PlayerAvatar } from '../../../components/AvatarDisplay';
+import { Button } from '../../../components/Button';
 import { MAX_PLAYERS } from '../../../constants';
 import type { TranslationStrings } from '../../../hooks/useT';
 import { ScreenTitle } from '../../../components/typography/ScreenTitle';
@@ -85,23 +86,27 @@ export function PlayersSection(props: {
                 {isHost && !p.isHost && p.id !== myPlayerId && gameMode === 'ONLINE' && (
                   <div className="relative">
                     {kickMenuPlayerId === p.id ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="danger"
+                        size="sm"
                         onClick={() => {
                           setKickMenuPlayerId(null);
                           onKick({ id: p.id, name: p.name });
                         }}
-                        className="min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
+                        className="min-h-11 min-w-11 px-0"
                         title={t.kickPlayerTitle}
                         aria-label={t.kickPlayerTitle}
                       >
-                        <X size={14} className="text-ui-danger" />
-                      </button>
+                        <X size={14} aria-hidden />
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setKickMenuPlayerId((cur) => (cur === p.id ? null : p.id))}
-                        className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-ui-surface-hover border border-ui-border transition-all duration-200 active:scale-95"
+                        className="min-h-11 min-w-11 px-0"
                         title={t.more ?? 'More'}
                         aria-label={t.more ?? 'More'}
                         aria-expanded={kickMenuPlayerId === p.id}
@@ -109,21 +114,24 @@ export function PlayersSection(props: {
                         <MoreHorizontal
                           size={14}
                           className={`${theme.iconColor} text-ui-fg-muted`}
+                          aria-hidden
                         />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
 
                 {isHost && gameMode === 'OFFLINE' && !p.isHost && (
-                  <button
+                  <Button
                     type="button"
+                    variant="danger"
+                    size="sm"
                     onClick={() => onRemoveOffline(p.id)}
-                    className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-[color-mix(in_srgb,var(--ui-danger)_16%,transparent)] border border-[color-mix(in_srgb,var(--ui-danger)_30%,transparent)] transition-all duration-200 active:scale-95 group"
+                    className="min-h-11 min-w-11 px-0"
                     aria-label={t.removePlayer ?? 'Remove player'}
                   >
-                    <Minus size={14} className="text-ui-danger" />
-                  </button>
+                    <Minus size={14} aria-hidden />
+                  </Button>
                 )}
 
                 {gameMode === 'ONLINE' && online && (
@@ -149,26 +157,23 @@ export function PlayersSection(props: {
       </div>
 
       {isHost && gameMode === 'OFFLINE' && (
-        <button
+        <Button
           type="button"
+          variant="tertiary"
+          size="lg"
+          fullWidth
           data-testid="lobby-add-player-trigger"
           onClick={onAddOfflineClick}
           disabled={!canAddOfflinePlayer}
-          className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border border-dashed transition-all ${
-            theme.isDark
-              ? 'border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-ui-border'
-              : 'border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-ui-border'
-          }`}
+          className="border-dashed font-sans normal-case tracking-normal gap-3"
         >
-          <span className="inline-flex items-center gap-3">
-            <Plus size={18} />
-            <span className={`${typographyClass.label} tracking-wide`}>
-              {players.length >= MAX_PLAYERS
-                ? `${t.addPlayer} (${players.length}/${MAX_PLAYERS})`
-                : t.addPlayer}
-            </span>
+          <Plus size={18} aria-hidden />
+          <span>
+            {players.length >= MAX_PLAYERS
+              ? `${t.addPlayer} (${players.length}/${MAX_PLAYERS})`
+              : t.addPlayer}
           </span>
-        </button>
+        </Button>
       )}
     </div>
   );

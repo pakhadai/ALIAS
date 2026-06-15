@@ -111,8 +111,9 @@ function ConfirmModal({
       <div className="flex flex-col gap-4">
         <Button
           variant={opts.danger ? 'danger' : 'primary'}
+          volume={opts.danger ? undefined : 'cta'}
           fullWidth
-          size="xl"
+          size="lg"
           onClick={onConfirm}
         >
           {opts.confirmLabel ?? 'Підтвердити'}

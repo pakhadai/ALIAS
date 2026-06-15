@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link2, Loader2, Mail, QrCode } from 'lucide-react';
+import { Link2, Loader2, QrCode } from 'lucide-react';
 import { ModalSheet } from '../../../components/ModalSheet';
+import { TelegramIcon } from '../../../components/TelegramIcon';
 import { ModalOptionButton, ModalSheetTitle } from '../../../components/Shared';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import type { ThemeConfig } from '../../../types';
@@ -79,7 +80,7 @@ export function LobbyInviteSheet(props: {
         <div className="space-y-2">
           <ModalOptionButton
             onClick={() => runAndClose(onInviteTelegram)}
-            icon={<Mail size={18} className={theme.iconColor} aria-hidden />}
+            icon={<TelegramIcon size={18} className={theme.iconColor} />}
           >
             {t.lobbyInviteTelegram}
           </ModalOptionButton>

@@ -41,6 +41,7 @@
 | [`LIQUID_GLASS_FIX_PROMPTS.md`](./LIQUID_GLASS_FIX_PROMPTS.md) | Liquid Glass Header/Footer — аудит backdrop/TMA, session prompts 0–9 + мікро A–B |
 | [`TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md`](./TMA_DESKTOP_LAYOUT_FIX_PROMPTS.md) | **COMPLETED 2026-06-12** — TMA Desktop epic prompts 0–9; canon → `TMA_LAYOUT.md#desktop-tma` |
 | [`LAYOUT_SURFACE_UNIFICATION_PROMPTS.md`](./LAYOUT_SURFACE_UNIFICATION_PROMPTS.md) | LAYOUT-001 — layout presets, footer width, radius, surface classes; session prompts 0–7 + мікро A–B |
+| [`BUTTON_UNIFICATION.md`](./BUTTON_UNIFICATION.md) | **BTN-001 ✅** — 6 типів кнопок, soft-pill SSOT, governance test (implemented 2026-06-15) |
 | [`TELEGRAM_SKILL.md`](./TELEGRAM_SKILL.md) | Mini App, webhook, Stars, TMA UX |
 | [`VIRAL_INVITES_PHASE7.md`](./VIRAL_INVITES_PHASE7.md) | Deep link `startapp=lobby_*` |
 | [`PWA-ICONS.md`](./PWA-ICONS.md) | Іконки PWA / manifest |

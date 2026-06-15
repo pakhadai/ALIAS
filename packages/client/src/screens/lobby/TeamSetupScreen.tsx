@@ -114,21 +114,28 @@ export const TeamSetupScreen = () => {
             </p>
           )}
           {isHost && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              fullWidth
+              size="md"
               onClick={() => sendAction({ action: 'GENERATE_TEAMS' })}
-              className={`w-full text-center ${typographyClass.label} tracking-[0.35em] text-ui-fg-muted hover:text-ui-fg transition-colors`}
+              className="font-sans normal-case tracking-[0.35em] text-ui-fg-muted hover:text-ui-fg"
             >
               {t.shuffle}
-            </button>
+            </Button>
           )}
           {isHost ? (
             <Button
+              type="button"
+              variant="primary"
+              volume="cta"
               themeClass={currentTheme.button}
               fullWidth
               size="xl"
               onClick={() => sendAction({ action: 'START_GAME' })}
               disabled={!allTeamsHavePlayers}
+              className="font-sans normal-case tracking-normal"
             >
               {t.startGame}
             </Button>
@@ -169,14 +176,16 @@ export const TeamSetupScreen = () => {
                     autoFocus
                     maxLength={18}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={applyRename}
-                    className="min-h-11 min-w-11 inline-flex shrink-0 items-center justify-center rounded-xl border border-ui-border hover:bg-ui-surface-hover transition-colors"
+                    className="min-h-11 min-w-11 px-0 shrink-0"
                     aria-label="Save"
                   >
-                    <Check size={18} className={currentTheme.iconColor} />
-                  </button>
+                    <Check size={18} className={currentTheme.iconColor} aria-hidden />
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -184,18 +193,20 @@ export const TeamSetupScreen = () => {
                     {team.name}
                   </h3>
                   {canEdit && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => {
                         setEditingTeamId(team.id);
                         setTeamNameDraft(team.name);
                       }}
-                      className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover transition-colors"
+                      className="min-h-11 min-w-11 px-0 shrink-0"
                       aria-label={t.renameTeam}
                       title={t.renameTeam}
                     >
-                      <PencilLine size={18} className={currentTheme.iconColor} />
-                    </button>
+                      <PencilLine size={18} className={currentTheme.iconColor} aria-hidden />
+                    </Button>
                   )}
                 </div>
               )}
@@ -252,16 +263,17 @@ export const TeamSetupScreen = () => {
             </div>
 
             {canEdit && selectedPlayer && selectedPlayer.fromTeamId !== team.id && (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
+                fullWidth
                 onClick={() => moveSelectedTo(team.id)}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover transition-all active:scale-[0.98]"
+                className="mt-4 font-sans normal-case tracking-[0.28em] gap-2"
               >
-                <MoveRight size={16} className={currentTheme.iconColor} />
-                <span className={`${typographyClass.label} tracking-[0.28em] text-ui-fg-muted`}>
-                  {t.teamSetupMoveHere}
-                </span>
-              </button>
+                <MoveRight size={16} className={currentTheme.iconColor} aria-hidden />
+                {t.teamSetupMoveHere}
+              </Button>
             )}
           </div>
         );

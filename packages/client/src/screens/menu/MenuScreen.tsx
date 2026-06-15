@@ -246,14 +246,20 @@ export const MenuScreen = () => {
               {quickJoinLabel}
             </Button>
 
-            <div className="flex items-center gap-3 w-full opacity-20 py-1">
-              <div className="h-px flex-1 bg-ui-border" />
+            <div data-testid="menu-or-divider" className="flex w-full items-center gap-4 py-3 my-1">
+              <div
+                className="h-px flex-1 bg-[color-mix(in_srgb,var(--ui-border)_32%,transparent)]"
+                aria-hidden
+              />
               <span
-                className={`${typographyClass.label} tracking-widest text-ui-fg-muted shrink-0`}
+                className={`${typographyClass.label} tracking-widest text-ui-fg-subtle shrink-0`}
               >
                 {t.menuOrDivider}
               </span>
-              <div className="h-px flex-1 bg-ui-border" />
+              <div
+                className="h-px flex-1 bg-[color-mix(in_srgb,var(--ui-border)_32%,transparent)]"
+                aria-hidden
+              />
             </div>
 
             <Button
@@ -261,9 +267,7 @@ export const MenuScreen = () => {
               variant="tertiary"
               size="xl"
               fullWidth
-              icon={
-                <WifiOff size={14} className="opacity-80 shrink-0" strokeWidth={2} aria-hidden />
-              }
+              icon={<WifiOff size={16} className="block shrink-0" strokeWidth={2} aria-hidden />}
               onClick={startOfflineGame}
               data-testid="menu-offline"
             >

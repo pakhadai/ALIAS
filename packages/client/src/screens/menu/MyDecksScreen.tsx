@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useResourceLoad } from '../../hooks/useResourceLoad';
 import { Plus, Trash2, BookOpen, Copy, Loader2 } from 'lucide-react';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
+import { Button } from '../../components/Button';
 import { GameState } from '../../types';
 import { useGame } from '../../context/GameContext';
 import {
@@ -110,14 +111,23 @@ export const MyDecksScreen = () => {
         }
         footer={
           <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
-            <button
+            <Button
               type="button"
+              variant="primary"
+              volume="cta"
+              size="xl"
+              fullWidth
+              themeClass={currentTheme.button}
               onClick={handleCreate}
               disabled={creating}
-              className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] transition-all active:scale-[0.98] disabled:opacity-50`}
+              className="font-sans normal-case tracking-normal"
             >
-              {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Deck'}
-            </button>
+              {creating ? (
+                <Loader2 size={16} className="animate-spin" aria-hidden />
+              ) : (
+                'Create Deck'
+              )}
+            </Button>
           </FixedBottomBar>
         }
       >
@@ -175,14 +185,19 @@ export const MyDecksScreen = () => {
       }
       footer={
         <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
-          <button
+          <Button
             type="button"
+            variant="primary"
+            volume="cta"
+            size="xl"
+            fullWidth
+            themeClass={currentTheme.button}
             onClick={() => setView('create')}
-            className={`w-full h-14 ${currentTheme.button} rounded-full flex items-center justify-center gap-2 ${typographyClass.label} font-sans tracking-[0.3em] shadow-2xl transition-all active:scale-[0.98]`}
+            icon={<Plus size={16} aria-hidden />}
+            className="font-sans normal-case tracking-normal"
           >
-            <Plus size={16} />
             Create New Deck
-          </button>
+          </Button>
         </FixedBottomBar>
       }
     >
@@ -215,18 +230,21 @@ export const MyDecksScreen = () => {
                   {deck.wordCount} words
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleDelete(deck.id)}
                 disabled={deleting === deck.id}
-                className="ml-4 p-2 rounded-xl transition-all duration-200 ease-out active:scale-95 disabled:opacity-30 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+                className="ml-4 min-h-11 min-w-11 px-0 text-ui-danger opacity-70 hover:opacity-100 hover:bg-[color-mix(in_srgb,var(--ui-danger)_12%,transparent)]"
+                aria-label="Delete deck"
               >
                 {deleting === deck.id ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" aria-hidden />
                 ) : (
-                  <Trash2 size={16} />
+                  <Trash2 size={16} aria-hidden />
                 )}
-              </button>
+              </Button>
             </div>
             <div className="flex items-center justify-between pt-1">
               <span
@@ -235,14 +253,16 @@ export const MyDecksScreen = () => {
                 {deck.status}
               </span>
               {deck.accessCode && (
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => handleCopyCode(deck.accessCode!)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${typographyClass.label} font-mono normal-case transition-all bg-ui-surface hover:bg-ui-surface-hover text-ui-fg-muted border border-ui-border`}
+                  className="font-mono normal-case tracking-normal gap-1.5"
                 >
-                  <Copy size={11} />
+                  <Copy size={11} aria-hidden />
                   {copied === deck.accessCode ? 'Copied!' : deck.accessCode}
-                </button>
+                </Button>
               )}
             </div>
           </div>

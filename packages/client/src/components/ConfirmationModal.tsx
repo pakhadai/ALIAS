@@ -57,7 +57,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {message}
       </p>
       <div className="flex flex-col gap-4">
-        <Button variant={isDanger ? 'danger' : 'primary'} fullWidth size="xl" onClick={onConfirm}>
+        <Button
+          variant={isDanger ? 'danger' : 'primary'}
+          volume={isDanger ? undefined : 'cta'}
+          themeClass={isDanger ? undefined : theme?.button}
+          fullWidth
+          size="lg"
+          onClick={onConfirm}
+        >
           {confirmText || (isDanger ? 'Yes, Exit' : 'Confirm')}
         </Button>
         <Button variant="ghost" fullWidth onClick={onCancel} size="lg">

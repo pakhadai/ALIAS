@@ -103,9 +103,12 @@ export const PlayerStatsScreen = () => {
             </p>
             <Button
               type="button"
+              variant="primary"
+              volume="cta"
+              size="xl"
               fullWidth
               themeClass={currentTheme.button}
-              className="mt-5 min-h-[52px] rounded-full tracking-[0.2em]"
+              className="mt-5 min-h-[52px] tracking-[0.2em]"
               onClick={() => setGameState(GameState.MENU)}
             >
               {t.statsEmptyCta}
@@ -134,9 +137,12 @@ export const PlayerStatsScreen = () => {
             </p>
             <Button
               type="button"
+              variant="primary"
+              volume="cta"
+              size="lg"
               fullWidth
               themeClass={currentTheme.button}
-              className="mt-4 min-h-[48px] rounded-xl tracking-[0.2em]"
+              className="mt-4 min-h-[48px] tracking-[0.2em]"
               onClick={requestLogin}
             >
               {t.statsGuestBannerCta}

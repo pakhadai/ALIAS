@@ -30,6 +30,19 @@
 
 ## [Unreleased]
 
+### Changed
+- **BTN-001 button unification epic (implemented):** 6 canonical button types + documented exceptions; `Button volume="cta"` soft-pill primary; menu/lobby/store/settings migration complete; governance test `buttonGovernance.test.ts`
+- BTN-001 epic plan: `docs/BUTTON_UNIFICATION.md` — 6 button types, phases 0–7, migration inventory (~200 controls)
+- Accent CTA buttons: soft-pill depth via gradient overlay + layered accent shadows (no inset hairlines); perimeter snake ring removed in favor of ambient halo; theme `button` classes no longer add `border`/`shadow-lg` (`styles.css`, `themes.ts`)
+- `Button` secondary/tertiary: crisp border + tight downward shadow (no bg glow); tertiary muted variant for offline CTA (`styles.css`, `Button.tsx`)
+- BTN-001 Phase 2: `Button` `volume="cta"` for accent soft-pill primary in modals and game-flow footers (`Button.tsx`, confirmation/settings/payment sheets, GameOver/Scoreboard/RoundSummary/VS/PreRound)
+- BTN-001 Phase 3: modal/sheet footers unified to `primary volume="cta" size="lg"` + `ghost size="lg"`; `SettingsToggle` in `AppSettingsModal`; form CTAs in `CustomDeckModal` (`AdminApp`, `LogoutConfirmBottomSheet`, `EnterNameSheet`, `AddOfflinePlayerSheet`, `QuickBuyModal`, `ImposterScreen` discussion)
+- BTN-001 Phase 5a: lobby `SettingsScreen` categories/chips — `SettingsChip` SSOT, `SettingsTabBar`, `PackChipRow`; pack reset/custom-deck → `Button ghost`/`outline` (`SettingsScreen.tsx`, `components/Settings/*`)
+- BTN-001 Phase 5b: lobby `SettingsScreen` mode/time — game mode grid, rules variant pills, round time and score steppers → `SettingsChip` + `Button sm secondary`; quiz wrong-penalty → `SettingsToggle` (`SettingsScreen.tsx`)
+- BTN-001 Phase 5c: lobby `SettingsScreen` footer save → `Button primary volume="cta" size="xl"`; accordion `SectionHeader` → `Button ghost`; **0** raw `<button>` in file (`SettingsScreen.tsx`)
+- BTN-001 Phase 6: store/decks/lobby chrome — `StoreScreen`, `MyDecksScreen`, `MyWordPacksScreen`, `CustomDeckModal`, `LobbyScreen`, `TeamCard`, `PlayersSection`, `LobbyPlayModeBar`, `TeamSetupScreen` → canonical `Button` / `SettingsChip`; scope files **0** raw `<button>`
+- Home menu: stronger tagline contrast, roomier «or» divider, offline icon+label centered as one group (`Shared.tsx`, `MenuScreen.tsx`)
+
 ### Fixed
 - App settings modal: restore mount-on-open + internal exit animation — always-mounted `open={showAppSettings}` broke E2E smoke language toggle in real browser (`AppSettingsModal`, `MenuScreen`)
 - Bottom sheet drag: disable `backdrop-filter` on panel/header while `data-dragging` — fixes smeared modal title during swipe-to-dismiss on iOS/TMA (`styles.css`)

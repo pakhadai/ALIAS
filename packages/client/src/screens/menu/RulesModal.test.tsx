@@ -107,5 +107,9 @@ describe('RulesModal', () => {
 
     await user.click(screen.getByRole('tab', { name: 'FAQ' }));
     expect(screen.getByText('Q1')).toBeTruthy();
+
+    const activeTab = screen.getByRole('tab', { name: 'FAQ' });
+    expect(activeTab.className).toContain('rounded-xl');
+    expect(activeTab.className).not.toContain('rounded-full');
   });
 });

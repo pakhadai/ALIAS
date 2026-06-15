@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   X,
-  Check,
   FileText,
   ChevronDown,
   Brain,
@@ -30,7 +29,11 @@ import {
   getCategoryLabel,
   LanguageChipRow,
   LOBBY_LANG_FLAG,
+  PackChipRow,
   pickDefaultTargetLanguage,
+  SettingsChip,
+  settingsChipLabelClass,
+  SettingsTabBar,
   targetLanguagesForSource,
   SettingsToggle,
 } from '../../components/Settings';
@@ -59,23 +62,91 @@ function SectionHeader({
   onToggle: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="md"
+      fullWidth
       onClick={onToggle}
-      className="w-full flex items-center justify-between py-3"
       aria-expanded={open}
+      className="h-auto justify-between rounded-none px-0 py-3 normal-case font-normal hover:bg-transparent active:scale-100"
     >
       <p className={`${typographyClass.label} tracking-widest opacity-50 text-ui-fg`}>{title}</p>
       <ChevronDown
         size={16}
         className={`text-ui-fg-muted transition-transform ${open ? 'rotate-180' : ''}`}
       />
-    </button>
+    </Button>
+  );
+}
+
+function NumericStepper({
+  value,
+  disabled,
+  decrementLabel,
+  incrementLabel,
+  onDecrement,
+  onIncrement,
+  accentClass,
+  suffix,
+  valueTestId,
+}: {
+  value: number;
+  disabled?: boolean;
+  decrementLabel: string;
+  incrementLabel: string;
+  onDecrement: () => void;
+  onIncrement: () => void;
+  accentClass: string;
+  suffix?: string;
+  valueTestId?: string;
+}) {
+  return (
+    <div className="flex items-stretch gap-2">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={disabled}
+        onClick={onDecrement}
+        className="min-h-14 min-w-13 shrink-0 px-0 text-2xl font-black leading-none"
+        aria-label={decrementLabel}
+      >
+        −
+      </Button>
+      <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
+        <span
+          data-testid={valueTestId}
+          className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${accentClass}`}
+        >
+          {value}
+        </span>
+        {suffix ? (
+          <span
+            className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
+          >
+            {suffix}
+          </span>
+        ) : null}
+      </div>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={disabled}
+        onClick={onIncrement}
+        className="min-h-14 min-w-13 shrink-0 px-0 text-2xl font-black leading-none"
+        aria-label={incrementLabel}
+      >
+        +
+      </Button>
+    </div>
   );
 }
 
 export const SettingsScreen = () => {
-  const { settings, currentTheme, setGameState, isHost, sendAction, gameState } = useGame();
+  const { settings, currentTheme, setGameState, isHost, sendAction, gameState, showNotification } =
+    useGame();
   const { isAuthenticated } = useAuthContext();
   const t = useT();
   const [showCustomDeckPicker, setShowCustomDeckPicker] = useState(false);
@@ -225,6 +296,11 @@ export const SettingsScreen = () => {
 
   const goBackToLobby = () => setGameState(GameState.LOBBY);
 
+  const handleSaveSettings = () => {
+    showNotification(t.settingsSavedSuccess, 'success');
+    setGameState(GameState.LOBBY);
+  };
+
   const settingsMenuItems = useMemo(
     () => [
       { id: '1', label: 'Пункт 1', onSelect: () => console.log('settings menu: item 1') },
@@ -234,32 +310,22 @@ export const SettingsScreen = () => {
     []
   );
 
-  const settingsTabBar = (
-    <div className="grid w-full grid-cols-3 gap-2">
-      {SETTINGS_TABS.map(([id, labelKey]) => {
-        const active = activeTab === id;
-        const label =
+  const settingsTabLabels = useMemo(
+    () =>
+      SETTINGS_TABS.map(([id, labelKey]) => ({
+        id,
+        label:
           labelKey === 'gameMode'
             ? (t.gameMode ?? 'Режим')
             : labelKey === 'content'
               ? (t.content ?? 'Словник')
-              : t.rulesTitle;
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setActiveTab(id)}
-            className={`py-2 rounded-xl border text-center ${typographyClass.label} tracking-widest transition-all duration-200 ease-out active:scale-95 ${
-              active
-                ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-            }`}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
+              : t.rulesTitle,
+      })),
+    [t.content, t.gameMode, t.rulesTitle]
+  );
+
+  const settingsTabBar = (
+    <SettingsTabBar tabs={settingsTabLabels} value={activeTab} onChange={setActiveTab} />
   );
 
   return (
@@ -285,10 +351,13 @@ export const SettingsScreen = () => {
       footer={
         <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
+            type="button"
+            variant="primary"
+            volume="cta"
             themeClass={currentTheme.button}
             fullWidth
             size="xl"
-            onClick={() => setGameState(GameState.LOBBY)}
+            onClick={handleSaveSettings}
           >
             {t.save}
           </Button>
@@ -298,14 +367,7 @@ export const SettingsScreen = () => {
       <div className="w-full space-y-6 pb-4 pt-3">
         {/* BLOCK 1: Game Mode */}
         {activeTab === 'mode' && (
-          <div className={`${SURFACE_PANEL_CLASS} p-6 space-y-5`}>
-            <div className="space-y-2">
-              <h3 className={`${labelSectionTitleClass} text-ui-fg !opacity-100`}>
-                {t.gameMode ?? 'Режим гри'}
-              </h3>
-              <div className="h-px w-full bg-ui-border" />
-            </div>
-
+          <div className={`${SURFACE_PANEL_CLASS} p-6`}>
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
@@ -328,42 +390,47 @@ export const SettingsScreen = () => {
                 const active = (settings.mode.gameMode ?? GameMode.CLASSIC) === mode;
                 const hint =
                   mode === GameMode.TRANSLATION
-                    ? t.gameModeHintTranslation
+                    ? (t.gameModeCardHintTranslation ?? t.gameModeHintTranslation)
                     : mode === GameMode.QUIZ
-                      ? t.gameModeHintQuiz
+                      ? (t.gameModeCardHintQuiz ?? t.gameModeHintQuiz)
                       : mode === GameMode.SYNONYMS
-                        ? t.gameModeHintSynonyms
+                        ? (t.gameModeCardHintSynonyms ?? t.gameModeHintSynonyms)
                         : mode === GameMode.HARDCORE
-                          ? t.gameModeHintHardcore
+                          ? (t.gameModeCardHintHardcore ?? t.gameModeHintHardcore)
                           : mode === GameMode.IMPOSTER
-                            ? t.gameModeHintImposter
-                            : t.gameModeHintClassic;
+                            ? (t.gameModeCardHintImposter ?? t.gameModeHintImposter)
+                            : (t.gameModeCardHintClassic ?? t.gameModeHintClassic);
                 return (
-                  <button
+                  <SettingsChip
                     key={mode}
-                    type="button"
+                    active={active}
+                    disabled={!isHost}
                     onClick={() => updateMode({ gameMode: mode })}
-                    className={`py-3 px-2 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
-                      active
-                        ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                        : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                    }`}
+                    className="py-3 px-2 flex-col hover:-translate-y-0.5 will-change-transform"
                     aria-label={`${label}. ${hint}`}
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="inline-flex items-center justify-center gap-2">
-                        <span className={active ? 'opacity-95' : 'opacity-60'} aria-hidden>
+                        <span className={active ? 'opacity-95' : 'opacity-70'} aria-hidden>
                           {icon}
                         </span>
-                        <span>{label}</span>
+                        <span
+                          className={`${settingsChipLabelClass} tracking-wide ${
+                            active ? 'text-ui-accent-contrast' : 'text-ui-fg'
+                          }`}
+                        >
+                          {label}
+                        </span>
                       </div>
-                      <div
-                        className={`${typographyClass.label} font-normal normal-case leading-snug ${active ? 'opacity-90' : 'opacity-50'}`}
+                      <p
+                        className={`${typographyClass.system} normal-case font-medium leading-snug ${
+                          active ? 'text-ui-accent-contrast/90' : 'text-ui-fg-muted'
+                        }`}
                       >
                         {hint}
-                      </div>
+                      </p>
                     </div>
-                  </button>
+                  </SettingsChip>
                 );
               })}
             </div>
@@ -462,12 +529,16 @@ export const SettingsScreen = () => {
                         {isAuthenticated ? 'Мої набори слів' : 'Доступні набори'}
                       </p>
                       {(settings.general.selectedPackIds?.length ?? 0) > 0 && (
-                        <button
-                          onClick={() => isHost && updateGeneral('selectedPackIds', [])}
-                          className={`${typographyClass.label} tracking-widest transition-opacity text-ui-fg-muted hover:text-ui-fg ${!isHost ? 'pointer-events-none' : ''}`}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={!isHost}
+                          onClick={() => updateGeneral('selectedPackIds', [])}
+                          className="tracking-widest"
                         >
                           Скинути
-                        </button>
+                        </Button>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -496,33 +567,12 @@ export const SettingsScreen = () => {
                           'Вибір мови впливає лише на паки/слова, а не на мову інтерфейсу.'}
                       </p>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
-                      {filteredOwnedPacks.map((pack) => {
-                        const isSelected = (settings.general.selectedPackIds ?? []).includes(
-                          pack.id
-                        );
-                        return (
-                          <button
-                            key={pack.id}
-                            onClick={() => togglePack(pack.id)}
-                            disabled={!isHost}
-                            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-2 rounded-xl border ${typographyClass.label} transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform disabled:pointer-events-none ${
-                              isSelected
-                                ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)] text-ui-accent'
-                                : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                            }`}
-                          >
-                            {isSelected && <Check size={10} />}
-                            <span>{pack.name}</span>
-                            <span
-                              className={`font-normal ${isSelected ? 'text-ui-fg-muted' : 'opacity-40'}`}
-                            >
-                              {pack.wordCount}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <PackChipRow
+                      packs={filteredOwnedPacks}
+                      selectedIds={settings.general.selectedPackIds ?? []}
+                      onToggle={togglePack}
+                      disabled={!isHost}
+                    />
                     {filteredOwnedPacks.length === 0 ? (
                       <p className={`${typographyClass.label} text-ui-fg-muted opacity-70`}>
                         {t.noPacksForLanguage ?? 'Немає паків для цієї мови.'}
@@ -560,25 +610,31 @@ export const SettingsScreen = () => {
                       </div>
                     </div>
                     {isHost && (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={clearCustomDeck}
-                        className="text-ui-fg-muted hover:text-ui-fg transition-colors p-1 shrink-0"
                         aria-label={t.close}
+                        className="shrink-0 p-1"
                       >
                         <X size={14} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ) : (
-                  <button
-                    onClick={() => isHost && setShowCustomDeckPicker(true)}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    fullWidth
                     disabled={!isHost}
-                    className="w-full p-3 rounded-xl border border-dashed border-ui-border text-ui-fg-muted hover:text-ui-fg hover:border-[color-mix(in_srgb,var(--ui-accent)_35%,var(--ui-border))] transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform flex items-center gap-2 disabled:opacity-30"
+                    icon={<FileText size={14} />}
+                    onClick={() => setShowCustomDeckPicker(true)}
+                    className="justify-start border-dashed"
                   >
-                    <FileText size={14} />
-                    <span className={typographyClass.label}>Вибрати зі своїх словників…</span>
-                  </button>
+                    Вибрати зі своїх словників…
+                  </Button>
                 ))}
             </div>
           </div>
@@ -587,12 +643,6 @@ export const SettingsScreen = () => {
         {/* BLOCK 3: Rules (dynamic) */}
         {activeTab === 'rules' && (
           <div className="p-6 rounded-3xl border border-ui-border bg-ui-surface space-y-5">
-            <div className="space-y-2">
-              <h3 className={`${labelSectionTitleClass} text-ui-fg !opacity-100`}>
-                {t.rules ?? 'Правила'}
-              </h3>
-              <div className="h-px w-full bg-ui-border" />
-            </div>
             <p className={`${typographyClass.body} text-ui-fg-muted`}>{t.lobbyRulesIntro}</p>
 
             <div className="space-y-0 divide-y divide-ui-border border-t border-ui-border pt-2">
@@ -613,18 +663,17 @@ export const SettingsScreen = () => {
                         {([3, 5, 10] as const).map((min) => {
                           const active = mode.imposterDiscussionTime === min * 60;
                           return (
-                            <button
+                            <SettingsChip
                               key={min}
-                              type="button"
+                              active={active}
+                              disabled={!isHost}
                               onClick={() => updateMode({ imposterDiscussionTime: min * 60 })}
-                              className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                active
-                                  ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                  : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                              }`}
+                              className="hover:-translate-y-0.5 will-change-transform"
                             >
-                              {min} {t.min ?? 'хв'}
-                            </button>
+                              <span className={settingsChipLabelClass}>
+                                {min} {t.min ?? 'хв'}
+                              </span>
+                            </SettingsChip>
                           );
                         })}
                       </div>
@@ -650,18 +699,15 @@ export const SettingsScreen = () => {
                           ).map(([id, label]) => {
                             const active = variant === id;
                             return (
-                              <button
+                              <SettingsChip
                                 key={id}
-                                type="button"
+                                active={active}
+                                disabled={!isHost}
                                 onClick={() => updateMode({ hardcoreVariant: id })}
-                                className={`py-3 px-1 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform leading-tight ${
-                                  active
-                                    ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                    : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                }`}
+                                className="px-1 leading-tight hover:-translate-y-0.5 will-change-transform"
                               >
-                                {label}
-                              </button>
+                                <span className={settingsChipLabelClass}>{label}</span>
+                              </SettingsChip>
                             );
                           })}
                         </div>
@@ -675,50 +721,28 @@ export const SettingsScreen = () => {
                         {rulesOpen.basics && (
                           <div className="space-y-3 pt-1">
                             <p className={`${labelSectionClass} text-ui-fg`}>{t.roundTime}</p>
-                            <div className="flex items-stretch gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.max(30, localRoundTime - 10);
-                                  setLocalRoundTime(next);
-                                  lastHapticRoundTime.current = next;
-                                  vibrate(HAPTIC.nav);
-                                  updateMode({ classicRoundTime: next });
-                                }}
-                                disabled={!isHost}
-                                className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                                aria-label={t.roundTime + ' −10'}
-                              >
-                                −
-                              </button>
-                              <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
-                                <span
-                                  className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
-                                >
-                                  {localRoundTime}
-                                </span>
-                                <span
-                                  className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
-                                >
-                                  s
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = Math.min(180, localRoundTime + 10);
-                                  setLocalRoundTime(next);
-                                  lastHapticRoundTime.current = next;
-                                  vibrate(HAPTIC.nav);
-                                  updateMode({ classicRoundTime: next });
-                                }}
-                                disabled={!isHost}
-                                className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                                aria-label={t.roundTime + ' +10'}
-                              >
-                                +
-                              </button>
-                            </div>
+                            <NumericStepper
+                              value={localRoundTime}
+                              disabled={!isHost}
+                              decrementLabel={t.roundTime + ' −10'}
+                              incrementLabel={t.roundTime + ' +10'}
+                              accentClass={currentTheme.textAccent}
+                              suffix="s"
+                              onDecrement={() => {
+                                const next = Math.max(30, localRoundTime - 10);
+                                setLocalRoundTime(next);
+                                lastHapticRoundTime.current = next;
+                                vibrate(HAPTIC.nav);
+                                updateMode({ classicRoundTime: next });
+                              }}
+                              onIncrement={() => {
+                                const next = Math.min(180, localRoundTime + 10);
+                                setLocalRoundTime(next);
+                                lastHapticRoundTime.current = next;
+                                vibrate(HAPTIC.nav);
+                                updateMode({ classicRoundTime: next });
+                              }}
+                            />
                           </div>
                         )}
                       </div>
@@ -759,20 +783,17 @@ export const SettingsScreen = () => {
                             ).map(([k, label]) => {
                               const active = types[k];
                               return (
-                                <button
+                                <SettingsChip
                                   key={k}
-                                  type="button"
+                                  active={active}
+                                  disabled={!isHost}
                                   onClick={() =>
                                     updateMode({ quizTypes: { ...types, [k]: !active } })
                                   }
-                                  className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                    active
-                                      ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                      : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                  }`}
+                                  className="hover:-translate-y-0.5 will-change-transform"
                                 >
-                                  {label}
-                                </button>
+                                  <span className={settingsChipLabelClass}>{label}</span>
+                                </SettingsChip>
                               );
                             })}
                           </div>
@@ -793,36 +814,14 @@ export const SettingsScreen = () => {
                               <p className={`${labelSectionClass} text-ui-fg`}>
                                 {t.lobbyQuizWrongPenaltyTitle}
                               </p>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateMode({
-                                    quizWrongPenaltyEnabled: !mode.quizWrongPenaltyEnabled,
-                                  })
-                                }
-                                className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
-                                  mode.quizWrongPenaltyEnabled
-                                    ? 'border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_14%,transparent)]'
-                                    : 'border-ui-border bg-ui-surface opacity-70'
-                                }`}
-                              >
-                                <span className="text-ui-fg">
-                                  {mode.quizWrongPenaltyEnabled
-                                    ? t.lobbyQuizWrongPenaltyOn
-                                    : t.lobbyQuizWrongPenaltyOff}
-                                </span>
-                                <div
-                                  className={`w-12 h-6 rounded-full transition-all relative ${
-                                    mode.quizWrongPenaltyEnabled ? 'bg-ui-accent' : 'bg-ui-border'
-                                  }`}
-                                >
-                                  <div
-                                    className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
-                                      mode.quizWrongPenaltyEnabled ? 'right-0.5' : 'left-0.5'
-                                    }`}
-                                  />
-                                </div>
-                              </button>
+                              <SettingsToggle
+                                variant="compact"
+                                checked={mode.quizWrongPenaltyEnabled}
+                                onChange={(v) => updateMode({ quizWrongPenaltyEnabled: v })}
+                                enabledLabel={t.lobbyQuizWrongPenaltyOn}
+                                disabledLabel={t.lobbyQuizWrongPenaltyOff}
+                                titleClassName="text-ui-fg"
+                              />
                             </div>
 
                             <div className="space-y-4">
@@ -838,18 +837,15 @@ export const SettingsScreen = () => {
                                 ).map(([id, label]) => {
                                   const active = timerMode === id;
                                   return (
-                                    <button
+                                    <SettingsChip
                                       key={id}
-                                      type="button"
+                                      active={active}
+                                      disabled={!isHost}
                                       onClick={() => updateMode({ quizTimerMode: id })}
-                                      className={`py-3 rounded-xl border text-center ${typographyClass.label} tracking-wide transition-all duration-200 ease-out active:scale-95 hover:-translate-y-0.5 will-change-transform ${
-                                        active
-                                          ? 'bg-ui-accent text-ui-accent-contrast border-ui-accent'
-                                          : 'bg-ui-surface border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
-                                      }`}
+                                      className="hover:-translate-y-0.5 will-change-transform"
                                     >
-                                      {label}
-                                    </button>
+                                      <span className={settingsChipLabelClass}>{label}</span>
+                                    </SettingsChip>
                                   );
                                 })}
                               </div>
@@ -962,124 +958,53 @@ export const SettingsScreen = () => {
                     {rulesOpen.basics && (
                       <div className="space-y-3 pt-1">
                         <p className={`${labelSectionClass} text-ui-fg`}>{t.roundTime}</p>
-                        <div className="flex items-stretch gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = Math.max(30, localRoundTime - 10);
-                              setLocalRoundTime(next);
-                              lastHapticRoundTime.current = next;
-                              vibrate(HAPTIC.nav);
-                              updateMode({ classicRoundTime: next });
-                            }}
-                            disabled={!isHost}
-                            className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                            aria-label={t.roundTime + ' −10'}
-                          >
-                            −
-                          </button>
-                          <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ui-border bg-ui-card px-2 py-3">
-                            <span
-                              className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${currentTheme.textAccent}`}
-                            >
-                              {localRoundTime}
-                            </span>
-                            <span
-                              className={`mt-1 ${typographyClass.label} normal-case font-semibold text-ui-fg-muted`}
-                            >
-                              s
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = Math.min(180, localRoundTime + 10);
-                              setLocalRoundTime(next);
-                              lastHapticRoundTime.current = next;
-                              vibrate(HAPTIC.nav);
-                              updateMode({ classicRoundTime: next });
-                            }}
-                            disabled={!isHost}
-                            className="min-h-14 min-w-13 shrink-0 rounded-2xl border border-ui-border bg-ui-surface text-ui-fg hover:bg-ui-surface-hover text-2xl font-black leading-none transition-all active:scale-95 disabled:opacity-40"
-                            aria-label={t.roundTime + ' +10'}
-                          >
-                            +
-                          </button>
-                        </div>
+                        <NumericStepper
+                          value={localRoundTime}
+                          disabled={!isHost}
+                          decrementLabel={t.roundTime + ' −10'}
+                          incrementLabel={t.roundTime + ' +10'}
+                          accentClass={currentTheme.textAccent}
+                          suffix="s"
+                          onDecrement={() => {
+                            const next = Math.max(30, localRoundTime - 10);
+                            setLocalRoundTime(next);
+                            lastHapticRoundTime.current = next;
+                            vibrate(HAPTIC.nav);
+                            updateMode({ classicRoundTime: next });
+                          }}
+                          onIncrement={() => {
+                            const next = Math.min(180, localRoundTime + 10);
+                            setLocalRoundTime(next);
+                            lastHapticRoundTime.current = next;
+                            vibrate(HAPTIC.nav);
+                            updateMode({ classicRoundTime: next });
+                          }}
+                        />
 
-                        <div className="space-y-4 pt-4 border-t border-ui-border">
-                          <div className="flex justify-between">
-                            <p className={`${labelSectionClass} text-ui-fg`}>{t.scoreToWin}</p>
-                            <span
-                              data-testid="settings-score-to-win"
-                              className={`${typographyClass.label} ${currentTheme.textAccent}`}
-                            >
-                              {settings.general.scoreToWin}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="100"
-                            step="5"
+                        <div className="space-y-3 pt-4 border-t border-ui-border">
+                          <p className={`${labelSectionClass} text-ui-fg`}>{t.scoreToWin}</p>
+                          <NumericStepper
                             value={localScoreToWin}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value);
-                              setLocalScoreToWin(v);
-                              if (v !== lastHapticScoreToWin.current) {
-                                lastHapticScoreToWin.current = v;
-                                vibrate(HAPTIC.nav);
-                              }
+                            disabled={!isHost}
+                            decrementLabel={`${t.scoreToWin} −5`}
+                            incrementLabel={`${t.scoreToWin} +5`}
+                            accentClass={currentTheme.textAccent}
+                            valueTestId="settings-score-to-win"
+                            onDecrement={() => {
+                              const next = Math.max(10, localScoreToWin - 5);
+                              setLocalScoreToWin(next);
+                              lastHapticScoreToWin.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateGeneral('scoreToWin', next);
                             }}
-                            onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
-                            onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                            onIncrement={() => {
+                              const next = Math.min(100, localScoreToWin + 5);
+                              setLocalScoreToWin(next);
+                              lastHapticScoreToWin.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateGeneral('scoreToWin', next);
+                            }}
                           />
-                          <div className="flex items-center justify-between gap-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.max(10, localScoreToWin - 5);
-                                setLocalScoreToWin(next);
-                                updateGeneral('scoreToWin', next);
-                              }}
-                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                            >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min={10}
-                              max={100}
-                              step={5}
-                              value={localScoreToWin}
-                              onChange={(e) => {
-                                const v = Number(e.target.value);
-                                if (!Number.isFinite(v)) return;
-                                setLocalScoreToWin(v);
-                              }}
-                              onBlur={() => {
-                                const clamped = Math.max(
-                                  10,
-                                  Math.min(100, Math.round(localScoreToWin / 5) * 5)
-                                );
-                                setLocalScoreToWin(clamped);
-                                updateGeneral('scoreToWin', clamped);
-                              }}
-                              className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.min(100, localScoreToWin + 5);
-                                setLocalScoreToWin(next);
-                                updateGeneral('scoreToWin', next);
-                              }}
-                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                            >
-                              +
-                            </button>
-                          </div>
                         </div>
                       </div>
                     )}
@@ -1099,70 +1024,29 @@ export const SettingsScreen = () => {
                         onToggle={() => setRulesOpen((s) => ({ ...s, basics: !s.basics }))}
                       />
                       {rulesOpen.basics && (
-                        <div className="space-y-4 pt-1">
-                          <input
-                            type="range"
-                            min="10"
-                            max="100"
-                            step="5"
+                        <div className="space-y-3 pt-1">
+                          <NumericStepper
                             value={localScoreToWin}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value);
-                              setLocalScoreToWin(v);
-                              if (v !== lastHapticScoreToWin.current) {
-                                lastHapticScoreToWin.current = v;
-                                vibrate(HAPTIC.nav);
-                              }
+                            disabled={!isHost}
+                            decrementLabel={`${t.scoreToWin} −5`}
+                            incrementLabel={`${t.scoreToWin} +5`}
+                            accentClass={currentTheme.textAccent}
+                            valueTestId="settings-score-to-win"
+                            onDecrement={() => {
+                              const next = Math.max(10, localScoreToWin - 5);
+                              setLocalScoreToWin(next);
+                              lastHapticScoreToWin.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateGeneral('scoreToWin', next);
                             }}
-                            onMouseUp={() => updateGeneral('scoreToWin', localScoreToWin)}
-                            onTouchEnd={() => updateGeneral('scoreToWin', localScoreToWin)}
-                            className="w-full h-1 rounded-lg appearance-none cursor-pointer accent-ui-accent bg-ui-border"
+                            onIncrement={() => {
+                              const next = Math.min(100, localScoreToWin + 5);
+                              setLocalScoreToWin(next);
+                              lastHapticScoreToWin.current = next;
+                              vibrate(HAPTIC.nav);
+                              updateGeneral('scoreToWin', next);
+                            }}
                           />
-                          <div className="flex items-center justify-between gap-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.max(10, localScoreToWin - 5);
-                                setLocalScoreToWin(next);
-                                updateGeneral('scoreToWin', next);
-                              }}
-                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                            >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min={10}
-                              max={100}
-                              step={5}
-                              value={localScoreToWin}
-                              onChange={(e) => {
-                                const v = Number(e.target.value);
-                                if (!Number.isFinite(v)) return;
-                                setLocalScoreToWin(v);
-                              }}
-                              onBlur={() => {
-                                const clamped = Math.max(
-                                  10,
-                                  Math.min(100, Math.round(localScoreToWin / 5) * 5)
-                                );
-                                setLocalScoreToWin(clamped);
-                                updateGeneral('scoreToWin', clamped);
-                              }}
-                              className={`w-28 text-center rounded-xl border border-ui-border bg-ui-surface text-ui-fg px-3 py-2 outline-none focus:border-ui-accent ${typographyClass.bodyInput}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = Math.min(100, localScoreToWin + 5);
-                                setLocalScoreToWin(next);
-                                updateGeneral('scoreToWin', next);
-                              }}
-                              className={`px-3 py-2 rounded-xl border border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover ${typographyClass.label}`}
-                            >
-                              +
-                            </button>
-                          </div>
                         </div>
                       )}
                     </div>

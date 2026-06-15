@@ -164,16 +164,32 @@ export function EnterNameSheet(): React.ReactNode {
               </button>
             ))}
           </div>
-          <Button
-            type="submit"
-            themeClass={currentTheme.button}
-            fullWidth
-            size="lg"
-            disabled={!name.trim() || isEntering}
-            data-testid="enter-name-submit"
-          >
-            {t.next}
-          </Button>
+          <div className="flex flex-col gap-4">
+            <Button
+              type="submit"
+              variant="primary"
+              volume="cta"
+              themeClass={currentTheme.button}
+              fullWidth
+              size="lg"
+              disabled={!name.trim() || isEntering}
+              data-testid="enter-name-submit"
+            >
+              {t.next}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              fullWidth
+              size="lg"
+              disabled={isEntering}
+              onClick={requestClose}
+            >
+              <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+                {t.cancel}
+              </span>
+            </Button>
+          </div>
         </form>
       </ModalSheet>
 

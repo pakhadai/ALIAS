@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Check, Lock, Settings as SettingsIcon, Volume2, Vibrate } from 'lucide-react';
+import { Check, Lock, Settings as SettingsIcon } from 'lucide-react';
 import { ModalSheet, ModalSheetBody } from '../ModalSheet';
 import { ModalSheetTitle, menuHeaderModalBackdropClass } from '../Shared';
 import { Button } from '../Button';
@@ -11,6 +11,7 @@ import { setHapticsEnabled } from '../../utils/haptics';
 import { useAuthContext } from '../../context/AuthContext';
 import { playSoundEffect } from '../../utils/audio';
 import { typographyClass, labelSectionClass, captionMutedClass } from '../../constants/typography';
+import { SettingsToggle } from './SettingsToggle';
 
 type Props = {
   onClose: () => void;
@@ -161,35 +162,19 @@ export function AppSettingsModal({ onClose }: Props) {
 
         {/* Sound */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Volume2 size={16} className="text-ui-fg-muted opacity-80" />
-              <p className={sectionLabel}>{t.sound}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const next = !settings.general.soundEnabled;
-                setPreferences({ soundEnabled: next });
-                if (next) {
-                  // Play a demo sound so the user immediately hears that sound works.
-                  // Called directly (not via useAudio) because the state update is
-                  // async — soundEnabled is still false when this handler runs.
-                  playSoundEffect('click', settings.general.soundPreset);
-                }
-              }}
-              className={`w-12 h-6 rounded-full transition-all relative ${
-                settings.general.soundEnabled ? 'bg-ui-accent' : 'bg-ui-surface'
-              }`}
-              aria-pressed={settings.general.soundEnabled}
-            >
-              <div
-                className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
-                  settings.general.soundEnabled ? 'right-0.5' : 'left-0.5'
-                }`}
-              />
-            </button>
-          </div>
+          <SettingsToggle
+            checked={settings.general.soundEnabled}
+            onChange={(next) => {
+              setPreferences({ soundEnabled: next });
+              if (next) {
+                playSoundEffect('click', settings.general.soundPreset);
+              }
+            }}
+            title={t.sound}
+            enabledLabel={t.enabled}
+            disabledLabel={t.disabled}
+            titleClassName={`${typographyClass.body} ${currentTheme.textMain} font-semibold normal-case tracking-normal`}
+          />
 
           {settings.general.soundEnabled && (
             <div className="grid grid-cols-3 gap-2">
@@ -215,41 +200,21 @@ export function AppSettingsModal({ onClose }: Props) {
         </div>
 
         {/* Haptics */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Vibrate size={16} className="text-ui-fg-muted opacity-80" />
-              <p className={sectionLabel}>{t.vibration}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const next = !haptics;
-                setHaptics(next);
-                setHapticsEnabled(next);
-                if (next) {
-                  // Confirm vibration immediately. setHapticsEnabled already wrote
-                  // to localStorage synchronously, so navigator.vibrate fires right away.
-                  // Three short pulses — noticeable but not annoying.
-                  navigator.vibrate?.([40, 40, 40]);
-                }
-              }}
-              className={`w-12 h-6 rounded-full transition-all relative ${
-                haptics ? 'bg-ui-accent' : 'bg-ui-surface'
-              }`}
-              aria-pressed={haptics}
-            >
-              <div
-                className={`absolute w-5 h-5 bg-ui-fg rounded-full top-0.5 transition-all ${
-                  haptics ? 'right-0.5' : 'left-0.5'
-                }`}
-              />
-            </button>
-          </div>
-          <p className={`${typographyClass.label} leading-relaxed text-ui-fg-muted opacity-70`}>
-            {t.vibrationHint}
-          </p>
-        </div>
+        <SettingsToggle
+          checked={haptics}
+          onChange={(next) => {
+            setHaptics(next);
+            setHapticsEnabled(next);
+            if (next) {
+              navigator.vibrate?.([40, 40, 40]);
+            }
+          }}
+          title={t.vibration}
+          hint={t.vibrationHint}
+          enabledLabel={t.enabled}
+          disabledLabel={t.disabled}
+          titleClassName={`${typographyClass.body} ${currentTheme.textMain} font-semibold normal-case tracking-normal`}
+        />
       </ModalSheetBody>
     </ModalSheet>
   );

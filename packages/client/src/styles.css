@@ -452,16 +452,19 @@ html[data-telegram-app='true']:not([data-telegram-desktop]) {
 }
 
 /**
- * TMA mobile WebView (iOS/Android): blurred ::before/filter layers paint above the button
- * (dark matte overlay); mask-composite snake ring also glitches. Use button box-shadow only.
+ * TMA mobile WebView (iOS/Android): blurred shell ::before paints above the button
+ * (dark matte overlay). Use button box-shadow only for depth.
  */
-html[data-telegram-app='true']:not([data-telegram-desktop]) .accent-footer-cta-shell--ready::before,
-html[data-telegram-app='true']:not([data-telegram-desktop]) .accent-footer-cta-shell--ready::after {
+html[data-telegram-app='true']:not([data-telegram-desktop])
+  .accent-footer-cta-shell--ready::before {
   display: none;
 }
 
-html[data-telegram-app='true']:not([data-telegram-desktop]) .lobby-start-btn--ready {
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--ui-accent) 36%, transparent);
+html[data-telegram-app='true']:not([data-telegram-desktop]) .lobby-start-btn--ready,
+html[data-telegram-app='true']:not([data-telegram-desktop]) .lobby-start-btn--plain {
+  box-shadow:
+    0 2px 10px color-mix(in srgb, var(--ui-accent) 26%, transparent),
+    0 6px 24px color-mix(in srgb, var(--ui-accent) 32%, transparent);
 }
 
 /** Desktop TMA — native title bar is outside WebView; no mobile 104px floor. */
@@ -991,42 +994,7 @@ footer.footer-island.ui-app-footer {
   --ui-status-banner-fg: var(--ui-toast-fg);
 }
 
-/* Accent footer CTA — perimeter snake (@property coords) + button states */
-@property --snake-x {
-  syntax: '<percentage>';
-  inherits: false;
-  initial-value: 0%;
-}
-
-@property --snake-y {
-  syntax: '<percentage>';
-  inherits: false;
-  initial-value: 0%;
-}
-
-@keyframes accent-cta-snake {
-  0% {
-    --snake-x: 0%;
-    --snake-y: 0%;
-  }
-  42% {
-    --snake-x: 100%;
-    --snake-y: 0%;
-  }
-  50% {
-    --snake-x: 100%;
-    --snake-y: 100%;
-  }
-  92% {
-    --snake-x: 0%;
-    --snake-y: 100%;
-  }
-  100% {
-    --snake-x: 0%;
-    --snake-y: 0%;
-  }
-}
-
+/* Accent footer CTA — ambient halo shell + soft-pill button depth (no hairline insets) */
 @keyframes blocked-pulse {
   0% {
     opacity: 0.8;
@@ -1047,52 +1015,21 @@ footer.footer-island.ui-app-footer {
   overflow: visible;
 }
 
-.accent-footer-cta-shell--ready::before,
-.accent-footer-cta-shell--ready::after {
+.accent-footer-cta-shell--ready::before {
   content: '';
   position: absolute;
-  /* Pin glow/ring to the button box (shell is width:100% around the button). */
-  inset: 0;
+  inset: -10px;
   border-radius: inherit;
   pointer-events: none;
-}
-
-/* Centered ambient halo — behind the button (z-index -1); filter can paint over siblings on iOS if z≥0. */
-.accent-footer-cta-shell--ready::before {
-  inset: -8px;
-  filter: blur(14px);
-  opacity: 0.52;
+  filter: blur(16px);
+  opacity: 0.48;
   z-index: -1;
   background-image: radial-gradient(
-    120px 56px at 50% 50%,
-    color-mix(in srgb, var(--ui-accent) 78%, white 22%) 0%,
-    color-mix(in srgb, var(--ui-accent) 58%, transparent) 38%,
-    transparent 72%
+    128px 60px at 50% 52%,
+    color-mix(in srgb, var(--ui-accent) 72%, white 28%) 0%,
+    color-mix(in srgb, var(--ui-accent) 52%, transparent) 42%,
+    transparent 76%
   );
-}
-
-.accent-footer-cta-shell--ready::after {
-  inset: -2px;
-  padding: 2px;
-  opacity: 0.78;
-  z-index: -1;
-  background-image: radial-gradient(
-    112px circle at var(--snake-x) var(--snake-y),
-    color-mix(in srgb, var(--ui-accent) 82%, white 18%) 0%,
-    color-mix(in srgb, var(--ui-accent) 92%, transparent) 18%,
-    color-mix(in srgb, var(--ui-accent) 58%, transparent) 42%,
-    transparent 68%
-  );
-  animation: accent-cta-snake 6s linear infinite;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  /* source-out = exclude ring on WebKit; xor mis-renders filled overlay on iOS TMA */
-  -webkit-mask-composite: source-out;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
 }
 
 .accent-footer-cta-shell--blocked {
@@ -1103,16 +1040,54 @@ footer.footer-island.ui-app-footer {
   /* No ::before/::after snake — full accent CTA without perimeter animation */
 }
 
-button.lobby-start-btn {
+button.lobby-start-btn,
+button.ui-soft-btn {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   border: none;
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.lobby-start-btn--ready:active {
+button.lobby-start-btn--ready,
+button.lobby-start-btn--plain {
+  box-shadow:
+    0 2px 8px color-mix(in srgb, var(--ui-accent) 22%, transparent),
+    0 8px 28px color-mix(in srgb, var(--ui-accent) 28%, transparent),
+    0 12px 40px color-mix(in srgb, var(--ui-bg) 18%, transparent);
+}
+
+button.lobby-start-btn--ready::after,
+button.lobby-start-btn--plain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ui-accent-contrast) 14%, transparent) 0%,
+    transparent 36%,
+    transparent 64%,
+    color-mix(in srgb, var(--ui-bg) 10%, transparent) 100%
+  );
+}
+
+button.lobby-start-btn--ready > *,
+button.lobby-start-btn--plain > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lobby-start-btn--ready:active,
+.lobby-start-btn--plain:active {
   transform: scale(0.97);
+  box-shadow:
+    0 1px 4px color-mix(in srgb, var(--ui-accent) 18%, transparent),
+    0 4px 16px color-mix(in srgb, var(--ui-accent) 24%, transparent);
 }
 
 .lobby-start-btn--blocked {
@@ -1120,44 +1095,75 @@ button.lobby-start-btn {
   color: color-mix(in srgb, var(--ui-accent-contrast) 58%, var(--ui-fg-muted) 42%);
   background-color: color-mix(in srgb, var(--ui-accent) 34%, var(--ui-bg) 66%);
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--ui-accent) 10%, transparent),
-    0 1px 0 color-mix(in srgb, var(--ui-bg) 38%, transparent);
+    0 2px 10px color-mix(in srgb, var(--ui-accent) 14%, transparent),
+    0 6px 20px color-mix(in srgb, var(--ui-bg) 22%, transparent);
+}
+
+.lobby-start-btn--blocked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ui-accent-contrast) 8%, transparent) 0%,
+    transparent 42%,
+    color-mix(in srgb, var(--ui-bg) 8%, transparent) 100%
+  );
+}
+
+.lobby-start-btn--blocked > * {
+  position: relative;
+  z-index: 1;
 }
 
 .lobby-start-btn--blocked:active {
   transform: scale(0.98);
 }
 
-.lobby-start-btn--ready {
-  /* No --ui-bg drop shadow — reads as dark opaque frame on OLED themes */
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
-    0 4px 20px color-mix(in srgb, var(--ui-accent) 30%, transparent);
+/* Neutral soft-pill — secondary/tertiary CTAs (crisp edge + downward shadow, no bg glow) */
+button.ui-soft-btn--neutral {
+  background-color: color-mix(in srgb, var(--ui-elevated) 86%, var(--ui-surface) 14%);
+  color: var(--ui-fg);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 52%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ui-fg) 9%, transparent);
 }
 
-.lobby-start-btn--plain:active {
+button.ui-soft-btn--neutral:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--ui-elevated) 72%, var(--ui-surface-hover) 28%);
+  color: var(--ui-fg);
+  border-color: color-mix(in srgb, var(--ui-border) 68%, transparent);
+}
+
+button.ui-soft-btn--neutral:active:not(:disabled) {
   transform: scale(0.97);
+  box-shadow: 0 1px 1px color-mix(in srgb, var(--ui-fg) 6%, transparent);
+}
+
+/** Tertiary — same pill family, quieter fill (e.g. menu offline mode below primary/secondary). */
+button.ui-soft-btn--neutral-muted {
+  background-color: color-mix(in srgb, var(--ui-surface) 58%, var(--ui-bg) 42%);
+  color: var(--ui-fg-muted);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 38%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ui-fg) 6%, transparent);
+}
+
+button.ui-soft-btn--neutral-muted:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--ui-surface) 68%, var(--ui-surface-hover) 32%);
+  color: var(--ui-fg);
+  border-color: color-mix(in srgb, var(--ui-border) 52%, transparent);
+}
+
+button.ui-soft-btn--neutral-muted:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .accent-footer-cta-shell--ready::after {
-    animation: none;
-    background-image: radial-gradient(
-      112px circle at 50% 50%,
-      color-mix(in srgb, var(--ui-accent) 72%, white 28%) 0%,
-      color-mix(in srgb, var(--ui-accent) 48%, transparent) 42%,
-      transparent 68%
-    );
-  }
-
   .accent-footer-cta-shell--blocked {
     animation: none;
-  }
-
-  .lobby-start-btn--ready {
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
-      0 4px 20px color-mix(in srgb, var(--ui-accent) 30%, transparent);
   }
 }
 

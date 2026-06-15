@@ -8,6 +8,7 @@ import { ModalSheet } from '../ModalSheet';
 import { ModalSheetTitle } from '../Shared';
 import { typographyClass } from '../../constants/typography';
 import { useHapticFeedback } from '../../hooks/useHapticFeedback';
+import { useGame } from '../../context/GameContext';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
@@ -18,9 +19,11 @@ interface PayFormProps {
   amount: number;
   itemName: string;
   onSuccess: () => void;
+  onDismiss: () => void;
+  themeClass: string;
 }
 
-function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
+function PayForm({ amount, itemName, onSuccess, onDismiss, themeClass }: PayFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [paying, setPaying] = useState(false);
@@ -74,7 +77,15 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
 
       {error && <p className={`text-ui-danger ${typographyClass.body} text-center`}>{error}</p>}
 
-      <Button type="submit" variant="primary" fullWidth size="xl" disabled={paying || !stripe}>
+      <Button
+        type="submit"
+        variant="primary"
+        volume="cta"
+        themeClass={themeClass}
+        fullWidth
+        size="lg"
+        disabled={paying || !stripe}
+      >
         {paying ? (
           <span className="inline-flex items-center justify-center gap-2">
             <Loader2 size={16} className="animate-spin" aria-hidden />
@@ -83,6 +94,17 @@ function PayForm({ amount, itemName, onSuccess }: PayFormProps) {
         ) : (
           <>Оплатити ${(amount / 100).toFixed(2)}</>
         )}
+      </Button>
+
+      <Button
+        type="button"
+        variant="ghost"
+        fullWidth
+        size="lg"
+        onClick={onDismiss}
+        disabled={paying}
+      >
+        <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">Скасувати</span>
       </Button>
 
       <div className="flex items-center justify-center gap-2 opacity-40">
@@ -113,6 +135,7 @@ export function QuickBuyModal({
   onSuccess,
 }: QuickBuyModalProps) {
   const haptic = useHapticFeedback();
+  const { currentTheme } = useGame();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [amount, setAmount] = useState(0);
   const [itemName, setItemName] = useState('');
@@ -220,7 +243,13 @@ export function QuickBuyModal({
           )}
 
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-            <PayForm amount={amount} itemName={itemName} onSuccess={handleSuccess} />
+            <PayForm
+              amount={amount}
+              itemName={itemName}
+              onSuccess={handleSuccess}
+              onDismiss={requestClose}
+              themeClass={currentTheme.button}
+            />
           </Elements>
         </div>
       )}

@@ -43,6 +43,8 @@ export const RulesScreen = () => {
         </div>
         <Button
           themeClass={currentTheme.button}
+          variant="primary"
+          volume="cta"
           fullWidth
           onClick={() => setGameState(GameState.MENU)}
           size="xl"

@@ -220,10 +220,12 @@ export const LobbySettingsScreen = () => {
         <FixedBottomBar island contentClassName={footerIslandClassName('canonical')}>
           <Button
             type="button"
+            variant="primary"
+            volume="cta"
             size="xl"
             fullWidth
             themeClass={currentTheme.button}
-            className="rounded-full tracking-[0.3em] min-h-[56px] gap-2"
+            className="min-h-[56px] gap-2"
             onClick={() => void handleSave()}
             disabled={saving || loading}
           >

@@ -281,6 +281,8 @@ export const GameOverScreen = () => {
             {isHost ? (
               <>
                 <Button
+                  variant="primary"
+                  volume="cta"
                   themeClass={currentTheme.button}
                   fullWidth
                   size="xl"

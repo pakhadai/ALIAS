@@ -7,6 +7,7 @@ import { SettingsScreen } from './SettingsScreen';
 
 const sendAction = vi.fn();
 const setGameState = vi.fn();
+const showNotification = vi.fn();
 const fetchStore = vi.fn();
 
 let mockIsHost = true;
@@ -45,6 +46,7 @@ vi.mock('../../context/GameContext', () => ({
     setGameState,
     isHost: mockIsHost,
     sendAction,
+    showNotification,
     gameState: mockGameState,
   }),
 }));
@@ -69,6 +71,7 @@ vi.mock('../../components/CustomDeck/CustomDeckModal', () => ({
 const mockT = {
   settings: 'Settings',
   save: 'Save',
+  settingsSavedSuccess: 'Settings saved',
   backToLobby: 'Back to lobby',
   gameMode: 'Mode',
   content: 'Dictionary',
@@ -115,7 +118,9 @@ describe('SettingsScreen', () => {
     render(<SettingsScreen />);
 
     expect(screen.getByText('Settings')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    const saveBtn = screen.getByRole('button', { name: 'Save' });
+    expect(saveBtn).toBeInTheDocument();
+    expect(saveBtn).toHaveClass('lobby-start-btn', 'lobby-start-btn--plain');
     await waitFor(() => expect(fetchStore).toHaveBeenCalledOnce());
   });
 
@@ -157,7 +162,7 @@ describe('SettingsScreen', () => {
     const user = userEvent.setup();
     render(<SettingsScreen />);
 
-    await user.click(screen.getByRole('button', { name: 'Dictionary' }));
+    await user.click(screen.getByRole('tab', { name: 'Dictionary' }));
 
     const categoryButtons = screen.getAllByRole('button', { name: 'General' });
     expect(categoryButtons.length).toBeGreaterThan(0);
@@ -172,6 +177,7 @@ describe('SettingsScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
+    expect(showNotification).toHaveBeenCalledWith('Settings saved', 'success');
     expect(setGameState).toHaveBeenCalledWith(GameState.LOBBY);
   });
 });

@@ -22,6 +22,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   icon?: React.ReactNode;
   themeClass?: string;
+  /** Primary only: `cta` = accent soft-pill depth (`.lobby-start-btn--plain`); default `flat`. */
+  volume?: 'flat' | 'cta';
   clickSound?: boolean;
 }
 
@@ -33,6 +35,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   icon,
   themeClass,
+  volume = 'flat',
   clickSound = true,
   ...props
 }) => {
@@ -66,12 +69,25 @@ export const Button: React.FC<ButtonProps> = ({
     };
   }, []); // Legitimate: window/document subscription for prefs cache invalidation.
 
-  const baseStyles =
-    'inline-flex items-center justify-center rounded-theme transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
+  const isCtaVolume = variant === 'primary' && volume === 'cta';
+  const isSoftPill = variant === 'secondary' || variant === 'tertiary' || isCtaVolume;
+
+  const softPillBaseStyles =
+    'inline-flex items-center justify-center gap-2 rounded-theme font-semibold leading-none tracking-wide disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
+
+  const baseStyles = isSoftPill
+    ? `${softPillBaseStyles} ${isCtaVolume ? 'transition-transform duration-200 ease-out' : 'transition-all duration-200 ease-out'}`
+    : 'inline-flex items-center justify-center gap-2 rounded-theme transition-all duration-200 ease-out active:scale-95 active:opacity-95 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ui-accent-ring focus-visible:ring-offset-ui-bg';
   const labelStyles = typographyClass.label;
 
   // Strict theme integration
   const getVariantStyle = () => {
+    if (variant === 'primary' && volume === 'cta') {
+      const theme =
+        themeClass ??
+        'bg-ui-accent text-ui-accent-contrast hover:bg-ui-accent-hover active:bg-ui-accent-pressed font-sans';
+      return `lobby-start-btn lobby-start-btn--plain ${theme}`;
+    }
     if (themeClass && variant === 'primary') return themeClass;
 
     switch (variant) {
@@ -84,9 +100,9 @@ export const Button: React.FC<ButtonProps> = ({
       case 'success':
         return 'bg-[color-mix(in_srgb,var(--ui-success)_14%,transparent)] border border-[color-mix(in_srgb,var(--ui-success)_28%,transparent)] text-ui-success hover:bg-[color-mix(in_srgb,var(--ui-success)_22%,transparent)]';
       case 'secondary':
-        return 'bg-ui-surface text-ui-fg-muted hover:text-ui-fg border border-ui-border hover:bg-ui-surface-hover';
+        return 'ui-soft-btn ui-soft-btn--neutral font-sans';
       case 'tertiary':
-        return 'bg-transparent border border-ui-border text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface/40 active:bg-ui-surface/40';
+        return 'ui-soft-btn ui-soft-btn--neutral-muted font-sans';
       case 'ghost':
         return 'bg-transparent text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover';
       default:
@@ -144,8 +160,16 @@ export const Button: React.FC<ButtonProps> = ({
       onClick={handleClick}
       {...props}
     >
-      {icon && <span className="mr-3">{icon}</span>}
-      {children}
+      {icon ? (
+        <span className="inline-flex items-center justify-center gap-2">
+          <span className="inline-flex size-4 shrink-0 items-center justify-center" aria-hidden>
+            {icon}
+          </span>
+          <span>{children}</span>
+        </span>
+      ) : (
+        children
+      )}
     </button>
   );
 };

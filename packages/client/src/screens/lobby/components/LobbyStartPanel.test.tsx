@@ -50,7 +50,7 @@ describe('LobbyStartPanel', () => {
     expect(startBtn.querySelector('svg')).toBeTruthy();
   });
 
-  it('should add neon snake shell when lobby is ready', () => {
+  it('should use animated ready shell when lobby is ready', () => {
     render(<LobbyStartPanel readiness={ready} t={t} theme={theme} onStartTap={vi.fn()} />);
 
     expect(screen.getByTestId('lobby-start-btn-shell')).toHaveClass(

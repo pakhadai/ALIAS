@@ -6,6 +6,9 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useAppLogin } from '../../context/AppLoginContext';
 import { fetchStore, claimFreeItem, type WordPackItem, type ThemeItem } from '../../services/api';
 import { QuickBuyModal } from '../../components/Store/QuickBuyModal';
+import { Button } from '../../components/Button';
+import { SettingsChip } from '../../components/Settings';
+import { settingsChipLabelClass } from '../../components/Settings/settingsChipStyles';
 import { AppHeader, FixedBottomBar, ScreenShell } from '../../components/layout';
 import { ScreenTitle } from '../../components/typography/ScreenTitle';
 import { footerIslandClassName } from '../../constants/footerLayout';
@@ -131,9 +134,7 @@ export const StoreScreen = () => {
 
   const cardShell = SURFACE_CARD_CLASS;
   const divider = 'border-ui-border';
-  const chipBase = 'border border-ui-border text-ui-fg-muted bg-ui-surface';
-  const chipActive =
-    'border-ui-accent text-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_12%,transparent)]';
+  const storeTabItems = STORE_TABS.map((id) => ({ id, label: TAB_LABELS[id] }));
 
   return (
     <ScreenShell
@@ -149,17 +150,20 @@ export const StoreScreen = () => {
           menuItems={storeMenuItems}
           childRowHeightPx={HEADER_ROW_MIN_PX}
         >
-          <div className={`w-full border-b ${divider}`}>
-            <div className="flex space-x-8">
-              {STORE_TABS.map((storeTab) => (
-                <button
-                  key={storeTab}
-                  type="button"
-                  onClick={() => setTab(storeTab)}
-                  className={`pb-3 border-b-2 ${typographyClass.label} font-sans tracking-wider transition-all duration-200 ease-out active:scale-[0.99] ${tab === storeTab ? 'border-ui-accent text-ui-accent' : 'border-transparent text-ui-fg-muted'}`}
+          <div className={`w-full border-b ${divider} pb-3`}>
+            <div className="grid grid-cols-2 gap-2" role="tablist">
+              {storeTabItems.map(({ id, label }) => (
+                <SettingsChip
+                  key={id}
+                  role="tab"
+                  aria-selected={tab === id}
+                  active={tab === id}
+                  size="tab"
+                  variant="tint"
+                  onClick={() => setTab(id)}
                 >
-                  {TAB_LABELS[storeTab]}
-                </button>
+                  <span className={settingsChipLabelClass}>{label}</span>
+                </SettingsChip>
               ))}
             </div>
           </div>
@@ -193,28 +197,32 @@ export const StoreScreen = () => {
               {banner === 'success' ? 'Ваша покупка активована' : 'Спробуй ще раз'}
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => setBanner(null)}
-            className="min-h-11 min-w-11 flex items-center justify-center opacity-40 active:opacity-100"
+            className="min-h-11 min-w-11 px-0 opacity-40 active:opacity-100"
             aria-label="Закрити"
           >
             <X size={14} className={currentTheme.iconColor} aria-hidden />
-          </button>
+          </Button>
         </div>
       )}
 
       {tab === 'packs' && (
         <div className="pt-4 pb-2 flex gap-2 overflow-x-auto shrink-0 [-ms-overflow-style:none] [scrollbar-width:none]">
           {LANG_FILTERS.map((lang) => (
-            <button
+            <SettingsChip
               key={lang}
-              type="button"
+              active={langFilter === lang}
+              variant="tint"
+              size="compact"
+              className="shrink-0 normal-case tracking-wide"
               onClick={() => setLangFilter(lang)}
-              className={`shrink-0 px-4 py-1.5 rounded-full ${typographyClass.label} tracking-wide transition-all active:scale-[0.99] ${langFilter === lang ? chipActive : chipBase}`}
             >
               {LANG_FULL[lang]}
-            </button>
+            </SettingsChip>
           ))}
         </div>
       )}
@@ -259,18 +267,22 @@ export const StoreScreen = () => {
                       </span>
                     </div>
                   ) : (
-                    <button
+                    <Button
                       type="button"
+                      variant="primary"
+                      volume="cta"
+                      size="sm"
+                      themeClass={currentTheme.button}
                       onClick={() => handleBuy('wordPack', pack.id)}
                       disabled={acting === pack.id}
-                      className={`shrink-0 bg-ui-accent active:brightness-110 active:scale-95 text-ui-accent-contrast px-5 py-2 rounded-full font-bold ${typographyClass.system} shadow-lg min-w-[90px] disabled:opacity-50`}
+                      className="shrink-0 min-w-[90px] font-sans normal-case tracking-normal"
                     >
                       {acting === pack.id ? (
-                        <Loader2 size={12} className="animate-spin inline" />
+                        <Loader2 size={12} className="animate-spin" aria-hidden />
                       ) : (
                         `$${(pack.price / 100).toFixed(2)}`
                       )}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -328,31 +340,37 @@ export const StoreScreen = () => {
                         </span>
                       </div>
                     ) : pack.isFree ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleAddFree('wordPack', pack.id)}
                         disabled={acting === pack.id}
-                        className={`shrink-0 px-5 py-2 rounded-full font-bold ${typographyClass.system} transition-all active:scale-95 disabled:opacity-50 bg-ui-surface active:bg-ui-surface-hover text-ui-fg border border-ui-border`}
+                        className="shrink-0 font-sans normal-case tracking-normal"
                       >
                         {acting === pack.id ? (
-                          <Loader2 size={12} className="animate-spin inline" />
+                          <Loader2 size={12} className="animate-spin" aria-hidden />
                         ) : (
                           '+ Додати'
                         )}
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
+                        variant="primary"
+                        volume="cta"
+                        size="sm"
+                        themeClass={currentTheme.button}
                         onClick={() => handleBuy('wordPack', pack.id)}
                         disabled={acting === pack.id}
-                        className={`shrink-0 bg-ui-accent active:brightness-110 active:scale-95 transition-all text-ui-accent-contrast px-5 py-2 rounded-full font-bold ${typographyClass.system} shadow-lg min-w-[90px] disabled:opacity-50`}
+                        className="shrink-0 min-w-[90px] font-sans normal-case tracking-normal"
                       >
                         {acting === pack.id ? (
-                          <Loader2 size={12} className="animate-spin inline" />
+                          <Loader2 size={12} className="animate-spin" aria-hidden />
                         ) : (
                           `$${(pack.price / 100).toFixed(2)}`
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -438,31 +456,37 @@ export const StoreScreen = () => {
                         </span>
                       </div>
                     ) : theme.isFree ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleAddFree('theme', theme.id)}
                         disabled={acting === theme.id}
-                        className={`px-4 py-2 rounded-full ${typographyClass.label} normal-case transition-all active:scale-95 disabled:opacity-50 bg-ui-surface active:bg-ui-surface-hover text-ui-accent border border-ui-border`}
+                        className="font-sans normal-case tracking-normal"
                       >
                         {acting === theme.id ? (
-                          <Loader2 size={11} className="animate-spin inline" />
+                          <Loader2 size={11} className="animate-spin" aria-hidden />
                         ) : (
                           'Отримати'
                         )}
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
+                        variant="primary"
+                        volume="cta"
+                        size="sm"
+                        themeClass={currentTheme.button}
                         onClick={() => handleBuy('theme', theme.id)}
                         disabled={acting === theme.id}
-                        className={`bg-ui-accent active:brightness-110 active:scale-95 text-ui-accent-contrast px-4 py-2 rounded-full ${typographyClass.label} normal-case shadow-lg disabled:opacity-50`}
+                        className="font-sans normal-case tracking-normal"
                       >
                         {acting === theme.id ? (
-                          <Loader2 size={11} className="animate-spin inline" />
+                          <Loader2 size={11} className="animate-spin" aria-hidden />
                         ) : (
                           `$${(theme.price / 100).toFixed(2)}`
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

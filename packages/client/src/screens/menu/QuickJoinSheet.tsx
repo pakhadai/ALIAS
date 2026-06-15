@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useDeferredSheetInputFocus } from '../../hooks/useBottomSheetPresence';
 import { ArrowRight } from 'lucide-react';
+import { Button } from '../../components/Button';
 import { ModalSheet } from '../../components/ModalSheet';
 import { ModalSheetTitle } from '../../components/Shared';
 import { ROOM_CODE_LENGTH } from '../../constants';
@@ -62,20 +63,25 @@ export function QuickJoinSheet(props: {
               ref={codeInputRef}
               aria-label={t.enterCode}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={onSubmit}
               disabled={!canSubmit || checking}
               data-testid="menu-quick-join-submit"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-ui-accent text-ui-accent-contrast transition-all duration-200 ease-out active:scale-95 disabled:opacity-40"
+              className="!px-2.5 !py-2.5 shrink-0"
               aria-label={t.enter}
+              icon={
+                checking ? (
+                  <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                ) : (
+                  <ArrowRight size={18} strokeWidth={2.5} />
+                )
+              }
             >
-              {checking ? (
-                <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-              ) : (
-                <ArrowRight size={18} strokeWidth={2.5} />
-              )}
-            </button>
+              <span className="sr-only">{t.enter}</span>
+            </Button>
           </div>
         </div>
       </div>

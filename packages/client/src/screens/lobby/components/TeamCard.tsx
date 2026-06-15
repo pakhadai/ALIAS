@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, PencilLine } from 'lucide-react';
 import type { GameActionPayload, Player, Team, ThemeConfig } from '../../../types';
 import { PlayerAvatar } from '../../../components/AvatarDisplay';
+import { Button } from '../../../components/Button';
 import { useHapticFeedback } from '../../../hooks/useHapticFeedback';
 import { HAPTIC, vibrate } from '../../../utils/haptics';
 import type { TranslationStrings } from '../../../hooks/useT';
@@ -50,12 +51,6 @@ export function TeamCard(props: {
   const isEmpty = team.players.length === 0;
   const overfilled = team.players.length > Math.ceil(playersTotal / teamCount) + 1;
 
-  const joinVariant = overfilled
-    ? 'border border-ui-border bg-ui-surface text-ui-warning'
-    : isEmpty
-      ? 'border border-dashed border-ui-accent bg-[color-mix(in_srgb,var(--ui-accent)_8%,transparent)] text-ui-accent'
-      : 'bg-ui-accent text-ui-accent-contrast border border-ui-accent';
-
   const handleTeamJoin = () => {
     haptic.impactOccurred('medium');
     vibrate(HAPTIC.lobbyTeamJoin);
@@ -88,8 +83,10 @@ export function TeamCard(props: {
               className={`flex-1 bg-transparent border-b border-ui-border text-ui-fg ${typographyClass.bodyInput} tracking-wide outline-none focus:border-ui-accent`}
               autoFocus
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 const nextName = teamNameDraft.trim().slice(0, 18);
                 if (!nextName) return;
@@ -97,11 +94,11 @@ export function TeamCard(props: {
                 setEditingTeamId(null);
                 setTeamNameDraft('');
               }}
-              className="min-h-11 min-w-11 flex items-center justify-center rounded-xl border border-ui-border hover:bg-ui-surface-hover transition-colors"
+              className="min-h-11 min-w-11 px-0 shrink-0"
               aria-label={t.save}
             >
-              <Check size={14} className={theme.iconColor} />
-            </button>
+              <Check size={14} className={theme.iconColor} aria-hidden />
+            </Button>
           </div>
         ) : (
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -109,18 +106,24 @@ export function TeamCard(props: {
               {team.name}
             </p>
             {isHost && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setEditingTeamId(team.id);
                   setTeamNameDraft(team.name);
                 }}
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-lg border border-ui-border hover:bg-ui-surface-hover transition-colors shrink-0"
+                className="min-h-11 min-w-11 px-0 shrink-0"
                 aria-label={t.renameTeam}
                 title={t.renameTeam}
               >
-                <PencilLine size={12} className={`${theme.iconColor} text-ui-fg-muted`} />
-              </button>
+                <PencilLine
+                  size={12}
+                  className={`${theme.iconColor} text-ui-fg-muted`}
+                  aria-hidden
+                />
+              </Button>
             )}
           </div>
         )}
@@ -137,43 +140,78 @@ export function TeamCard(props: {
           </span>
         ) : (
           team.players.map((p) => (
-            <button
+            <Button
               key={p.id}
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 if (!canHostAssignOffline) return;
                 onAssignPick(p);
               }}
-              className={`px-2 py-1 rounded-full border border-ui-border bg-ui-card ${typographyClass.body} text-ui-fg-muted inline-flex items-center gap-1.5 transition-all active:scale-[0.98] ${
+              disabled={!canHostAssignOffline}
+              className={`rounded-full px-2 py-1 font-sans normal-case tracking-normal gap-1.5 ${
                 p.id === myPlayerId ? 'ring-2 ring-ui-accent-ring' : ''
-              } ${canHostAssignOffline ? 'hover:bg-ui-surface-hover' : ''}`}
+              }`}
             >
               <PlayerAvatar player={p} size={16} emojiClassName="text-sm" />
               <span className="max-w-[80px] truncate">{p.name}</span>
-            </button>
+            </Button>
           ))
         )}
       </div>
 
       <div className="mt-3">
         {isMine ? (
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="md"
+            fullWidth
             onClick={() => sendAction({ action: 'TEAM_LEAVE' })}
             disabled={joinDisabled}
-            className={`w-full py-2.5 rounded-xl border border-ui-border bg-ui-surface hover:bg-ui-surface-hover ${typographyClass.body} font-medium text-ui-fg-muted transition-all active:scale-[0.98] disabled:text-ui-fg-muted`}
+            className="font-sans normal-case tracking-normal"
           >
             {t.teamLeave}
-          </button>
-        ) : (
-          <button
+          </Button>
+        ) : overfilled ? (
+          <Button
             type="button"
+            variant="secondary"
+            size="md"
+            fullWidth
             onClick={handleTeamJoin}
             disabled={joinDisabled}
-            className={`w-full py-2.5 rounded-xl ${typographyClass.body} font-medium transition-all active:scale-[0.98] disabled:text-ui-fg-muted ${joinVariant}`}
+            className="font-sans normal-case tracking-normal text-ui-warning"
           >
             {t.teamJoin}
-          </button>
+          </Button>
+        ) : isEmpty ? (
+          <Button
+            type="button"
+            variant="tertiary"
+            size="md"
+            fullWidth
+            onClick={handleTeamJoin}
+            disabled={joinDisabled}
+            className="font-sans normal-case tracking-normal text-ui-accent border-dashed"
+          >
+            {t.teamJoin}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="primary"
+            volume="cta"
+            size="md"
+            fullWidth
+            themeClass={theme.button}
+            onClick={handleTeamJoin}
+            disabled={joinDisabled}
+            className="font-sans normal-case tracking-normal"
+          >
+            {t.teamJoin}
+          </Button>
         )}
       </div>
     </div>

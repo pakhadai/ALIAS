@@ -57,8 +57,8 @@ function LobbyRulesSummary(props: {
   ];
 
   return (
-    <div className="space-y-3 text-left" data-testid="lobby-rules-summary">
-      <div className="flex items-center justify-between gap-2">
+    <div className="text-left" data-testid="lobby-rules-summary">
+      <div className="flex items-center justify-between gap-2 border-b border-ui-border pb-3">
         <p className={`${typographyClass.label} tracking-[0.12em] text-ui-fg`}>
           {t.lobbyRulesSummaryTitle ?? t.rules ?? 'Game rules'}
         </p>
@@ -71,7 +71,7 @@ function LobbyRulesSummary(props: {
         ) : null}
       </div>
 
-      <dl className="grid grid-cols-[minmax(0,42%)_1fr] gap-x-3 gap-y-2.5">
+      <dl className="grid grid-cols-[minmax(0,42%)_1fr] gap-x-3 gap-y-2.5 pt-3">
         {rows.map(({ label, value }) => (
           <React.Fragment key={label}>
             <dt className={`${typographyClass.label} text-ui-fg-muted normal-case`}>{label}</dt>
@@ -82,7 +82,7 @@ function LobbyRulesSummary(props: {
 
       {customDeckChip ? (
         <span
-          className={`inline-flex rounded-full border border-ui-border bg-ui-card px-3 py-1 ${typographyClass.label} tracking-wide text-ui-fg-muted`}
+          className={`mt-3 inline-flex rounded-full border border-ui-border bg-ui-card px-3 py-1 ${typographyClass.label} tracking-wide text-ui-fg-muted`}
         >
           {customDeckChip}
         </span>

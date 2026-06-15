@@ -83,7 +83,12 @@ export const PreRoundScreen = () => {
         <div className="space-y-8">
           <p className={`text-2xl ${currentTheme.textMain}`}>{t.noPlayersInTeam}</p>
           {isHost && (
-            <Button themeClass={currentTheme.button} onClick={() => setGameState(GameState.LOBBY)}>
+            <Button
+              variant="primary"
+              volume="cta"
+              themeClass={currentTheme.button}
+              onClick={() => setGameState(GameState.LOBBY)}
+            >
               {t.backToLobby}
             </Button>
           )}
@@ -132,6 +137,8 @@ export const PreRoundScreen = () => {
           <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
             {gameMode === 'OFFLINE' || isActualExplainer ? (
               <Button
+                variant="primary"
+                volume="cta"
                 themeClass={currentTheme.button}
                 size="xl"
                 onClick={handleStartRound}

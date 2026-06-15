@@ -62,4 +62,12 @@ describe('ProfileNavList', () => {
 
     expect(screen.getByText('Admin panel')).toBeInTheDocument();
   });
+
+  it('should use accent CTA volume on store nav row', () => {
+    render(<ProfileNavList {...baseProps} />);
+
+    const storeBtn = screen.getByText('Store').closest('button');
+    expect(storeBtn?.className).toContain('lobby-start-btn--plain');
+    expect(storeBtn?.className).toContain('lobby-start-btn');
+  });
 });

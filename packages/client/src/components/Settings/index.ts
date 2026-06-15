@@ -13,6 +13,18 @@ export { LanguageChipRow } from './LanguageChipRow';
 export type { LanguageChipRowProps } from './LanguageChipRow';
 export { CategoryChipGrid } from './CategoryChipGrid';
 export type { CategoryChipGridProps } from './CategoryChipGrid';
+export { SettingsChip } from './SettingsChip';
+export type { SettingsChipProps } from './SettingsChip';
+export { SettingsTabBar } from './SettingsTabBar';
+export type { SettingsTabBarProps } from './SettingsTabBar';
+export { PackChipRow } from './PackChipRow';
+export type { PackChipItem, PackChipRowProps } from './PackChipRow';
+export { settingsChipClass, settingsChipLabelClass } from './settingsChipStyles';
+export type {
+  SettingsChipSize,
+  SettingsChipStyleOptions,
+  SettingsChipVariant,
+} from './settingsChipStyles';
 export { UnsavedChangesModal } from './UnsavedChangesModal';
 export type { UnsavedChangesModalProps } from './UnsavedChangesModal';
 export { areLobbySettingsEqual, toComparableLobbySettings } from './lobbySettingsCompare';

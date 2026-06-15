@@ -56,7 +56,7 @@ export function LogoutConfirmBottomSheet({
         <Button
           variant={solidDanger ? 'dangerSolid' : 'danger'}
           fullWidth
-          size="xl"
+          size="lg"
           disabled={loggingOut}
           onClick={() => void onConfirm()}
         >

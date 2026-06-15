@@ -333,18 +333,25 @@ export const RulesModal = ({ isOpen, onClose, t, currentTheme, settings }: Rules
     >
       <div className="w-full min-w-0 shrink-0 overflow-x-auto no-scrollbar box-border">
         <div role="tablist" aria-label={t.rulesTitle} className="flex w-max gap-2 px-5 pb-3">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              className={`shrink-0 px-4 py-2 rounded-full ${typographyClass.label} tracking-[0.15em] whitespace-nowrap transition-all ${activeTab === tab ? currentTheme.button : 'opacity-40 hover:opacity-70 text-ui-fg'}`}
-            >
-              {tabLabels[tab]}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const active = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(tab)}
+                className={`shrink-0 px-4 py-2 rounded-xl border ${typographyClass.label} tracking-[0.15em] whitespace-nowrap transition-all duration-200 ease-out active:scale-95 ${
+                  active
+                    ? 'border-ui-accent bg-ui-accent text-ui-accent-contrast'
+                    : 'border-ui-border bg-ui-surface text-ui-fg-muted hover:text-ui-fg hover:bg-ui-surface-hover'
+                }`}
+              >
+                {tabLabels[tab]}
+              </button>
+            );
+          })}
         </div>
       </div>
       <ModalSheetBody className="px-5 py-6 pb-modal-bottom">

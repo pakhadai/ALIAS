@@ -91,16 +91,25 @@ export function AddOfflinePlayerSheet(props: {
             </button>
           ))}
         </div>
-        <Button
-          type="button"
-          themeClass={theme.button}
-          fullWidth
-          size="lg"
-          onClick={handleConfirm}
-          disabled={!newPlayerName.trim() || atLimit}
-        >
-          {t.add}
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button
+            type="button"
+            variant="primary"
+            volume="cta"
+            themeClass={theme.button}
+            fullWidth
+            size="lg"
+            onClick={handleConfirm}
+            disabled={!newPlayerName.trim() || atLimit}
+          >
+            {t.add}
+          </Button>
+          <Button type="button" variant="ghost" fullWidth size="lg" onClick={onClose}>
+            <span className="opacity-40 hover:opacity-100 transition-opacity font-sans">
+              {t.close}
+            </span>
+          </Button>
+        </div>
       </div>
     </ModalSheet>
   );

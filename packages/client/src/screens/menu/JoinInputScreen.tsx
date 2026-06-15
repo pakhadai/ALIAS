@@ -84,6 +84,8 @@ export const JoinInputScreen = () => {
           </div>
           <div className="space-y-8 pt-4">
             <Button
+              variant="primary"
+              volume="cta"
               themeClass={currentTheme.button}
               fullWidth
               size="xl"
@@ -100,13 +102,17 @@ export const JoinInputScreen = () => {
                 t.enter
               )}
             </Button>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              fullWidth
+              className="tracking-[0.4em] opacity-70"
               onClick={() => setGameState(GameState.MENU)}
               data-testid="join-cancel"
-              className={`w-full text-center ${typographyClass.label} tracking-[0.4em] opacity-30 hover:opacity-100 transition-opacity text-ui-fg`}
             >
               {t.cancel}
-            </button>
+            </Button>
           </div>
         </div>
       </ScreenShell>

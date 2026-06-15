@@ -37,7 +37,14 @@ export const ScoreboardScreen = () => {
       footer={
         <FixedBottomBar island contentClassName={footerIslandClassName('fullBleed')}>
           {isHost ? (
-            <Button themeClass={currentTheme.button} fullWidth size="xl" onClick={handleNextRound}>
+            <Button
+              variant="primary"
+              volume="cta"
+              themeClass={currentTheme.button}
+              fullWidth
+              size="xl"
+              onClick={handleNextRound}
+            >
               {t.nextRound}
             </Button>
           ) : (

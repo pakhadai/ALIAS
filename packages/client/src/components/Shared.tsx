@@ -389,7 +389,11 @@ export const Logo: React.FC<LogoProps> = ({
   const taglineRow = (
     <div className="flex w-full max-w-[min(100%,20rem)] items-center justify-center gap-2.5">
       <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
-      <p className={`shrink-0 opacity-50 ${brandCaptionClass} ${theme.textSecondary}`}>{tagline}</p>
+      <p
+        className={`shrink-0 font-semibold text-ui-fg-muted ${brandCaptionClass} ${theme.textSecondary}`}
+      >
+        {tagline}
+      </p>
       <div className="h-px min-w-0 flex-1 max-w-12 bg-ui-border opacity-60" aria-hidden />
     </div>
   );

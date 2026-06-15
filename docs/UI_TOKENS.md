@@ -210,28 +210,33 @@
 
 ## Button taxonomy
 
-**Status:** Home menu unification ✅ (2026-06-13) — `MenuScreen` on shared primitives; `Button` variant `tertiary` for de-emphasized bordered actions.
+**Status:** `implemented` (BTN-001 Phases 0–7 ✅ 2026-06-15 — soft-pill SSOT, `volume="cta"`, menu/lobby/store migration; manual TMA visual QA pending).  
+**Epic:** [`BUTTON_UNIFICATION.md`](./BUTTON_UNIFICATION.md) (BTN-001) — 6 канонічних типів + задокументовані винятки (GameFlow, Admin, chips).
 
 | Тип | Компонент | Variant / mode | Коли |
 |-----|-----------|----------------|------|
-| **Screen primary CTA** | `AccentFooterCta` | `variant="animated"` (default ready) / `"plain"` / `"blocked"` | Create game, Start game, Rematch — accent shell + `lobby-start-btn--ready` glow |
-| **Standard primary** | `Button` | `variant="primary"` + optional `themeClass={theme.button}` | Modal/sheet confirm, forms |
-| **Secondary** | `Button` | `variant="secondary"` | Join game, cancel-with-fill, alternate main action |
-| **Tertiary** | `Button` | `variant="tertiary"` | De-emphasized bordered action (Play offline, low-priority escape) |
-| **Ghost / outline** | `Button` | `variant="ghost"` or `"outline"` | Text-only dismiss, inline cancel |
-| **Danger** | `Button` | `variant="danger"` / `"dangerSolid"` | Destructive confirm |
-| **Icon / toolbar** | `GlassIconButton` | — | App header actions (profile, settings, rules) |
-| **Compact inline** | raw `<button>` or `Button size="sm"` | — | Icon-only in inputs (QuickJoin submit) — escape only |
+| **Icon** | `GlassIconButton` | — | Header / toolbar (menu profile, settings) |
+| **Primary CTA** | `AccentFooterCta` або `Button` `volume="cta"` | `animated` / `plain` / `blocked` | Create game, Start, Rematch — accent soft-pill |
+| **Secondary** | `Button` | `secondary` | Join, alternate filled action — `.ui-soft-btn--neutral` |
+| **Tertiary** | `Button` | `tertiary` | Offline, de-emphasized — `.ui-soft-btn--neutral-muted` |
+| **Ghost** | `Button` | `ghost` | Modal dismiss, text cancel |
+| **Nav row** | `<button>` + `SURFACE_NAV_ROW_CLASS` | — | Profile / store list rows (glass, not pill) |
+| **Danger** *(semantic)* | `Button` | `danger` / `dangerSolid` | Destructive confirm — same geometry |
+| **Compact inline** *(escape)* | `Button size="sm"` | — | QuickJoin icon submit only |
+
+Матриця типів, фази, allowlist raw `<button>`, grep gates: [`BUTTON_UNIFICATION.md`](./BUTTON_UNIFICATION.md) — **не дублюй** таблиці тут.
 
 ### Правила
 
 1. **Radius:** primary/secondary/tertiary/ghost — `rounded-theme` (via `Button` / `AccentFooterCta`); не hardcode `rounded-full` на screen CTAs.
 2. **Height:** main screen actions — `Button size="xl"` або `AccentFooterCta` (lobby volume); не mix `h-14` / `h-11` ad-hoc.
-3. **Feedback:** `Button` / `AccentFooterCta` — haptics + optional click sound; не дублюй `active:scale-*` inline на consumers.
-4. **Modals:** primary + ghost cancel — див. `.cursor/rules/07-modals.mdc`.
-5. **Нові home-style CTAs:** `AccentFooterCta` (primary) + `Button secondary` + `Button tertiary` — не raw `<button>` з inline Tailwind.
+3. **Primary depth:** screen/modal CTA — `Button variant="primary" volume="cta"` або `AccentFooterCta`; не flat `primary` без `volume`.
+4. **Feedback:** `Button` / `AccentFooterCta` — haptics + optional click sound; не дублюй `active:scale-*` inline на consumers.
+5. **Modals:** primary + ghost cancel — див. `.cursor/rules/07-modals.mdc`.
+6. **Нові home-style CTAs:** `AccentFooterCta` (primary) + `Button secondary` + `Button tertiary` — не raw `<button>` з inline Tailwind.
 
-**Reference:** `packages/client/src/screens/menu/MenuScreen.tsx`, `packages/client/src/components/layout/AccentFooterCta.tsx`, `packages/client/src/components/Button.tsx`.
+**Reference:** `packages/client/src/screens/menu/MenuScreen.tsx`, `packages/client/src/components/layout/AccentFooterCta.tsx`, `packages/client/src/components/Button.tsx`.  
+**Automated gates:** `packages/client/src/constants/buttonGovernance.test.ts`.
 
 ## Spacing (vertical rhythm)
 

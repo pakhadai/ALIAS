@@ -184,8 +184,8 @@ describe('MenuScreen buttons', () => {
 
     expect(screen.getByTestId('menu-create-game-shell')).toHaveClass('accent-footer-cta-shell');
     expect(screen.getByTestId('menu-create-game')).toHaveClass('lobby-start-btn--ready');
-    expect(screen.getByTestId('menu-join-game')).toHaveClass('rounded-theme');
-    expect(screen.getByTestId('menu-offline')).toHaveClass('rounded-theme');
+    expect(screen.getByTestId('menu-join-game')).toHaveClass('ui-soft-btn--neutral');
+    expect(screen.getByTestId('menu-offline')).toHaveClass('ui-soft-btn--neutral-muted');
   });
 
   it('should use glass icon chips in menu header', () => {
