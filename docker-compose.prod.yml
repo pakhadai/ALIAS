@@ -1,12 +1,29 @@
-# Production Docker Compose — власний nginx + Let's Encrypt (порти 80/443 на хості).
-# Якщо на VPS уже зайняті 80/443 під Nginx Proxy Manager — використовуй docker-compose.npm.yml.
+# ═══════════════════════════════════════════════════════════════════════════
+# Production Docker Compose — OWN nginx + Let's Encrypt on host ports 80/443.
 #
-# Usage: docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+# ⚠ DO NOT run this stack on a VPS where Nginx Proxy Manager (or another
+#   reverse proxy) already binds 80/443. That causes port conflicts and leaves
+#   an orphan `*-nginx-1` container (often Restarting) while the live stack is
+#   docker-compose.npm.yml + service `gateway`.
 #
-# Before first run:
-#   1. Copy .env.prod.example → .env.prod and fill all values
-#   2. Obtain SSL cert: docker-compose -f docker-compose.prod.yml --profile certbot run --rm certbot
-#   3. Run migrations: docker-compose -f docker-compose.prod.yml exec app sh -c "cd packages/server && npx prisma migrate deploy && tsx prisma/seed.ts"
+#   Canonical for NPM VPS:  docker-compose.npm.yml  (ONLY)
+#   This file:              hosts WITHOUT NPM, with free 80/443
+#
+# Before `up`:
+#   1. Confirm ports free:  ss -tlnp | grep -E ':80|:443'   (should be empty)
+#   2. Copy .env.prod.example → .env.prod; set DOMAIN (used by nginx envsubst)
+#   3. Obtain SSL cert (certbot profile) BEFORE relying on :443
+#   4. Never run this compose file in parallel with docker-compose.npm.yml
+#
+# Usage:
+#   docker compose -p movli --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+# First-time SSL:
+#   docker compose -p movli --env-file .env.prod -f docker-compose.prod.yml --profile certbot run --rm certbot
+#
+# Switch to NPM stack later — tear this stack down to avoid orphan nginx:
+#   docker compose -p movli --env-file .env.prod -f docker-compose.prod.yml down
+# ═══════════════════════════════════════════════════════════════════════════
 
 services:
   postgres:
@@ -82,22 +99,28 @@ services:
         VITE_PUBLIC_APP_URL: ${VITE_PUBLIC_APP_URL:-https://${DOMAIN}}
     restart: unless-stopped
 
-  # Reverse proxy — terminates SSL, routes traffic to app/client
+  # Reverse proxy — terminates SSL, routes traffic to app/client.
+  # Requires DOMAIN in env (envsubst) and Let's Encrypt certs under that name.
+  # NOT for NPM hosts — use docker-compose.npm.yml `gateway` instead.
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env.prod — required for nginx SSL paths}
+      # Only substitute DOMAIN; leave nginx $host / $scheme / etc. untouched.
+      NGINX_ENVSUBST_FILTER: "^DOMAIN$$"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
       - certbot-webroot:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
     depends_on:
       - app
       - client
 
-  # One-shot certbot — run with: docker-compose ... --profile certbot run --rm certbot
+  # One-shot certbot — run with: docker compose ... --profile certbot run --rm certbot
   certbot:
     image: certbot/certbot:latest
     volumes:

@@ -30,6 +30,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Docker/NPM: document and guard against orphan `*-nginx-1` Restarting when `docker-compose.prod.yml` is left running beside NPM `gateway`; prod nginx uses `nginx.conf.template` + `${DOMAIN}` envsubst instead of hard-coded `YOUR_DOMAIN`
+
 ### Changed
 - **BTN-001 button unification epic (implemented):** 6 canonical button types + documented exceptions; `Button volume="cta"` soft-pill primary; menu/lobby/store/settings migration complete; governance test `buttonGovernance.test.ts`
 - BTN-001 epic plan: `docs/BUTTON_UNIFICATION.md` — 6 button types, phases 0–7, migration inventory (~200 controls)

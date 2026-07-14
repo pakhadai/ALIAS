@@ -6,17 +6,21 @@
 #   VPS_SSH_PRIVATE_KEY   — приватний ключ SSH (повний PEM, з -----BEGIN ... END-----)
 #   VPS_DEPLOY_PATH       — опційно: абсолютний шлях до клону (регістр важливий: movli ≠ MOVLI). Якщо не задано — $HOME/apps/MOVLI
 #
-# Опційно:
+# Опційно (для типового VPS з Nginx Proxy Manager задай явно):
 #   VPS_SSH_PORT          — порт SSH (якщо не 22)
 #   VPS_SSH_PASSPHRASE    — passphrase для ключа, якщо ключ захищений
-#   VPS_COMPOSE_FILE      — compose-файл у корені клону. Якщо не задано: спочатку docker-compose.npm.yml (якщо є), інакше docker-compose.prod.yml
+#   VPS_COMPOSE_FILE      — канон для NPM: docker-compose.npm.yml
+#                           Якщо не задано: спочатку docker-compose.npm.yml (якщо є), інакше docker-compose.prod.yml
+#                           НЕ став docker-compose.prod.yml на хості де NPM вже займає 80/443
 #   VPS_ENV_FILE          — env для compose (default: .env.prod)
-#   VPS_COMPOSE_PROJECT   — опційно: docker compose -p (наприклад movli), щоб імена контейнерів збігалися з VPS
+#   VPS_COMPOSE_PROJECT   — docker compose -p; має збігатися з існуючими контейнерами
+#                           (movli для нових; alias якщо вже є alias-gateway-1 тощо)
 #
 # На VPS заздалегідь (або перший запуск workflow сам зробить clone у DEPLOY_PATH, якщо теки ще немає — потрібен публічний repo або git credentials на сервері):
 #   - `.env.prod` у корені клону (з `.env.prod.example`), НЕ в git
 #   - docker compose v2, користувач у групі docker (або sudo без пароля для docker)
 #   - SSL: типово NPM + docker-compose.npm.yml; docker-compose.prod.yml — лише якщо власний nginx займає 80/443
+#   - Після switch на npm: обов’язково `docker compose … -f docker-compose.prod.yml down` (прибрати orphan *-nginx-*)
 
 name: Deploy to VPS
 
@@ -183,6 +187,21 @@ jobs:
               exit 1
             fi
             echo "Deploy: project=${COMPOSE_PROJECT:-default} compose=$COMPOSE_FILE env=${ENV_OPT[1]:-?}"
+            if [ "$COMPOSE_FILE" = "docker-compose.prod.yml" ]; then
+              echo "WARNING: Using docker-compose.prod.yml (binds host :80/:443)."
+              echo "WARNING: On a VPS with Nginx Proxy Manager use docker-compose.npm.yml instead."
+            fi
+            if [ "$COMPOSE_FILE" = "docker-compose.npm.yml" ]; then
+              # Orphan guard: prod-stack nginx left after migration to NPM.
+              ORPHAN_NGINX="$(docker ps -a --format '{{.Names}} {{.Status}}' 2>/dev/null | grep -E '[^[:space:]]+-nginx-[0-9]+' || true)"
+              if [ -n "$ORPHAN_NGINX" ]; then
+                echo "WARNING: Found nginx container(s) from docker-compose.prod.yml while deploying npm stack:"
+                echo "$ORPHAN_NGINX"
+                echo "WARNING: If status is Restarting, remove orphan — do NOT recreate on NPM hosts:"
+                echo "  docker compose ${COMPOSE_PROJECT:+-p $COMPOSE_PROJECT} --env-file $ENV_FILE -f docker-compose.prod.yml down"
+                echo "  # or: docker rm -f <name>"
+              fi
+            fi
             docker compose "${DC_PFX[@]}" "${ENV_OPT[@]}" -f "$COMPOSE_FILE" up -d --build
             # docker-compose.npm.yml runs `prisma migrate deploy` on app boot (idempotent).
             # Running it again via `exec` can overlap with container startup and OOM-kill small VPSes (exit 137).
