@@ -127,9 +127,9 @@ MOVLI/                          ← Корінь монорепо
 ├── turbo.json                  ← Turbo (build / typecheck)
 ├── .github/workflows/          ← CI (Node 20), E2E (@smoke / @core), deploy VPS, secret scan
 ├── docker-compose.yml          ← Dev: Redis + Postgres (+ опційно сервіси)
-├── docker-compose.npm.yml      ← Production за Nginx Proxy Manager (рекомендовано для типового VPS)
-├── docker-compose.prod.yml     ← Production: власний nginx + SSL (80/443; якщо NPM не займає порти)
-├── nginx/                      ← nginx.conf, npm-edge.conf
+├── docker-compose.npm.yml      ← Канон для VPS з NPM (сервіс gateway; НЕ піднімати prod nginx)
+├── docker-compose.prod.yml     ← Лише хости БЕЗ NPM (вільні 80/443 + nginx.conf.template)
+├── nginx/                      ← npm-edge.conf (NPM); nginx.conf.template (prod SSL)
 ├── scripts/                    ← Утилітні скрипти
 ├── docs/                       ← INDEX, CONTRIBUTING, тематичні доповнення, daily/
 ├── AGENTS.md                   ← Інструкції ШІ для цього репо (поверх ECC)
@@ -894,19 +894,57 @@ pnpm run dev                           # локальний dev-сервер
 
 ### Production
 
+Обери **один** стек. Не запускай `docker-compose.prod.yml` і `docker-compose.npm.yml` одночасно.
+
+| Середовище | Compose-файл | Edge-сервіс | Порти на хості |
+|------------|--------------|-------------|----------------|
+| **VPS з Nginx Proxy Manager (канон)** | `docker-compose.npm.yml` | `gateway` + `nginx/npm-edge.conf` | лише `GATEWAY_PUBLISH` (типово `127.0.0.1:9080`) |
+| Хост **без** NPM, вільні 80/443 | `docker-compose.prod.yml` | `nginx` + `nginx/nginx.conf.template` | `80` і `443` |
+
+**Ім’я проєкту Compose (`-p` / GitHub secret `VPS_COMPOSE_PROJECT`):** має збігатися з тим, чим уже названі контейнери на сервері. Нові інстали — **`movli`** (`movli-gateway-1`, …). Якщо на VPS уже є `alias-gateway-1` / `alias-*` — залиш **`alias`** (`VPS_COMPOSE_PROJECT=alias`); не міняй `-p` «для краси» без `down` + recreate.
+
 **Типовий VPS з Nginx Proxy Manager** (TLS на NPM, проєкт у спільній мережі на кшталт `npm_network`):
 
 ```bash
+# Підстав свій project name (movli або alias), якщо контейнери вже існують
 docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml up -d --build
 ```
 
 У `.env.prod` задай `NPM_DOCKER_NETWORK` так само, як називається мережа NPM (`docker network ls` на сервері). У Nginx Proxy Manager: Proxy Host → **Forward Hostname** `gateway`, **Port** `80` (або forward на `127.0.0.1:9080`, якщо змінено `GATEWAY_PUBLISH`).
 
-**Окремий nginx + Let's Encrypt у проєкті** (порти 80/443 на хості — лише якщо NPM їх не займає):
+**Окремий nginx + Let's Encrypt у проєкті** (порти 80/443 на хості — **лише якщо NPM їх не займає**):
 
 ```bash
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+# Перед up переконайся: ss -tlnp | grep -E ':80|:443' — нічого не слухає
+docker compose -p movli --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ```
+
+`DOMAIN` з `.env.prod` підставляється в `nginx/nginx.conf.template` через envsubst офіційного образу nginx. Без валідного `DOMAIN` і сертифікатів Let's Encrypt сервіс `nginx` завершиться з exit 1.
+
+**Чекліст після switch на NPM-стек** (щоб не лишити orphan `*-nginx-*`):
+
+```bash
+# 1. Підняти npm-стек
+docker compose -p <project> --env-file .env.prod -f docker-compose.npm.yml up -d --build
+# 2. Зупинити старий prod-файл (прибирає orphan nginx)
+docker compose -p <project> --env-file .env.prod -f docker-compose.prod.yml down
+# 3. Перевірити: має бути gateway healthy; *-nginx-* відсутній
+docker ps -a --format '{{.Names}} {{.Status}}' | grep -E 'gateway|nginx'
+```
+
+### Troubleshooting: `*-nginx-1` у статусі Restarting (orphan prod nginx)
+
+На VPS з NPM live-стек — **`gateway`** з `docker-compose.npm.yml`. Контейнер на кшталт `alias-nginx-1` / `movli-nginx-1` у **Restarting** — майже завжди orphan із `docker-compose.prod.yml` (конфлікт 80/443 з NPM і/або старий conf без реального `DOMAIN`/сертифікатів).
+
+**Не піднімай його знову.** Прибери:
+
+```bash
+docker compose -p <project> --env-file .env.prod -f docker-compose.prod.yml down
+# або точково:
+docker rm -f alias-nginx-1   # або movli-nginx-1
+```
+
+Переконайся, що працює лише npm-стек (`docker compose … -f docker-compose.npm.yml ps` → `gateway` healthy).
 
 ### Troubleshooting: `502 Bad Gateway` (openresty/Nginx Proxy Manager) + Telegram auth
 
@@ -954,16 +992,24 @@ Workflow [`.github/workflows/deploy-vps.yml`](./.github/workflows/deploy-vps.yml
 | `VPS_USER` | SSH-користувач (наприклад `ubuntu`, `deploy`) |
 | `VPS_SSH_PRIVATE_KEY` | Приватний ключ у форматі PEM (повний текст, включно з `-----BEGIN ... KEY-----`) |
 
-**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `MOVLI`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/MOVLI`** (`/root/apps/MOVLI` для root). **`VPS_COMPOSE_FILE`** — для стеку за Nginx Proxy Manager на хості: **`docker-compose.npm.yml`** (файл у репо разом із `nginx/npm-edge.conf`). **`VPS_COMPOSE_PROJECT`** — наприклад **`movli`**, щоб збігалося з `docker compose -p movli` на сервері. **`VPS_ENV_FILE`** — за замовчуванням **`.env.prod`** (інше ім’я лише якщо свідомо змінюєте). Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore), шаблон — [`docs/VPS-INFRASTRUCTURE.md.example`](./docs/VPS-INFRASTRUCTURE.md.example).
+**Опційно:** `VPS_SSH_PORT`, `VPS_SSH_PASSPHRASE` (якщо ключ з паролем), **`VPS_DEPLOY_PATH`** — абсолютний шлях до клону **як на диску** (на Linux **`alias` ≠ `MOVLI`**). Завершальний `/` не обов’язковий. Якщо secret **не задано**, використовується **`$HOME/apps/MOVLI`** (`/root/apps/MOVLI` для root). **`VPS_COMPOSE_FILE`** — для типового VPS з NPM задай явно **`docker-compose.npm.yml`** (якщо secret порожній, workflow обирає `docker-compose.npm.yml`, якщо файл є в клоні). **Не** став `docker-compose.prod.yml` на хості з NPM. **`VPS_COMPOSE_PROJECT`** — ім’я `-p` Compose; має збігатися з уже існуючими контейнерами (**`movli`** для нових інсталів; **`alias`**, якщо на сервері вже `alias-gateway-1` тощо). **`VPS_ENV_FILE`** — за замовчуванням **`.env.prod`**. Локальні нотатки про сервер — `docs/VPS-INFRASTRUCTURE.md` (gitignore).
 
 **Що має бути на VPS до першого деплою:**
 
 1. Каталог деплою: за замовчуванням **`~/apps/MOVLI`**. Перший запуск без теки — автоматичний `git clone` (див. вище про публічний repo / credentials). Шлях у **`VPS_DEPLOY_PATH`** має **точно** збігатися з реальною текою (регістр літер).
 2. У корені клону — файл **`.env.prod`** (заповнений за зразком [`.env.prod.example`](./.env.prod.example)), **не** комітити в git.
 3. Встановлені Docker і Docker Compose v2; користувач `VPS_USER` може виконувати `docker compose` без інтерактивного sudo (наприклад група `docker`: `sudo usermod -aG docker $USER` і перелогінитись).
-4. SSL і домен — через NPM (Force SSL) або через `docker-compose.prod.yml` + certbot, якщо не використовуєте NPM.
+4. SSL і домен — через **NPM** (Force SSL) + **`docker-compose.npm.yml`**. `docker-compose.prod.yml` + certbot — лише якщо NPM **не** займає 80/443.
+5. Після першого switch на npm-стек — обов’язково `docker compose … -f docker-compose.prod.yml down`, щоб не лишити orphan `*-nginx-1`.
 
 **Nginx Proxy Manager:** сервіс `gateway` підключений до **тієї ж зовнішньої docker-мережі**, що й NPM. Ім’я мережі задається в `.env.prod` як **`NPM_DOCKER_NETWORK`** (типово **`npm_network`**). Якщо ім’я інше — підставте з `docker network ls`, інакше NPM не резолвить `gateway` і буде **502**.
+
+**Deploy checklist (рев’юер / ops):**
+
+- [ ] Secret `VPS_COMPOSE_FILE` = `docker-compose.npm.yml` (або порожній — тоді workflow обере npm.yml, якщо файл є)
+- [ ] Secret `VPS_COMPOSE_PROJECT` збігається з `-p` на сервері (`movli` або `alias`)
+- [ ] Після switch з prod → npm виконано `… -f docker-compose.prod.yml down`
+- [ ] `docker ps` показує `*-gateway-*` healthy; немає Restarting `*-nginx-*`
 
 Якщо гілка деплою не `main`, змініть `branches` у workflow або додайте свою гілку.
 
@@ -1177,8 +1223,10 @@ Seed **не** повинен “вшивати” адмінів (це ризи�
 | `packages/server/src/config.ts` | Env |
 | `.env.prod.example` | Шаблон єдиного `.env.prod` (репо + VPS) |
 | `docker-compose.yml` | Dev (Redis + Postgres) |
-| `docker-compose.npm.yml` | Prod за NPM |
-| `docker-compose.prod.yml` | Prod з власним nginx + SSL |
+| `docker-compose.npm.yml` | **Канон** prod за NPM (`gateway`) |
+| `docker-compose.prod.yml` | Prod без NPM (власний `nginx` + SSL) — не поруч з NPM |
+| `nginx/npm-edge.conf` | HTTP edge для NPM gateway |
+| `nginx/nginx.conf.template` | SSL nginx template (`${DOMAIN}` via envsubst) |
 
 ---
 

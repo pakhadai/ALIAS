@@ -1,9 +1,23 @@
-# Production stack за Nginx Proxy Manager: TLS і 80/443 на хості займає NPM.
-# Рекомендовано для NPM: Proxy Host → Forward Hostname = `gateway`, Forward Port = `80`
-# (через спільну зовнішню мережу Docker — типово `npm_network`, див. `NPM_DOCKER_NETWORK` у `.env.prod`).
-# Запасний варіант: forward на `http://<docker-host>:9080` (або зміни `GATEWAY_PUBLISH` у `.env.prod`).
+# ═══════════════════════════════════════════════════════════════════════════
+# КАНОНІЧНИЙ production-стек для VPS з Nginx Proxy Manager.
+# TLS і 80/443 на хості займає NPM — НІКОЛИ не запускай поруч docker-compose.prod.yml
+# (сервіс `nginx` → контейнер `*-nginx-1`, конфлікт портів + Restarting orphan).
 #
-# Запуск (як на VPS): docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml up -d --build
+# NPM: Proxy Host → Forward Hostname = `gateway`, Forward Port = `80`
+# (спільна зовнішня мережа Docker — типово `npm_network`, див. `NPM_DOCKER_NETWORK`).
+# Запасний варіант: forward на `http://<docker-host>:9080` (`GATEWAY_PUBLISH`).
+#
+# Ім’я проєкту Compose (`-p` / secret VPS_COMPOSE_PROJECT):
+#   - Нові інстали: `-p movli` (контейнери movli-gateway-1, …)
+#   - Існуючий VPS з уже запущеними alias-*: залиш `-p alias` / VPS_COMPOSE_PROJECT=alias
+#     (не змінюй ім’я без явного recreate — інакше з’являться дублікати контейнерів)
+#
+# Запуск:
+#   docker compose -p movli --env-file .env.prod -f docker-compose.npm.yml up -d --build
+#
+# Після міграції з prod-стеку обов’язково прибери orphan nginx:
+#   docker compose -p <same-project> --env-file .env.prod -f docker-compose.prod.yml down
+# ═══════════════════════════════════════════════════════════════════════════
 
 services:
   postgres:
